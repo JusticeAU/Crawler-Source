@@ -8,43 +8,54 @@ void ShaderProgram::LoadFromFiles(std::string vertFilename, std::string fragFile
 	vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 	shaderProgramID = glCreateProgram();
+	GLchar errorLog[512];
+	GLint successStatus = 0;
 
 	// Load and compile vertex shader
 	std::string vertexShaderSource = FileUtils::LoadFileAsString(vertFilename);
-	const char* vertexShaderSourceC = vertexShaderSource.c_str();
-	glShaderSource(vertexShaderID, 1, &vertexShaderSourceC, nullptr);
-	glCompileShader(vertexShaderID);
-	// Check for success
-	GLchar errorLog[512];
-	GLint successStatus = 0;
-	glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &successStatus);
-	if (successStatus == GL_FALSE)
+	if (vertexShaderSource != "")
 	{
-		LogUtils::Log("Vertex shader compliation failure");
-		glGetShaderInfoLog(vertexShaderID, 512, nullptr, errorLog);
-		LogUtils(errorLog);
-		loaded = false;
+		const char* vertexShaderSourceC = vertexShaderSource.c_str();
+		glShaderSource(vertexShaderID, 1, &vertexShaderSourceC, nullptr);
+		glCompileShader(vertexShaderID);
+		// Check for success
+		
+		glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &successStatus);
+		if (successStatus == GL_FALSE)
+		{
+			LogUtils::Log("Vertex shader compilation failure");
+			glGetShaderInfoLog(vertexShaderID, 512, nullptr, errorLog);
+			LogUtils(errorLog);
+			loaded = false;
+		}
+		else
+			LogUtils::Log("Vertex shader compilation success!");
 	}
 	else
-		LogUtils::Log("Vertex shader compliation success!");
-
+		LogUtils::Log("Vertex shader load failure - empty or missing file.");
+	
 	// Load and compile fragment shader
 	std::string fragmentShaderSource = FileUtils::LoadFileAsString(fragFilename);
-	const char* fragmentShaderSourceC = fragmentShaderSource.c_str();
-	glShaderSource(fragmentShaderID, 1, &fragmentShaderSourceC, nullptr);
-	glCompileShader(fragmentShaderID);
-	
-	// Check for success
-	glGetShaderiv(fragmentShaderID, GL_COMPILE_STATUS, &successStatus);
-	if (successStatus == GL_FALSE)
+	if (fragmentShaderSource != "")
 	{
-		LogUtils::Log("Fragment shader compliation failure");
-		glGetShaderInfoLog(fragmentShaderID, 512, nullptr, errorLog);
-		LogUtils(errorLog);
-		loaded = false;
+		const char* fragmentShaderSourceC = fragmentShaderSource.c_str();
+		glShaderSource(fragmentShaderID, 1, &fragmentShaderSourceC, nullptr);
+		glCompileShader(fragmentShaderID);
+
+		// Check for success
+		glGetShaderiv(fragmentShaderID, GL_COMPILE_STATUS, &successStatus);
+		if (successStatus == GL_FALSE)
+		{
+			LogUtils::Log("Fragment shader compilation failure");
+			glGetShaderInfoLog(fragmentShaderID, 512, nullptr, errorLog);
+			LogUtils(errorLog);
+			loaded = false;
+		}
+		else
+			LogUtils::Log("Fragment shader compilation success!");
 	}
 	else
-		LogUtils::Log("Fragment shader compliation success!");
+		LogUtils::Log("Fragment shader load failure - empty or missing file.");
 
 	// Link shaders
 	glAttachShader(shaderProgramID, vertexShaderID);

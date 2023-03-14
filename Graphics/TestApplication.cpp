@@ -11,7 +11,7 @@ TestApplication::TestApplication()
 	colors.push_back(glm::vec4(0.62f, 0.38f, 0.63f, 1.0f)); // purp
 	colors.push_back(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)); // black
 	shader = new ShaderProgram();
-	shader->LoadFromFiles("shaders\passthrough.VERT", "shaders\passthrough.FRAG");
+	shader->LoadFromFiles("shaders\\passthrough.VERT", "shaders\\passthrough.FRAG");
 }
 
 void TestApplication::Update(float delta)

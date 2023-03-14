@@ -21,6 +21,7 @@ public:
 			}
 			return buffer.str();
 		}
+		else
 		{
 			std::cout << "Failed to load file: " + filepath << std::endl;
 			return "";
