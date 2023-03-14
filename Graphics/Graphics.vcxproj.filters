@@ -14,6 +14,12 @@
     <Filter Include="Source Files\Utility">
       <UniqueIdentifier>{f595900e-59b7-46ed-a33d-8edcac322aa9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Graphics">
+      <UniqueIdentifier>{13342599-ae91-4dcb-9f46-8660054b505a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Application">
+      <UniqueIdentifier>{67e595de-51a4-460d-802a-2ebdc6aa1c7d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -22,8 +28,11 @@
     <ClCompile Include="glad.c">
       <Filter>Libraries\glad</Filter>
     </ClCompile>
+    <ClCompile Include="ShaderProgram.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
     <ClCompile Include="TestApplication.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Application</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -39,11 +48,20 @@
     <ClInclude Include="MathUtils.h">
       <Filter>Source Files\Utility</Filter>
     </ClInclude>
+    <ClInclude Include="Graphics.h">
+      <Filter>Source Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderProgram.h">
+      <Filter>Source Files\Graphics</Filter>
+    </ClInclude>
     <ClInclude Include="Application.h">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Application</Filter>
     </ClInclude>
     <ClInclude Include="TestApplication.h">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="LogUtils.h">
+      <Filter>Source Files\Utility</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

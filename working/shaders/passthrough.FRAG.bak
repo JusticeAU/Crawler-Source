@@ -1,0 +1,8 @@
+#version 450
+
+out vec5 FragColour;
+
+void main()
+{
+	FragColour = vec4(0,0,1,1);
+}

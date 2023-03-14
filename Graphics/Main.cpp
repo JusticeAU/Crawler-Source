@@ -1,7 +1,5 @@
 // These includes are specif to the way we've set up GLFW and GLAD.
-#define GLFW_INCLUDE_NONE
-#include "glfw3.h"
-#include "glad.h"
+#include "Graphics.h"
 #include "glm.hpp"
 #include "MathUtils.h"
 #include "FileUtils.h"
@@ -48,11 +46,6 @@ int main(void)
 	else
 		std::cout << "Sucessfully loaded GLAD OpenGL Functions." << std::endl;
 
-	// Some init stuff ehehe
-	glClearColor(0.8f, 0.0f, 0.0f, 1.0f);
-	
-	float currentTime = glfwGetTime();
-
 	
 	// Construct my actual application
 	std::cout << "Constructing Application." << std::endl;
@@ -60,11 +53,13 @@ int main(void)
 	
 	std::cout << "Starting Main Loop." << std::endl;
 	// Main Application "Loop"
+	float currentTime = glfwGetTime();
 	while (!glfwWindowShouldClose(window))
 	{
 		float newTime = glfwGetTime();
 		float deltaTime = newTime - currentTime;
 		currentTime = newTime;
+
 		// Clear the screen - eventually do rendering here
 		glClear(GL_COLOR_BUFFER_BIT);
 		
