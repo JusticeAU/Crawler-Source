@@ -12,5 +12,6 @@ public:
 	bool loaded = true;
 
 	void LoadFromFiles(std::string vertFilename, std::string fragFilename);
-	void Use();
+	void Bind();
+	void SetFloatUniform(std::string variableName, float value);
 };

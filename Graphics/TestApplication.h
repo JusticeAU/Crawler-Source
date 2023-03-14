@@ -15,4 +15,12 @@ protected:
 	int colorIndex = 0;
 	int nextColor = 1;
 	ShaderProgram* shader;
+
+	GLuint bufferID;
+	float someFloats[6]
+	{
+		0, 0,
+		0, 1,
+		1, 0
+	};
 };

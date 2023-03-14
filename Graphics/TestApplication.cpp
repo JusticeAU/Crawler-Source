@@ -12,13 +12,21 @@ TestApplication::TestApplication()
 	colors.push_back(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)); // black
 	shader = new ShaderProgram();
 	shader->LoadFromFiles("shaders\\passthrough.VERT", "shaders\\passthrough.FRAG");
+
+	// Open GL Init
+	glGenBuffers(1, &bufferID);
+
+	glBindBuffer(GL_ARRAY_BUFFER, bufferID);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(someFloats), someFloats, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glEnableVertexAttribArray(0);
 }
 
 void TestApplication::Update(float delta)
 {
+	// Lerp background for funzies
 	t += delta * 0.5f;
-
-
 	if (t > 2.0f)
 	{
 		t = 0.0f;
@@ -31,4 +39,11 @@ void TestApplication::Update(float delta)
 		MathUtils::Lerp(colors[colorIndex].g, colors[nextColor].g, glm::min(t, 1.0f)),
 		MathUtils::Lerp(colors[colorIndex].b, colors[nextColor].b, glm::min(t, 1.0f)),
 		1);
+
+	// Draw triangle
+	glBindBuffer(GL_ARRAY_BUFFER, bufferID);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2,0);
+	shader->Bind();
+	shader->SetFloatUniform("something", sin(glfwGetTime()));
+	glDrawArrays(GL_TRIANGLES, 0, 3);
 }

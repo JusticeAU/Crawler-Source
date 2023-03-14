@@ -78,3 +78,14 @@ void ShaderProgram::LoadFromFiles(std::string vertFilename, std::string fragFile
 		LogUtils::Log("Shader loaded successfully");
 
 }
+
+void ShaderProgram::Bind()
+{
+	glUseProgram(shaderProgramID);
+}
+
+void ShaderProgram::SetFloatUniform(std::string variableName, float value)
+{
+	GLint uniformLocation = glGetUniformLocation(shaderProgramID, variableName.c_str());
+	glUniform1f(uniformLocation, value);
+}
