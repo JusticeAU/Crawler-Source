@@ -49,7 +49,7 @@ int main(void)
 	
 	// Construct my actual application
 	std::cout << "Constructing Application." << std::endl;
-	Application* app = new TestApplication();
+	Application* app = new TestApplication(window);
 	
 	std::cout << "Starting Main Loop." << std::endl;
 	// Main Application "Loop"
@@ -61,7 +61,7 @@ int main(void)
 		currentTime = newTime;
 
 		// Clear the screen - eventually do rendering here
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		// Update my application here.
 		app->Update(deltaTime);

@@ -1,10 +1,16 @@
 #version 450
 
-layout (location = 0) in vec2 Position;
+layout (location = 0) in vec3 Position;
+layout (location = 1) in vec3 Colour;
+
 
 uniform float something;
+uniform mat4 transformMatrix;
+
+out vec3 _Colour;
 
 void main()
 {
-	gl_Position = vec4(Position * 0.5f + something,0,1);
+	gl_Position = transformMatrix * vec4(Position ,1);
+	_Colour = Colour;
 }

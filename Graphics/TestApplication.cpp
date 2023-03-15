@@ -2,7 +2,7 @@
 #include "Graphics.h"
 #include "MathUtils.h"
 
-TestApplication::TestApplication()
+TestApplication::TestApplication(GLFWwindow* window) : window(window)
 {
 	colors.push_back(glm::vec4(0.45f, 0.92f, 0.57f, 1.0f)); // green
 	colors.push_back(glm::vec4(0.10f, 0.17f, 0.47f, 1.0f)); // dark blue
@@ -16,11 +16,17 @@ TestApplication::TestApplication()
 	// Open GL Init
 	glGenBuffers(1, &bufferID);
 
+	// Enable depth testing (Also need ot make sure we are clearing depth values when calling screen clear)
+	glEnable(GL_DEPTH_TEST);
+
 	glBindBuffer(GL_ARRAY_BUFFER, bufferID);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(someFloats), someFloats, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+	// These align with the 'layout' keywords in the shader.
 	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+
 }
 
 void TestApplication::Update(float delta)
@@ -42,8 +48,40 @@ void TestApplication::Update(float delta)
 
 	// Draw triangle
 	glBindBuffer(GL_ARRAY_BUFFER, bufferID);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2,0);
+
+	// again, these align with the layout keyword in the shader
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(sizeof(float) * 3));
+
+	// Create a position?
+	glm::mat4 translation = glm::translate(glm::mat4(1), glm::vec3(1, 0, 0));
+
+	// Create rotation matrix
+	glm::mat4 rotation = glm::rotate(glm::mat4(1), (float)glfwGetTime() * 0.2f, glm::normalize(glm::vec3(0.5f,1,1)));
+	
+	// Create view and projection matrix
+	glm::mat4 view = glm::lookAt(glm::vec3(sin(glfwGetTime() * 0.5f) * 3, 0, cos(glfwGetTime() * 0.5f) * 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+	float aspect;
+	int width, height;
+	glfwGetWindowSize(window, &width, &height);
+	aspect = width / (float)height;
+	glm::mat4 projection = glm::perspective((float)3.14159 / 4, aspect, .1f, 100.0f);
+	glm::mat4 transform = projection * view * translation * rotation;
+
 	shader->Bind();
-	shader->SetFloatUniform("something", sin(glfwGetTime()));
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	//shader->SetFloatUniform("something", sin(glfwGetTime()));
+	shader->SetMatrixUniform("transformMatrix", transform);
+
+	// type, start, number of verticies
+	glDrawArrays(GL_TRIANGLES, 0, sizeof(someFloats) / sizeof(float) * 3);
+
+
+	//round 2 with different translation
+	translation = glm::translate(glm::mat4(1), glm::vec3(-1, 0, 0));
+	rotation = glm::rotate(glm::mat4(1), (float)glfwGetTime() * 0.2f, glm::normalize(glm::vec3(-0.5f, -1, -1)));
+	transform = projection * view * translation * rotation;
+	shader->SetMatrixUniform("transformMatrix", transform);
+	glDrawArrays(GL_TRIANGLES, 0, sizeof(someFloats) / sizeof(float) * 3);
+
+
 }
