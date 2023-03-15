@@ -4,12 +4,14 @@
 
 TestApplication::TestApplication(GLFWwindow* window) : window(window)
 {
-	colors.push_back(glm::vec4(0.45f, 0.92f, 0.57f, 1.0f)); // green
-	colors.push_back(glm::vec4(0.10f, 0.17f, 0.47f, 1.0f)); // dark blue
-	colors.push_back(glm::vec4(0.9f, 0.63f, 0.42f, 1.0f)); // orange
-	colors.push_back(glm::vec4(0.39, 0.58f, 0.92f, 1.0f)); // CORNFLOWER blue
-	colors.push_back(glm::vec4(0.62f, 0.38f, 0.63f, 1.0f)); // purp
+	//colors.push_back(glm::vec4(0.45f, 0.92f, 0.57f, 1.0f)); // green
+	//colors.push_back(glm::vec4(0.10f, 0.17f, 0.47f, 1.0f)); // dark blue
+	//colors.push_back(glm::vec4(0.9f, 0.63f, 0.42f, 1.0f)); // orange
+	//colors.push_back(glm::vec4(0.39, 0.58f, 0.92f, 1.0f)); // CORNFLOWER blue
+	//colors.push_back(glm::vec4(0.62f, 0.38f, 0.63f, 1.0f)); // purp
 	colors.push_back(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)); // black
+colors.push_back(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)); // black
+
 
 	float aspect;
 	int width, height;
@@ -35,6 +37,8 @@ TestApplication::TestApplication(GLFWwindow* window) : window(window)
 	// These align with the 'layout' keywords in the shader.
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+
 
 }
 
@@ -58,9 +62,18 @@ void TestApplication::Update(float delta)
 	// Draw triangle
 	glBindBuffer(GL_ARRAY_BUFFER, bufferID);
 
-	// again, these align with the layout keyword in the shader
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(sizeof(float) * 3));
+	// glVertexAttribPointer - These align with the layout keyword in the shader
+	// index, size, type, normalised, stride, location
+	// index is the layout location in shader
+	// size is how many units to read
+	// type is the unit to read
+	// normalised is: - something to do with matrix row column stuff.
+	// stride is how far along to read everything for this vert?
+	// location is the point within the stride for this particular attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 9, 0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 9, (void*)(sizeof(float) * 3));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 9, (void*)(sizeof(float) * 6));
+
 
 	// Move the cube by an offset
 	glm::mat4 translation = glm::translate(glm::mat4(1), glm::vec3(1, 0, 0));
@@ -73,6 +86,8 @@ void TestApplication::Update(float delta)
 
 	shader->Bind();
 	shader->SetMatrixUniform("transformMatrix", transform);
+	shader->SetMatrixUniform("mMatrix", rotation);
+	shader->SetVectorUniform("lightDirection", glm::normalize(glm::vec3(0, -1, 0)));
 
 	// type, start, number of verticies
 	glDrawArrays(GL_TRIANGLES, 0, sizeof(someFloats) / sizeof(float) * 3);
@@ -80,6 +95,7 @@ void TestApplication::Update(float delta)
 	//round 2 with different translation
 	translation = glm::translate(glm::mat4(1), glm::vec3(-1, 0, 0));
 	rotation = glm::rotate(glm::mat4(1), (float)glfwGetTime() * 0.2f, glm::normalize(glm::vec3(-0.5f, -1, -1)));
+	shader->SetMatrixUniform("mMatrix", rotation);
 	transform = camera->GetMatrix() * translation * rotation;
 	shader->SetMatrixUniform("transformMatrix", transform);
 	glDrawArrays(GL_TRIANGLES, 0, sizeof(someFloats) / sizeof(float) * 3);

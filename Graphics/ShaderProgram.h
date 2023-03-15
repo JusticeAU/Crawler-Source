@@ -15,5 +15,6 @@ public:
 	void LoadFromFiles(std::string vertFilename, std::string fragFilename);
 	void Bind();
 	void SetFloatUniform(std::string variableName, float value);
+	void SetVectorUniform(std::string variableName, glm::vec3 value);
 	void SetMatrixUniform(std::string variableName, glm::mat4 value);
 };
