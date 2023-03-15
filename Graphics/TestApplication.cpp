@@ -10,6 +10,15 @@ TestApplication::TestApplication(GLFWwindow* window) : window(window)
 	colors.push_back(glm::vec4(0.39, 0.58f, 0.92f, 1.0f)); // CORNFLOWER blue
 	colors.push_back(glm::vec4(0.62f, 0.38f, 0.63f, 1.0f)); // purp
 	colors.push_back(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)); // black
+
+	float aspect;
+	int width, height;
+	glfwGetWindowSize(window, &width, &height);
+	aspect = width / (float)height;
+
+	camera = new Camera(aspect);
+	
+	
 	shader = new ShaderProgram();
 	shader->LoadFromFiles("shaders\\passthrough.VERT", "shaders\\passthrough.FRAG");
 
@@ -53,35 +62,38 @@ void TestApplication::Update(float delta)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(sizeof(float) * 3));
 
-	// Create a position?
+	// Move the cube by an offset
 	glm::mat4 translation = glm::translate(glm::mat4(1), glm::vec3(1, 0, 0));
 
-	// Create rotation matrix
+	// Rotate the cube
 	glm::mat4 rotation = glm::rotate(glm::mat4(1), (float)glfwGetTime() * 0.2f, glm::normalize(glm::vec3(0.5f,1,1)));
-	
-	// Create view and projection matrix
-	glm::mat4 view = glm::lookAt(glm::vec3(sin(glfwGetTime() * 0.5f) * 3, 0, cos(glfwGetTime() * 0.5f) * 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-	float aspect;
-	int width, height;
-	glfwGetWindowSize(window, &width, &height);
-	aspect = width / (float)height;
-	glm::mat4 projection = glm::perspective((float)3.14159 / 4, aspect, .1f, 100.0f);
-	glm::mat4 transform = projection * view * translation * rotation;
+
+	// Combine the matricies
+	glm::mat4 transform = camera->GetMatrix() * translation * rotation;
 
 	shader->Bind();
-	//shader->SetFloatUniform("something", sin(glfwGetTime()));
 	shader->SetMatrixUniform("transformMatrix", transform);
 
 	// type, start, number of verticies
 	glDrawArrays(GL_TRIANGLES, 0, sizeof(someFloats) / sizeof(float) * 3);
 
-
 	//round 2 with different translation
 	translation = glm::translate(glm::mat4(1), glm::vec3(-1, 0, 0));
 	rotation = glm::rotate(glm::mat4(1), (float)glfwGetTime() * 0.2f, glm::normalize(glm::vec3(-0.5f, -1, -1)));
-	transform = projection * view * translation * rotation;
+	transform = camera->GetMatrix() * translation * rotation;
 	shader->SetMatrixUniform("transformMatrix", transform);
 	glDrawArrays(GL_TRIANGLES, 0, sizeof(someFloats) / sizeof(float) * 3);
+
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+		camera->Move({ 0.05f, 0.0f, 0.0f });
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+		camera->Move({ -0.05f, 0.0f, 0.0f });
+
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		camera->Move({ 0.0f, 0.0f, 0.05f });
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		camera->Move({ 0.0f, 0.0f, -0.05f });
+
 
 
 }

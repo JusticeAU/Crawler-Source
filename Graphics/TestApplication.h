@@ -3,6 +3,7 @@
 #include "glm.hpp"
 #include <vector>
 #include "ShaderProgram.h"
+#include "Camera.h"
 
 class TestApplication : public Application
 {
@@ -66,4 +67,6 @@ protected:
 		0.5, 0.5, -0.5,    0, 1, 1,
 		0.5, 0.5, 0.5,    0, 1, 1,
 	};
+
+	Camera* camera;
 };

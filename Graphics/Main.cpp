@@ -60,13 +60,13 @@ int main(void)
 		float deltaTime = newTime - currentTime;
 		currentTime = newTime;
 
-		// Clear the screen - eventually do rendering here
+		// Clear the screen buffer and the depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		// Update my application here.
 		app->Update(deltaTime);
 
-		// Swap the buggers - this means the frame is over!
+		// Swap the 'working' buffer to the 'live' buffer - this means the frame is over!
 		glfwSwapBuffers(window);
 
 		// Tell GLFW to check if anything is going on with input
