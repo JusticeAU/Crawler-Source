@@ -61,6 +61,12 @@
     <ClCompile Include="..\imgui\imgui_impl_opengl3.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -119,6 +125,12 @@
     </ClInclude>
     <ClInclude Include="..\imgui\imgui_impl_opengl3_loader.h">
       <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Source Files\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Source Files\Application</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

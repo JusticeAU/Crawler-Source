@@ -9,6 +9,8 @@ public:
 	void Rotate(glm::vec3 delta);
 	glm::mat4 GetMatrix();
 
+	static Camera* s_instance;
+
 protected:
 	glm::vec3 position;
 	glm::vec3 rotation;

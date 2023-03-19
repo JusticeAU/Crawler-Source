@@ -17,26 +17,9 @@ TestApplication::TestApplication(GLFWwindow* window) : window(window)
 	aspect = width / (float)height;
 
 	camera = new Camera(aspect);
-	
-	
-	shader = new ShaderProgram();
-	shader->LoadFromFiles("shaders\\passthrough.VERT", "shaders\\passthrough.FRAG");
 
-	// Open GL Init
-	glGenBuffers(1, &bufferID);
-
-	// Enable depth testing (Also need ot make sure we are clearing depth values when calling screen clear)
-	glEnable(GL_DEPTH_TEST);
-
-	glBindBuffer(GL_ARRAY_BUFFER, bufferID);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(someFloats), someFloats, GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	// These align with the 'layout' keywords in the shader.
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glEnableVertexAttribArray(2);
-
+	scene.objects.push_back(new Object());
+	scene.objects.push_back(new Object());
 
 }
 
@@ -57,47 +40,6 @@ void TestApplication::Update(float delta)
 		MathUtils::Lerp(colors[colorIndex].b, colors[nextColor].b, glm::min(t, 1.0f)),
 		1);
 
-	// Draw triangle
-	glBindBuffer(GL_ARRAY_BUFFER, bufferID);
-
-	// glVertexAttribPointer - These align with the layout keyword in the shader
-	// index, size, type, normalised, stride, location
-	// index is the layout location in shader
-	// size is how many units to read
-	// type is the unit to read
-	// normalised is: - something to do with matrix row column stuff.
-	// stride is how far along to read everything for this vert?
-	// location is the point within the stride for this particular attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 9, 0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 9, (void*)(sizeof(float) * 3));
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 9, (void*)(sizeof(float) * 6));
-
-
-	// Move the cube by an offset
-	glm::mat4 translation = glm::translate(glm::mat4(1), glm::vec3(1, 0, 0));
-
-	// Rotate the cube
-	glm::mat4 rotation = glm::rotate(glm::mat4(1), (float)glfwGetTime() * 0.2f, glm::normalize(glm::vec3(0.5f,1,1)));
-
-	// Combine the matricies
-	glm::mat4 transform = camera->GetMatrix() * translation * rotation;
-
-	shader->Bind();
-	shader->SetMatrixUniform("transformMatrix", transform);
-	shader->SetMatrixUniform("mMatrix", rotation);
-	shader->SetVectorUniform("lightDirection", glm::normalize(glm::vec3(0, -1, 0)));
-
-	// type, start, number of verticies
-	glDrawArrays(GL_TRIANGLES, 0, sizeof(someFloats) / sizeof(float) * 3);
-
-	//round 2 with different translation
-	translation = glm::translate(glm::mat4(1), glm::vec3(-1, 0, 0));
-	rotation = glm::rotate(glm::mat4(1), (float)glfwGetTime() * 0.2f, glm::normalize(glm::vec3(-0.5f, -1, -1)));
-	shader->SetMatrixUniform("mMatrix", rotation);
-	transform = camera->GetMatrix() * translation * rotation;
-	shader->SetMatrixUniform("transformMatrix", transform);
-	glDrawArrays(GL_TRIANGLES, 0, sizeof(someFloats) / sizeof(float) * 3);
-
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
 		camera->Move({ 0.05f, 0.0f, 0.0f });
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
@@ -108,6 +50,9 @@ void TestApplication::Update(float delta)
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		camera->Move({ 0.0f, 0.0f, -0.05f });
 
-
+	scene.Update(delta);
+	scene.DrawObjects();
+	scene.DrawGUI();
+	scene.CleanUp();
 
 }

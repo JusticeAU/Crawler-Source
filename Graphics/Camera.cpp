@@ -9,6 +9,8 @@ Camera::Camera(float aspect)
 	view = glm::translate(glm::mat4(1), position);
 	projection = glm::perspective((float)3.14159 / 4, aspect, .1f, 100.0f);
 	matrix = projection * view;
+
+	s_instance = this;
 }
 
 void Camera::Move(glm::vec3 delta)
@@ -26,3 +28,5 @@ void Camera::Rotate(glm::vec3 delta)
 }
 
 glm::mat4 Camera::GetMatrix() { return matrix; }
+
+Camera* Camera::s_instance = nullptr;
