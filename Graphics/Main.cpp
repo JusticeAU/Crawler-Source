@@ -46,6 +46,12 @@ int main(void)
 	else
 		std::cout << "Sucessfully loaded GLAD OpenGL Functions." << std::endl;
 
+	// Initialise ImGui
+	ImGui::CreateContext();
+	ImGui::StyleColorsDark();
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init();
+
 	
 	// Construct my actual application
 	std::cout << "Constructing Application." << std::endl;
@@ -60,11 +66,20 @@ int main(void)
 		float deltaTime = newTime - currentTime;
 		currentTime = newTime;
 
+		// Refresh ImGui
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
 		// Clear the screen buffer and the depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		// Update my application here.
 		app->Update(deltaTime);
+
+		// Render Imgui
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		// Swap the 'working' buffer to the 'live' buffer - this means the frame is over!
 		glfwSwapBuffers(window);
@@ -73,6 +88,11 @@ int main(void)
 		glfwPollEvents();
 		float currentTime = glfwGetTime();
 	}
+
+	// Cleanup ImGui
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 
 	// If we get here the window has closed, perform clean up.
 	glfwTerminate();

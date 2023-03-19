@@ -4,13 +4,11 @@
 
 TestApplication::TestApplication(GLFWwindow* window) : window(window)
 {
-	//colors.push_back(glm::vec4(0.45f, 0.92f, 0.57f, 1.0f)); // green
-	//colors.push_back(glm::vec4(0.10f, 0.17f, 0.47f, 1.0f)); // dark blue
-	//colors.push_back(glm::vec4(0.9f, 0.63f, 0.42f, 1.0f)); // orange
-	//colors.push_back(glm::vec4(0.39, 0.58f, 0.92f, 1.0f)); // CORNFLOWER blue
-	//colors.push_back(glm::vec4(0.62f, 0.38f, 0.63f, 1.0f)); // purp
-	colors.push_back(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)); // black
-colors.push_back(glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)); // black
+	colors.push_back(glm::vec4(0.45f, 0.92f, 0.57f, 1.0f)); // green
+	colors.push_back(glm::vec4(0.10f, 0.17f, 0.47f, 1.0f)); // dark blue
+	colors.push_back(glm::vec4(0.9f, 0.63f, 0.42f, 1.0f)); // orange
+	colors.push_back(glm::vec4(0.39, 0.58f, 0.92f, 1.0f)); // CORNFLOWER blue
+	colors.push_back(glm::vec4(0.62f, 0.38f, 0.63f, 1.0f)); // purp
 
 
 	float aspect;
