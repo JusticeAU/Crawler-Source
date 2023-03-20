@@ -10,6 +10,8 @@ using std::to_string;
 class Scene
 {
 public:
+	Scene();
+	vec3 clearColour;
 	vector<Object*> objects;
 	void Update(float deltaTime);
 	void DrawObjects();

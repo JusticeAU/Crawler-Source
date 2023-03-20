@@ -1,9 +1,8 @@
 #include "Camera.h"
 
-Camera::Camera(float aspect)
+Camera::Camera(float aspect, GLFWwindow* window)
 {
 	position = { 0, 0, -10 };
-	rotation = { 0,0,0 };
 	this->aspect = aspect;
 
 	view = glm::translate(glm::mat4(1), position);
@@ -11,22 +10,79 @@ Camera::Camera(float aspect)
 	matrix = projection * view;
 
 	s_instance = this;
+	this->window = window;
+
+	UpdateMatrix();
+}
+
+void Camera::Update(float delta)
+{
+	ImGui::Begin("Camera");
+	ImGui::SliderFloat("Move Speed", &moveSpeed, 0.1f, 5.0f);
+	ImGui::SliderFloat("Look Speed", &lookSpeed, 0.01f, 1.0f);
+	ImGui::BeginDisabled();
+	ImGui::InputFloat3("Forward", &forward[0]);
+	ImGui::InputFloat3("Right", &right[0]);
+	ImGui::InputFloat3("Up", &up[0]);
+
+	ImGui::EndDisabled();
+
+	ImGui::DragFloat2("Angle", &m_horizontal);
+
+	ImGui::End();
+
+	if (glfwGetMouseButton(window, 1))
+	{
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+		// Update camera rotation
+		vec2 mouseDelta = Input::GetMouseDelta();
+		m_horizontal += lookSpeed * mouseDelta.x;
+		m_vertical -= lookSpeed * mouseDelta.y;
+		// clamp to avoid gimbal lock
+		m_vertical = glm::clamp(m_vertical, -80.0f, 80.0f);
+
+		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+			Move(-right * moveSpeed * delta);
+		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+			Move(right * moveSpeed * delta);
+
+		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+			Move(forward * moveSpeed * delta);
+		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+			Move(-forward * moveSpeed * delta);
+
+		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+			Move(up * moveSpeed * delta);
+		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+			Move(-up * moveSpeed * delta);
+
+		UpdateMatrix();
+	}
+	else
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
 void Camera::Move(glm::vec3 delta)
 {
 	position += delta;
-	view = glm::translate(glm::mat4(1), position);
-	projection = glm::perspective((float)3.14159 / 4, aspect, .1f, 100.0f);
-	matrix = projection * view;
-}
-
-void Camera::Rotate(glm::vec3 delta)
-{
-	rotation += delta;
-	view = glm::translate(glm::mat4(1), position);
 }
 
 glm::mat4 Camera::GetMatrix() { return matrix; }
+
+void Camera::UpdateMatrix()
+{
+	float thetaR = glm::radians(m_horizontal);
+	float phiR = glm::radians(m_vertical);
+
+	//calculate the forward, right and up axis for the camera
+	forward = { cos(phiR) * cos(thetaR), sin(phiR), cos(phiR) * sin(thetaR) };
+	right = { -sin(thetaR), 0, cos(thetaR) };
+	up = { cos(thetaR) * -sin(phiR) , cos(phiR), -sin(phiR) * sin(thetaR)};
+
+	view = glm::lookAt(position, position + forward, glm::vec3(0, 1, 0));
+	projection = glm::perspective((float)3.14159 / 4, aspect, .1f, 100.0f);
+	matrix = projection * view;
+}
 
 Camera* Camera::s_instance = nullptr;

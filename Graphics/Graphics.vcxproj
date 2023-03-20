@@ -144,6 +144,7 @@
     <ClCompile Include="..\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="Input.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Object.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="FileUtils.h" />
     <ClInclude Include="glad.h" />
     <ClInclude Include="Graphics.h" />
+    <ClInclude Include="Input.h" />
     <ClInclude Include="LogUtils.h" />
     <ClInclude Include="MathUtils.h" />
     <ClInclude Include="khrplatform.h" />

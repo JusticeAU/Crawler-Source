@@ -60,6 +60,7 @@ int main(void)
 	std::cout << "Starting Main Loop." << std::endl;
 
 	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.15f, 0.15f, 0.15f, 1);
 	
 	// Main Application "Loop"
 	float currentTime = glfwGetTime();
