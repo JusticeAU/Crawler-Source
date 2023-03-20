@@ -58,6 +58,9 @@ int main(void)
 	Application* app = new TestApplication(window);
 	
 	std::cout << "Starting Main Loop." << std::endl;
+
+	glEnable(GL_DEPTH_TEST);
+	
 	// Main Application "Loop"
 	float currentTime = glfwGetTime();
 	while (!glfwWindowShouldClose(window))

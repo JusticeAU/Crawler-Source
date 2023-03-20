@@ -23,6 +23,9 @@
     <Filter Include="ImGui">
       <UniqueIdentifier>{e39bd73c-8c32-4ef0-a339-716910547d42}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Graphics\Shaders">
+      <UniqueIdentifier>{19bd3285-d89e-4056-ae22-3d81b9b1509b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -65,6 +68,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -132,5 +138,16 @@
     <ClInclude Include="Object.h">
       <Filter>Source Files\Application</Filter>
     </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Source Files\Graphics</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\working\shaders\passthrough.FRAG">
+      <Filter>Source Files\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\passthrough.VERT">
+      <Filter>Source Files\Graphics\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

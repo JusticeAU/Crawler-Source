@@ -145,6 +145,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
@@ -168,10 +169,15 @@
     <ClInclude Include="LogUtils.h" />
     <ClInclude Include="MathUtils.h" />
     <ClInclude Include="khrplatform.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="ShaderProgram.h" />
     <ClInclude Include="TestApplication.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\working\shaders\passthrough.FRAG" />
+    <None Include="..\working\shaders\passthrough.VERT" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,4 +1,5 @@
 #pragma once
+#include "Mesh.h"
 #include "Graphics.h"
 #include <string>
 
@@ -17,10 +18,12 @@ public:
 	unsigned int id;
 
 	ShaderProgram* shader;
-	GLuint bufferID;
+	//GLuint bufferID;
+
+	Mesh* mesh;
 
 	// Unit Cube
-	float someFloats[324]
+	/*float someFloats[324]
 	{
 		-0.5, -0.5, -0.5,   0, 0, 1,  0,0,-1,
 		-0.5, 0.5, -0.5,    0, 0, 1,  0,0,-1,
@@ -65,7 +68,7 @@ public:
 		0.5, -0.5, 0.5,    0, 1, 1,		1,0,0,
 		0.5, 0.5, -0.5,    0, 1, 1,		1,0,0,
 		0.5, 0.5, 0.5,    0, 1, 1,		1,0,0
-	};
+	};*/
 
 	void Update(float delta);
 	void Draw();
