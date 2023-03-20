@@ -8,6 +8,8 @@ Scene::Scene()
 void Scene::Update(float deltaTime)
 {
 	// Do stuff
+	for (auto o : objects)
+		o->Update(deltaTime);
 }
 
 void Scene::DrawObjects()
@@ -28,19 +30,7 @@ void Scene::DrawGUI()
 
 	for (auto o : objects)
 	{
-		string id = to_string(o->id);
-		if (ImGui::CollapsingHeader(id.c_str()))
-		{
-			string position = "Pos##" + to_string(o->id);
-			ImGui::DragFloat3(position.c_str(), &o->position[0]);
-			
-			string rotation = "Rot##" + to_string(o->id);
-			ImGui::SliderFloat3(rotation.c_str(), &o->rotation[0],-180,180);
-
-			string deleteStr = "Delete##" + to_string(o->id);
-			if (ImGui::Button(deleteStr.c_str()))
-				o->markedForDeletion = true;
-		}
+		o->DrawGUI();
 	}
 	ImGui::End();
 }
