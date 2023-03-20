@@ -23,7 +23,7 @@ void Object::Update(float delta)
 {
 	// Move the cube by an offset
 	if(parent)
-		translationMat = glm::translate(glm::mat4(1), localPosition + parent->localPosition);
+		translationMat = glm::translate(glm::mat4(1), localPosition) * parent->translationMat;
 	else
 		translationMat = glm::translate(glm::mat4(1), localPosition);
 
