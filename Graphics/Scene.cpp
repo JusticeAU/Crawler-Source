@@ -23,7 +23,11 @@ void Scene::DrawGUI()
 		if (ImGui::CollapsingHeader(id.c_str()))
 		{
 			string position = "Pos##" + to_string(o->id);
-			ImGui::DragFloat3(position.c_str() , &o->position[0]);
+			ImGui::DragFloat3(position.c_str(), &o->position[0]);
+			
+			string rotation = "Rot##" + to_string(o->id);
+			ImGui::SliderFloat3(rotation.c_str(), &o->rotation[0],-180,180);
+
 			string deleteStr = "Delete##" + to_string(o->id);
 			if (ImGui::Button(deleteStr.c_str()))
 				o->markedForDeletion = true;

@@ -8,6 +8,7 @@ Object::Object()
 {
 	id = rand();
 	position = { 0,0,0 };
+	rotation = { 0,0,0 };
 
 	shader = new ShaderProgram();
 	shader->LoadFromFiles("shaders\\passthrough.VERT", "shaders\\passthrough.FRAG");
@@ -23,17 +24,19 @@ void Object::Update(float delta)
 void Object::Draw()
 {
 	// Move the cube by an offset
-	glm::mat4 translation = glm::translate(glm::mat4(1), position);
+	glm::mat4 translationMat = glm::translate(glm::mat4(1), position);
 
 	// Rotate the cube
-	glm::mat4 rotation = glm::rotate(glm::mat4(1), (float)glfwGetTime() * 0.2f, glm::normalize(glm::vec3(0.5f, 1, 1)));
+	glm::mat4 rotationMat = glm::rotate(glm::mat4(1), glm::radians(rotation.x), glm::vec3{1,0,0}) *
+		glm::rotate(glm::mat4(1), glm::radians(rotation.y), glm::vec3{ 0,1,0 })*
+		glm::rotate(glm::mat4(1), glm::radians(rotation.z), glm::vec3{ 0,0,1 });
 
 	// Combine the matricies
-	glm::mat4 transform = Camera::s_instance->GetMatrix() * translation * rotation;
+	glm::mat4 transform = Camera::s_instance->GetMatrix() * translationMat * rotationMat;
 
 	shader->Bind();
 	shader->SetMatrixUniform("transformMatrix", transform);
-	shader->SetMatrixUniform("mMatrix", rotation);
+	shader->SetMatrixUniform("mMatrix", rotationMat);
 	shader->SetVectorUniform("lightDirection", glm::normalize(glm::vec3(0, -1, 0)));
 
 

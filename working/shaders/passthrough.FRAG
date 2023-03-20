@@ -11,6 +11,6 @@ uniform vec3 lightDirection;
 void main()
 {
 	float lightValue = clamp(dot(-lightDirection, _Normal), 0.0, 1.0);
-	lightValue += 0.1f;
-	FragColour = vec4(_Colour, 1);
+	lightValue += 0.3f;
+	FragColour = vec4(_Colour * lightValue, 1);
 }

@@ -14,8 +14,8 @@ public:
 	struct Vertex
 	{
 		vec3 position;
-		vec3 normal;
 		vec3 colour;
+		vec3 normal;
 		vec2 uv;
 	};
 	void Initialise(unsigned int vertCount, const Vertex* vertices, unsigned int indexCount = 0, unsigned int* indices = nullptr);
