@@ -12,7 +12,8 @@ TestApplication::TestApplication(GLFWwindow* window) : window(window)
 	camera = new Camera(aspect,  window);
 	input = new Input(window);
 	
-	scene.objects.push_back(new Object());
+	//scene.objects.push_back(new Object());
+	Scene::CreateObject();
 }
 
 void TestApplication::Update(float delta)

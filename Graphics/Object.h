@@ -12,24 +12,28 @@ class ShaderProgram;
 class Object
 {
 public:
-	Object();
+	Object(int objectID);
+	
+	unsigned int id;
+	
 	Object* parent = nullptr;;
 	vector<Object*> children;
 	
 	vec3 localPosition;
-	vec3 worldPosition;
-	mat4 translationMat;
 	vec3 localRotation;
-	mat4 rotationMat;
+	vec3 localScale;
+	mat4 transform;
+	
 	bool markedForDeletion = false;
-	unsigned int id;
 
 	ShaderProgram* shader;
-
 	Mesh* mesh;
 
 	void Update(float delta);
 	void Draw();
 	void DrawGUI();
+	
 	void AddChild(Object* child);
+	void CleanUpChildren();
+	void DeleteAllChildren();
 };
