@@ -1,0 +1,9 @@
+libdir=C:/Users/drmik/Documents/AIE/ComputerGraphics/Subject Materials/Completed C++ Tutorial/Graphics2023/dep/assimp/out/install/x64-Release/lib
+includedir=C:/Users/drmik/Documents/AIE/ComputerGraphics/Subject Materials/Completed C++ Tutorial/Graphics2023/dep/assimp/out/install/x64-Release/include
+
+Name: Assimp
+Description: Import various well-known 3D model formats in an uniform manner.
+Version: 5.2.5
+Libs: -L${libdir} -lassimp
+Libs.private:  
+Cflags: -I${includedir}

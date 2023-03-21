@@ -1,0 +1,89 @@
+The system is: Windows - 10.0.19045 - AMD64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.31.31103/bin/Hostx64/x64/cl.exe 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+Microsoft (R) C/C++ Optimizing Compiler Version 19.31.31104 for x64
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+CMakeCCompilerId.c
+Microsoft (R) Incremental Linker Version 14.31.31104.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+/out:CMakeCCompilerId.exe 
+CMakeCCompilerId.obj 
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.exe"
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.obj"
+
+The C compiler identification is MSVC, found in "C:/Users/drmik/Documents/AIE/ComputerGraphics/Subject Materials/Completed C++ Tutorial/Graphics2023/dep/assimp/out/build/x64-Release/CMakeFiles/3.22.22022201-MSVC_2/CompilerIdC/CMakeCCompilerId.exe"
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.31.31103/bin/Hostx64/x64/cl.exe 
+Build flags: 
+Id flags:  
+
+The output was:
+0
+Microsoft (R) C/C++ Optimizing Compiler Version 19.31.31104 for x64
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+CMakeCXXCompilerId.cpp
+Microsoft (R) Incremental Linker Version 14.31.31104.0
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+/out:CMakeCXXCompilerId.exe 
+CMakeCXXCompilerId.obj 
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.exe"
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.obj"
+
+The CXX compiler identification is MSVC, found in "C:/Users/drmik/Documents/AIE/ComputerGraphics/Subject Materials/Completed C++ Tutorial/Graphics2023/dep/assimp/out/build/x64-Release/CMakeFiles/3.22.22022201-MSVC_2/CompilerIdCXX/CMakeCXXCompilerId.exe"
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: C:/Users/drmik/Documents/AIE/ComputerGraphics/Subject Materials/Completed C++ Tutorial/Graphics2023/dep/assimp/out/build/x64-Release/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_956ff && [1/2] Building C object CMakeFiles\cmTC_956ff.dir\CMakeCCompilerABI.c.obj
+[2/2] Linking C executable cmTC_956ff.exe
+
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: C:/Users/drmik/Documents/AIE/ComputerGraphics/Subject Materials/Completed C++ Tutorial/Graphics2023/dep/assimp/out/build/x64-Release/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_96edf && [1/2] Building CXX object CMakeFiles\cmTC_96edf.dir\CMakeCXXCompilerABI.cpp.obj
+[2/2] Linking CXX executable cmTC_96edf.exe
+
+
+
+Determining if the include file sys/types.h exists passed with the following output:
+Change Dir: C:/Users/drmik/Documents/AIE/ComputerGraphics/Subject Materials/Completed C++ Tutorial/Graphics2023/dep/assimp/out/build/x64-Release/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_a5c92 && [1/2] Building C object CMakeFiles\cmTC_a5c92.dir\CheckIncludeFile.c.obj
+[2/2] Linking C executable cmTC_a5c92.exe
+
+
+
+Determining if the include file stdint.h exists passed with the following output:
+Change Dir: C:/Users/drmik/Documents/AIE/ComputerGraphics/Subject Materials/Completed C++ Tutorial/Graphics2023/dep/assimp/out/build/x64-Release/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_336cc && [1/2] Building C object CMakeFiles\cmTC_336cc.dir\CheckIncludeFile.c.obj
+[2/2] Linking C executable cmTC_336cc.exe
+
+
+
+Determining if the include file stddef.h exists passed with the following output:
+Change Dir: C:/Users/drmik/Documents/AIE/ComputerGraphics/Subject Materials/Completed C++ Tutorial/Graphics2023/dep/assimp/out/build/x64-Release/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:/Program Files/Microsoft Visual Studio/2022/Community/Common7/IDE/CommonExtensions/Microsoft/CMake/Ninja/ninja.exe cmTC_9e709 && [1/2] Building C object CMakeFiles\cmTC_9e709.dir\CheckIncludeFile.c.obj
+[2/2] Linking C executable cmTC_9e709.exe
+
+
+

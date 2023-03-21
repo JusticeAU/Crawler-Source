@@ -28,6 +28,7 @@ public:
 
 	ShaderProgram* shader;
 	Mesh* mesh;
+	char meshName[128] = "cube";
 
 	void Update(float delta);
 	void Draw();

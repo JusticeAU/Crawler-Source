@@ -1,0 +1,9 @@
+libdir=C:/Users/drmik/Documents/AIE/OpenGL/_downloads/assimp-master/out/install/x64-Debug/lib
+includedir=C:/Users/drmik/Documents/AIE/OpenGL/_downloads/assimp-master/out/install/x64-Debug/include
+
+Name: Assimp
+Description: Import various well-known 3D model formats in an uniform manner.
+Version: 5.2.5
+Libs: -L${libdir} -lassimp
+Libs.private:  
+Cflags: -I${includedir}

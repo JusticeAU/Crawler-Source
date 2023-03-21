@@ -22,7 +22,7 @@ int main(void)
 
 	// Set resolution and window name.
 	std::cout << "Creating GLFW Window." << std::endl;
-	window = glfwCreateWindow(1280, 720, "Graffix", nullptr, nullptr);
+	window = glfwCreateWindow(1600, 900, "Graffix", nullptr, nullptr);
 	if (!window)
 	{
 		std::cout << "Failed to create GLFW Window. Exiting." << std::endl;

@@ -1,11 +1,16 @@
 #include "MeshManager.h"
 #include "Graphics.h"
+#include "assimp/scene.h"
+#include "assimp/cimport.h"
+
+using std::vector;
 
 MeshManager::MeshManager()
 {
     s_instance = this;
     CreateCube();
 	CreateQuad();
+	LoadFromFile("models/buck/buck.fbx");
 }
 
 Mesh* MeshManager::GetMesh(string name)
@@ -34,6 +39,17 @@ void MeshManager::DrawGUI()
 	}
 	ImGui::EndDisabled();
 	ImGui::End();
+}
+
+std::vector<const char*>* MeshManager::GetMeshNames()
+{
+	std::vector<const char*>* names = new std::vector<const char*>();
+	for (int i = 0; i < s_instance->meshes.size(); i++)
+	{
+		names->push_back(std::to_string(i).c_str());
+	}
+	
+	return names;
 }
 
 void MeshManager::CreateCube()
@@ -223,6 +239,64 @@ void MeshManager::CreateQuad()
 
 	quad->Initialise(4, vertices, 6, indices);
 	meshes.emplace("quad", quad);
+}
+
+void MeshManager::LoadFromFile(const char* filename)
+{
+	// read all verticies from the model
+	const aiScene* scene = aiImportFile(filename, 0);
+
+	// Just use the first mesh for now.
+	aiMesh* mesh = scene->mMeshes[0];
+
+	// Extract indicies from first mesh
+	int numFaces = mesh->mNumFaces;
+	vector<unsigned int> indices;
+
+	for (int i = 0; i < numFaces; i++)
+	{
+		indices.push_back(mesh->mFaces[i].mIndices[0]);
+		indices.push_back(mesh->mFaces[i].mIndices[2]);
+		indices.push_back(mesh->mFaces[i].mIndices[1]);
+
+		// generate a second tri for quads
+
+		if (mesh->mFaces[i].mNumIndices == 4)
+		{
+			indices.push_back(mesh->mFaces[i].mIndices[0]);
+			indices.push_back(mesh->mFaces[i].mIndices[3]);
+			indices.push_back(mesh->mFaces[i].mIndices[2]);
+		}
+	}
+
+	// Extract vertex data
+	int numV = mesh->mNumVertices;
+	Mesh::Vertex* vertices = new Mesh::Vertex[numV];
+	for (int i = 0; i < numV; i++)
+	{
+		vertices[i].position = vec3(
+			mesh->mVertices[i].x,
+			mesh->mVertices[i].y,
+			mesh->mVertices[i].z);
+		vertices[i].normal = vec3(
+			mesh->mNormals[i].x,
+			mesh->mNormals[i].y,
+			mesh->mNormals[i].z);
+		if (mesh->mTextureCoords[0])
+		{
+			vertices[i].uv = vec2(
+				mesh->mTextureCoords[0][i].x,
+				mesh->mTextureCoords[0][i].y);
+		}
+		else
+			vertices[i].uv = glm::vec2(0);
+	}
+
+	Mesh* loadedMesh = new Mesh();
+	loadedMesh->Initialise(numV, vertices, indices.size(), indices.data());
+	delete[] vertices;
+
+	meshes.emplace(filename, loadedMesh);
 }
 
 MeshManager* MeshManager::s_instance = nullptr;

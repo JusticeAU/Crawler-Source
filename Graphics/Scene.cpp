@@ -30,7 +30,7 @@ void Scene::DrawObjects()
 void Scene::DrawGUI()
 {
 	ImGui::Begin("Scene");
-	
+
 	if (ImGui::SliderFloat3("Clear Colour", &clearColour[0], 0, 1,"%.2f", ImGuiSliderFlags_AlwaysClamp));
 		glClearColor(clearColour.x, clearColour.y, clearColour.z, 1);
 
@@ -38,9 +38,8 @@ void Scene::DrawGUI()
 		Scene::CreateObject();
 
 	for (auto o : objects)
-	{
 		o->DrawGUI();
-	}
+
 	ImGui::End();
 }
 

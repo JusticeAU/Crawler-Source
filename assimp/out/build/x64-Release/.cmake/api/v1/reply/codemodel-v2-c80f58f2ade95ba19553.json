@@ -1,0 +1,180 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-RelWithDebInfo-2edcb2ec3e086e9caf55.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						2
+					]
+				},
+				{
+					"build" : "contrib/zlib",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-contrib.zlib-RelWithDebInfo-756ecc0ee020dacaabdd.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "contrib/zlib",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "code",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-code-RelWithDebInfo-ad32c406f9cbd6eca4d9.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "code",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "test",
+					"childIndexes" : 
+					[
+						4
+					],
+					"jsonFile" : "directory-test-RelWithDebInfo-f18be1977b403cfd1a50.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "test",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "test/headercheck",
+					"jsonFile" : "directory-test.headercheck-RelWithDebInfo-5932dbc0c669dcc7095c.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.10"
+					},
+					"parentIndex" : 3,
+					"projectIndex" : 0,
+					"source" : "test/headercheck"
+				}
+			],
+			"name" : "RelWithDebInfo",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1
+					],
+					"directoryIndexes" : 
+					[
+						0,
+						2,
+						3,
+						4
+					],
+					"name" : "Assimp",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						1
+					],
+					"name" : "zlib",
+					"parentIndex" : 0,
+					"targetIndexes" : 
+					[
+						4
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "UpdateAssimpLibsDebugSymbolsAndDLLs::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-UpdateAssimpLibsDebugSymbolsAndDLLs-RelWithDebInfo-2b5665914faac5cb7285.json",
+					"name" : "UpdateAssimpLibsDebugSymbolsAndDLLs",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "assimp::@1c76e98fcac0e60aa45c",
+					"jsonFile" : "target-assimp-RelWithDebInfo-71157ea770da46302832.json",
+					"name" : "assimp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-RelWithDebInfo-ec0b3bd8099d982d1994.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "unit::@36f028580bb02cc8272a",
+					"jsonFile" : "target-unit-RelWithDebInfo-31846cd5d8475d2de8c3.json",
+					"name" : "unit",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "zlibstatic::@de27f3809863e2bb7c79",
+					"jsonFile" : "target-zlibstatic-RelWithDebInfo-c4fe173883c41ac2c4df.json",
+					"name" : "zlibstatic",
+					"projectIndex" : 1
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "C:/Users/drmik/Documents/AIE/ComputerGraphics/Subject Materials/Completed C++ Tutorial/Graphics2023/dep/assimp/out/build/x64-Release",
+		"source" : "C:/Users/drmik/Documents/AIE/ComputerGraphics/Subject Materials/Completed C++ Tutorial/Graphics2023/dep/assimp"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

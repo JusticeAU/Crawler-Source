@@ -19,7 +19,7 @@ Object::Object(int objectID)
 	shader = new ShaderProgram();
 	shader->LoadFromFiles("shaders\\passthrough.VERT", "shaders\\passthrough.FRAG");
 
-	mesh = MeshManager::GetMesh("cube");
+	mesh = MeshManager::GetMesh(meshName);
 }
 
 void Object::Update(float delta)
@@ -88,6 +88,19 @@ void Object::DrawGUI()
 
 		string scaleStr = "Scale##" + to_string(id);
 		ImGui::DragFloat3(scaleStr.c_str(), &localScale[0]);
+
+		string meshNameStr = "Mesh##" + to_string(id);
+		char str0[128];
+		strcpy_s(str0, meshName);
+		if (ImGui::InputText("input text", str0, IM_ARRAYSIZE(str0)))
+		{
+			strcpy_s(meshName, str0);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Load New Mesh"))
+		{
+			mesh = MeshManager::GetMesh(meshName);
+		}
 
 
 		string deleteStr = "Delete##" + to_string(id);
