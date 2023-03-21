@@ -77,42 +77,60 @@ void Object::Draw()
 void Object::DrawGUI()
 {
 	string idStr = to_string(id);
-	if (ImGui::TreeNode(idStr.c_str()))
+	string objectStr = "Object (" + idStr + ")";
+	if (ImGui::TreeNode(objectStr.c_str()))
 	{
-		ImGui::Text("Transform");
-		string positionStr = "Pos##" + to_string(id);
-		ImGui::DragFloat3(positionStr.c_str(), &localPosition[0]);
 
-		string rotationStr = "Rot##" + to_string(id);
-		ImGui::SliderFloat3(rotationStr.c_str(), &localRotation[0], -180, 180);
-
-		string scaleStr = "Scale##" + to_string(id);
-		ImGui::DragFloat3(scaleStr.c_str(), &localScale[0]);
-
-		string meshNameStr = "Mesh##" + to_string(id);
-		char str0[128];
-		strcpy_s(str0, meshName);
-		if (ImGui::InputText("input text", str0, IM_ARRAYSIZE(str0)))
-		{
-			strcpy_s(meshName, str0);
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("Load New Mesh"))
-		{
-			mesh = MeshManager::GetMesh(meshName);
-		}
-
-
-		string deleteStr = "Delete##" + to_string(id);
-		if (ImGui::Button(deleteStr.c_str()))
-			markedForDeletion = true;
-		ImGui::SameLine();
 		string childStr = "AddChild##" + to_string(id);
 		if (ImGui::Button(childStr.c_str()))
 			Object* spawn = Scene::CreateObject(this);
-		ImGui::Text("Children");
-		for (auto c : children)
-			c->DrawGUI();
+
+		ImGui::SameLine();
+		ImGui::AlignTextToFramePadding();
+		string deleteStr = "Delete##" + to_string(id);
+		if (ImGui::Button(deleteStr.c_str()))
+			markedForDeletion = true;
+		
+		
+		if (ImGui::CollapsingHeader("Transform"))
+		{
+			string positionStr = "Pos##" + to_string(id);
+			ImGui::DragFloat3(positionStr.c_str(), &localPosition[0]);
+
+			string rotationStr = "Rot##" + to_string(id);
+			ImGui::SliderFloat3(rotationStr.c_str(), &localRotation[0], -180, 180);
+
+			string scaleStr = "Scale##" + to_string(id);
+			ImGui::DragFloat3(scaleStr.c_str(), &localScale[0]);
+		}
+		
+		if (ImGui::CollapsingHeader("Mesh"))
+		{
+			string meshNameStr = "Mesh##" + to_string(id);
+			char str0[128];
+			strcpy_s(str0, meshName);
+			string loadMeshStr = "Load Mesh##" + to_string(id);
+			if (ImGui::InputText(loadMeshStr.c_str(), str0, IM_ARRAYSIZE(str0)))
+			{
+				strcpy_s(meshName, str0);
+			}
+			
+			if (ImGui::Button("Load New Mesh"))
+			{
+				mesh = MeshManager::GetMesh(meshName);
+			}
+		}
+
+		
+
+		int childCount = children.size();
+		string childrenString = "Children (" + to_string(childCount) + ")##" + to_string(id);
+		if (ImGui::CollapsingHeader(childrenString.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
+		{
+			for (auto c : children)
+				c->DrawGUI();
+		}
+		
 
 		ImGui::TreePop();
 	}
