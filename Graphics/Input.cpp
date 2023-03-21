@@ -10,12 +10,18 @@ Input::Input(GLFWwindow* window)
 
 }
 
+void Input::Init(GLFWwindow* window)
+{
+	if (!s_instance) s_instance = new Input(window);
+}
+
 void Input::Update()
 {
-	m_lastMousePosition = m_mousePosition;
+
+	s_instance->m_lastMousePosition = s_instance->m_mousePosition;
 	double mouseX, mouseY;
-	glfwGetCursorPos(m_window, &mouseX, &mouseY);
-	m_mousePosition = { mouseX, mouseY };
+	glfwGetCursorPos(s_instance->m_window, &mouseX, &mouseY);
+	s_instance->m_mousePosition = { mouseX, mouseY };
 }
 
 Input* Input::s_instance = nullptr;

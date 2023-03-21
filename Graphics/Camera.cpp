@@ -17,20 +17,6 @@ Camera::Camera(float aspect, GLFWwindow* window)
 
 void Camera::Update(float delta)
 {
-	ImGui::Begin("Camera");
-	ImGui::SliderFloat("Move Speed", &moveSpeed, 0.1f, 5.0f);
-	ImGui::SliderFloat("Look Speed", &lookSpeed, 0.01f, 1.0f);
-	ImGui::BeginDisabled();
-	ImGui::InputFloat3("Forward", &forward[0]);
-	ImGui::InputFloat3("Right", &right[0]);
-	ImGui::InputFloat3("Up", &up[0]);
-
-	ImGui::EndDisabled();
-
-	ImGui::DragFloat2("Angle", &m_horizontal);
-
-	ImGui::End();
-
 	if (glfwGetMouseButton(window, 1))
 	{
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -68,6 +54,24 @@ void Camera::Move(glm::vec3 delta)
 	position += delta;
 }
 
+void Camera::DrawGUI()
+{
+	ImGui::Begin("Camera");
+	ImGui::SliderFloat("Move Speed", &moveSpeed, 0.1f, 50.0f);
+	ImGui::SliderFloat("Look Speed", &lookSpeed, 0.01f, 1.0f);
+	if (ImGui::SliderFloat("Near Clip", &nearClip, 0.001f, 5.0f))
+		UpdateMatrix();
+	if(ImGui::SliderFloat("Far Clip", &farClip, 5.0f, 10000.0f))
+		UpdateMatrix();
+
+	if(ImGui::DragFloat3("Position", &position[0]))
+		UpdateMatrix();
+	if(ImGui::DragFloat2("Angle", &m_horizontal));
+		UpdateMatrix();
+
+	ImGui::End();
+}
+
 glm::mat4 Camera::GetMatrix() { return matrix; }
 
 void Camera::UpdateMatrix()
@@ -81,7 +85,7 @@ void Camera::UpdateMatrix()
 	up = { cos(thetaR) * -sin(phiR) , cos(phiR), -sin(phiR) * sin(thetaR)};
 
 	view = glm::lookAt(position, position + forward, glm::vec3(0, 1, 0));
-	projection = glm::perspective((float)3.14159 / 4, aspect, .1f, 100.0f);
+	projection = glm::perspective((float)3.14159 / 4, aspect, nearClip, farClip);
 	matrix = projection * view;
 }
 

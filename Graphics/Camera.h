@@ -8,6 +8,7 @@ public:
 	Camera(float aspect, GLFWwindow* window);
 	void Update(float delta);
 	void Move(glm::vec3 delta);
+	void DrawGUI();
 	glm::mat4 GetMatrix();
 
 	static Camera* s_instance;
@@ -17,7 +18,7 @@ public:
 	float moveSpeed = 1.5f;
 	float lookSpeed = .3f;
 	float nearClip = 0.1f;
-	float farClip = 50.0f;
+	float farClip = 2000.0f;
 
 protected:
 	glm::vec3 position;

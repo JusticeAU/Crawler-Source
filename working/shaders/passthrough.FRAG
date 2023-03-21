@@ -12,5 +12,5 @@ void main()
 {
 	float lightValue = clamp(dot(-lightDirection, _Normal), 0.0, 1.0);
 	lightValue += 0.3f;
-	FragColour = vec4(_Colour * lightValue, 1);
+	FragColour = vec4(_Normal * lightValue, 1);
 }

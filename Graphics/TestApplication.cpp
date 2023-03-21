@@ -12,9 +12,9 @@ TestApplication::TestApplication(GLFWwindow* window) : window(window)
 
 
 	MeshManager::Init();
-	camera = new Camera(aspect,  window);
-	input = new Input(window);
+	Input::Init(window);
 	
+	camera = new Camera(aspect,  window);
 
 	Scene::CreateObject();
 }
@@ -23,8 +23,9 @@ void TestApplication::Update(float delta)
 {
 	MeshManager::DrawGUI();
 
-	input->Update();
+	Input::Update();
 	camera->Update(delta);
+	camera->DrawGUI();
 
 	scene.Update(delta);
 	scene.DrawObjects();

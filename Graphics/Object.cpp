@@ -52,7 +52,6 @@ void Object::Update(float delta)
 
 void Object::Draw()
 {
-	
 
 	// Combine the matricies
 	glm::mat4 pvm = Camera::s_instance->GetMatrix() * transform;
