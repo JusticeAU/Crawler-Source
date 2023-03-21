@@ -2,15 +2,18 @@
 #include "Graphics.h"
 #include "assimp/scene.h"
 #include "assimp/cimport.h"
+#include <filesystem>
+#include "LogUtils.h"
 
 using std::vector;
+namespace fs = std::filesystem;
 
 MeshManager::MeshManager()
 {
     s_instance = this;
     CreateCube();
 	CreateQuad();
-	LoadFromFile("models/buck/buck.fbx");
+	LoadAllFiles();
 }
 
 Mesh* MeshManager::GetMesh(string name)
@@ -286,6 +289,21 @@ void MeshManager::LoadFromFile(const char* filename)
 	delete[] vertices;
 
 	meshes.emplace(filename, loadedMesh);
+}
+
+void MeshManager::LoadAllFiles()
+{
+	LogUtils::Log("Loading models");
+	for (auto d : fs::recursive_directory_iterator("models"))
+	{
+		if (d.path().extension() == ".obj" || d.path().extension() == ".fbx")
+		{
+			string output = "Loading: " + d.path().generic_string();
+			LogUtils::Log(output.c_str());
+			LoadFromFile(d.path().generic_string().c_str());
+		}
+			
+	}
 }
 
 MeshManager* MeshManager::s_instance = nullptr;

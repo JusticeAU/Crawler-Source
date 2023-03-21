@@ -22,4 +22,6 @@ protected:
 	void CreateCube();
 	void CreateQuad();
 	void LoadFromFile(const char* filename);
+
+	void LoadAllFiles();
 };
