@@ -2,7 +2,7 @@
 
 Camera::Camera(float aspect, GLFWwindow* window)
 {
-	position = { 0, 0, -10 };
+	position = { 0, 0, 10 };
 	this->aspect = aspect;
 
 	view = glm::translate(glm::mat4(1), position);

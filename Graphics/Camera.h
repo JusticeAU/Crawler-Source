@@ -12,7 +12,7 @@ public:
 
 	static Camera* s_instance;
 
-	float m_horizontal = 90.0f;
+	float m_horizontal = -90.0f;
 	float m_vertical = 0.0f;
 	float moveSpeed = 1.5f;
 	float lookSpeed = .3f;
