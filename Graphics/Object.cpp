@@ -19,6 +19,7 @@ Object::Object(int objectID)
 	shader = new ShaderProgram();
 	shader->LoadFromFiles("shaders\\passthrough.VERT", "shaders\\passthrough.FRAG");
 
+	meshName = "_cube";
 	mesh = MeshManager::GetMesh(meshName);
 }
 
@@ -107,15 +108,15 @@ void Object::DrawGUI()
 		if (ImGui::CollapsingHeader("Mesh"))
 		{
 			string meshStr = "Mesh##" + to_string(id);
-			if (ImGui::BeginCombo(meshStr.c_str(), meshName))
+			if (ImGui::BeginCombo(meshStr.c_str(), meshName.c_str()))
 			{
-				for (auto m : MeshManager::s_instance->meshes)
+				for (auto m : *MeshManager::Meshes())
 				{
-					const bool is_selected = (m.first == meshName);
+					const bool is_selected = (m.second == mesh);
 					if (ImGui::Selectable(m.first.c_str(), is_selected))
 					{
 						mesh = MeshManager::GetMesh(m.first);
-						strcpy_s(meshName, m.first.c_str());
+						meshName = m.first;
 					}
 
 					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)

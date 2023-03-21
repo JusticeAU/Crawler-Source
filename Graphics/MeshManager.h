@@ -9,15 +9,17 @@ using std::map;
 class MeshManager
 {
 public:
-	MeshManager();
+	static void Init();
+
 	static Mesh* GetMesh(string name);
 
 	static bool LoadMesh(string name);
 	static void DrawGUI();
 	static MeshManager* s_instance;
-	map<string, Mesh*> meshes;
+	static const map<string, Mesh*>* Meshes() { return &s_instance->meshes; }
 protected:
-	vector<string> meshNames;
+	MeshManager();
+	map<string, Mesh*> meshes;
 
 	void CreateCube();
 	void CreateQuad();

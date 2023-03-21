@@ -10,10 +10,15 @@ namespace fs = std::filesystem;
 
 MeshManager::MeshManager()
 {
-    s_instance = this;
     CreateCube();
 	CreateQuad();
 	LoadAllFiles();
+}
+
+void MeshManager::Init()
+{
+	if (!s_instance) s_instance = new MeshManager();
+	else LogUtils::Log("Tried to Init MeshManager when it was already initilised");
 }
 
 Mesh* MeshManager::GetMesh(string name)
@@ -201,7 +206,7 @@ void MeshManager::CreateCube()
 	#pragma endregion
 
 	cube->Initialise(36, vertices);
-	meshes.emplace("cube", cube);
+	meshes.emplace("_cube", cube);
 }
 
 void MeshManager::CreateQuad()
@@ -230,7 +235,7 @@ void MeshManager::CreateQuad()
 	vertices[3].uv = { 1.0f, 0.0f };
 
 	quad->Initialise(4, vertices, 6, indices);
-	meshes.emplace("quad", quad);
+	meshes.emplace("_quad", quad);
 }
 
 void MeshManager::LoadFromFile(const char* filename)

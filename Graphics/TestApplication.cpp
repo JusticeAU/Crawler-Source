@@ -1,6 +1,7 @@
 #include "TestApplication.h"
 #include "Graphics.h"
 #include "MathUtils.h"
+#include "MeshManager.h"
 
 TestApplication::TestApplication(GLFWwindow* window) : window(window)
 {
@@ -10,11 +11,11 @@ TestApplication::TestApplication(GLFWwindow* window) : window(window)
 	aspect = width / (float)height;
 
 
-	meshManager = new MeshManager();
+	MeshManager::Init();
 	camera = new Camera(aspect,  window);
 	input = new Input(window);
 	
-	//scene.objects.push_back(new Object());
+
 	Scene::CreateObject();
 }
 
