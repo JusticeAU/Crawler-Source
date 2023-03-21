@@ -41,17 +41,6 @@ void MeshManager::DrawGUI()
 	ImGui::End();
 }
 
-std::vector<const char*>* MeshManager::GetMeshNames()
-{
-	std::vector<const char*>* names = new std::vector<const char*>();
-	for (int i = 0; i < s_instance->meshes.size(); i++)
-	{
-		names->push_back(std::to_string(i).c_str());
-	}
-	
-	return names;
-}
-
 void MeshManager::CreateCube()
 {
     Mesh* cube = new Mesh();

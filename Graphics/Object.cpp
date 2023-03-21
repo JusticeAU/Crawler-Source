@@ -106,22 +106,25 @@ void Object::DrawGUI()
 		
 		if (ImGui::CollapsingHeader("Mesh"))
 		{
-			string meshNameStr = "Mesh##" + to_string(id);
-			char str0[128];
-			strcpy_s(str0, meshName);
-			string loadMeshStr = "Load Mesh##" + to_string(id);
-			if (ImGui::InputText(loadMeshStr.c_str(), str0, IM_ARRAYSIZE(str0)))
+			string meshStr = "Mesh##" + to_string(id);
+			if (ImGui::BeginCombo(meshStr.c_str(), meshName))
 			{
-				strcpy_s(meshName, str0);
-			}
-			
-			if (ImGui::Button("Load New Mesh"))
-			{
-				mesh = MeshManager::GetMesh(meshName);
+				for (auto m : MeshManager::s_instance->meshes)
+				{
+					const bool is_selected = (m.first == meshName);
+					if (ImGui::Selectable(m.first.c_str(), is_selected))
+					{
+						mesh = MeshManager::GetMesh(m.first);
+						strcpy_s(meshName, m.first.c_str());
+					}
+
+					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+					if (is_selected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
 			}
 		}
-
-		
 
 		int childCount = children.size();
 		string childrenString = "Children (" + to_string(childCount) + ")##" + to_string(id);

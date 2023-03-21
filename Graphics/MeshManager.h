@@ -14,11 +14,10 @@ public:
 
 	static bool LoadMesh(string name);
 	static void DrawGUI();
-	static unsigned int GetMeshCount() { return s_instance->meshes.size(); }
-	static std::vector<const char*>* GetMeshNames();
-protected:
-	map<string, Mesh*> meshes;
 	static MeshManager* s_instance;
+	map<string, Mesh*> meshes;
+protected:
+	vector<string> meshNames;
 
 	void CreateCube();
 	void CreateQuad();
