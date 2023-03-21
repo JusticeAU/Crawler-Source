@@ -9,6 +9,8 @@ TestApplication::TestApplication(GLFWwindow* window) : window(window)
 	glfwGetWindowSize(window, &width, &height);
 	aspect = width / (float)height;
 
+
+	meshManager = new MeshManager();
 	camera = new Camera(aspect,  window);
 	input = new Input(window);
 	
@@ -18,6 +20,7 @@ TestApplication::TestApplication(GLFWwindow* window) : window(window)
 
 void TestApplication::Update(float delta)
 {
+	MeshManager::DrawGUI();
 
 	input->Update();
 	camera->Update(delta);

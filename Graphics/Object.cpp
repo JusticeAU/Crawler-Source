@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include <string>
 #include "Scene.h"
+#include "MeshManager.h"
 
 using std::to_string;
 
@@ -18,8 +19,7 @@ Object::Object(int objectID)
 	shader = new ShaderProgram();
 	shader->LoadFromFiles("shaders\\passthrough.VERT", "shaders\\passthrough.FRAG");
 
-	mesh = new Mesh();
-	mesh->InitialiseCube();
+	mesh = MeshManager::GetMesh("cube");
 }
 
 void Object::Update(float delta)

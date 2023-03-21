@@ -19,7 +19,6 @@ public:
 		vec2 uv;
 	};
 	void Initialise(unsigned int vertCount, const Vertex* vertices, unsigned int indexCount = 0, unsigned int* indices = nullptr);
-	void InitialiseCube();
 
 public:
 	unsigned int tris;

@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "Scene.h"
 #include "Input.h"
+#include "MeshManager.h"
 
 class TestApplication : public Application
 {
@@ -16,6 +17,7 @@ protected:
 
 	Scene scene;
 
+	MeshManager* meshManager;
 	Camera* camera;
 	Input* input;
 };
