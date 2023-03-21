@@ -31,8 +31,15 @@ void Scene::DrawGUI()
 {
 	ImGui::Begin("Scene");
 
-	if (ImGui::SliderFloat3("Clear Colour", &clearColour[0], 0, 1,"%.2f", ImGuiSliderFlags_AlwaysClamp));
-		glClearColor(clearColour.x, clearColour.y, clearColour.z, 1);
+	float col[3] = { clearColour.r, clearColour.g, clearColour.b, };
+	if (ImGui::ColorEdit3("Clear Colour", col))
+	{
+		clearColour.r = col[0];
+		clearColour.g = col[1];
+		clearColour.b = col[2];
+
+		glClearColor(clearColour.r, clearColour.g, clearColour.b, 1);
+	}
 
 	if (ImGui::Button("New Object"))
 		Scene::CreateObject();
