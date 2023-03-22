@@ -13,7 +13,6 @@ public:
 
 	static Mesh* GetMesh(string name);
 
-	static bool LoadMesh(string name);
 	static void DrawGUI();
 	static MeshManager* s_instance;
 	static const map<string, Mesh*>* Meshes() { return &s_instance->meshes; }

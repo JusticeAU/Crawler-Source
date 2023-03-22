@@ -29,6 +29,9 @@
     <Filter Include="Source Files\StaticUtility">
       <UniqueIdentifier>{f595900e-59b7-46ed-a33d-8edcac322aa9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Libraries\stb_image">
+      <UniqueIdentifier>{bb762049-7b7c-4b78-9700-88e8a942f630}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -80,6 +83,12 @@
       <Filter>Source Files\Application\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source Files\Application\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>Source Files\Application\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -153,6 +162,15 @@
     </ClInclude>
     <ClInclude Include="MeshManager.h">
       <Filter>Source Files\Application\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Source Files\Application\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureManager.h">
+      <Filter>Source Files\Application\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>Libraries\stb_image</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

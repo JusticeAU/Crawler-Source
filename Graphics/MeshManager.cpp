@@ -2,6 +2,7 @@
 #include "Graphics.h"
 #include "assimp/scene.h"
 #include "assimp/cimport.h"
+#include "assimp/postprocess.h"
 #include <filesystem>
 #include "LogUtils.h"
 
@@ -18,7 +19,7 @@ MeshManager::MeshManager()
 void MeshManager::Init()
 {
 	if (!s_instance) s_instance = new MeshManager();
-	else LogUtils::Log("Tried to Init MeshManager when it was already initilised");
+	else LogUtils::Log("Tried to Init MeshManager when it was already initialised");
 }
 
 Mesh* MeshManager::GetMesh(string name)
@@ -28,11 +29,6 @@ Mesh* MeshManager::GetMesh(string name)
         return nullptr;
     else
         return meshIt->second;
-}
-
-bool MeshManager::LoadMesh(string name)
-{
-    return false;
 }
 
 void MeshManager::DrawGUI()
@@ -240,13 +236,16 @@ void MeshManager::CreateQuad()
 
 void MeshManager::LoadFromFile(const char* filename)
 {
-	// read all verticies from the model
-	const aiScene* scene = aiImportFile(filename, 0);
+	// read all vertices from the model
+	const aiScene* scene = aiImportFile(
+		filename,
+		aiProcess_FlipUVs);
+	
 
 	// Just use the first mesh for now.
 	aiMesh* mesh = scene->mMeshes[0];
 
-	// Extract indicies from first mesh
+	// Extract indices from first mesh
 	int numFaces = mesh->mNumFaces;
 	vector<unsigned int> indices;
 
@@ -257,7 +256,6 @@ void MeshManager::LoadFromFile(const char* filename)
 		indices.push_back(mesh->mFaces[i].mIndices[1]);
 
 		// generate a second tri for quads
-
 		if (mesh->mFaces[i].mNumIndices == 4)
 		{
 			indices.push_back(mesh->mFaces[i].mIndices[0]);
@@ -301,7 +299,7 @@ void MeshManager::LoadAllFiles()
 	LogUtils::Log("Loading models");
 	for (auto d : fs::recursive_directory_iterator("models"))
 	{
-		if (d.path().extension() == ".obj" || d.path().extension() == ".fbx")
+		if (d.path().extension() == ".obj" || d.path().extension() == ".fbx" || d.path().extension() == ".gltf")
 		{
 			string output = "Loading: " + d.path().generic_string();
 			LogUtils::Log(output.c_str());

@@ -5,6 +5,7 @@
 #include <string>
 #include "Scene.h"
 #include "MeshManager.h"
+#include "TextureManager.h"
 
 using std::to_string;
 
@@ -21,6 +22,9 @@ Object::Object(int objectID)
 
 	meshName = "_cube";
 	mesh = MeshManager::GetMesh(meshName);
+
+	textureName = "models/numbered_grid.tga";
+	texture = TextureManager::GetTexture(textureName);
 }
 
 void Object::Update(float delta)
@@ -60,6 +64,8 @@ void Object::Draw()
 	shader->SetMatrixUniform("transformMatrix", pvm);
 	shader->SetMatrixUniform("mMatrix", transform);
 	shader->SetVectorUniform("lightDirection", glm::normalize(glm::vec3(0, -1, 0)));
+	texture->Bind(1);
+	shader->SetIntUniform("diffuseTex", 1);
 
 	// Draw triangle
 	glBindVertexArray(mesh->vao);
@@ -104,7 +110,7 @@ void Object::DrawGUI()
 			ImGui::DragFloat3(scaleStr.c_str(), &localScale[0]);
 		}
 		
-		if (ImGui::CollapsingHeader("Mesh"))
+		if (ImGui::CollapsingHeader("Model"))
 		{
 			string meshStr = "Mesh##" + to_string(id);
 			if (ImGui::BeginCombo(meshStr.c_str(), meshName.c_str()))
@@ -116,6 +122,25 @@ void Object::DrawGUI()
 					{
 						mesh = MeshManager::GetMesh(m.first);
 						meshName = m.first;
+					}
+
+					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+					if (is_selected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+
+			string textureStr = "Texture##" + to_string(id);
+			if (ImGui::BeginCombo(textureStr.c_str(), textureName.c_str()))
+			{
+				for (auto t : *TextureManager::Textures())
+				{
+					const bool is_selected = (t.second == texture);
+					if (ImGui::Selectable(t.first.c_str(), is_selected))
+					{
+						texture = TextureManager::GetTexture(t.first);
+						textureName = t.first;
 					}
 
 					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)

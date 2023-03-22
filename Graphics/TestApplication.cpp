@@ -2,6 +2,7 @@
 #include "Graphics.h"
 #include "MathUtils.h"
 #include "MeshManager.h"
+#include "TextureManager.h"
 
 TestApplication::TestApplication(GLFWwindow* window) : window(window)
 {
@@ -12,6 +13,8 @@ TestApplication::TestApplication(GLFWwindow* window) : window(window)
 
 
 	MeshManager::Init();
+	TextureManager::Init();
+
 	Input::Init(window);
 	
 	camera = new Camera(aspect,  window);
@@ -22,6 +25,7 @@ TestApplication::TestApplication(GLFWwindow* window) : window(window)
 void TestApplication::Update(float delta)
 {
 	MeshManager::DrawGUI();
+	TextureManager::DrawGUI();
 
 	Input::Update();
 	camera->Update(delta);

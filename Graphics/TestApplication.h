@@ -14,8 +14,6 @@ public:
 protected:
 	GLFWwindow* window;
 
-	Scene scene;
-
 	Camera* camera;
-	Input* input;
+	Scene scene;
 };

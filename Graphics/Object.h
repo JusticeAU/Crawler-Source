@@ -1,5 +1,6 @@
 #pragma once
 #include "Mesh.h"
+#include "Texture.h"
 #include "Graphics.h"
 #include <string>
 
@@ -29,6 +30,9 @@ public:
 	ShaderProgram* shader;
 	Mesh* mesh;
 	string meshName;
+
+	Texture* texture;
+	string textureName;
 
 	void Update(float delta);
 	void Draw();
