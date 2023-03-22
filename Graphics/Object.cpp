@@ -6,6 +6,7 @@
 #include "Scene.h"
 #include "MeshManager.h"
 #include "TextureManager.h"
+#include "ShaderManager.h"
 
 using std::to_string;
 
@@ -17,14 +18,14 @@ Object::Object(int objectID)
 	localScale = { 1,1,1 };
 	transform = mat4(1);
 
-	shader = new ShaderProgram();
-	shader->LoadFromFiles("shaders\\passthrough.VERT", "shaders\\passthrough.FRAG");
-
 	meshName = "_cube";
 	mesh = MeshManager::GetMesh(meshName);
 
 	textureName = "models/numbered_grid.tga";
 	texture = TextureManager::GetTexture(textureName);
+
+	shaderName = "shaders/passthrough";
+	shader = ShaderManager::GetShaderProgram(shaderName);
 }
 
 void Object::Update(float delta)
@@ -141,6 +142,25 @@ void Object::DrawGUI()
 					{
 						texture = TextureManager::GetTexture(t.first);
 						textureName = t.first;
+					}
+
+					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+					if (is_selected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+
+			string shaderStr = "Shader##" + to_string(id);
+			if (ImGui::BeginCombo(shaderStr.c_str(), shaderName.c_str()))
+			{
+				for (auto s : *ShaderManager::ShaderPrograms())
+				{
+					const bool is_selected = (s.second == shader);
+					if (ImGui::Selectable(s.first.c_str(), is_selected))
+					{
+						shader = ShaderManager::GetShaderProgram(s.first);
+						shaderName = s.first;
 					}
 
 					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)

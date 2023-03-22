@@ -52,7 +52,7 @@ void TextureManager::LoadAllFiles()
 	LogUtils::Log("Loading Textures");
 	for (auto d : fs::recursive_directory_iterator("models"))
 	{
-		if (d.path().extension() == ".tga" || d.path().extension() == ".png")
+		if (d.path().extension() == ".tga" || d.path().extension() == ".png" || d.path().extension() == ".jpg" || d.path().extension() == ".jpeg")
 		{
 			string output = "Loading: " + d.path().generic_string();
 			LogUtils::Log(output.c_str());

@@ -26,7 +26,7 @@ void Mesh::Initialise(unsigned int vertCount, const Vertex* vertices, unsigned i
 	glEnableVertexAttribArray(2); // Normals
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
 	glEnableVertexAttribArray(3); // UVs
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_TRUE, sizeof(Vertex), (void*)offsetof(Vertex, uv));
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_TRUE, sizeof(Vertex), (void*)offsetof(Vertex, uv));
 
 
 	// bind indicies if there are any

@@ -3,6 +3,7 @@
 #include "MathUtils.h"
 #include "MeshManager.h"
 #include "TextureManager.h"
+#include "ShaderManager.h"
 
 TestApplication::TestApplication(GLFWwindow* window) : window(window)
 {
@@ -14,7 +15,8 @@ TestApplication::TestApplication(GLFWwindow* window) : window(window)
 
 	MeshManager::Init();
 	TextureManager::Init();
-
+	ShaderManager::Init();
+	
 	Input::Init(window);
 	
 	camera = new Camera(aspect,  window);
@@ -26,6 +28,7 @@ void TestApplication::Update(float delta)
 {
 	MeshManager::DrawGUI();
 	TextureManager::DrawGUI();
+	ShaderManager::DrawGUI();
 
 	Input::Update();
 	camera->Update(delta);

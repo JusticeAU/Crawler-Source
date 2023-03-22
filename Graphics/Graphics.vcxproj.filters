@@ -89,6 +89,9 @@
     <ClCompile Include="TextureManager.cpp">
       <Filter>Source Files\Application\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="ShaderManager.cpp">
+      <Filter>Source Files\Application\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -172,12 +175,27 @@
     <ClInclude Include="stb_image.h">
       <Filter>Libraries\stb_image</Filter>
     </ClInclude>
+    <ClInclude Include="ShaderManager.h">
+      <Filter>Source Files\Application\Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\working\shaders\passthrough.FRAG">
       <Filter>Source Files\Application\Graphics\Shaders</Filter>
     </None>
     <None Include="..\working\shaders\passthrough.VERT">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\passthrough.SHAD">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\phong.FRAG">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\phong.SHAD">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\phong.VERT">
       <Filter>Source Files\Application\Graphics\Shaders</Filter>
     </None>
   </ItemGroup>

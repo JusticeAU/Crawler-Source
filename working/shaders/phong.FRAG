@@ -1,0 +1,22 @@
+#version 450
+
+out vec4 FragColour;
+
+in vec3 _Colour;
+in vec3 _Normal;
+in vec2 _TexCoords;
+
+// Directional light
+uniform vec3 lightDirection;
+
+// first texture!
+uniform sampler2D diffuseTex;
+
+void main()
+{
+	float lightValue = clamp(dot(-lightDirection, _Normal), 0.0, 1.0);
+	lightValue += 0.3f;
+	vec3 texColour = texture(diffuseTex, _TexCoords).rgb;
+	// just invert color to show this different shader is working/has been swappeed to
+	FragColour = vec4((1 - texColour) * lightValue, 1);
+}

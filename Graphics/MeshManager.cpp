@@ -211,7 +211,7 @@ void MeshManager::CreateQuad()
 	// Using Index Buffer
 	// define 4 vertices for 2 triangles
 	Mesh::Vertex vertices[4];
-	vertices[0].position = { -0.5f, 0, 0.5f };
+	vertices[0].position = { -0.5f, 0.0f, 0.5f };
 	vertices[1].position = { 0.5f, 0, 0.5f };
 	vertices[2].position = { -0.5f, 0, -0.5f };
 	vertices[3].position = { 0.5f, 0, -0.5f };

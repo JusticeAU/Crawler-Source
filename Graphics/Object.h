@@ -26,13 +26,15 @@ public:
 	mat4 transform;
 	
 	bool markedForDeletion = false;
-
-	ShaderProgram* shader;
+	
 	Mesh* mesh;
 	string meshName;
 
 	Texture* texture;
 	string textureName;
+
+	ShaderProgram* shader;
+	string shaderName;
 
 	void Update(float delta);
 	void Draw();
