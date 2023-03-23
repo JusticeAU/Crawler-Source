@@ -205,12 +205,15 @@
     <ClInclude Include="TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\working\shaders\passthrough.FRAG" />
-    <None Include="..\working\shaders\passthrough.SHAD" />
-    <None Include="..\working\shaders\passthrough.VERT" />
+    <None Include="..\working\shaders\lambertLitSingleLight.FRAG" />
+    <None Include="..\working\shaders\lambertLitSingleLight.SHAD" />
+    <None Include="..\working\shaders\lambertLitSingleLight.VERT" />
     <None Include="..\working\shaders\phong.FRAG" />
     <None Include="..\working\shaders\phong.SHAD" />
     <None Include="..\working\shaders\phong.VERT" />
+    <None Include="..\working\shaders\unlitTextured.FRAG" />
+    <None Include="..\working\shaders\unlitTextured.SHAD" />
+    <None Include="..\working\shaders\unlitTextured.VERT" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

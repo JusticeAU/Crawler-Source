@@ -180,15 +180,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\working\shaders\passthrough.FRAG">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\passthrough.VERT">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\passthrough.SHAD">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </None>
     <None Include="..\working\shaders\phong.FRAG">
       <Filter>Source Files\Application\Graphics\Shaders</Filter>
     </None>
@@ -196,6 +187,24 @@
       <Filter>Source Files\Application\Graphics\Shaders</Filter>
     </None>
     <None Include="..\working\shaders\phong.VERT">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\lambertLitSingleLight.FRAG">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\lambertLitSingleLight.SHAD">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\lambertLitSingleLight.VERT">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\unlitTextured.FRAG">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\unlitTextured.SHAD">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\unlitTextured.VERT">
       <Filter>Source Files\Application\Graphics\Shaders</Filter>
     </None>
   </ItemGroup>

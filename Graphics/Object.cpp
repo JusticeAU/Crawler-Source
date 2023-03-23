@@ -24,7 +24,7 @@ Object::Object(int objectID)
 	textureName = "models/numbered_grid.tga";
 	texture = TextureManager::GetTexture(textureName);
 
-	shaderName = "shaders/passthrough";
+	shaderName = "shaders/unlitTextured";
 	shader = ShaderManager::GetShaderProgram(shaderName);
 }
 
