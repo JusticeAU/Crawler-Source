@@ -1,7 +1,9 @@
 #pragma once
 #include "Graphics.h"
+#include <string>
 
 using glm::vec3;
+using std::string;
 
 class Texture;
 
@@ -16,4 +18,9 @@ public:
 	float specularPower; // tightness of specular highlights
 
 	Texture* mapKd; // Diffuse texture map
+	string mapKdName;
+	Texture* mapKs; // specular texture map
+	string mapKsName;
+	Texture* mapBump; // normal map
+	string mapBumpName;
 };

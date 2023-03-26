@@ -17,8 +17,10 @@ public:
 		vec3 colour;
 		vec3 normal;
 		vec2 uv;
+		vec4 tangent;
 	};
 	void Initialise(unsigned int vertCount, const Vertex* vertices, unsigned int indexCount = 0, unsigned int* indices = nullptr);
+	static void CalculateTangents(Vertex* vertices, unsigned int vertexCount, const std::vector<unsigned int>& indices);
 
 public:
 	unsigned int tris;

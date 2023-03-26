@@ -94,9 +94,18 @@ void Object::Draw()
 			material->mapKd->Bind(1);
 			shader->SetIntUniform("diffuseTex", 1);
 		}
+		if (material->mapKs)
+		{
+			material->mapKs->Bind(2);
+			shader->SetIntUniform("specularTex", 2);
+		}
+		if (material->mapBump)
+		{
+			material->mapBump->Bind(3);
+			shader->SetIntUniform("normalTex", 3);
+		}
 	}
 
-	
 
 	// Draw triangle
 	glBindVertexArray(mesh->vao);

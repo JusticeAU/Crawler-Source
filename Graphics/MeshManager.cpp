@@ -273,10 +273,12 @@ void MeshManager::LoadFromFile(const char* filename)
 			mesh->mVertices[i].x,
 			mesh->mVertices[i].y,
 			mesh->mVertices[i].z);
+		
 		vertices[i].normal = vec3(
 			mesh->mNormals[i].x,
 			mesh->mNormals[i].y,
 			mesh->mNormals[i].z);
+		
 		if (mesh->mTextureCoords[0])
 		{
 			vertices[i].uv = vec2(
@@ -285,6 +287,19 @@ void MeshManager::LoadFromFile(const char* filename)
 		}
 		else
 			vertices[i].uv = glm::vec2(0);
+
+		if (mesh->HasTangentsAndBitangents())
+		{
+			vertices[i].tangent = vec4(
+				mesh->mTangents[i].x,
+				mesh->mTangents[i].y,
+				mesh->mTangents[i].z, 1);
+		}
+	}
+
+	if (mesh->HasTangentsAndBitangents() == false)
+	{
+		Mesh::CalculateTangents(vertices, numV, indices);
 	}
 
 	Mesh* loadedMesh = new Mesh();

@@ -28,7 +28,7 @@ void MaterialManager::DrawGUI()
 	ImGui::Begin("Material Manager");
 	ImGui::BeginDisabled();
 	int materialCount = s_instance->materials.size();
-	ImGui::DragInt("Texture Count", &materialCount);
+	ImGui::DragInt("Material Count", &materialCount);
 	for (auto m : s_instance->materials)
 	{
 		ImGui::Text(m.first.c_str());
@@ -75,6 +75,21 @@ void MaterialManager::LoadFromFile(const char* filename)
 			std::string mapFileName;
 			ss >> header >> mapFileName;
 			material->mapKd = TextureManager::GetTexture(directory + mapFileName);
+			material->mapKdName = directory + mapFileName;
+		}
+		else if (line.find("map_Ks") == 0)
+		{
+			std::string mapFileName;
+			ss >> header >> mapFileName;
+			material->mapKs = TextureManager::GetTexture(directory + mapFileName);
+			material->mapKsName = directory + mapFileName;
+		}
+		else if (line.find("bump") == 0)
+		{
+			std::string mapFileName;
+			ss >> header >> mapFileName;
+			material->mapBump = TextureManager::GetTexture(directory + mapFileName);
+			material->mapBumpName = directory + mapFileName;
 		}
 	}
 	materials.emplace(filename, material);
