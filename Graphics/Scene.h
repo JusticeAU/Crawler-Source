@@ -45,7 +45,7 @@ protected:
 	int objectCount = 0;
 
 	// Directional/SunLight
-	vec3 m_sunDirection = {0, -1, 0};
+	vec3 m_sunDirection = {0, -0.707f, -0.707f };
 	vec3 m_sunColour = { 1,1,1 };
 
 	// Ambient Light
