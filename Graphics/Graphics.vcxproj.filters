@@ -92,6 +92,9 @@
     <ClCompile Include="ShaderManager.cpp">
       <Filter>Source Files\Application\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="..\imgui\imgui_stdlib.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -177,6 +180,9 @@
     </ClInclude>
     <ClInclude Include="ShaderManager.h">
       <Filter>Source Files\Application\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imgui\imgui_stdlib.h">
+      <Filter>ImGui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

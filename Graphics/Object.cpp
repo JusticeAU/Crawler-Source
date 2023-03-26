@@ -7,6 +7,7 @@
 #include "MeshManager.h"
 #include "TextureManager.h"
 #include "ShaderManager.h"
+#include "imgui_stdlib.h"
 
 using std::to_string;
 
@@ -17,6 +18,8 @@ Object::Object(int objectID)
 	localRotation = { 0,0,0 };
 	localScale = { 1,1,1 };
 	transform = mat4(1);
+
+	objectName = "New Object";
 
 	meshName = "_cube";
 	mesh = MeshManager::GetMesh(meshName);
@@ -84,7 +87,7 @@ void Object::Draw()
 void Object::DrawGUI()
 {
 	string idStr = to_string(id);
-	string objectStr = "Object (" + idStr + ")";
+	string objectStr = objectName + "##" + idStr;
 	if (ImGui::TreeNode(objectStr.c_str()))
 	{
 
@@ -97,7 +100,13 @@ void Object::DrawGUI()
 		string deleteStr = "Delete##" + to_string(id);
 		if (ImGui::Button(deleteStr.c_str()))
 			markedForDeletion = true;
-		
+		string newName = objectName;
+		string nameStr = "Name##" + idStr;
+		if (ImGui::InputText(nameStr.c_str(), &newName, ImGuiInputTextFlags_EnterReturnsTrue))
+		{
+			objectName = newName;
+		}
+
 		
 		if (ImGui::CollapsingHeader("Transform"))
 		{

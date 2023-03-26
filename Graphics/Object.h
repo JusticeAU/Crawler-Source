@@ -26,6 +26,8 @@ public:
 	mat4 transform;
 	
 	bool markedForDeletion = false;
+
+	string objectName;
 	
 	Mesh* mesh;
 	string meshName;
