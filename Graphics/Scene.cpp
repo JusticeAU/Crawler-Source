@@ -2,9 +2,7 @@
 
 Scene::Scene()
 {
-	s_instance = this;
 	
-	clearColour = { 0.25f, 0.25, 0.25 };
 }
 
 Scene::~Scene()
@@ -13,6 +11,12 @@ Scene::~Scene()
 		o->DeleteAllChildren();
 
 	objects.clear();
+}
+
+void Scene::Init()
+{
+	s_instance = new Scene();
+	Scene::SetClearColour({ 0.25f, 0.25, 0.25 });
 }
 
 void Scene::Update(float deltaTime)
@@ -32,9 +36,20 @@ void Scene::DrawGUI()
 {
 	ImGui::Begin("Scene");
 
-	float col[3] = { clearColour.r, clearColour.g, clearColour.b, };
-	if (ImGui::ColorEdit3("Clear Colour", col))
-		Scene::SetClearColour({ col[0], col[1], col[2] });
+	float clearCol[3] = { clearColour.r, clearColour.g, clearColour.b, };
+	if (ImGui::ColorEdit3("Clear Colour", clearCol))
+		Scene::SetClearColour({ clearCol[0], clearCol[1], clearCol[2] });
+	
+	if (ImGui::CollapsingHeader("Directional Light"))
+	{
+		float sunCol[3] = { m_sunColour.r, m_sunColour.g, m_sunColour.b, };
+		if (ImGui::ColorEdit3("Sun Colour", sunCol))
+			Scene::SetSunColour({ sunCol[0], sunCol[1], sunCol[2] });
+
+		float sunDir[3] = { m_sunDirection.x, m_sunDirection.y, m_sunDirection.z, };
+		if (ImGui::SliderFloat3("Sun Direction", &sunDir[0], -1, 1, "%.3f"))
+			Scene::SetSunDirection({ sunDir[0], sunDir[1], sunDir[2] });
+	}
 
 	if (ImGui::Button("New Object"))
 		Scene::CreateObject();
@@ -83,6 +98,26 @@ void Scene::SetClearColour(vec3 clearColour)
 {
 	s_instance->clearColour = clearColour;
 	glClearColor(clearColour.r, clearColour.g, clearColour.b, 1);
+}
+
+vec3 Scene::GetSunColour()
+{
+	return s_instance->m_sunColour;
+}
+
+void Scene::SetSunColour(vec3 sunColour)
+{
+	s_instance->m_sunColour = sunColour;
+}
+
+vec3 Scene::GetSunDirection()
+{
+	return s_instance->m_sunDirection;
+}
+
+void Scene::SetSunDirection(vec3 sunDirection)
+{
+	s_instance->m_sunDirection = sunDirection;
 }
 
 Scene* Scene::s_instance = nullptr;

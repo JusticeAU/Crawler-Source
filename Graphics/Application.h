@@ -16,5 +16,5 @@ protected:
 	GLFWwindow* window;
 
 	Camera* camera;
-	Scene scene;
+	Scene* scene;
 };

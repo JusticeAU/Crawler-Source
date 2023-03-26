@@ -67,7 +67,7 @@ void Object::Draw()
 	shader->Bind();
 	shader->SetMatrixUniform("transformMatrix", pvm);
 	shader->SetMatrixUniform("mMatrix", transform);
-	shader->SetVectorUniform("lightDirection", glm::normalize(glm::vec3(0, -1, 0)));
+	shader->SetVectorUniform("lightDirection", glm::normalize(Scene::GetSunDirection()));
 	texture->Bind(1);
 	shader->SetIntUniform("diffuseTex", 1);
 

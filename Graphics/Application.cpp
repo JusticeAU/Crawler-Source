@@ -58,6 +58,7 @@ Application::Application()
 	MeshManager::Init();
 	TextureManager::Init();
 	ShaderManager::Init();
+	Scene::Init();
 	
 	// Create input system.
 	Input::Init(window);
@@ -129,8 +130,8 @@ void Application::Update(float delta)
 	camera->Update(delta);
 	camera->DrawGUI();
 
-	scene.Update(delta);
-	scene.DrawObjects();
-	scene.DrawGUI();
-	scene.CleanUp();
+	Scene::s_instance->Update(delta);
+	Scene::s_instance->DrawObjects();
+	Scene::s_instance->DrawGUI();
+	Scene::s_instance->CleanUp();
 }
