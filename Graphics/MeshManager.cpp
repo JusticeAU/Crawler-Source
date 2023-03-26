@@ -306,6 +306,7 @@ void MeshManager::LoadFromFile(const char* filename)
 	loadedMesh->Initialise(numV, vertices, indices.size(), indices.data());
 	delete[] vertices;
 
+
 	meshes.emplace(filename, loadedMesh);
 }
 

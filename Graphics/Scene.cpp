@@ -2,7 +2,9 @@
 
 Scene::Scene()
 {
-	
+	m_pointLightPositions = new vec3[MAX_LIGHTS];
+	m_pointLightColours = new vec3[MAX_LIGHTS];
+
 }
 
 Scene::~Scene()
@@ -24,6 +26,13 @@ void Scene::Update(float deltaTime)
 	// Do stuff
 	for (auto o : objects)
 		o->Update(deltaTime);
+
+	// Update point light arrays
+	for (int i = 0; i < m_pointLights.size(); i++)
+	{
+		m_pointLightColours[i] = m_pointLights[i].colour * m_pointLights[i].intensity;
+		m_pointLightPositions[i] = m_pointLights[i].position;
+	}
 }
 
 void Scene::DrawObjects()
@@ -44,16 +53,36 @@ void Scene::DrawGUI()
 	{
 		float ambientCol[3] = { m_ambientColour.r, m_ambientColour.g, m_ambientColour.b, };
 		if (ImGui::ColorEdit3("Ambient Light", ambientCol))
-			Scene::SetAmbientLightColour({ ambientCol[0], ambientCol[1], ambientCol[2] });
+			SetAmbientLightColour({ ambientCol[0], ambientCol[1], ambientCol[2] });
 		
 		float sunCol[3] = { m_sunColour.r, m_sunColour.g, m_sunColour.b, };
 		if (ImGui::ColorEdit3("Sun Colour", sunCol))
-			Scene::SetSunColour({ sunCol[0], sunCol[1], sunCol[2] });
+			SetSunColour({ sunCol[0], sunCol[1], sunCol[2] });
 
 		float sunDir[3] = { m_sunDirection.x, m_sunDirection.y, m_sunDirection.z, };
 		if (ImGui::SliderFloat3("Sun Direction", &sunDir[0], -1, 1, "%.3f"))
-			Scene::SetSunDirection({ sunDir[0], sunDir[1], sunDir[2] });
+			SetSunDirection({ sunDir[0], sunDir[1], sunDir[2] });
 
+		if (m_pointLights.size() == MAX_LIGHTS) ImGui::BeginDisabled();
+		if (ImGui::Button("New Point Light"))
+			m_pointLights.push_back(Light());
+		if (m_pointLights.size() == MAX_LIGHTS) ImGui::EndDisabled();
+
+		// Draw all point lights
+		for (int i = 0; i < m_pointLights.size(); i++)
+		{
+			ImGui::PushID(i);
+			float pointCol[3] = { m_pointLights[i].colour.r, m_pointLights[i].colour.g, m_pointLights[i].colour.b,};
+			if (ImGui::ColorEdit3("Point Light Colour", &pointCol[0]))
+				m_pointLights[i].colour = { pointCol[0], pointCol[1], pointCol[2] };
+
+			float pointPos[3] = { m_pointLights[i].position.x, m_pointLights[i].position.y, m_pointLights[i].position.z, };
+			if (ImGui::DragFloat3("Point Light Position", &pointPos[0]))
+				m_pointLights[i].position = { pointPos[0], pointPos[1], pointPos[2] };
+
+			ImGui::DragFloat("Intensity", &m_pointLights[i].intensity);
+			ImGui::PopID();
+		}
 	}
 
 	if (ImGui::Button("New Object"))
@@ -133,6 +162,11 @@ vec3 Scene::GetAmbientLightColour()
 void Scene::SetAmbientLightColour(vec3 ambientColour)
 {
 	s_instance->m_ambientColour = ambientColour;
+}
+
+int Scene::GetNumPointLights()
+{
+	return s_instance->m_pointLights.size();
 }
 
 Scene* Scene::s_instance = nullptr;

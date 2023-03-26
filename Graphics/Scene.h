@@ -1,5 +1,6 @@
 #pragma once
 #include "Object.h"
+#include "Light.h"
 #include <vector>
 #include <string>
 
@@ -26,6 +27,10 @@ public:
 	static vec3 GetAmbientLightColour();
 	static void SetAmbientLightColour(vec3 ambientColour);
 
+	static int GetNumPointLights();
+	static glm::vec3* GetPointLightPositions() { return &s_instance->m_pointLightPositions[0]; }
+	static glm::vec3* GetPointLightColours() { return &s_instance->m_pointLightColours[0]; }
+
 
 	static Scene* s_instance;
 	
@@ -45,4 +50,11 @@ protected:
 
 	// Ambient Light
 	vec3 m_ambientColour = { 0.25f, 0.25f, 0.25f };
+
+	// Point Lights
+	int MAX_LIGHTS = 4;
+	vector<Light> m_pointLights;
+	glm::vec3* m_pointLightPositions;
+	glm::vec3* m_pointLightColours;
+
 };

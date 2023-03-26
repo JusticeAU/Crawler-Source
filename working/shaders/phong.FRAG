@@ -16,6 +16,11 @@ uniform vec3 cameraPosition;
 uniform vec3 ambientLightColour;
 uniform vec3 sunLightDirection;
 uniform vec3 sunLightColour;
+// Point Lights
+const int MAX_LIGHTS = 4;
+uniform int numLights;
+uniform vec3 PointLightColours[MAX_LIGHTS];
+uniform vec3 PointLightPositions[MAX_LIGHTS];
 
 // Material Properties
 uniform vec3 Ka; // ambient material colour
@@ -28,7 +33,18 @@ uniform sampler2D diffuseTex;
 uniform sampler2D specularTex;
 uniform sampler2D normalTex;
 
-// Phong Lighting = Ambient + Diffuse(All Lights) + Specular (All Lights)
+// Functions
+vec3 GetDiffuse(vec3 direction, vec3 colour, vec3 normal)
+{
+	return colour * max( 0, dot( normal, -direction ) );
+}
+
+vec3 GetSpecular(vec3 direction, vec3 colour, vec3 normal, vec3 view)
+{
+	vec3 R = reflect( direction, normal );
+	float specularTerm = pow( max( 0, dot( R, view ) ), specularPower );
+	return specularTerm * colour;
+}
 
 void main()
 {
@@ -45,26 +61,41 @@ void main()
 	vec3 texNormal = texture( normalTex, _TexCoords ).rgb;
 	N = TBN * (texNormal * 2 - 1);
 
-	// Lambert Term
-	float lambertTerm = clamp(dot(N, -L), 0.0, 1.0);
-
 	// View and Reflection vector for specular
 	vec3 V = normalize(cameraPosition - _Position);
 	vec3 R = reflect(L, N);
-	float specularTerm = pow(max(0, dot(R, V ) ), specularPower);
 
-	// diffuse
+	// calculate diffuse lighting from sunlight 
+	vec3 diffuseTotal = GetDiffuse(L, sunLightColour, N);
+	
+	// Calculate specular total start
+	vec3 specularTotal = GetSpecular(L, sunLightColour, N, V);
+
+	// Calculate diffuse and specular for all point lights
+	for(int i = 0; i < numLights; i++)
+	{
+		vec3 direction = _Position.xyz - PointLightPositions[i]; // get direction from pixel to light (not normalized)
+		float distance = length(direction);
+		direction = direction / distance; // normalize
+
+		// Attenuate the light intensity with inverese square law
+		vec3 colour = PointLightColours[i] / (distance * distance);
+
+		diffuseTotal += GetDiffuse(direction, colour, N);
+		specularTotal += GetSpecular(direction, colour, N, V);
+	}
+
+	// Diffuse
 	vec3 texDiffuse = texture(diffuseTex, _TexCoords).rgb;
-	vec3 diffuse = sunLightColour * Kd * lambertTerm * texDiffuse;
+	vec3 diffuse = Kd * texDiffuse * diffuseTotal;
 
 	// Ambient
 	vec3 ambient = ambientLightColour * Ka * texDiffuse;
 
 	// Specular
 	vec3 texSpecular = texture(specularTex, _TexCoords).rgb;
-	vec3 specular = sunLightColour * Ks * specularTerm * texSpecular;
+	vec3 specular = Ks * texSpecular * specularTotal;
 
 	// Output
 	FragColour = vec4(ambient + diffuse + specular, 1);
-	//FragColour = vec4(N, 1);
 }

@@ -76,6 +76,11 @@ void Object::Draw()
 	shader->SetVectorUniform("ambientLightColour", Scene::GetAmbientLightColour());
 	shader->SetVectorUniform("sunLightDirection", glm::normalize(Scene::GetSunDirection()));
 	shader->SetVectorUniform("sunLightColour", Scene::GetSunColour());
+	// Point Lights
+	int numLights = Scene::GetNumPointLights();
+	shader->SetIntUniform("numLights", numLights);
+	shader->SetFloat3ArrayUniform("PointLightPositions", numLights, Scene::GetPointLightPositions());
+	shader->SetFloat3ArrayUniform("PointLightColours", numLights, Scene::GetPointLightColours());
 
 	// Texture Uniforms
 	texture->Bind(1);

@@ -101,6 +101,9 @@
     <ClCompile Include="Material.cpp">
       <Filter>Source Files\Application\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -192,6 +195,9 @@
     </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>Source Files\Application\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>Source Files\Application\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
