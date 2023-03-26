@@ -11,7 +11,7 @@
 
 using std::to_string;
 
-Object::Object(int objectID)
+Object::Object(int objectID, string name)
 {
 	id = objectID;
 	localPosition = { 0,0,0 };
@@ -19,7 +19,7 @@ Object::Object(int objectID)
 	localScale = { 1,1,1 };
 	transform = mat4(1);
 
-	objectName = "New Object";
+	objectName = name;
 
 	meshName = "_cube";
 	mesh = MeshManager::GetMesh(meshName);

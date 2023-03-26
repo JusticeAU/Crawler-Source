@@ -2,8 +2,9 @@
 
 Scene::Scene()
 {
-	clearColour = { 0.25f, 0.25, 0.25 };
 	s_instance = this;
+	
+	clearColour = { 0.25f, 0.25, 0.25 };
 }
 
 Scene::~Scene()
@@ -33,13 +34,7 @@ void Scene::DrawGUI()
 
 	float col[3] = { clearColour.r, clearColour.g, clearColour.b, };
 	if (ImGui::ColorEdit3("Clear Colour", col))
-	{
-		clearColour.r = col[0];
-		clearColour.g = col[1];
-		clearColour.b = col[2];
-
-		glClearColor(clearColour.r, clearColour.g, clearColour.b, 1);
-	}
+		Scene::SetClearColour({ col[0], col[1], col[2] });
 
 	if (ImGui::Button("New Object"))
 		Scene::CreateObject();
@@ -75,6 +70,19 @@ Object* Scene::CreateObject(Object* parent)
 		s_instance->objects.push_back(o);
 
 	return o;
+}
+
+Object* Scene::CreateObject(string name, Object* parent)
+{
+	Object* o = Scene::CreateObject(parent);
+	o->objectName = name;
+	return o;
+}
+
+void Scene::SetClearColour(vec3 clearColour)
+{
+	s_instance->clearColour = clearColour;
+	glClearColor(clearColour.r, clearColour.g, clearColour.b, 1);
 }
 
 Scene* Scene::s_instance = nullptr;

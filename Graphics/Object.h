@@ -13,7 +13,7 @@ class ShaderProgram;
 class Object
 {
 public:
-	Object(int objectID);
+	Object(int objectID, string name = "New Object");
 	
 	unsigned int id;
 	
