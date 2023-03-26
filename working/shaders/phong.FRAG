@@ -41,10 +41,10 @@ void main()
 
 	// diffuse
 	vec3 texColour = texture(diffuseTex, _TexCoords).rgb;
-	vec3 diffuse = texColour + (sunLightColour * lambertTerm * Kd);
+	vec3 diffuse = sunLightColour * Kd * lambertTerm * texColour;
 
 	// Ambient
-	vec3 ambient = ambientLightColour * Ka;
+	vec3 ambient = ambientLightColour * Ka * texColour;
 
 	// Specular
 	vec3 specular = sunLightColour * Ks * specularTerm;

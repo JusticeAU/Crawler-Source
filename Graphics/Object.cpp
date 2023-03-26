@@ -77,6 +77,10 @@ void Object::Draw()
 	shader->SetVectorUniform("sunLightDirection", glm::normalize(Scene::GetSunDirection()));
 	shader->SetVectorUniform("sunLightColour", Scene::GetSunColour());
 
+	// Texture Uniforms
+	texture->Bind(1);
+	shader->SetIntUniform("diffuseTex", 1);
+
 	// Material Uniforms
 	if (material)
 	{
@@ -84,11 +88,15 @@ void Object::Draw()
 		shader->SetVectorUniform("Kd", material->Kd);
 		shader->SetVectorUniform("Ks", material->Ks);
 		shader->SetFloatUniform("specularPower", material->specularPower);
+
+		if (material->mapKd)
+		{
+			material->mapKd->Bind(1);
+			shader->SetIntUniform("diffuseTex", 1);
+		}
 	}
 
-	// Texture Uniforms
-	texture->Bind(1);
-	shader->SetIntUniform("diffuseTex", 1);
+	
 
 	// Draw triangle
 	glBindVertexArray(mesh->vao);

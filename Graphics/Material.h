@@ -3,6 +3,8 @@
 
 using glm::vec3;
 
+class Texture;
+
 class Material
 {
 public:
@@ -12,4 +14,6 @@ public:
 	vec3 Kd; // diffuse colour of the surface
 	vec3 Ks; // specular colour of the surface
 	float specularPower; // tightness of specular highlights
+
+	Texture* mapKd; // Diffuse texture map
 };

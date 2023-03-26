@@ -1,6 +1,7 @@
 #include "MaterialManager.h"
-#include <filesystem>
+#include "TextureManager.h"
 #include "LogUtils.h"
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 
@@ -48,6 +49,13 @@ void MaterialManager::LoadFromFile(const char* filename)
 	std::string line;
 	std::string header;
 	char buffer[256];
+
+	// get the path part of the fileName for use with relative paths for maps later
+	std::string directory(filename);
+	int index = directory.rfind('/');
+	if (index != -1)
+		directory = directory.substr(0, index + 1);
+
 	while (!file.eof())
 	{
 		file.getline(buffer, 256);
@@ -62,6 +70,12 @@ void MaterialManager::LoadFromFile(const char* filename)
 			ss >> header >> material->Kd.x >> material->Kd.y >> material->Kd.z;
 		else if (line.find("Ns") == 0)
 			ss >> header >> material->specularPower;
+		else if (line.find("map_Kd") == 0)
+		{
+			std::string mapFileName;
+			ss >> header >> mapFileName;
+			material->mapKd = TextureManager::GetTexture(directory + mapFileName);
+		}
 	}
 	materials.emplace(filename, material);
 }

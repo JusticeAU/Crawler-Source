@@ -59,7 +59,7 @@ Application::Application()
 	MeshManager::Init();
 	TextureManager::Init();
 	ShaderManager::Init();
-	MaterialManager::Init();
+	MaterialManager::Init(); // Must be initialised AFTER Texture Manager
 	Scene::Init();
 	
 	// Create input system.

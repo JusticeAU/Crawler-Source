@@ -99,7 +99,7 @@
       <Filter>Source Files\Application\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Material.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Application\Graphics</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

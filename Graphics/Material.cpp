@@ -1,4 +1,5 @@
 #include "Material.h"
+#include "TextureManager.h"
 
 void Material::DrawGUI()
 {
