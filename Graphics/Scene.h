@@ -23,6 +23,9 @@ public:
 	static vec3 GetSunDirection();
 	static void SetSunDirection(vec3 sunDirection);
 
+	static vec3 GetAmbientLightColour();
+	static void SetAmbientLightColour(vec3 ambientColour);
+
 
 	static Scene* s_instance;
 	
@@ -38,5 +41,8 @@ protected:
 
 	// Directional/SunLight
 	vec3 m_sunDirection = {0, -1, 0};
-	vec3 m_sunColour = { 1,1,1 };
+	vec3 m_sunColour = { 1,1,0 };
+
+	// Ambient Light
+	vec3 m_ambientColour = { 0.25f, 0.25f, 0.25f };
 };

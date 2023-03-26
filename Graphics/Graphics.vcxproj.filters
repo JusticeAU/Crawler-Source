@@ -95,6 +95,12 @@
     <ClCompile Include="..\imgui\imgui_stdlib.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="MaterialManager.cpp">
+      <Filter>Source Files\Application\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -180,6 +186,12 @@
     </ClInclude>
     <ClInclude Include="..\imgui\imgui_stdlib.h">
       <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialManager.h">
+      <Filter>Source Files\Application\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Source Files\Application\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

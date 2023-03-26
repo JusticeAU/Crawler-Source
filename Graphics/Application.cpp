@@ -4,6 +4,7 @@
 #include "MeshManager.h"
 #include "TextureManager.h"
 #include "ShaderManager.h"
+#include "MaterialManager.h"
 #include "FileUtils.h"
 #include <iostream>
 
@@ -58,6 +59,7 @@ Application::Application()
 	MeshManager::Init();
 	TextureManager::Init();
 	ShaderManager::Init();
+	MaterialManager::Init();
 	Scene::Init();
 	
 	// Create input system.
@@ -125,6 +127,7 @@ void Application::Update(float delta)
 	MeshManager::DrawGUI();
 	TextureManager::DrawGUI();
 	ShaderManager::DrawGUI();
+	MaterialManager::DrawGUI();
 
 	Input::Update();
 	camera->Update(delta);

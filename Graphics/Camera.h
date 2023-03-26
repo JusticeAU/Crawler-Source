@@ -2,6 +2,9 @@
 #include "Graphics.h"
 #include "Input.h"
 
+using glm::mat4;
+using glm::vec3;
+
 class Camera
 {
 public:
@@ -9,7 +12,8 @@ public:
 	void Update(float delta);
 	void Move(glm::vec3 delta);
 	void DrawGUI();
-	glm::mat4 GetMatrix();
+	mat4 GetMatrix();
+	vec3 GetPosition() { return position; };
 
 	static Camera* s_instance;
 

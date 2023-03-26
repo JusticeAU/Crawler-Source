@@ -40,8 +40,12 @@ void Scene::DrawGUI()
 	if (ImGui::ColorEdit3("Clear Colour", clearCol))
 		Scene::SetClearColour({ clearCol[0], clearCol[1], clearCol[2] });
 	
-	if (ImGui::CollapsingHeader("Directional Light"))
+	if (ImGui::CollapsingHeader("Scene Lighting"))
 	{
+		float ambientCol[3] = { m_ambientColour.r, m_ambientColour.g, m_ambientColour.b, };
+		if (ImGui::ColorEdit3("Ambient Light", ambientCol))
+			Scene::SetAmbientLightColour({ ambientCol[0], ambientCol[1], ambientCol[2] });
+		
 		float sunCol[3] = { m_sunColour.r, m_sunColour.g, m_sunColour.b, };
 		if (ImGui::ColorEdit3("Sun Colour", sunCol))
 			Scene::SetSunColour({ sunCol[0], sunCol[1], sunCol[2] });
@@ -49,6 +53,7 @@ void Scene::DrawGUI()
 		float sunDir[3] = { m_sunDirection.x, m_sunDirection.y, m_sunDirection.z, };
 		if (ImGui::SliderFloat3("Sun Direction", &sunDir[0], -1, 1, "%.3f"))
 			Scene::SetSunDirection({ sunDir[0], sunDir[1], sunDir[2] });
+
 	}
 
 	if (ImGui::Button("New Object"))
@@ -118,6 +123,16 @@ vec3 Scene::GetSunDirection()
 void Scene::SetSunDirection(vec3 sunDirection)
 {
 	s_instance->m_sunDirection = sunDirection;
+}
+
+vec3 Scene::GetAmbientLightColour()
+{
+	return s_instance->m_ambientColour;
+}
+
+void Scene::SetAmbientLightColour(vec3 ambientColour)
+{
+	s_instance->m_ambientColour = ambientColour;
 }
 
 Scene* Scene::s_instance = nullptr;

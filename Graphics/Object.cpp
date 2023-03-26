@@ -7,6 +7,7 @@
 #include "MeshManager.h"
 #include "TextureManager.h"
 #include "ShaderManager.h"
+#include "MaterialManager.h"
 #include "imgui_stdlib.h"
 
 using std::to_string;
@@ -65,9 +66,27 @@ void Object::Draw()
 	glm::mat4 pvm = Camera::s_instance->GetMatrix() * transform;
 
 	shader->Bind();
+
+	// Positions and Rotations
 	shader->SetMatrixUniform("transformMatrix", pvm);
 	shader->SetMatrixUniform("mMatrix", transform);
-	shader->SetVectorUniform("lightDirection", glm::normalize(Scene::GetSunDirection()));
+	shader->SetVectorUniform("cameraPosition", Camera::s_instance->GetPosition());
+	
+	// Lighting
+	shader->SetVectorUniform("ambientLightColour", Scene::GetAmbientLightColour());
+	shader->SetVectorUniform("sunLightDirection", glm::normalize(Scene::GetSunDirection()));
+	shader->SetVectorUniform("sunLightColour", Scene::GetSunColour());
+
+	// Material Uniforms
+	if (material)
+	{
+		shader->SetVectorUniform("Ka", material->Ka);
+		shader->SetVectorUniform("Kd", material->Kd);
+		shader->SetVectorUniform("Ks", material->Ks);
+		shader->SetFloatUniform("specularPower", material->specularPower);
+	}
+
+	// Texture Uniforms
 	texture->Bind(1);
 	shader->SetIntUniform("diffuseTex", 1);
 
@@ -177,6 +196,34 @@ void Object::DrawGUI()
 						ImGui::SetItemDefaultFocus();
 				}
 				ImGui::EndCombo();
+			}
+
+			string materialStr = "Material##" + to_string(id);
+			if (ImGui::BeginCombo(materialStr.c_str(), materialName.c_str()))
+			{
+				for (auto m : *MaterialManager::Materials())
+				{
+					const bool is_selected = (m.second == material);
+					if (ImGui::Selectable(m.first.c_str(), is_selected))
+					{
+						material = MaterialManager::GetMaterial(m.first);
+						materialName = m.first;
+					}
+
+					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+					if (is_selected)
+						ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
+		
+			if (material)
+			{
+				ImGui::Indent();
+				if (ImGui::CollapsingHeader("Material"))
+				{
+					material->DrawGUI();
+				}
 			}
 		}
 
