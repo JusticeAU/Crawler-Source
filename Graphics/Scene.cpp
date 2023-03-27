@@ -1,4 +1,6 @@
 #include "Scene.h"
+#include "FileUtils.h"
+#include <fstream>
 
 Scene::Scene()
 {
@@ -44,6 +46,11 @@ void Scene::DrawObjects()
 void Scene::DrawGUI()
 {
 	ImGui::Begin("Scene");
+	if (ImGui::Button("Save"))
+		Save();
+	ImGui::SameLine();
+	if (ImGui::Button("Load"))
+		Load();
 
 	float clearCol[3] = { clearColour.r, clearColour.g, clearColour.b, };
 	if (ImGui::ColorEdit3("Clear Colour", clearCol))
@@ -168,5 +175,84 @@ int Scene::GetNumPointLights()
 {
 	return s_instance->m_pointLights.size();
 }
+
+void Scene::Save()
+{
+	// Create/Open file for writing
+	std::ofstream out("scenes/default.scene", std::ofstream::binary);
+
+	// Serialize Scene Configuration
+	
+	// Clear Colour
+	FileUtils::WriteVec(out, clearColour);
+	FileUtils::WriteVec(out, m_ambientColour);
+	
+	// Scene Light Configuration
+	FileUtils::WriteVec(out, m_sunColour);
+	FileUtils::WriteVec(out, m_sunDirection);
+	
+	// Point Lights
+	int numPointLights = m_pointLights.size();
+	FileUtils::WriteInt(out, numPointLights);
+	for (int i = 0; i < numPointLights; i++)
+	{
+		FileUtils::WriteVec(out, m_pointLights[i].position);
+		FileUtils::WriteVec(out, m_pointLights[i].colour);
+		FileUtils::WriteFloat(out, m_pointLights[i].intensity);
+	}
+	
+	// Serialize Objects and Child Objects recursively
+	int numObjects = objects.size();
+	FileUtils::WriteInt(out, numObjects);
+	for (int i = 0; i < numObjects; i++)
+		objects[i]->Write(out);
+
+	out.flush();
+	out.close();
+}
+
+void Scene::Load()
+{
+
+	// Create/Open file for writing
+	std::ifstream in("scenes/default.scene", std::ifstream::binary);
+
+	// Serialize Scene Configuration
+	
+	// Clear Colour
+	FileUtils::ReadVec(in, clearColour);
+	SetClearColour(clearColour);
+	FileUtils::ReadVec(in, m_ambientColour);
+	
+	// Scene Light Configuration
+	FileUtils::ReadVec(in, m_sunColour);
+	FileUtils::ReadVec(in, m_sunDirection);
+	
+	// Point Lights
+	int numPointLights;
+	FileUtils::ReadInt(in, numPointLights);
+	m_pointLights.resize(numPointLights);
+	for (int i = 0; i < numPointLights; i++)
+	{
+		FileUtils::ReadVec(in, m_pointLights[i].position);
+		FileUtils::ReadVec(in, m_pointLights[i].colour);
+		FileUtils::ReadFloat(in, m_pointLights[i].intensity);
+	}
+	
+	// Clear current objects
+	objects.clear();
+
+	//  Objects and Child Objects
+	int numObjects;
+	FileUtils::ReadInt(in, numObjects);
+	for(int i = 0; i < numObjects; i++)
+	{
+		auto o = Scene::CreateObject();
+		o->Read(in);
+	}
+	in.close();
+}
+
+
 
 Scene* Scene::s_instance = nullptr;

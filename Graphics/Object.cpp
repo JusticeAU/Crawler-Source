@@ -9,6 +9,7 @@
 #include "ShaderManager.h"
 #include "MaterialManager.h"
 #include "imgui_stdlib.h"
+#include "FileUtils.h"
 
 using std::to_string;
 
@@ -289,4 +290,51 @@ void Object::DeleteAllChildren()
 		c->DeleteAllChildren();
 
 	children.clear();
+}
+
+void Object::Write(std::ostream& out)
+{
+	FileUtils::WriteString(out, objectName);
+	
+	FileUtils::WriteVec(out, localPosition);
+	FileUtils::WriteVec(out, localRotation);
+	FileUtils::WriteVec(out, localScale);
+	
+	FileUtils::WriteString(out, meshName);
+	FileUtils::WriteString(out, textureName);
+	FileUtils::WriteString(out, shaderName);
+	FileUtils::WriteString(out, materialName);
+
+	// write children
+	int numChildren = children.size();
+	FileUtils::WriteInt(out, numChildren);
+	for (int i = 0; i < numChildren; i++)
+		children[i]->Write(out);
+}
+
+void Object::Read(std::istream& in)
+{
+	FileUtils::ReadString(in, objectName);
+	
+	FileUtils::ReadVec(in, localPosition);
+	FileUtils::ReadVec(in, localRotation);
+	FileUtils::ReadVec(in, localScale);
+
+	FileUtils::ReadString(in, meshName);
+	mesh = MeshManager::GetMesh(meshName);
+	FileUtils::ReadString(in, textureName);
+	texture = TextureManager::GetTexture(textureName);
+	FileUtils::ReadString(in, shaderName);
+	shader = ShaderManager::GetShaderProgram(shaderName);
+	FileUtils::ReadString(in, materialName);
+	material = MaterialManager::GetMaterial(materialName);
+
+	// read children
+	int numChildren;
+	FileUtils::ReadInt(in, numChildren);
+	for (int i = 0; i < numChildren; i++)
+	{
+		auto o = Scene::CreateObject(this);
+		o->Read(in);
+	}
 }

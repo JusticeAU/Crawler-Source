@@ -39,6 +39,9 @@ public:
 	void DrawObjects();
 	void DrawGUI();
 	void CleanUp();
+
+	void Save();
+	void Load();
 protected:
 	Scene();
 	vec3 clearColour;

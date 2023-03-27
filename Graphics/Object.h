@@ -51,4 +51,7 @@ public:
 	void AddChild(Object* child);
 	void CleanUpChildren();
 	void DeleteAllChildren();
+
+	void Write(std::ostream& out);
+	void Read(std::istream& in);
 };
