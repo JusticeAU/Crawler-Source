@@ -6,6 +6,9 @@
 using std::string;
 using std::map;
 
+class Object;
+class aiNode;
+
 class MeshManager
 {
 public:
@@ -25,4 +28,6 @@ protected:
 	void LoadFromFile(const char* filename);
 
 	void LoadAllFiles();
+
+	void CopyNodeHierarchy(aiNode* node, Object* parent);
 };

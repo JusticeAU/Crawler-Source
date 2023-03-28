@@ -8,7 +8,6 @@
 #include "TextureManager.h"
 #include "ShaderManager.h"
 #include "MaterialManager.h"
-#include "imgui_stdlib.h"
 #include "FileUtils.h"
 
 using std::to_string;
@@ -23,14 +22,14 @@ Object::Object(int objectID, string name)
 
 	objectName = name;
 
-	meshName = "_cube";
-	mesh = MeshManager::GetMesh(meshName);
+	meshName = "";
+	mesh = nullptr;
 
-	textureName = "models/numbered_grid.tga";
-	texture = TextureManager::GetTexture(textureName);
+	textureName = "";
+	texture = nullptr;
 
-	shaderName = "shaders/unlitTextured";
-	shader = ShaderManager::GetShaderProgram(shaderName);
+	shaderName = "";
+	shader = nullptr;
 }
 
 void Object::Update(float delta)
@@ -62,6 +61,8 @@ void Object::Update(float delta)
 
 void Object::Draw()
 {
+	if (mesh == nullptr || shader == nullptr || texture == nullptr)
+		return;
 
 	// Combine the matricies
 	glm::mat4 pvm = Camera::s_instance->GetMatrix() * transform;
@@ -160,6 +161,13 @@ void Object::DrawGUI()
 
 			string scaleStr = "Scale##" + to_string(id);
 			ImGui::DragFloat3(scaleStr.c_str(), &localScale[0]);
+
+			ImGui::BeginDisabled();
+			ImGui::InputFloat4("X", &transform[0].x);
+			ImGui::InputFloat4("Y", &transform[1].x);
+			ImGui::InputFloat4("Z", &transform[2].x);
+			ImGui::InputFloat4("T", &transform[3].x);
+			ImGui::EndDisabled();
 		}
 		
 		if (ImGui::CollapsingHeader("Model"))
@@ -181,6 +189,13 @@ void Object::DrawGUI()
 						ImGui::SetItemDefaultFocus();
 				}
 				ImGui::EndCombo();
+			}
+
+			// Mesh node hierarchy
+			if (mesh != nullptr && mesh->childNodes.size() > 0)
+			{
+				mesh->childNodes[0]->parent = this;
+				mesh->childNodes[0]->DrawGUISimple();
 			}
 
 			string textureStr = "Texture##" + to_string(id);
@@ -259,6 +274,41 @@ void Object::DrawGUI()
 		}
 		
 
+		ImGui::TreePop();
+	}
+}
+
+void Object::DrawGUISimple()
+{
+	mesh = MeshManager::GetMesh("_cube");
+	shader = ShaderManager::GetShaderProgram("shaders/phong");
+	texture = TextureManager::GetTexture("models/uv_test.tga");
+	Update(0.0f);
+	Draw();
+
+	string idStr = to_string(id);
+	string objectStr = objectName + "##" + idStr;
+	if (ImGui::TreeNode(objectStr.c_str()))
+	{
+		if (ImGui::CollapsingHeader("Transform"))
+		{
+			string positionStr = "Pos##" + to_string(id);
+			ImGui::DragFloat3(positionStr.c_str(), &localPosition[0]);
+
+			string rotationStr = "Rot##" + to_string(id);
+			ImGui::SliderFloat3(rotationStr.c_str(), &localRotation[0], -180, 180);
+
+			string scaleStr = "Scale##" + to_string(id);
+			ImGui::DragFloat3(scaleStr.c_str(), &localScale[0]);
+		}
+
+		int childCount = children.size();
+		string childrenString = "Children (" + to_string(childCount) + ")##" + to_string(id);
+		if (ImGui::CollapsingHeader(childrenString.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
+		{
+			for (auto c : children)
+				c->DrawGUISimple();
+		}
 		ImGui::TreePop();
 	}
 }

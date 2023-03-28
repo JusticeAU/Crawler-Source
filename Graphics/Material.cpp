@@ -1,5 +1,6 @@
 #include "Material.h"
 #include "TextureManager.h"
+#include <fstream>
 
 void Material::DrawGUI()
 {
@@ -80,4 +81,31 @@ void Material::DrawGUI()
 		}
 		ImGui::EndCombo();
 	}
+
+	if (ImGui::Button("Save"))
+		SaveToFile();
+}
+
+void Material::SaveToFile()
+{
+	std::fstream file(filePath, std::ios::out);
+	file << "Ka " << Ka.x << " " << Ka.z << " " << Ka.z << std::endl;
+	file << "Kd " << Kd.x << " " << Kd.z << " " << Kd.z << std::endl;
+	file << "Ks " << Ks.x << " " << Ks.z << " " << Ks.z << std::endl;
+	file << "Ns " << specularPower << std::endl;
+
+	// need to clean filepaths out of filenames here.
+	// Currently .mtl files save the filenames as relative paths to themselves
+	int from = mapKdName.find_last_of('/')+1;
+	string filename = mapKdName.substr(from, mapKdName.length() - from);
+	file << "map_Kd " << filename << std::endl;
+
+	from = mapKsName.find_last_of('/') + 1;
+	filename = mapKsName.substr(from, mapKsName.length() - from);
+	file << "map_Ks " << filename << std::endl;
+
+	from = mapBumpName.find_last_of('/') + 1;
+	filename = mapBumpName.substr(from, mapBumpName.length() - from);
+	file << "bump " << filename << std::endl;
+	file.close();
 }

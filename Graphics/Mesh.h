@@ -8,6 +8,8 @@ using glm::vec2;
 
 using std::vector;
 
+class Object;
+
 class Mesh
 {
 public:
@@ -25,4 +27,7 @@ public:
 public:
 	unsigned int tris;
 	unsigned int vao, vbo, ibo;
+
+	// Node Heirarchy Dev
+	vector<Object*> childNodes;
 };

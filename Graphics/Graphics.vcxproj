@@ -218,6 +218,9 @@
     <None Include="..\working\shaders\phong.FRAG" />
     <None Include="..\working\shaders\phong.SHAD" />
     <None Include="..\working\shaders\phong.VERT" />
+    <None Include="..\working\shaders\silhoutteTransparent.FRAG" />
+    <None Include="..\working\shaders\silhoutteTransparent.SHAD" />
+    <None Include="..\working\shaders\silhoutteTransparent.VERT" />
     <None Include="..\working\shaders\unlitTextured.FRAG" />
     <None Include="..\working\shaders\unlitTextured.SHAD" />
     <None Include="..\working\shaders\unlitTextured.VERT" />

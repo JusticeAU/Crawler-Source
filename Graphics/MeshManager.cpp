@@ -5,6 +5,7 @@
 #include "assimp/postprocess.h"
 #include <filesystem>
 #include "LogUtils.h"
+#include "Object.h"
 
 using std::vector;
 namespace fs = std::filesystem;
@@ -305,9 +306,14 @@ void MeshManager::LoadFromFile(const char* filename)
 	Mesh* loadedMesh = new Mesh();
 	loadedMesh->Initialise(numV, vertices, indices.size(), indices.data());
 	delete[] vertices;
-
-
 	meshes.emplace(filename, loadedMesh);
+
+	// Load nodes in to loadedMesh->childNodes.
+	Object* rootNode = new Object(0, scene->mRootNode->mName.C_Str());
+	loadedMesh->childNodes.push_back(rootNode);
+	rootNode->localPosition = { scene->mRootNode->mTransformation.a4, scene->mRootNode->mTransformation.b4, scene->mRootNode->mTransformation.c4 };
+	rootNode->localScale = { scene->mRootNode->mTransformation.a1, scene->mRootNode->mTransformation.b2, scene->mRootNode->mTransformation.c3 };
+	CopyNodeHierarchy(scene->mRootNode, rootNode);
 }
 
 void MeshManager::LoadAllFiles()
@@ -322,6 +328,19 @@ void MeshManager::LoadAllFiles()
 			LoadFromFile(d.path().generic_string().c_str());
 		}
 			
+	}
+}
+
+void MeshManager::CopyNodeHierarchy(aiNode* node, Object* parent)
+{
+	for (int i = 0; i < node->mNumChildren; i++)
+	{
+		Object* object = new Object(0, node->mChildren[i]->mName.C_Str());
+		parent->children.push_back(object);
+		object->parent = parent;
+		object->localPosition = { node->mChildren[i]->mTransformation.a4, node->mChildren[i]->mTransformation.b4, node->mChildren[i]->mTransformation.c4};
+		object->localScale = { node->mChildren[i]->mTransformation.a1, node->mChildren[i]->mTransformation.b2, node->mChildren[i]->mTransformation.c3 };
+		CopyNodeHierarchy(node->mChildren[i], object);
 	}
 }
 

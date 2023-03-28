@@ -20,7 +20,8 @@ protected:
 	map<string, Material*> materials;
 
 	void LoadFromFile(const char* filename);
-
 	void LoadAllFiles();
+
+	string newFileName = "models/model/modelname.mtl";
 };
 

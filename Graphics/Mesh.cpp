@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "Object.h"
 
 void Mesh::Initialise(unsigned int vertCount, const Vertex* vertices, unsigned int indexCount, unsigned int* indices)
 {

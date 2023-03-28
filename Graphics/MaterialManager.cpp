@@ -26,6 +26,23 @@ Material* MaterialManager::GetMaterial(string name)
 void MaterialManager::DrawGUI()
 {
 	ImGui::Begin("Material Manager");
+	
+	if (ImGui::Button("New"))
+	{
+		// Write a mtl file to disk and then load it
+		Material* material = new Material();
+		s_instance->materials.emplace(s_instance->newFileName, material);
+		material->filePath = s_instance->newFileName;
+		material->SaveToFile();
+	}
+
+	string newName = s_instance->newFileName;
+	if (ImGui::InputText("Filename", &newName))
+	{
+		s_instance->newFileName = newName;
+	}
+
+
 	ImGui::BeginDisabled();
 	int materialCount = s_instance->materials.size();
 	ImGui::DragInt("Material Count", &materialCount);
@@ -45,6 +62,8 @@ MaterialManager::MaterialManager()
 void MaterialManager::LoadFromFile(const char* filename)
 {
 	Material* material = new Material();
+	material->filePath = filename;
+	
 	std::fstream file(filename, std::ios::in);
 	std::string line;
 	std::string header;

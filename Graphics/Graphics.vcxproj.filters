@@ -228,5 +228,14 @@
     <None Include="..\working\shaders\unlitTextured.VERT">
       <Filter>Source Files\Application\Graphics\Shaders</Filter>
     </None>
+    <None Include="..\working\shaders\silhoutteTransparent.FRAG">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\silhoutteTransparent.SHAD">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\silhoutteTransparent.VERT">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -47,6 +47,7 @@ public:
 	void Update(float delta);
 	void Draw();
 	void DrawGUI();
+	void DrawGUISimple();
 	
 	void AddChild(Object* child);
 	void CleanUpChildren();

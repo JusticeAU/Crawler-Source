@@ -1,0 +1,7 @@
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Ns 20
+map_Kd Buck_albedo.tga
+map_Ks Buck_metallic.tga
+bump Buck_normal.tga
