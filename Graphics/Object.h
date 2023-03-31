@@ -45,6 +45,8 @@ public:
 	Material* material;
 	string materialName;
 
+	int selectedBone = 0;
+
 	void Update(float delta);
 	void Draw();
 	void DrawGUI();

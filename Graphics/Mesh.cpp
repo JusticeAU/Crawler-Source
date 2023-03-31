@@ -31,6 +31,13 @@ void Mesh::Initialise(unsigned int vertCount, const Vertex* vertices, unsigned i
 	glEnableVertexAttribArray(4); // Tangents
 	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, tangent));
 
+	// skinned mesh bone IDs and Weights
+	glEnableVertexAttribArray(5); // boneID on mesh
+	glVertexAttribIPointer(5, 4, GL_INT, sizeof(Vertex), (void*)offsetof(Vertex, boneID));
+	glEnableVertexAttribArray(6); // weight of bone
+	glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, boneWeight));
+
+
 	// Bind indicies if there are any
 	if (indexCount != 0)
 	{

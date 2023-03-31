@@ -237,5 +237,14 @@
     <None Include="..\working\shaders\silhoutteTransparent.VERT">
       <Filter>Source Files\Application\Graphics\Shaders</Filter>
     </None>
+    <None Include="..\working\shaders\boneWeights.FRAG">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\boneWeights.SHAD">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\boneWeights.VERT">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

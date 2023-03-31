@@ -53,7 +53,7 @@ Application::Application()
 	ImGui_ImplOpenGL3_Init();
 
 	// Enable OGL depth testing.
-	//glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 
 	// Enable blending
 	glEnable(GL_BLEND);

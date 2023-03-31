@@ -77,6 +77,8 @@ void Object::Draw()
 	shader->SetFloat3ArrayUniform("PointLightPositions", numLights, Scene::GetPointLightPositions());
 	shader->SetFloat3ArrayUniform("PointLightColours", numLights, Scene::GetPointLightColours());
 
+	shader->SetIntUniform("selectedBone", selectedBone);
+
 	// Texture Uniforms
 	texture->Bind(1);
 	shader->SetIntUniform("diffuseTex", 1);
@@ -186,7 +188,14 @@ void Object::DrawGUI()
 						ImGui::SetItemDefaultFocus();
 				}
 				ImGui::EndCombo();
+
 			}
+			if (mesh != nullptr && mesh->numBones > 0)
+			{
+				string boneStr = "Selected Bone##" + to_string(id);
+					ImGui::DragInt(boneStr.c_str(), &selectedBone, 0.1, 0, mesh->numBones);
+			}
+		
 
 			// Mesh node hierarchy
 			if (mesh != nullptr && mesh->childNodes.size() > 0)

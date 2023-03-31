@@ -310,9 +310,6 @@ void MeshManager::LoadFromFile(const char* filename)
 	}
 
 	Mesh* loadedMesh = new Mesh();
-	loadedMesh->Initialise(numV, vertices, indices.size(), indices.data());
-	delete[] vertices;
-	meshes.emplace(filename, loadedMesh);
 
 	// Load nodes in to loadedMesh->childNodes.
 	Object* rootNode = new Object(0, scene->mRootNode->mName.C_Str());
@@ -337,6 +334,47 @@ void MeshManager::LoadFromFile(const char* filename)
 	rootNode->localTransform[3][2] = scene->mRootNode->mTransformation.c4;
 	rootNode->localTransform[3][3] = scene->mRootNode->mTransformation.d4;
 	CopyNodeHierarchy(scene->mRootNode, rootNode);
+
+	// Load bone data.
+	for (int i = 0; i < mesh->mNumBones; i++)
+	{
+		// find or allocate bone ID;
+		string boneName = mesh->mBones[i]->mName.data;
+		loadedMesh->boneMapping.emplace(boneName, i);
+		loadedMesh->numBones++;
+
+		// process all weights associated with the bone
+		for (int boneWeightIndex = 0; boneWeightIndex < mesh->mBones[i]->mNumWeights; boneWeightIndex++)
+		{
+			int vertID = mesh->mBones[i]->mWeights[boneWeightIndex].mVertexId;
+			float vertWeight = mesh->mBones[i]->mWeights[boneWeightIndex].mWeight;
+
+			// find a slot on this vert to allocate this bone id and weight
+			for (int j = 0; j < 4; j++)
+			{
+				if (vertices[vertID].boneID[j] == -1) // free slot
+				{
+					vertices[vertID].boneID[j] = i; // assign our bone index to it
+					vertices[vertID].boneWeight[j] = vertWeight; // and weight
+					//string log = "Placed bone ID" + std::to_string(i) + " in to slot " + std::to_string(j);
+					//LogUtils::Log(log.c_str());
+					break;
+				}
+				if (j == 3)
+				{
+					LogUtils::Log("More than 4 bones affecting this vert!!!");
+					// shouldn't get here - if we did then there is a vert with more than 4 bones allocated to it. rip!
+					continue;
+				}
+			}
+		}
+	}
+
+	// Initialise mesh in OGL
+	loadedMesh->Initialise(numV, vertices, indices.size(), indices.data());
+	delete[] vertices;
+	meshes.emplace(filename, loadedMesh);
+
 }
 
 void MeshManager::LoadAllFiles()

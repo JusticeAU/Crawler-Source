@@ -212,6 +212,9 @@
     <ClInclude Include="TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\working\shaders\boneWeights.FRAG" />
+    <None Include="..\working\shaders\boneWeights.SHAD" />
+    <None Include="..\working\shaders\boneWeights.VERT" />
     <None Include="..\working\shaders\lambertLitSingleLight.FRAG" />
     <None Include="..\working\shaders\lambertLitSingleLight.SHAD" />
     <None Include="..\working\shaders\lambertLitSingleLight.VERT" />

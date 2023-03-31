@@ -19,7 +19,7 @@ public:
 
 	float m_horizontal = -90.0f;
 	float m_vertical = 0.0f;
-	float moveSpeed = 1.5f;
+	float moveSpeed = 50.0f;
 	float lookSpeed = .3f;
 	float nearClip = 0.1f;
 	float farClip = 2000.0f;
