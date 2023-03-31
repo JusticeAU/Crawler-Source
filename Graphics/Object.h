@@ -26,6 +26,7 @@ public:
 	vec3 localRotation;
 	vec3 localScale;
 	mat4 transform;
+	mat4 localTransform;
 	
 	bool markedForDeletion = false;
 

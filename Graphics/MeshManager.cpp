@@ -3,6 +3,7 @@
 #include "assimp/scene.h"
 #include "assimp/cimport.h"
 #include "assimp/postprocess.h"
+#include "assimp/Importer.hpp"
 #include <filesystem>
 #include "LogUtils.h"
 #include "Object.h"
@@ -237,10 +238,15 @@ void MeshManager::CreateQuad()
 
 void MeshManager::LoadFromFile(const char* filename)
 {
-	// read all vertices from the model
-	const aiScene* scene = aiImportFile(
-		filename,
-		aiProcess_FlipUVs);
+	// create an instance so we can easily configure it.
+	Assimp::Importer importer;
+
+	// disable pivot preserving, not needed for our purposes and gummys up the node heirarchy with noise.
+	importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
+
+	const aiScene* scene = importer.ReadFile(filename,
+		aiProcess_FlipUVs |
+		aiProcess_CalcTangentSpace);
 	
 
 	// Just use the first mesh for now.
@@ -311,8 +317,25 @@ void MeshManager::LoadFromFile(const char* filename)
 	// Load nodes in to loadedMesh->childNodes.
 	Object* rootNode = new Object(0, scene->mRootNode->mName.C_Str());
 	loadedMesh->childNodes.push_back(rootNode);
-	rootNode->localPosition = { scene->mRootNode->mTransformation.a4, scene->mRootNode->mTransformation.b4, scene->mRootNode->mTransformation.c4 };
-	rootNode->localScale = { scene->mRootNode->mTransformation.a1, scene->mRootNode->mTransformation.b2, scene->mRootNode->mTransformation.c3 };
+	rootNode->localTransform[0][0] = scene->mRootNode->mTransformation.a1;
+	rootNode->localTransform[0][1] = scene->mRootNode->mTransformation.b1;
+	rootNode->localTransform[0][2] = scene->mRootNode->mTransformation.c1;
+	rootNode->localTransform[0][3] = scene->mRootNode->mTransformation.d1;
+
+	rootNode->localTransform[1][0] = scene->mRootNode->mTransformation.a2;
+	rootNode->localTransform[1][1] = scene->mRootNode->mTransformation.b2;
+	rootNode->localTransform[1][2] = scene->mRootNode->mTransformation.c2;
+	rootNode->localTransform[1][3] = scene->mRootNode->mTransformation.d2;
+
+	rootNode->localTransform[2][0] = scene->mRootNode->mTransformation.a3;
+	rootNode->localTransform[2][1] = scene->mRootNode->mTransformation.b3;
+	rootNode->localTransform[2][2] = scene->mRootNode->mTransformation.c3;
+	rootNode->localTransform[2][3] = scene->mRootNode->mTransformation.d3;
+
+	rootNode->localTransform[3][0] = scene->mRootNode->mTransformation.a4;
+	rootNode->localTransform[3][1] = scene->mRootNode->mTransformation.b4;
+	rootNode->localTransform[3][2] = scene->mRootNode->mTransformation.c4;
+	rootNode->localTransform[3][3] = scene->mRootNode->mTransformation.d4;
 	CopyNodeHierarchy(scene->mRootNode, rootNode);
 }
 
@@ -338,8 +361,27 @@ void MeshManager::CopyNodeHierarchy(aiNode* node, Object* parent)
 		Object* object = new Object(0, node->mChildren[i]->mName.C_Str());
 		parent->children.push_back(object);
 		object->parent = parent;
-		object->localPosition = { node->mChildren[i]->mTransformation.a4, node->mChildren[i]->mTransformation.b4, node->mChildren[i]->mTransformation.c4};
-		object->localScale = { node->mChildren[i]->mTransformation.a1, node->mChildren[i]->mTransformation.b2, node->mChildren[i]->mTransformation.c3 };
+
+		object->localTransform[0][0] = node->mChildren[i]->mTransformation.a1;
+		object->localTransform[0][1] = node->mChildren[i]->mTransformation.b1;
+		object->localTransform[0][2] = node->mChildren[i]->mTransformation.c1;
+		object->localTransform[0][3] = node->mChildren[i]->mTransformation.d1;
+
+		object->localTransform[1][0] = node->mChildren[i]->mTransformation.a2;
+		object->localTransform[1][1] = node->mChildren[i]->mTransformation.b2;
+		object->localTransform[1][2] = node->mChildren[i]->mTransformation.c2;
+		object->localTransform[1][3] = node->mChildren[i]->mTransformation.d2;
+
+		object->localTransform[2][0] = node->mChildren[i]->mTransformation.a3;
+		object->localTransform[2][1] = node->mChildren[i]->mTransformation.b3;
+		object->localTransform[2][2] = node->mChildren[i]->mTransformation.c3;
+		object->localTransform[2][3] = node->mChildren[i]->mTransformation.d3;
+
+		object->localTransform[3][0] = node->mChildren[i]->mTransformation.a4;
+		object->localTransform[3][1] = node->mChildren[i]->mTransformation.b4;
+		object->localTransform[3][2] = node->mChildren[i]->mTransformation.c4;
+		object->localTransform[3][3] = node->mChildren[i]->mTransformation.d4;
+
 		CopyNodeHierarchy(node->mChildren[i], object);
 	}
 }

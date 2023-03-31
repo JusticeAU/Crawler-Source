@@ -19,6 +19,7 @@ Object::Object(int objectID, string name)
 	localRotation = { 0,0,0 };
 	localScale = { 1,1,1 };
 	transform = mat4(1);
+	localTransform = mat4(1);
 
 	objectName = name;
 
@@ -39,19 +40,11 @@ void Object::Update(float delta)
 	{
 		transform =
 			parent->transform
-			* glm::translate(glm::mat4(1), localPosition)
-			* glm::rotate(glm::mat4(1), glm::radians(localRotation.z), glm::vec3{ 0,0,1 })
-			* glm::rotate(glm::mat4(1), glm::radians(localRotation.y), glm::vec3{ 0,1,0 })
-			* glm::rotate(glm::mat4(1), glm::radians(localRotation.x), glm::vec3{ 1,0,0 })
-			* glm::scale(glm::mat4(1), localScale);
+			* localTransform;
 	}
 	else
 	{
-		transform = glm::translate(glm::mat4(1), localPosition)
-			* glm::rotate(glm::mat4(1), glm::radians(localRotation.z), glm::vec3{ 0,0,1 })
-			* glm::rotate(glm::mat4(1), glm::radians(localRotation.y), glm::vec3{ 0,1,0 })
-			* glm::rotate(glm::mat4(1), glm::radians(localRotation.x), glm::vec3{ 1,0,0 })
-			* glm::scale(glm::mat4(1), localScale);
+		transform = localTransform;
 	}
 
 	for (auto c : children)
@@ -162,12 +155,16 @@ void Object::DrawGUI()
 			string scaleStr = "Scale##" + to_string(id);
 			ImGui::DragFloat3(scaleStr.c_str(), &localScale[0]);
 
-			ImGui::BeginDisabled();
+			//ImGui::BeginDisabled();
 			ImGui::InputFloat4("X", &transform[0].x);
 			ImGui::InputFloat4("Y", &transform[1].x);
 			ImGui::InputFloat4("Z", &transform[2].x);
 			ImGui::InputFloat4("T", &transform[3].x);
-			ImGui::EndDisabled();
+			ImGui::InputFloat4("lX", &localTransform[0].x);
+			ImGui::InputFloat4("lY", &localTransform[1].x);
+			ImGui::InputFloat4("lZ", &localTransform[2].x);
+			ImGui::InputFloat4("lT", &localTransform[3].x);
+			//ImGui::EndDisabled();
 		}
 		
 		if (ImGui::CollapsingHeader("Model"))
@@ -300,6 +297,17 @@ void Object::DrawGUISimple()
 
 			string scaleStr = "Scale##" + to_string(id);
 			ImGui::DragFloat3(scaleStr.c_str(), &localScale[0]);
+
+			//ImGui::BeginDisabled();
+			ImGui::InputFloat4("X", &transform[0].x);
+			ImGui::InputFloat4("Y", &transform[1].x);
+			ImGui::InputFloat4("Z", &transform[2].x);
+			ImGui::InputFloat4("T", &transform[3].x);
+			ImGui::InputFloat4("lX", &localTransform[0].x);
+			ImGui::InputFloat4("lY", &localTransform[1].x);
+			ImGui::InputFloat4("lZ", &localTransform[2].x);
+			ImGui::InputFloat4("lT", &localTransform[3].x);
+			//ImGui::EndDisabled();
 		}
 
 		int childCount = children.size();
