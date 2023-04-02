@@ -108,6 +108,13 @@ void ShaderProgram::SetMatrixUniform(std::string variableName, glm::mat4 value)
 	glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, &value[0][0]);
 }
 
+void ShaderProgram::SetMatrixArrayUniform(std::string variableName, int elements, const glm::mat4* firstValue)
+{
+	GLint uniformLocation = glGetUniformLocation(shaderProgramID, variableName.c_str());
+	// can use the transpose field here to flip the row/column major order of the matrix.
+	glUniformMatrix4fv(uniformLocation, elements, GL_FALSE, (float*)firstValue);
+}
+
 void ShaderProgram::SetIntUniform(std::string variableName, int value)
 {
 	GLint uniformLocation = glGetUniformLocation(shaderProgramID, variableName.c_str());

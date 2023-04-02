@@ -31,6 +31,11 @@ Object::Object(int objectID, string name)
 
 	shaderName = "";
 	shader = nullptr;
+
+	for (int i = 0; i < MAX_BONES; i++)
+	{
+		boneTransforms[i] = glm::mat4(1);
+	}
 }
 
 void Object::Update(float delta)
@@ -45,6 +50,19 @@ void Object::Update(float delta)
 	else
 	{
 		transform = localTransform;
+	}
+
+	/*for (int i = 0; i < MAX_BONES; i++)
+	{
+		boneTransforms[i] = glm::translate(glm::mat4(1), glm::vec3(sin(glfwGetTime() * (1 + i)), cos(glfwGetTime()), sin(glfwGetTime() * 2)));
+	}*/
+	if (mesh!= nullptr && mesh->animations.size() > 0)
+	{
+		mat4* boneData = GetBoneMatrixBuffer(selectedFrame);
+		for (int i = 0; i < 50; i++)
+		{
+			boneTransforms[i] = boneData[i];
+		}
 	}
 
 	for (auto c : children)
@@ -77,7 +95,9 @@ void Object::Draw()
 	shader->SetFloat3ArrayUniform("PointLightPositions", numLights, Scene::GetPointLightPositions());
 	shader->SetFloat3ArrayUniform("PointLightColours", numLights, Scene::GetPointLightColours());
 
-	shader->SetIntUniform("selectedBone", selectedBone);
+	// skinned mesh rendering
+	shader->SetIntUniform("selectedBone", selectedBone); // dev testing really, used by boneWeights shader
+	shader->SetMatrixArrayUniform("boneTransforms", MAX_BONES, &boneTransforms[0]);
 
 	// Texture Uniforms
 	texture->Bind(1);
@@ -193,7 +213,13 @@ void Object::DrawGUI()
 			if (mesh != nullptr && mesh->numBones > 0)
 			{
 				string boneStr = "Selected Bone##" + to_string(id);
-					ImGui::DragInt(boneStr.c_str(), &selectedBone, 0.1, 0, mesh->numBones);
+				ImGui::DragInt(boneStr.c_str(), &selectedBone, 0.1, 0, mesh->numBones);
+
+				if (mesh->animations.size() > 0)
+				{
+					string frameStr = "Selected Frame##" + to_string(id);
+					ImGui::DragInt(frameStr.c_str(), &selectedFrame, 0.5, 0, mesh->animations[0].duration);
+				}
 			}
 		
 
@@ -404,4 +430,60 @@ void Object::Read(std::istream& in)
 		auto o = Scene::CreateObject(this);
 		o->Read(in);
 	}
+}
+
+mat4* Object::GetBoneMatrixBuffer(int frame)
+{
+	vector<mat4> boneTransforms;
+	boneTransforms.resize(MAX_BONES);
+	mat4 accumulated(1);
+
+	// do stuff
+	// start at rootbone, call process node
+	ProcessNode(frame, mesh->childNodes[0], boneTransforms, accumulated);
+
+	mat4* transformData = new mat4[MAX_BONES];
+
+	for (int i = 0; i < MAX_BONES; i++)
+		transformData[i] = boneTransforms[i];
+
+	return transformData;
+}
+
+void Object::ProcessNode(int frame, Object* node, vector<mat4>& boneTransforms, mat4 accumulated)
+{
+	// look up if node has a matching bone/animation node
+	string nodeName = node->objectName;
+	mat4 nodeTransformation = node->transform;
+	auto bufferIndex = mesh->boneMapping.find(nodeName);
+	if (bufferIndex != mesh->boneMapping.end())
+	{
+		// Get key from animation
+		auto channel = mesh->animations[0].channels.find(nodeName);
+		Mesh::Animation::AnimationKey key = channel->second.keys[frame];
+		// Apply transformation.
+		// generate scale matrix
+		mat4 scale = glm::scale(glm::mat4(1), key.scale);
+		// generate rotation matrix
+		mat4 rotate = glm::mat4_cast(key.rotation);
+		// generate translation matrix
+		mat4 translate = glm::translate(glm::mat4(1), key.position);
+		nodeTransformation = translate * rotate * scale;
+	}
+	else
+	{
+		// node is not a bone, dont think we'll get here much??
+	}
+	
+	mat4 globalTransform = accumulated * nodeTransformation;
+	// apply it the transform buffer, and a cumulative buffer 
+	if (bufferIndex != mesh->boneMapping.end())
+	{
+		boneTransforms[bufferIndex->second] = globalTransform * mesh->boneInfo[bufferIndex->second].offset;
+	}
+
+	// call this function again on each child object
+	for (auto c : node->children)
+		ProcessNode(frame, c, boneTransforms, globalTransform);
+
 }

@@ -13,6 +13,8 @@ class Texture;
 class ShaderProgram;
 class Material;
 
+const int MAX_BONES = 100;
+
 class Object
 {
 public:
@@ -46,6 +48,9 @@ public:
 	string materialName;
 
 	int selectedBone = 0;
+	int selectedFrame = 0;
+
+	mat4 boneTransforms[MAX_BONES];
 
 	void Update(float delta);
 	void Draw();
@@ -58,4 +63,7 @@ public:
 
 	void Write(std::ostream& out);
 	void Read(std::istream& in);
+
+	mat4* GetBoneMatrixBuffer(int frame);
+	void ProcessNode(int frame, Object* node, vector<mat4>& boneTransforms, mat4 accumulated);
 };

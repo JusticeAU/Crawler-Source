@@ -246,5 +246,14 @@
     <None Include="..\working\shaders\boneWeights.VERT">
       <Filter>Source Files\Application\Graphics\Shaders</Filter>
     </None>
+    <None Include="..\working\shaders\skinnedMeshDev.FRAG">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\skinnedMeshDev.SHAD">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\skinnedMeshDev.VERT">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

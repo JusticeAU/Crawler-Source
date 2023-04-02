@@ -6,6 +6,9 @@
 // for matrix transforms
 #include "ext\matrix_transform.hpp"
 #include "ext\matrix_clip_space.hpp"
+#include "ext\quaternion_float.hpp"
+#include "ext\quaternion_common.hpp"
+#include "gtx/quaternion.hpp"
 
 // for imgui
 #include "imgui.h"

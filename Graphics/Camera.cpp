@@ -2,7 +2,14 @@
 
 Camera::Camera(float aspect, GLFWwindow* window)
 {
-	position = { 0, 2, 10 };
+	//position = { 0, 2, 10 };
+	
+	// back anim test
+	position = { 43, 302, 330 };
+	m_horizontal = -94.0f;
+	m_vertical = -26.0f;
+	// end buck anim test
+
 	this->aspect = aspect;
 
 	view = glm::translate(glm::mat4(1), position);

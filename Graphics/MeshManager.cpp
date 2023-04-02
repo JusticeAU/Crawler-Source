@@ -336,11 +336,34 @@ void MeshManager::LoadFromFile(const char* filename)
 	CopyNodeHierarchy(scene->mRootNode, rootNode);
 
 	// Load bone data.
+	loadedMesh->boneInfo.resize(mesh->mNumBones);
 	for (int i = 0; i < mesh->mNumBones; i++)
 	{
 		// find or allocate bone ID;
 		string boneName = mesh->mBones[i]->mName.data;
 		loadedMesh->boneMapping.emplace(boneName, i);
+
+		// bone offset boi
+		loadedMesh->boneInfo[i].offset[0][0] = mesh->mBones[i]->mOffsetMatrix.a1;
+		loadedMesh->boneInfo[i].offset[0][1] = mesh->mBones[i]->mOffsetMatrix.b1;
+		loadedMesh->boneInfo[i].offset[0][2] = mesh->mBones[i]->mOffsetMatrix.c1;
+		loadedMesh->boneInfo[i].offset[0][3] = mesh->mBones[i]->mOffsetMatrix.d1;
+
+		loadedMesh->boneInfo[i].offset[1][0] = mesh->mBones[i]->mOffsetMatrix.a2;
+		loadedMesh->boneInfo[i].offset[1][1] = mesh->mBones[i]->mOffsetMatrix.b2;
+		loadedMesh->boneInfo[i].offset[1][2] = mesh->mBones[i]->mOffsetMatrix.c2;
+		loadedMesh->boneInfo[i].offset[1][3] = mesh->mBones[i]->mOffsetMatrix.d2;
+
+		loadedMesh->boneInfo[i].offset[2][0] = mesh->mBones[i]->mOffsetMatrix.a3;
+		loadedMesh->boneInfo[i].offset[2][1] = mesh->mBones[i]->mOffsetMatrix.b3;
+		loadedMesh->boneInfo[i].offset[2][2] = mesh->mBones[i]->mOffsetMatrix.c3;
+		loadedMesh->boneInfo[i].offset[2][3] = mesh->mBones[i]->mOffsetMatrix.d3;
+
+		loadedMesh->boneInfo[i].offset[3][0] = mesh->mBones[i]->mOffsetMatrix.a4;
+		loadedMesh->boneInfo[i].offset[3][1] = mesh->mBones[i]->mOffsetMatrix.b4;
+		loadedMesh->boneInfo[i].offset[3][2] = mesh->mBones[i]->mOffsetMatrix.c4;
+		loadedMesh->boneInfo[i].offset[3][3] = mesh->mBones[i]->mOffsetMatrix.d4;
+
 		loadedMesh->numBones++;
 
 		// process all weights associated with the bone
@@ -368,6 +391,43 @@ void MeshManager::LoadFromFile(const char* filename)
 				}
 			}
 		}
+	}
+
+	// Load Animation Data
+	for (int i = 0; i < scene->mNumAnimations; i++) // for each animation
+	{
+		Mesh::Animation anim;
+		anim.name = scene->mAnimations[i]->mName.C_Str();
+		string log = "Processing Animation: " + anim.name;
+		LogUtils::Log(log.c_str());
+		anim.duration = scene->mAnimations[i]->mDuration;
+		anim.ticksPerSecond = scene->mAnimations[i]->mTicksPerSecond;
+		anim.numChannels = scene->mAnimations[i]->mNumChannels;
+
+		for (int j = 0; j < anim.numChannels; j++) // for each channel in the animation
+		{
+			Mesh::Animation::AnimationChannel channel;
+			channel.name = scene->mAnimations[i]->mChannels[j]->mNodeName.C_Str();
+			int keyCount = scene->mAnimations[i]->mChannels[j]->mNumPositionKeys;
+			for (int k = 0; k < keyCount; k++) // for each key in the channel in the animation
+			{
+				channel.keys[k].position.x = scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mValue.x;
+				channel.keys[k].position.y = scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mValue.y;
+				channel.keys[k].position.z = scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mValue.z;
+
+				channel.keys[k].rotation.x = scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mValue.x;
+				channel.keys[k].rotation.y = scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mValue.y;
+				channel.keys[k].rotation.z = scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mValue.z;
+				channel.keys[k].rotation.w = scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mValue.w;
+
+				channel.keys[k].scale.x = scene->mAnimations[i]->mChannels[j]->mScalingKeys[k].mValue.x;
+				channel.keys[k].scale.y = scene->mAnimations[i]->mChannels[j]->mScalingKeys[k].mValue.y;
+				channel.keys[k].scale.z = scene->mAnimations[i]->mChannels[j]->mScalingKeys[k].mValue.z;
+			}
+			anim.channels.emplace(channel.name, channel);
+		}
+
+		loadedMesh->animations.push_back(anim);
 	}
 
 	// Initialise mesh in OGL
