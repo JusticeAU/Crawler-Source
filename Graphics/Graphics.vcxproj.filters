@@ -199,6 +199,9 @@
     <ClInclude Include="Light.h">
       <Filter>Source Files\Application\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="ai2glm.h">
+      <Filter>Source Files\StaticUtility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\working\shaders\phong.FRAG">

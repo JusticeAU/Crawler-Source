@@ -7,6 +7,7 @@
 using glm::vec4;
 using glm::vec3;
 using glm::vec2;
+using glm::quat;
 
 using std::string;
 using std::vector;
@@ -33,16 +34,16 @@ public:
 		glm::mat4 offset = glm::mat4(1);
 	};
 
-	struct Animation
+	struct Animation // an animation contains some meta data and a collection of channels (bones) which contain a collection of keys (position, rotation, scale).
 	{
-		struct AnimationKey
+		struct AnimationKey // a key is a keyframe of information about a particular bone.
 		{
 			vec3 position;
-			glm::quat rotation;
+			quat rotation;
 			vec3 scale;
 		};
 
-		struct AnimationChannel
+		struct AnimationChannel // a channel is a bone
 		{
 			string name;
 			AnimationKey keys[500];
@@ -62,13 +63,13 @@ public:
 	unsigned int tris;
 	unsigned int vao, vbo, ibo;
 
-	// Node Heirarchy Dev
+	// Node Hierarchy
 	vector<Object*> childNodes;
 
 	// Bone mapping
-	map<string, int> boneMapping;
 	int numBones = 0;
-	vector<BoneInfo> boneInfo;
+	map<string, int> boneMapping;	// boneName and index pair. The index is useed to address in to boneInfo and assign transformations in to the buffer for the vertex shader.
+	vector<BoneInfo> boneInfo;	// contains the offset for the bone.
 
 	vector<Animation> animations;
 };

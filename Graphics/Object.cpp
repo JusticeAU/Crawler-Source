@@ -9,6 +9,7 @@
 #include "ShaderManager.h"
 #include "MaterialManager.h"
 #include "FileUtils.h"
+#include "LogUtils.h"
 
 using std::to_string;
 
@@ -32,14 +33,19 @@ Object::Object(int objectID, string name)
 	shaderName = "";
 	shader = nullptr;
 
-	for (int i = 0; i < MAX_BONES; i++)
-	{
-		boneTransforms[i] = glm::mat4(1);
-	}
+
+	boneTransforms = new mat4[MAX_BONES];
 }
 
 void Object::Update(float delta)
 {
+
+	localTransform = glm::translate(glm::mat4(1), localPosition)
+		* glm::rotate(glm::mat4(1), glm::radians(localRotation.z), glm::vec3{ 0,0,1 })
+		* glm::rotate(glm::mat4(1), glm::radians(localRotation.y), glm::vec3{ 0,1,0 })
+		* glm::rotate(glm::mat4(1), glm::radians(localRotation.x), glm::vec3{ 1,0,0 })
+		* glm::scale(glm::mat4(1), localScale);
+
 	// Move the cube by an offset
 	if (parent)
 	{
@@ -52,17 +58,9 @@ void Object::Update(float delta)
 		transform = localTransform;
 	}
 
-	/*for (int i = 0; i < MAX_BONES; i++)
-	{
-		boneTransforms[i] = glm::translate(glm::mat4(1), glm::vec3(sin(glfwGetTime() * (1 + i)), cos(glfwGetTime()), sin(glfwGetTime() * 2)));
-	}*/
 	if (mesh!= nullptr && mesh->animations.size() > 0)
 	{
-		mat4* boneData = GetBoneMatrixBuffer(selectedFrame);
-		for (int i = 0; i < 50; i++)
-		{
-			boneTransforms[i] = boneData[i];
-		}
+		UpdateBoneMatrixBuffer(selectedFrame);
 	}
 
 	for (auto c : children)
@@ -432,58 +430,39 @@ void Object::Read(std::istream& in)
 	}
 }
 
-mat4* Object::GetBoneMatrixBuffer(int frame)
+void Object::UpdateBoneMatrixBuffer(int frame)
 {
-	vector<mat4> boneTransforms;
-	boneTransforms.resize(MAX_BONES);
 	mat4 accumulated(1);
-
-	// do stuff
 	// start at rootbone, call process node
-	ProcessNode(frame, mesh->childNodes[0], boneTransforms, accumulated);
-
-	mat4* transformData = new mat4[MAX_BONES];
-
-	for (int i = 0; i < MAX_BONES; i++)
-		transformData[i] = boneTransforms[i];
-
-	return transformData;
+	ProcessNode(frame, mesh->childNodes[0], mat4(1));
 }
 
-void Object::ProcessNode(int frame, Object* node, vector<mat4>& boneTransforms, mat4 accumulated)
+void Object::ProcessNode(int frame, Object* node, mat4 accumulated)
 {
 	// look up if node has a matching bone/animation node
 	string nodeName = node->objectName;
-	mat4 nodeTransformation = node->transform;
+	mat4 nodeTransformation = node->localTransform; // assume it doesnt at first and just use its local transform.
 	auto bufferIndex = mesh->boneMapping.find(nodeName);
-	if (bufferIndex != mesh->boneMapping.end())
+	if (bufferIndex != mesh->boneMapping.end()) // if it does, look up its keyframe data.
 	{
 		// Get key from animation
 		auto channel = mesh->animations[0].channels.find(nodeName);
 		Mesh::Animation::AnimationKey key = channel->second.keys[frame];
 		// Apply transformation.
-		// generate scale matrix
-		mat4 scale = glm::scale(glm::mat4(1), key.scale);
-		// generate rotation matrix
-		mat4 rotate = glm::mat4_cast(key.rotation);
-		// generate translation matrix
-		mat4 translate = glm::translate(glm::mat4(1), key.position);
-		nodeTransformation = translate * rotate * scale;
-	}
-	else
-	{
-		// node is not a bone, dont think we'll get here much??
+		mat4 scale = glm::scale(glm::mat4(1), key.scale);				// generate scale matrix
+		mat4 rotate = glm::mat4_cast(key.rotation);						// generate rotation matrix
+		mat4 translate = glm::translate(glm::mat4(1), key.position);	// generate translation matrix
+		nodeTransformation = translate * rotate * scale;				// combine
 	}
 	
-	mat4 globalTransform = accumulated * nodeTransformation;
-	// apply it the transform buffer, and a cumulative buffer 
-	if (bufferIndex != mesh->boneMapping.end())
-	{
-		boneTransforms[bufferIndex->second] = globalTransform * mesh->boneInfo[bufferIndex->second].offset;
-	}
+	mat4 globalTransform = accumulated * nodeTransformation;			// Apply matrix to accumulated transform down the tree.
 
-	// call this function again on each child object
+	// if it was an actual bone - apply it the transform buffer that gets sent to the vertex shader.
+	if (bufferIndex != mesh->boneMapping.end())
+		boneTransforms[bufferIndex->second] = globalTransform * mesh->boneInfo[bufferIndex->second].offset;
+
+	// Process children.
 	for (auto c : node->children)
-		ProcessNode(frame, c, boneTransforms, globalTransform);
+		ProcessNode(frame, c, globalTransform);
 
 }

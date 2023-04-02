@@ -50,7 +50,7 @@ public:
 	int selectedBone = 0;
 	int selectedFrame = 0;
 
-	mat4 boneTransforms[MAX_BONES];
+	mat4* boneTransforms;
 
 	void Update(float delta);
 	void Draw();
@@ -64,6 +64,6 @@ public:
 	void Write(std::ostream& out);
 	void Read(std::istream& in);
 
-	mat4* GetBoneMatrixBuffer(int frame);
-	void ProcessNode(int frame, Object* node, vector<mat4>& boneTransforms, mat4 accumulated);
+	void UpdateBoneMatrixBuffer(int frame);
+	void ProcessNode(int frame, Object* node, mat4 accumulated);
 };

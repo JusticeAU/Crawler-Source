@@ -7,6 +7,7 @@
 #include <filesystem>
 #include "LogUtils.h"
 #include "Object.h"
+#include "ai2glm.h"
 
 using std::vector;
 namespace fs = std::filesystem;
@@ -314,25 +315,7 @@ void MeshManager::LoadFromFile(const char* filename)
 	// Load nodes in to loadedMesh->childNodes.
 	Object* rootNode = new Object(0, scene->mRootNode->mName.C_Str());
 	loadedMesh->childNodes.push_back(rootNode);
-	rootNode->localTransform[0][0] = scene->mRootNode->mTransformation.a1;
-	rootNode->localTransform[0][1] = scene->mRootNode->mTransformation.b1;
-	rootNode->localTransform[0][2] = scene->mRootNode->mTransformation.c1;
-	rootNode->localTransform[0][3] = scene->mRootNode->mTransformation.d1;
-
-	rootNode->localTransform[1][0] = scene->mRootNode->mTransformation.a2;
-	rootNode->localTransform[1][1] = scene->mRootNode->mTransformation.b2;
-	rootNode->localTransform[1][2] = scene->mRootNode->mTransformation.c2;
-	rootNode->localTransform[1][3] = scene->mRootNode->mTransformation.d2;
-
-	rootNode->localTransform[2][0] = scene->mRootNode->mTransformation.a3;
-	rootNode->localTransform[2][1] = scene->mRootNode->mTransformation.b3;
-	rootNode->localTransform[2][2] = scene->mRootNode->mTransformation.c3;
-	rootNode->localTransform[2][3] = scene->mRootNode->mTransformation.d3;
-
-	rootNode->localTransform[3][0] = scene->mRootNode->mTransformation.a4;
-	rootNode->localTransform[3][1] = scene->mRootNode->mTransformation.b4;
-	rootNode->localTransform[3][2] = scene->mRootNode->mTransformation.c4;
-	rootNode->localTransform[3][3] = scene->mRootNode->mTransformation.d4;
+	rootNode->localTransform = mat4_cast(scene->mRootNode->mTransformation);
 	CopyNodeHierarchy(scene->mRootNode, rootNode);
 
 	// Load bone data.
@@ -344,26 +327,7 @@ void MeshManager::LoadFromFile(const char* filename)
 		loadedMesh->boneMapping.emplace(boneName, i);
 
 		// bone offset boi
-		loadedMesh->boneInfo[i].offset[0][0] = mesh->mBones[i]->mOffsetMatrix.a1;
-		loadedMesh->boneInfo[i].offset[0][1] = mesh->mBones[i]->mOffsetMatrix.b1;
-		loadedMesh->boneInfo[i].offset[0][2] = mesh->mBones[i]->mOffsetMatrix.c1;
-		loadedMesh->boneInfo[i].offset[0][3] = mesh->mBones[i]->mOffsetMatrix.d1;
-
-		loadedMesh->boneInfo[i].offset[1][0] = mesh->mBones[i]->mOffsetMatrix.a2;
-		loadedMesh->boneInfo[i].offset[1][1] = mesh->mBones[i]->mOffsetMatrix.b2;
-		loadedMesh->boneInfo[i].offset[1][2] = mesh->mBones[i]->mOffsetMatrix.c2;
-		loadedMesh->boneInfo[i].offset[1][3] = mesh->mBones[i]->mOffsetMatrix.d2;
-
-		loadedMesh->boneInfo[i].offset[2][0] = mesh->mBones[i]->mOffsetMatrix.a3;
-		loadedMesh->boneInfo[i].offset[2][1] = mesh->mBones[i]->mOffsetMatrix.b3;
-		loadedMesh->boneInfo[i].offset[2][2] = mesh->mBones[i]->mOffsetMatrix.c3;
-		loadedMesh->boneInfo[i].offset[2][3] = mesh->mBones[i]->mOffsetMatrix.d3;
-
-		loadedMesh->boneInfo[i].offset[3][0] = mesh->mBones[i]->mOffsetMatrix.a4;
-		loadedMesh->boneInfo[i].offset[3][1] = mesh->mBones[i]->mOffsetMatrix.b4;
-		loadedMesh->boneInfo[i].offset[3][2] = mesh->mBones[i]->mOffsetMatrix.c4;
-		loadedMesh->boneInfo[i].offset[3][3] = mesh->mBones[i]->mOffsetMatrix.d4;
-
+		loadedMesh->boneInfo[i].offset = mat4_cast(mesh->mBones[i]->mOffsetMatrix);
 		loadedMesh->numBones++;
 
 		// process all weights associated with the bone
@@ -459,27 +423,7 @@ void MeshManager::CopyNodeHierarchy(aiNode* node, Object* parent)
 		Object* object = new Object(0, node->mChildren[i]->mName.C_Str());
 		parent->children.push_back(object);
 		object->parent = parent;
-
-		object->localTransform[0][0] = node->mChildren[i]->mTransformation.a1;
-		object->localTransform[0][1] = node->mChildren[i]->mTransformation.b1;
-		object->localTransform[0][2] = node->mChildren[i]->mTransformation.c1;
-		object->localTransform[0][3] = node->mChildren[i]->mTransformation.d1;
-
-		object->localTransform[1][0] = node->mChildren[i]->mTransformation.a2;
-		object->localTransform[1][1] = node->mChildren[i]->mTransformation.b2;
-		object->localTransform[1][2] = node->mChildren[i]->mTransformation.c2;
-		object->localTransform[1][3] = node->mChildren[i]->mTransformation.d2;
-
-		object->localTransform[2][0] = node->mChildren[i]->mTransformation.a3;
-		object->localTransform[2][1] = node->mChildren[i]->mTransformation.b3;
-		object->localTransform[2][2] = node->mChildren[i]->mTransformation.c3;
-		object->localTransform[2][3] = node->mChildren[i]->mTransformation.d3;
-
-		object->localTransform[3][0] = node->mChildren[i]->mTransformation.a4;
-		object->localTransform[3][1] = node->mChildren[i]->mTransformation.b4;
-		object->localTransform[3][2] = node->mChildren[i]->mTransformation.c4;
-		object->localTransform[3][3] = node->mChildren[i]->mTransformation.d4;
-
+		object->localTransform = mat4_cast(node->mChildren[i]->mTransformation);
 		CopyNodeHierarchy(node->mChildren[i], object);
 	}
 }
