@@ -8,6 +8,8 @@ using std::map;
 
 class Object;
 class aiNode;
+class aiMesh;
+class aiScene;
 
 class MeshManager
 {
@@ -26,8 +28,9 @@ protected:
 	void CreateCube();
 	void CreateQuad();
 	void LoadFromFile(const char* filename);
+	Mesh* LoadFromAiMesh(const aiMesh* mesh, Mesh::BoneStructure* boneStructure, const char* name);
 
 	void LoadAllFiles();
 
-	void CopyNodeHierarchy(aiNode* node, Object* parent);
+	void CopyNodeHierarchy(const aiScene* scene, aiNode* node, Object* parent, Mesh::BoneStructure* boneStructure = nullptr);
 };

@@ -56,6 +56,13 @@ public:
 		map<string, AnimationChannel> channels;
 	};
 
+	struct BoneStructure
+	{
+		int numBones = 0;
+		map<string, int> boneMapping;	// boneName and index pair. The index is useed to address in to boneInfo and assign transformations in to the buffer for the vertex shader.
+		vector<BoneInfo> boneInfo;	// contains the offset for the bone.
+	};
+
 	void Initialise(unsigned int vertCount, const Vertex* vertices, unsigned int indexCount = 0, unsigned int* indices = nullptr);
 	static void CalculateTangents(Vertex* vertices, unsigned int vertexCount, const std::vector<unsigned int>& indices);
 
@@ -67,9 +74,9 @@ public:
 	vector<Object*> childNodes;
 
 	// Bone mapping
-	int numBones = 0;
-	map<string, int> boneMapping;	// boneName and index pair. The index is useed to address in to boneInfo and assign transformations in to the buffer for the vertex shader.
-	vector<BoneInfo> boneInfo;	// contains the offset for the bone.
+	BoneStructure* boneStructure;
 
 	vector<Animation> animations;
+
+	bool containerMesh = false;
 };

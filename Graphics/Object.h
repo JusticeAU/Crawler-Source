@@ -37,6 +37,9 @@ public:
 	Mesh* mesh;
 	string meshName;
 
+	std::vector<Mesh*> meshes;
+	std::vector<string> meshNames;
+
 	Texture* texture;
 	string textureName;
 
@@ -65,5 +68,6 @@ public:
 	void Read(std::istream& in);
 
 	void UpdateBoneMatrixBuffer(int frame);
+	void CopyBoneMatrixToChildren();
 	void ProcessNode(int frame, Object* node, mat4 accumulated);
 };

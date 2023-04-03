@@ -61,6 +61,7 @@ void Object::Update(float delta)
 	if (mesh!= nullptr && mesh->animations.size() > 0)
 	{
 		UpdateBoneMatrixBuffer(selectedFrame);
+		CopyBoneMatrixToChildren();
 	}
 
 	for (auto c : children)
@@ -70,71 +71,71 @@ void Object::Update(float delta)
 
 void Object::Draw()
 {
-	if (mesh == nullptr || shader == nullptr || texture == nullptr)
-		return;
-
-	// Combine the matricies
-	glm::mat4 pvm = Camera::s_instance->GetMatrix() * transform;
-
-	shader->Bind();
-
-	// Positions and Rotations
-	shader->SetMatrixUniform("transformMatrix", pvm);
-	shader->SetMatrixUniform("mMatrix", transform);
-	shader->SetVectorUniform("cameraPosition", Camera::s_instance->GetPosition());
-	
-	// Lighting
-	shader->SetVectorUniform("ambientLightColour", Scene::GetAmbientLightColour());
-	shader->SetVectorUniform("sunLightDirection", glm::normalize(Scene::GetSunDirection()));
-	shader->SetVectorUniform("sunLightColour", Scene::GetSunColour());
-	// Point Lights
-	int numLights = Scene::GetNumPointLights();
-	shader->SetIntUniform("numLights", numLights);
-	shader->SetFloat3ArrayUniform("PointLightPositions", numLights, Scene::GetPointLightPositions());
-	shader->SetFloat3ArrayUniform("PointLightColours", numLights, Scene::GetPointLightColours());
-
-	// skinned mesh rendering
-	shader->SetIntUniform("selectedBone", selectedBone); // dev testing really, used by boneWeights shader
-	shader->SetMatrixArrayUniform("boneTransforms", MAX_BONES, &boneTransforms[0]);
-
-	// Texture Uniforms
-	texture->Bind(1);
-	shader->SetIntUniform("diffuseTex", 1);
-
-	// Material Uniforms
-	if (material)
+	if (!(mesh == nullptr || shader == nullptr || texture == nullptr))
 	{
-		shader->SetVectorUniform("Ka", material->Ka);
-		shader->SetVectorUniform("Kd", material->Kd);
-		shader->SetVectorUniform("Ks", material->Ks);
-		shader->SetFloatUniform("specularPower", material->specularPower);
+		// Combine the matricies
+		glm::mat4 pvm = Camera::s_instance->GetMatrix() * transform;
 
-		if (material->mapKd)
+		shader->Bind();
+
+		// Positions and Rotations
+		shader->SetMatrixUniform("transformMatrix", pvm);
+		shader->SetMatrixUniform("mMatrix", transform);
+		shader->SetVectorUniform("cameraPosition", Camera::s_instance->GetPosition());
+	
+		// Lighting
+		shader->SetVectorUniform("ambientLightColour", Scene::GetAmbientLightColour());
+		shader->SetVectorUniform("sunLightDirection", glm::normalize(Scene::GetSunDirection()));
+		shader->SetVectorUniform("sunLightColour", Scene::GetSunColour());
+		// Point Lights
+		int numLights = Scene::GetNumPointLights();
+		shader->SetIntUniform("numLights", numLights);
+		shader->SetFloat3ArrayUniform("PointLightPositions", numLights, Scene::GetPointLightPositions());
+		shader->SetFloat3ArrayUniform("PointLightColours", numLights, Scene::GetPointLightColours());
+
+		// skinned mesh rendering
+		shader->SetIntUniform("selectedBone", selectedBone); // dev testing really, used by boneWeights shader
+		shader->SetMatrixArrayUniform("boneTransforms", MAX_BONES, &boneTransforms[0]);
+
+		// Texture Uniforms
+		texture->Bind(1);
+		shader->SetIntUniform("diffuseTex", 1);
+
+		// Material Uniforms
+		if (material)
 		{
-			material->mapKd->Bind(1);
-			shader->SetIntUniform("diffuseTex", 1);
+			shader->SetVectorUniform("Ka", material->Ka);
+			shader->SetVectorUniform("Kd", material->Kd);
+			shader->SetVectorUniform("Ks", material->Ks);
+			shader->SetFloatUniform("specularPower", material->specularPower);
+
+			if (material->mapKd)
+			{
+				material->mapKd->Bind(1);
+				shader->SetIntUniform("diffuseTex", 1);
+			}
+			if (material->mapKs)
+			{
+				material->mapKs->Bind(2);
+				shader->SetIntUniform("specularTex", 2);
+			}
+			if (material->mapBump)
+			{
+				material->mapBump->Bind(3);
+				shader->SetIntUniform("normalTex", 3);
+			}
 		}
-		if (material->mapKs)
-		{
-			material->mapKs->Bind(2);
-			shader->SetIntUniform("specularTex", 2);
-		}
-		if (material->mapBump)
-		{
-			material->mapBump->Bind(3);
-			shader->SetIntUniform("normalTex", 3);
-		}
+
+
+		// Draw triangle
+		glBindVertexArray(mesh->vao);
+
+		// check if we're using index buffers on this mesh by hecking if indexbufferObject is valid (was it set up?)
+		if (mesh->ibo != 0) // Draw with index buffering
+			glDrawElements(GL_TRIANGLES, 3 * mesh->tris, GL_UNSIGNED_INT, 0);
+		else // draw simply.
+			glDrawArrays(GL_TRIANGLES, 0, 3 * mesh->tris);
 	}
-
-
-	// Draw triangle
-	glBindVertexArray(mesh->vao);
-
-	// check if we're using index buffers on this mesh by hecking if indexbufferObject is valid (was it set up?)
-	if (mesh->ibo != 0) // Draw with index buffering
-		glDrawElements(GL_TRIANGLES, 3 * mesh->tris, GL_UNSIGNED_INT, 0);
-	else // draw simply.
-		glDrawArrays(GL_TRIANGLES, 0, 3 * mesh->tris);
 
 	for (auto c : children)
 		c->Draw();
@@ -199,6 +200,12 @@ void Object::DrawGUI()
 					{
 						mesh = MeshManager::GetMesh(m.first);
 						meshName = m.first;
+						if (mesh->containerMesh)
+						{
+							LogUtils::Log("Parenting");
+							mesh->childNodes[0]->parent = this;
+							children.push_back(mesh->childNodes[0]);
+						}
 					}
 
 					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -208,10 +215,10 @@ void Object::DrawGUI()
 				ImGui::EndCombo();
 
 			}
-			if (mesh != nullptr && mesh->numBones > 0)
+			if (mesh != nullptr && mesh->boneStructure->numBones > 0)
 			{
 				string boneStr = "Selected Bone##" + to_string(id);
-				ImGui::DragInt(boneStr.c_str(), &selectedBone, 0.1, 0, mesh->numBones);
+				ImGui::DragInt(boneStr.c_str(), &selectedBone, 0.1, 0, mesh->boneStructure->numBones);
 
 				if (mesh->animations.size() > 0)
 				{
@@ -221,12 +228,12 @@ void Object::DrawGUI()
 			}
 		
 
-			// Mesh node hierarchy
-			if (mesh != nullptr && mesh->childNodes.size() > 0)
-			{
-				mesh->childNodes[0]->parent = this;
-				mesh->childNodes[0]->DrawGUISimple();
-			}
+			//// Mesh node hierarchy
+			//if (mesh != nullptr && mesh->childNodes.size() > 0)
+			//{
+			//	mesh->childNodes[0]->parent = this;
+			//	mesh->childNodes[0]->DrawGUISimple();
+			//}
 
 			string textureStr = "Texture##" + to_string(id);
 			if (ImGui::BeginCombo(textureStr.c_str(), textureName.c_str()))
@@ -437,29 +444,44 @@ void Object::UpdateBoneMatrixBuffer(int frame)
 	ProcessNode(frame, mesh->childNodes[0], mat4(1));
 }
 
+void Object::CopyBoneMatrixToChildren()
+{
+	for (auto child : children)
+	{
+		child->boneTransforms = boneTransforms;
+		child->CopyBoneMatrixToChildren();
+	}
+}
+
 void Object::ProcessNode(int frame, Object* node, mat4 accumulated)
 {
 	// look up if node has a matching bone/animation node
 	string nodeName = node->objectName;
 	mat4 nodeTransformation = node->localTransform; // assume it doesnt at first and just use its local transform.
-	auto bufferIndex = mesh->boneMapping.find(nodeName);
-	if (bufferIndex != mesh->boneMapping.end()) // if it does, look up its keyframe data.
+	auto bufferIndex = mesh->boneStructure->boneMapping.find(nodeName);
+	if (bufferIndex != mesh->boneStructure->boneMapping.end()) // if it does, look up its keyframe data.
 	{
 		// Get key from animation
 		auto channel = mesh->animations[0].channels.find(nodeName);
-		Mesh::Animation::AnimationKey key = channel->second.keys[frame];
-		// Apply transformation.
-		mat4 scale = glm::scale(glm::mat4(1), key.scale);				// generate scale matrix
-		mat4 rotate = glm::mat4_cast(key.rotation);						// generate rotation matrix
-		mat4 translate = glm::translate(glm::mat4(1), key.position);	// generate translation matrix
-		nodeTransformation = translate * rotate * scale;				// combine
+		if (channel != mesh->animations[0].channels.end())
+		{
+			Mesh::Animation::AnimationKey key = channel->second.keys[frame];
+			// Apply transformation.
+			mat4 scale = glm::scale(glm::mat4(1), key.scale);				// generate scale matrix
+			mat4 rotate = glm::mat4_cast(key.rotation);						// generate rotation matrix
+			mat4 translate = glm::translate(glm::mat4(1), key.position);	// generate translation matrix
+			nodeTransformation = translate * rotate * scale;				// combine
+		}
 	}
 	
 	mat4 globalTransform = accumulated * nodeTransformation;			// Apply matrix to accumulated transform down the tree.
 
 	// if it was an actual bone - apply it the transform buffer that gets sent to the vertex shader.
-	if (bufferIndex != mesh->boneMapping.end())
-		boneTransforms[bufferIndex->second] = globalTransform * mesh->boneInfo[bufferIndex->second].offset;
+	if (nodeName == "Neck1")
+		LogUtils::Log("We at the bogus node");
+
+	if (bufferIndex != mesh->boneStructure->boneMapping.end())
+		boneTransforms[bufferIndex->second] = globalTransform * mesh->boneStructure->boneInfo[bufferIndex->second].offset;
 
 	// Process children.
 	for (auto c : node->children)
