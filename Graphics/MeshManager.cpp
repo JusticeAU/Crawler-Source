@@ -368,14 +368,16 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Mesh::BoneStructure* boneS
 			boneStructure->boneMapping.emplace(boneName, boneIndex);
 			boneStructure->numBones++;
 			boneStructure->boneInfo.resize(boneStructure->numBones);
+			LogUtils::Log("Creating new Bone:");
+			LogUtils::Log(boneName.c_str());
+			LogUtils::Log(std::to_string(boneIndex).c_str());
+
+
 		}
 		else
 		{
 			boneIndex = bone->second;
 		}
-
-		if(boneName == "Neck1")
-			LogUtils::Log("Neck1 bone");
 
 		// bone offset boi
 		boneStructure->boneInfo[boneIndex].offset = mat4_cast(mesh->mBones[i]->mOffsetMatrix);
@@ -391,7 +393,7 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Mesh::BoneStructure* boneS
 			{
 				if (vertices[vertID].boneID[j] == -1) // free slot
 				{
-					vertices[vertID].boneID[j] = i; // assign our bone index to it
+					vertices[vertID].boneID[j] = boneIndex; // assign our bone index to it
 					vertices[vertID].boneWeight[j] = vertWeight; // and weight
 					//string log = "Placed bone ID" + std::to_string(i) + " in to slot " + std::to_string(j);
 					//LogUtils::Log(log.c_str());

@@ -127,14 +127,26 @@ void Object::Draw()
 		}
 
 
-		// Draw triangle
-		glBindVertexArray(mesh->vao);
+		//// Draw triangle
+		//glBindVertexArray(mesh->vao);
 
-		// check if we're using index buffers on this mesh by hecking if indexbufferObject is valid (was it set up?)
-		if (mesh->ibo != 0) // Draw with index buffering
-			glDrawElements(GL_TRIANGLES, 3 * mesh->tris, GL_UNSIGNED_INT, 0);
-		else // draw simply.
-			glDrawArrays(GL_TRIANGLES, 0, 3 * mesh->tris);
+		//// check if we're using index buffers on this mesh by hecking if indexbufferObject is valid (was it set up?)
+		//if (mesh->ibo != 0) // Draw with index buffering
+		//	glDrawElements(GL_TRIANGLES, 3 * mesh->tris, GL_UNSIGNED_INT, 0);
+		//else // draw simply.
+		//	glDrawArrays(GL_TRIANGLES, 0, 3 * mesh->tris);
+
+		for (auto mesh : meshes)
+		{
+			// Draw triangle
+			glBindVertexArray(mesh->vao);
+
+			// check if we're using index buffers on this mesh by hecking if indexbufferObject is valid (was it set up?)
+			if (mesh->ibo != 0) // Draw with index buffering
+				glDrawElements(GL_TRIANGLES, 3 * mesh->tris, GL_UNSIGNED_INT, 0);
+			else // draw simply.
+				glDrawArrays(GL_TRIANGLES, 0, 3 * mesh->tris);
+		}
 	}
 
 	for (auto c : children)
@@ -200,12 +212,15 @@ void Object::DrawGUI()
 					{
 						mesh = MeshManager::GetMesh(m.first);
 						meshName = m.first;
-						if (mesh->containerMesh)
+						/*if (mesh->containerMesh)
 						{
 							LogUtils::Log("Parenting");
 							mesh->childNodes[0]->parent = this;
 							children.push_back(mesh->childNodes[0]);
-						}
+						}*/
+
+						meshes.push_back(MeshManager::GetMesh(m.first));
+						meshNames.push_back(m.first);
 					}
 
 					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -477,8 +492,6 @@ void Object::ProcessNode(int frame, Object* node, mat4 accumulated)
 	mat4 globalTransform = accumulated * nodeTransformation;			// Apply matrix to accumulated transform down the tree.
 
 	// if it was an actual bone - apply it the transform buffer that gets sent to the vertex shader.
-	if (nodeName == "Neck1")
-		LogUtils::Log("We at the bogus node");
 
 	if (bufferIndex != mesh->boneStructure->boneMapping.end())
 		boneTransforms[bufferIndex->second] = globalTransform * mesh->boneStructure->boneInfo[bufferIndex->second].offset;

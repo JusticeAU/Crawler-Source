@@ -1,6 +1,6 @@
 #version 450
 
-const int MAX_BONES = 50;
+const int MAX_BONES = 100;
 
 layout (location = 0) in vec3 Position;
 layout (location = 1) in vec3 Colour;
