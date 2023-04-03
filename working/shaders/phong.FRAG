@@ -16,6 +16,7 @@ uniform vec3 cameraPosition;
 uniform vec3 ambientLightColour;
 uniform vec3 sunLightDirection;
 uniform vec3 sunLightColour;
+
 // Point Lights
 const int MAX_LIGHTS = 4;
 uniform int numLights;
