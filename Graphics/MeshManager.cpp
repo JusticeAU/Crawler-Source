@@ -1,22 +1,16 @@
 #include "MeshManager.h"
 #include "Graphics.h"
 #include "assimp/scene.h"
-#include "assimp/cimport.h"
-#include "assimp/postprocess.h"
-#include "assimp/Importer.hpp"
-#include <filesystem>
 #include "LogUtils.h"
 #include "Object.h"
 #include "ai2glm.h"
 
 using std::vector;
-namespace fs = std::filesystem;
 
 MeshManager::MeshManager()
 {
     CreateCube();
 	CreateQuad();
-	LoadAllFiles();
 }
 
 void MeshManager::Init()
@@ -237,61 +231,7 @@ void MeshManager::CreateQuad()
 	meshes.emplace("_quad", quad);
 }
 
-void MeshManager::LoadFromFile(const char* filename)
-{
-	// create an instance so we can easily configure it.
-	Assimp::Importer importer;
-
-	// disable pivot preserving, not needed for our purposes and gummys up the node heirarchy with noise.
-	importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
-
-	const aiScene* scene = importer.ReadFile(filename,
-		aiProcess_FlipUVs |
-		aiProcess_CalcTangentSpace);
-	
-
-	// Just use the first mesh for now.
-	aiMesh* mesh = scene->mMeshes[0];
-	Mesh::BoneStructure* bones = new Mesh::BoneStructure();
-	Mesh* loadedMesh = LoadFromAiMesh(mesh, bones, filename);
-	loadedMesh->containerMesh = true;
-
-	// Load nodes in to loadedMesh->childNodes.
-	Object* rootNode = new Object(0, scene->mRootNode->mName.C_Str());
-	loadedMesh->childNodes.push_back(rootNode);
-	rootNode->localTransform = mat4_cast(scene->mRootNode->mTransformation);
-	CopyNodeHierarchy(scene, scene->mRootNode, rootNode, bones);
-
-	// Load Animation Data
-	for (int i = 0; i < scene->mNumAnimations; i++) // for each animation
-	{
-		Mesh::Animation anim;
-		anim.name = scene->mAnimations[i]->mName.C_Str();
-		string log = "Processing Animation: " + anim.name;
-		LogUtils::Log(log.c_str());
-		anim.duration = scene->mAnimations[i]->mDuration;
-		anim.ticksPerSecond = scene->mAnimations[i]->mTicksPerSecond;
-		anim.numChannels = scene->mAnimations[i]->mNumChannels;
-
-		for (int j = 0; j < anim.numChannels; j++) // for each channel in the animation
-		{
-			Mesh::Animation::AnimationChannel channel;
-			channel.name = scene->mAnimations[i]->mChannels[j]->mNodeName.C_Str();
-			int keyCount = scene->mAnimations[i]->mChannels[j]->mNumPositionKeys;
-			for (int k = 0; k < keyCount; k++) // for each key in the channel in the animation
-			{
-				channel.keys[k].position = vec3_cast(scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mValue);
-				channel.keys[k].rotation = quat_cast(scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mValue);
-				channel.keys[k].scale = vec3_cast(scene->mAnimations[i]->mChannels[j]->mScalingKeys[k].mValue);
-			}
-			anim.channels.emplace(channel.name, channel);
-		}
-
-		loadedMesh->animations.push_back(anim);
-	}
-}
-
-Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Mesh::BoneStructure* boneStructure, const char* name)
+Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* boneStructure, const char* name)
 {
 	// Extract indices from first mesh
 	int numFaces = mesh->mNumFaces;
@@ -352,10 +292,8 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Mesh::BoneStructure* boneS
 
 	// Begin creating mesh
 	Mesh* loadedMesh = new Mesh();
-	loadedMesh->boneStructure = boneStructure;
 
 	// Load bone data.
-	//boneStructure->boneInfo.resize(mesh->mNumBones);
 	for (int i = 0; i < mesh->mNumBones; i++)
 	{
 		// find or allocate bone ID;
@@ -368,11 +306,9 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Mesh::BoneStructure* boneS
 			boneStructure->boneMapping.emplace(boneName, boneIndex);
 			boneStructure->numBones++;
 			boneStructure->boneInfo.resize(boneStructure->numBones);
-			LogUtils::Log("Creating new Bone:");
+			/*LogUtils::Log("Creating new Bone:");
 			LogUtils::Log(boneName.c_str());
-			LogUtils::Log(std::to_string(boneIndex).c_str());
-
-
+			LogUtils::Log(std::to_string(boneIndex).c_str());*/
 		}
 		else
 		{
@@ -412,26 +348,11 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Mesh::BoneStructure* boneS
 	// Initialise mesh in OGL
 	loadedMesh->Initialise(numV, vertices, indices.size(), indices.data());
 	delete[] vertices;
-	meshes.emplace(name, loadedMesh);
+	s_instance->meshes.emplace(name, loadedMesh);
 	return loadedMesh;
 }
 
-void MeshManager::LoadAllFiles()
-{
-	LogUtils::Log("Loading models");
-	for (auto d : fs::recursive_directory_iterator("models"))
-	{
-		if (d.path().extension() == ".obj" || d.path().extension() == ".fbx" || d.path().extension() == ".gltf")
-		{
-			string output = "Loading: " + d.path().generic_string();
-			LogUtils::Log(output.c_str());
-			LoadFromFile(d.path().generic_string().c_str());
-		}
-			
-	}
-}
-
-void MeshManager::CopyNodeHierarchy(const aiScene* scene, aiNode* node, Object* parent, Mesh::BoneStructure* boneStructure)
+void MeshManager::CopyNodeHierarchy(const aiScene* scene, aiNode* node, Object* parent, Model::BoneStructure* boneStructure)
 {
 	for (int i = 0; i < node->mNumChildren; i++)
 	{
@@ -439,11 +360,6 @@ void MeshManager::CopyNodeHierarchy(const aiScene* scene, aiNode* node, Object* 
 		parent->children.push_back(object);
 		object->parent = parent;
 		object->localTransform = mat4_cast(node->mChildren[i]->mTransformation);
-		if (node->mChildren[i]->mNumMeshes > 0)
-		{
-			int meshIndex = node->mChildren[i]->mMeshes[0];
-			object->mesh = LoadFromAiMesh(scene->mMeshes[meshIndex], boneStructure, scene->mMeshes[meshIndex]->mName.C_Str());
-		}
 		CopyNodeHierarchy(scene, node->mChildren[i], object, boneStructure);
 	}
 }

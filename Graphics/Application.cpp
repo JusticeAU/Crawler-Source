@@ -1,11 +1,15 @@
 #include "Application.h"
 #include "Graphics.h"
-#include "MathUtils.h"
+
 #include "MeshManager.h"
 #include "TextureManager.h"
 #include "ShaderManager.h"
 #include "MaterialManager.h"
+#include "ModelManager.h"
+
+#include "MathUtils.h"
 #include "FileUtils.h"
+
 #include <iostream>
 
 Application::Application()
@@ -65,6 +69,7 @@ Application::Application()
 	TextureManager::Init();
 	ShaderManager::Init();
 	MaterialManager::Init(); // Must be initialised AFTER Texture Manager
+	ModelManager::Init();
 	Scene::Init();
 	
 	// Create input system.
@@ -133,6 +138,7 @@ void Application::Update(float delta)
 	TextureManager::DrawGUI();
 	ShaderManager::DrawGUI();
 	MaterialManager::DrawGUI();
+	ModelManager::DrawGUI();
 
 	Input::Update();
 	camera->Update(delta);

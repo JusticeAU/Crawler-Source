@@ -32,13 +32,25 @@
     <Filter Include="Libraries\stb_image">
       <UniqueIdentifier>{bb762049-7b7c-4b78-9700-88e8a942f630}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Application\Graphics\Models">
+      <UniqueIdentifier>{b033cdd0-3078-4e11-81f4-47c0ba2d398e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Application\Graphics\Meshes">
+      <UniqueIdentifier>{102834d9-a1a7-48a3-9695-fcb7b31bc8b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Application\Graphics\Materials">
+      <UniqueIdentifier>{9df2d118-c7ad-49f9-bf57-134178b97899}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Application\Graphics\Shaders\Shaders">
+      <UniqueIdentifier>{8c3239f5-8e2f-4cfe-83fa-e521302c7624}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Application\Graphics\Textures">
+      <UniqueIdentifier>{429b2fb2-169c-43f2-8228-5700ad342c89}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
       <Filter>Libraries\glad</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderProgram.cpp">
-      <Filter>Source Files\Application\Graphics</Filter>
     </ClCompile>
     <ClCompile Include="Application.cpp">
       <Filter>Source Files\Application</Filter>
@@ -76,33 +88,42 @@
     <ClCompile Include="Scene.cpp">
       <Filter>Source Files\Application\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Source Files\Application\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="MeshManager.cpp">
-      <Filter>Source Files\Application\Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Texture.cpp">
-      <Filter>Source Files\Application\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureManager.cpp">
-      <Filter>Source Files\Application\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderManager.cpp">
-      <Filter>Source Files\Application\Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="..\imgui\imgui_stdlib.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="MaterialManager.cpp">
-      <Filter>Source Files\Application\Graphics</Filter>
-    </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>Source Files\Application\Graphics</Filter>
-    </ClCompile>
     <ClCompile Include="Light.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Source Files\Application\Graphics\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="MaterialManager.cpp">
+      <Filter>Source Files\Application\Graphics\Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Source Files\Application\Graphics\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="MeshManager.cpp">
+      <Filter>Source Files\Application\Graphics\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderManager.cpp">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderProgram.cpp">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Source Files\Application\Graphics\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source Files\Application\Graphics\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>Source Files\Application\Graphics\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelManager.cpp">
+      <Filter>Source Files\Application\Graphics\Models</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -119,9 +140,6 @@
       <Filter>Source Files\StaticUtility</Filter>
     </ClInclude>
     <ClInclude Include="Graphics.h">
-      <Filter>Source Files\Application\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderProgram.h">
       <Filter>Source Files\Application\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Application.h">
@@ -160,9 +178,6 @@
     <ClInclude Include="..\imgui\imgui_impl_opengl3_loader.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Source Files\Application\Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="Input.h">
       <Filter>Source Files\Application</Filter>
     </ClInclude>
@@ -172,29 +187,11 @@
     <ClInclude Include="Scene.h">
       <Filter>Source Files\Application\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="MeshManager.h">
-      <Filter>Source Files\Application\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>Source Files\Application\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureManager.h">
-      <Filter>Source Files\Application\Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="stb_image.h">
       <Filter>Libraries\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderManager.h">
-      <Filter>Source Files\Application\Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="..\imgui\imgui_stdlib.h">
       <Filter>ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="MaterialManager.h">
-      <Filter>Source Files\Application\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>Source Files\Application\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Light.h">
       <Filter>Source Files\Application\Scene</Filter>
@@ -202,61 +199,91 @@
     <ClInclude Include="ai2glm.h">
       <Filter>Source Files\StaticUtility</Filter>
     </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Source Files\Application\Graphics\Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="MaterialManager.h">
+      <Filter>Source Files\Application\Graphics\Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Source Files\Application\Graphics\Meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshManager.h">
+      <Filter>Source Files\Application\Graphics\Meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderManager.h">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderProgram.h">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Source Files\Application\Graphics\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Source Files\Application\Graphics\Textures</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureManager.h">
+      <Filter>Source Files\Application\Graphics\Textures</Filter>
+    </ClInclude>
+    <ClInclude Include="ModelManager.h">
+      <Filter>Source Files\Application\Graphics\Models</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\working\shaders\phong.FRAG">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\phong.SHAD">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\phong.VERT">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\lambertLitSingleLight.FRAG">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\lambertLitSingleLight.SHAD">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\lambertLitSingleLight.VERT">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\unlitTextured.FRAG">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\unlitTextured.SHAD">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\unlitTextured.VERT">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\silhoutteTransparent.FRAG">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\silhoutteTransparent.SHAD">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\silhoutteTransparent.VERT">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </None>
     <None Include="..\working\shaders\boneWeights.FRAG">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
     </None>
     <None Include="..\working\shaders\boneWeights.SHAD">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
     </None>
     <None Include="..\working\shaders\boneWeights.VERT">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\lambertLitSingleLight.FRAG">
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\lambertLitSingleLight.SHAD">
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\lambertLitSingleLight.VERT">
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\phong.FRAG">
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\phong.SHAD">
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\phong.VERT">
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\silhoutteTransparent.FRAG">
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\silhoutteTransparent.SHAD">
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\silhoutteTransparent.VERT">
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
     </None>
     <None Include="..\working\shaders\skinnedMeshDev.FRAG">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
     </None>
     <None Include="..\working\shaders\skinnedMeshDev.SHAD">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
     </None>
     <None Include="..\working\shaders\skinnedMeshDev.VERT">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\unlitTextured.FRAG">
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\unlitTextured.SHAD">
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
+    </None>
+    <None Include="..\working\shaders\unlitTextured.VERT">
+      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

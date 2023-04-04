@@ -63,6 +63,8 @@ void Mesh::Initialise(unsigned int vertCount, const Vertex* vertices, unsigned i
 
 void Mesh::CalculateTangents(Vertex* vertices, unsigned int vertexCount, const std::vector<unsigned int>& indices)
 {
+	// Thank you AIE tutorial.
+
 	glm::vec4* tan1 = new glm::vec4[vertexCount * 2];
 	glm::vec4* tan2 = tan1 + vertexCount;
 	memset(tan1, 0, vertexCount * sizeof(glm::vec4) * 2);

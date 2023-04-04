@@ -11,4 +11,3 @@ public:
 	vec3 colour;
 	float intensity = 10.0f;
 };
-

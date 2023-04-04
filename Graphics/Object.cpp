@@ -4,12 +4,13 @@
 #include "Camera.h"
 #include <string>
 #include "Scene.h"
-#include "MeshManager.h"
+#include "ModelManager.h"
 #include "TextureManager.h"
 #include "ShaderManager.h"
 #include "MaterialManager.h"
 #include "FileUtils.h"
 #include "LogUtils.h"
+#include "Model.h"
 
 using std::to_string;
 
@@ -24,8 +25,8 @@ Object::Object(int objectID, string name)
 
 	objectName = name;
 
-	meshName = "";
-	mesh = nullptr;
+	modelName = "";
+	model = nullptr;
 
 	textureName = "";
 	texture = nullptr;
@@ -33,8 +34,15 @@ Object::Object(int objectID, string name)
 	shaderName = "";
 	shader = nullptr;
 
-
 	boneTransforms = new mat4[MAX_BONES];
+}
+
+Object::~Object()
+{
+	for (auto child : children)
+	{
+		delete child;
+	}
 }
 
 void Object::Update(float delta)
@@ -58,10 +66,9 @@ void Object::Update(float delta)
 		transform = localTransform;
 	}
 
-	if (mesh!= nullptr && mesh->animations.size() > 0)
+	if (model!= nullptr && model->animations.size() > 0)
 	{
 		UpdateBoneMatrixBuffer(selectedFrame);
-		CopyBoneMatrixToChildren();
 	}
 
 	for (auto c : children)
@@ -71,7 +78,7 @@ void Object::Update(float delta)
 
 void Object::Draw()
 {
-	if (!(mesh == nullptr || shader == nullptr || texture == nullptr))
+	if (!(model == nullptr || shader == nullptr || texture == nullptr))
 	{
 		// Combine the matricies
 		glm::mat4 pvm = Camera::s_instance->GetMatrix() * transform;
@@ -126,27 +133,7 @@ void Object::Draw()
 			}
 		}
 
-
-		//// Draw triangle
-		//glBindVertexArray(mesh->vao);
-
-		//// check if we're using index buffers on this mesh by hecking if indexbufferObject is valid (was it set up?)
-		//if (mesh->ibo != 0) // Draw with index buffering
-		//	glDrawElements(GL_TRIANGLES, 3 * mesh->tris, GL_UNSIGNED_INT, 0);
-		//else // draw simply.
-		//	glDrawArrays(GL_TRIANGLES, 0, 3 * mesh->tris);
-
-		for (auto mesh : meshes)
-		{
-			// Draw triangle
-			glBindVertexArray(mesh->vao);
-
-			// check if we're using index buffers on this mesh by hecking if indexbufferObject is valid (was it set up?)
-			if (mesh->ibo != 0) // Draw with index buffering
-				glDrawElements(GL_TRIANGLES, 3 * mesh->tris, GL_UNSIGNED_INT, 0);
-			else // draw simply.
-				glDrawArrays(GL_TRIANGLES, 0, 3 * mesh->tris);
-		}
+		model->Draw();
 	}
 
 	for (auto c : children)
@@ -202,25 +189,16 @@ void Object::DrawGUI()
 		
 		if (ImGui::CollapsingHeader("Model"))
 		{
-			string meshStr = "Mesh##" + to_string(id);
-			if (ImGui::BeginCombo(meshStr.c_str(), meshName.c_str()))
+			string ModelStr = "Model##" + to_string(id);
+			if (ImGui::BeginCombo(ModelStr.c_str(), modelName.c_str()))
 			{
-				for (auto m : *MeshManager::Meshes())
+				for (auto m : *ModelManager::Resources())
 				{
-					const bool is_selected = (m.second == mesh);
+					const bool is_selected = (m.second == model);
 					if (ImGui::Selectable(m.first.c_str(), is_selected))
 					{
-						mesh = MeshManager::GetMesh(m.first);
-						meshName = m.first;
-						/*if (mesh->containerMesh)
-						{
-							LogUtils::Log("Parenting");
-							mesh->childNodes[0]->parent = this;
-							children.push_back(mesh->childNodes[0]);
-						}*/
-
-						meshes.push_back(MeshManager::GetMesh(m.first));
-						meshNames.push_back(m.first);
+						model = ModelManager::GetModel(m.first);
+						modelName = m.first;
 					}
 
 					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -230,25 +208,25 @@ void Object::DrawGUI()
 				ImGui::EndCombo();
 
 			}
-			if (mesh != nullptr && mesh->boneStructure->numBones > 0)
+
+			if (model != nullptr && model->boneStructure->numBones > 0)
 			{
 				string boneStr = "Selected Bone##" + to_string(id);
-				ImGui::DragInt(boneStr.c_str(), &selectedBone, 0.1, 0, mesh->boneStructure->numBones);
+				ImGui::DragInt(boneStr.c_str(), &selectedBone, 0.1, 0, model->boneStructure->numBones);
 
-				if (mesh->animations.size() > 0)
+				if (model->animations.size() > 0)
 				{
 					string frameStr = "Selected Frame##" + to_string(id);
-					ImGui::DragInt(frameStr.c_str(), &selectedFrame, 0.5, 0, mesh->animations[0].duration);
+					ImGui::DragInt(frameStr.c_str(), &selectedFrame, 0.5, 0, model->animations[0].duration);
 				}
 			}
 		
 
-			//// Mesh node hierarchy
-			//if (mesh != nullptr && mesh->childNodes.size() > 0)
-			//{
-			//	mesh->childNodes[0]->parent = this;
-			//	mesh->childNodes[0]->DrawGUISimple();
-			//}
+			// Mesh node hierarchy
+			if (model != nullptr && model->childNodes != nullptr)
+			{
+				model->childNodes->DrawGUISimple();
+			}
 
 			string textureStr = "Texture##" + to_string(id);
 			if (ImGui::BeginCombo(textureStr.c_str(), textureName.c_str()))
@@ -332,7 +310,7 @@ void Object::DrawGUI()
 
 void Object::DrawGUISimple()
 {
-	mesh = MeshManager::GetMesh("_cube");
+	//mesh = MeshManager::GetMesh("_cube");
 	shader = ShaderManager::GetShaderProgram("shaders/phong");
 	texture = TextureManager::GetTexture("models/uv_test.tga");
 	Update(0.0f);
@@ -413,7 +391,7 @@ void Object::Write(std::ostream& out)
 	FileUtils::WriteVec(out, localRotation);
 	FileUtils::WriteVec(out, localScale);
 	
-	FileUtils::WriteString(out, meshName);
+	//FileUtils::WriteString(out, meshName);
 	FileUtils::WriteString(out, textureName);
 	FileUtils::WriteString(out, shaderName);
 	FileUtils::WriteString(out, materialName);
@@ -433,8 +411,8 @@ void Object::Read(std::istream& in)
 	FileUtils::ReadVec(in, localRotation);
 	FileUtils::ReadVec(in, localScale);
 
-	FileUtils::ReadString(in, meshName);
-	mesh = MeshManager::GetMesh(meshName);
+	/*FileUtils::ReadString(in, meshName);
+	mesh = MeshManager::GetMesh(meshName);*/
 	FileUtils::ReadString(in, textureName);
 	texture = TextureManager::GetTexture(textureName);
 	FileUtils::ReadString(in, shaderName);
@@ -454,18 +432,7 @@ void Object::Read(std::istream& in)
 
 void Object::UpdateBoneMatrixBuffer(int frame)
 {
-	mat4 accumulated(1);
-	// start at rootbone, call process node
-	ProcessNode(frame, mesh->childNodes[0], mat4(1));
-}
-
-void Object::CopyBoneMatrixToChildren()
-{
-	for (auto child : children)
-	{
-		child->boneTransforms = boneTransforms;
-		child->CopyBoneMatrixToChildren();
-	}
+	ProcessNode(frame, model->childNodes, mat4(1));
 }
 
 void Object::ProcessNode(int frame, Object* node, mat4 accumulated)
@@ -473,14 +440,14 @@ void Object::ProcessNode(int frame, Object* node, mat4 accumulated)
 	// look up if node has a matching bone/animation node
 	string nodeName = node->objectName;
 	mat4 nodeTransformation = node->localTransform; // assume it doesnt at first and just use its local transform.
-	auto bufferIndex = mesh->boneStructure->boneMapping.find(nodeName);
-	if (bufferIndex != mesh->boneStructure->boneMapping.end()) // if it does, look up its keyframe data.
+	auto bufferIndex = model->boneStructure->boneMapping.find(nodeName);
+	if (bufferIndex != model->boneStructure->boneMapping.end()) // if it does, look up its keyframe data.
 	{
 		// Get key from animation
-		auto channel = mesh->animations[0].channels.find(nodeName);
-		if (channel != mesh->animations[0].channels.end())
+		auto channel = model->animations[0].channels.find(nodeName);
+		if (channel != model->animations[0].channels.end())
 		{
-			Mesh::Animation::AnimationKey key = channel->second.keys[frame];
+			Model::Animation::AnimationKey key = channel->second.keys[frame];
 			// Apply transformation.
 			mat4 scale = glm::scale(glm::mat4(1), key.scale);				// generate scale matrix
 			mat4 rotate = glm::mat4_cast(key.rotation);						// generate rotation matrix
@@ -493,8 +460,8 @@ void Object::ProcessNode(int frame, Object* node, mat4 accumulated)
 
 	// if it was an actual bone - apply it the transform buffer that gets sent to the vertex shader.
 
-	if (bufferIndex != mesh->boneStructure->boneMapping.end())
-		boneTransforms[bufferIndex->second] = globalTransform * mesh->boneStructure->boneInfo[bufferIndex->second].offset;
+	if (bufferIndex != model->boneStructure->boneMapping.end())
+		boneTransforms[bufferIndex->second] = globalTransform * model->boneStructure->boneInfo[bufferIndex->second].offset;
 
 	// Process children.
 	for (auto c : node->children)

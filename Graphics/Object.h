@@ -8,7 +8,7 @@ using glm::mat4;
 using std::vector;
 using std::string;
 
-class Mesh;
+class Model;
 class Texture;
 class ShaderProgram;
 class Material;
@@ -19,6 +19,7 @@ class Object
 {
 public:
 	Object(int objectID, string name = "New Object");
+	~Object();
 	unsigned int id;
 	
 	Object* parent = nullptr;
@@ -34,11 +35,8 @@ public:
 
 	string objectName;
 	
-	Mesh* mesh;
-	string meshName;
-
-	std::vector<Mesh*> meshes;
-	std::vector<string> meshNames;
+	Model* model;
+	string modelName;
 
 	Texture* texture;
 	string textureName;
@@ -68,6 +66,5 @@ public:
 	void Read(std::istream& in);
 
 	void UpdateBoneMatrixBuffer(int frame);
-	void CopyBoneMatrixToChildren();
 	void ProcessNode(int frame, Object* node, mat4 accumulated);
 };

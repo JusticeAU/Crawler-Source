@@ -1,4 +1,5 @@
 #pragma once
+#include "Model.h"
 #include <string>
 #include <map>
 #include "Mesh.h"
@@ -21,16 +22,12 @@ public:
 	static void DrawGUI();
 	static MeshManager* s_instance;
 	static const map<string, Mesh*>* Meshes() { return &s_instance->meshes; }
+	static Mesh* LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* boneStructure, const char* name);
+	static void CopyNodeHierarchy(const aiScene* scene, aiNode* node, Object* parent, Model::BoneStructure* boneStructure = nullptr);
 protected:
 	MeshManager();
 	map<string, Mesh*> meshes;
 
 	void CreateCube();
 	void CreateQuad();
-	void LoadFromFile(const char* filename);
-	Mesh* LoadFromAiMesh(const aiMesh* mesh, Mesh::BoneStructure* boneStructure, const char* name);
-
-	void LoadAllFiles();
-
-	void CopyNodeHierarchy(const aiScene* scene, aiNode* node, Object* parent, Mesh::BoneStructure* boneStructure = nullptr);
 };
