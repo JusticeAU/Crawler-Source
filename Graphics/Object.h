@@ -51,6 +51,7 @@ public:
 	// Animation state
 	int selectedBone = 0;
 	int selectedAnimation = 0;
+	string animationName = "";
 	bool loopAnimation = true;
 	bool playAnimation = true;
 	float animationSpeed = 1.0f;
@@ -72,6 +73,6 @@ public:
 	void Write(std::ostream& out);
 	void Read(std::istream& in);
 
-	void UpdateBoneMatrixBuffer(int frame);
-	void ProcessNode(int frame, Object* node, mat4 accumulated);
+	void UpdateBoneMatrixBuffer(float frameTime);
+	void ProcessNode(float frameTime, int animationIndex, Object* node, mat4 accumulated);
 };

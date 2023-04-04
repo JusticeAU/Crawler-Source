@@ -8,6 +8,7 @@ namespace fs = std::filesystem;
 
 TextureManager::TextureManager()
 {
+	textures.emplace("_null", nullptr);
 	LoadAllFiles();
 }
 

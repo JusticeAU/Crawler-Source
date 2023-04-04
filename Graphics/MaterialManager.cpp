@@ -56,6 +56,7 @@ void MaterialManager::DrawGUI()
 
 MaterialManager::MaterialManager()
 {
+	materials.emplace("_null", nullptr);
 	LoadAllFiles();
 }
 

@@ -19,7 +19,7 @@ public:
 		vec3 colour = { 0,0,0 };
 		vec3 normal = { 0,0,0 };
 		vec2 uv = { 0,0 };
-		vec4 tangent = { 0,0,0,0 };
+		vec4 tangent = { 0,0,0,1 };
 		int boneID[4] = {-1,-1,-1,-1};
 		float boneWeight[4] = { 0,0,0,0 };
 	};

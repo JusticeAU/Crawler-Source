@@ -9,6 +9,7 @@ using std::vector;
 
 MeshManager::MeshManager()
 {
+	meshes.emplace("_null", nullptr);
     CreateCube();
 	CreateQuad();
 }

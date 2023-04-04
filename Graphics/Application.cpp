@@ -39,6 +39,7 @@ Application::Application()
 	// Tell GLFW that the window we created is the one we should render to
 	std::cout << "Linking GLFW Window to render target." << std::endl;
 	glfwMakeContextCurrent(window);
+	//glfwSwapInterval(0); // Disable vsync
 
 	// Tell GLAD to load its OpenGL functions
 	std::cout << "Loading GLAD OpenGL functions." << std::endl;

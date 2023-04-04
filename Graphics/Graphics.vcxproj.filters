@@ -267,13 +267,13 @@
     <None Include="..\working\shaders\silhoutteTransparent.VERT">
       <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
     </None>
-    <None Include="..\working\shaders\skinnedMeshDev.FRAG">
+    <None Include="..\working\shaders\skinnedMeshPhong.FRAG">
       <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
     </None>
-    <None Include="..\working\shaders\skinnedMeshDev.SHAD">
+    <None Include="..\working\shaders\skinnedMeshPhong.SHAD">
       <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
     </None>
-    <None Include="..\working\shaders\skinnedMeshDev.VERT">
+    <None Include="..\working\shaders\skinnedMeshPhong.VERT">
       <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
     </None>
     <None Include="..\working\shaders\unlitTextured.FRAG">

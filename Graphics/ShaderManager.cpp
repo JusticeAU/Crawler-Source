@@ -8,6 +8,7 @@ namespace fs = std::filesystem;
 
 ShaderManager::ShaderManager()
 {
+	shaderPrograms.emplace("_null", nullptr);
 	LoadAllFiles();
 }
 

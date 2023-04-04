@@ -13,7 +13,6 @@
 #include "LogUtils.h"
 
 #include <string>
-#include <string>
 
 using std::to_string;
 
@@ -90,7 +89,7 @@ void Object::Update(float delta)
 		}
 		// TODO - interpolate between frames
 		selectedFrame = (int)animationTime;
-		UpdateBoneMatrixBuffer(selectedFrame);
+		UpdateBoneMatrixBuffer(animationTime);
 	}
 
 	for (auto c : children)
@@ -100,7 +99,7 @@ void Object::Update(float delta)
 
 void Object::Draw()
 {
-	if (!(model == nullptr || shader == nullptr || texture == nullptr))
+	if (!(model == nullptr || shader == nullptr))
 	{
 		// Combine the matricies
 		glm::mat4 pvm = Camera::s_instance->GetMatrix() * transform;
@@ -127,8 +126,11 @@ void Object::Draw()
 		shader->SetMatrixArrayUniform("boneTransforms", MAX_BONES, &boneTransforms[0]);
 
 		// Texture Uniforms
-		texture->Bind(1);
-		shader->SetIntUniform("diffuseTex", 1);
+		if (texture)
+		{
+			texture->Bind(1);
+			shader->SetIntUniform("diffuseTex", 1);
+		}
 
 		// Material Uniforms
 		if (material)
@@ -231,13 +233,34 @@ void Object::DrawGUI()
 
 			}
 
-			if (model != nullptr && model->boneStructure->numBones > 0)
+			// Animation information.
+			if (model != nullptr && model->boneStructure != nullptr)
 			{
 				string boneStr = "Selected Bone##" + to_string(id);
 				ImGui::DragInt(boneStr.c_str(), &selectedBone, 0.1, 0, model->boneStructure->numBones);
 
 				if (model->animations.size() > 0)
 				{
+					string animationNameStr = "Animation##" + to_string(id);
+					if (ImGui::BeginCombo(animationNameStr.c_str(), model->animations[selectedAnimation].name.c_str()))
+					{
+						for (int i = 0; i < model->animations.size(); i++)
+						{
+							const bool is_selected = (model->animations[i].name == animationName);
+							if (ImGui::Selectable(model->animations[i].name.c_str(), is_selected))
+							{
+								selectedAnimation = i;
+								animationName = model->animations[i].name;
+							}
+
+							// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+							if (is_selected)
+								ImGui::SetItemDefaultFocus();
+						}
+						ImGui::EndCombo();
+
+					}
+
 					string AnimSpeedStr = "Animation Speed##" + to_string(id);
 					ImGui::DragFloat(AnimSpeedStr.c_str(), &animationSpeed, 0.1f, -2, 2);
 					
@@ -460,28 +483,34 @@ void Object::Read(std::istream& in)
 	}
 }
 
-void Object::UpdateBoneMatrixBuffer(int frame)
+void Object::UpdateBoneMatrixBuffer(float frameTime)
 {
-	ProcessNode(frame, model->childNodes, mat4(1));
+	ProcessNode(frameTime, selectedAnimation, model->childNodes, mat4(1));
 }
 
-void Object::ProcessNode(int frame, Object* node, mat4 accumulated)
+void Object::ProcessNode(float frameTime, int animationIndex, Object* node, mat4 accumulated)
 {
 	// look up if node has a matching bone/animation node
+	int frameIndex = (int)frameTime;
+	int nextFrameIndex = frameTime > model->animations[animationIndex].duration ? 0 : frameIndex + 1;
+	float t = frameTime - frameIndex;
+
 	string nodeName = node->objectName;
 	mat4 nodeTransformation = node->localTransform; // assume it doesnt at first and just use its local transform.
 	auto bufferIndex = model->boneStructure->boneMapping.find(nodeName);
 	if (bufferIndex != model->boneStructure->boneMapping.end()) // if it does, look up its keyframe data.
 	{
 		// Get key from animation
-		auto channel = model->animations[0].channels.find(nodeName);
-		if (channel != model->animations[0].channels.end())
+		auto channel = model->animations[animationIndex].channels.find(nodeName);
+		if (channel != model->animations[animationIndex].channels.end())
 		{
-			Model::Animation::AnimationKey key = channel->second.keys[frame];
+			Model::Animation::AnimationKey key = channel->second.keys[frameIndex];
+			Model::Animation::AnimationKey nextKey = channel->second.keys[nextFrameIndex];
+
 			// Apply transformation.
-			mat4 scale = glm::scale(glm::mat4(1), key.scale);				// generate scale matrix
-			mat4 rotate = glm::mat4_cast(key.rotation);						// generate rotation matrix
-			mat4 translate = glm::translate(glm::mat4(1), key.position);	// generate translation matrix
+			mat4 scale = glm::scale(glm::mat4(1), glm::mix(key.scale, nextKey.scale, t));				// generate mixed scale matrix		
+			mat4 rotate = glm::mat4_cast(glm::slerp(key.rotation,nextKey.rotation, t));					// generate mixed rotation matrix
+			mat4 translate = glm::translate(glm::mat4(1), glm::mix(key.position, nextKey.position, t));	// generate mixed translation matrix
 			nodeTransformation = translate * rotate * scale;				// combine
 		}
 	}
@@ -495,6 +524,6 @@ void Object::ProcessNode(int frame, Object* node, mat4 accumulated)
 
 	// Process children.
 	for (auto c : node->children)
-		ProcessNode(frame, c, globalTransform);
+		ProcessNode(frameTime, animationIndex, c, globalTransform);
 
 }

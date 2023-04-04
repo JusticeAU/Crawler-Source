@@ -48,6 +48,7 @@ void ModelManager::DrawGUI()
 
 ModelManager::ModelManager()
 {
+	resources.emplace("_null", nullptr);
 	LoadAllFiles();
 }
 
