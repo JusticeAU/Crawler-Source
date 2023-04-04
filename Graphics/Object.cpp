@@ -1,16 +1,19 @@
 #include "Object.h"
-#include <string>
-#include "ShaderProgram.h"
-#include "Camera.h"
-#include <string>
-#include "Scene.h"
 #include "ModelManager.h"
 #include "TextureManager.h"
 #include "ShaderManager.h"
 #include "MaterialManager.h"
+
+#include "ShaderProgram.h"
+#include "Camera.h"
+#include "Scene.h"
+#include "Model.h"
+
 #include "FileUtils.h"
 #include "LogUtils.h"
-#include "Model.h"
+
+#include <string>
+#include <string>
 
 using std::to_string;
 
@@ -47,27 +50,46 @@ Object::~Object()
 
 void Object::Update(float delta)
 {
-
+	// Update our transform based on crappy values from ImGui
 	localTransform = glm::translate(glm::mat4(1), localPosition)
 		* glm::rotate(glm::mat4(1), glm::radians(localRotation.z), glm::vec3{ 0,0,1 })
 		* glm::rotate(glm::mat4(1), glm::radians(localRotation.y), glm::vec3{ 0,1,0 })
 		* glm::rotate(glm::mat4(1), glm::radians(localRotation.x), glm::vec3{ 1,0,0 })
 		* glm::scale(glm::mat4(1), localScale);
 
-	// Move the cube by an offset
+	// Update world transform based on our parent.
 	if (parent)
-	{
-		transform =
-			parent->transform
-			* localTransform;
-	}
+		transform = parent->transform * localTransform;
 	else
-	{
 		transform = localTransform;
-	}
 
-	if (model!= nullptr && model->animations.size() > 0)
+	// Update animation state, if we have an animation
+	if (model!= nullptr && model->animations.size() > 0) // We have animations
 	{
+		if (selectedAnimation > model->animations.size() - 1)
+		{
+			selectedAnimation = 0; // avoid overflow
+			selectedFrame = 0;
+		}
+
+		if(playAnimation) animationTime += delta * animationSpeed * model->animations[selectedAnimation].ticksPerSecond;
+		
+		if (animationTime > model->animations[selectedAnimation].duration)
+		{
+			if (loopAnimation)
+				animationTime -= model->animations[selectedAnimation].duration;
+			else
+				animationTime = model->animations[selectedAnimation].duration;
+		}
+		else if (animationTime < 0.0f)
+		{
+			if (loopAnimation)
+				animationTime += model->animations[selectedAnimation].duration;
+			else
+				animationTime = 0.0f;
+		}
+		// TODO - interpolate between frames
+		selectedFrame = (int)animationTime;
 		UpdateBoneMatrixBuffer(selectedFrame);
 	}
 
@@ -216,8 +238,22 @@ void Object::DrawGUI()
 
 				if (model->animations.size() > 0)
 				{
+					string AnimSpeedStr = "Animation Speed##" + to_string(id);
+					ImGui::DragFloat(AnimSpeedStr.c_str(), &animationSpeed, 0.1f, -2, 2);
+					
+					string AnimLoopStr = "Loop##" + to_string(id);
+					ImGui::Checkbox(AnimLoopStr.c_str(), &loopAnimation);
+					ImGui::SameLine();
+					string AnimPlayStr = playAnimation ? "Pause##" + to_string(id) : "Play##" + to_string(id);
+					if (ImGui::Button(AnimPlayStr.c_str())) playAnimation = !playAnimation;
+
+					string animTimeStr = "Animation Time##" + to_string(id);
+					ImGui::SliderFloat(animTimeStr.c_str(), &animationTime, 0, model->animations[selectedAnimation].duration);
+
+					ImGui::BeginDisabled();
 					string frameStr = "Selected Frame##" + to_string(id);
-					ImGui::DragInt(frameStr.c_str(), &selectedFrame, 0.5, 0, model->animations[0].duration);
+					ImGui::DragInt(frameStr.c_str(), &selectedFrame, 0.5, 0, model->animations[selectedAnimation].duration);
+					ImGui::EndDisabled();
 				}
 			}
 		
@@ -310,12 +346,6 @@ void Object::DrawGUI()
 
 void Object::DrawGUISimple()
 {
-	//mesh = MeshManager::GetMesh("_cube");
-	shader = ShaderManager::GetShaderProgram("shaders/phong");
-	texture = TextureManager::GetTexture("models/uv_test.tga");
-	Update(0.0f);
-	Draw();
-
 	string idStr = to_string(id);
 	string objectStr = objectName + "##" + idStr;
 	if (ImGui::TreeNode(objectStr.c_str()))
@@ -332,14 +362,14 @@ void Object::DrawGUISimple()
 			ImGui::DragFloat3(scaleStr.c_str(), &localScale[0]);
 
 			//ImGui::BeginDisabled();
-			ImGui::InputFloat4("X", &transform[0].x);
+			/*ImGui::InputFloat4("X", &transform[0].x);
 			ImGui::InputFloat4("Y", &transform[1].x);
 			ImGui::InputFloat4("Z", &transform[2].x);
 			ImGui::InputFloat4("T", &transform[3].x);
 			ImGui::InputFloat4("lX", &localTransform[0].x);
 			ImGui::InputFloat4("lY", &localTransform[1].x);
 			ImGui::InputFloat4("lZ", &localTransform[2].x);
-			ImGui::InputFloat4("lT", &localTransform[3].x);
+			ImGui::InputFloat4("lT", &localTransform[3].x);*/
 			//ImGui::EndDisabled();
 		}
 

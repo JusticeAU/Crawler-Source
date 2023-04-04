@@ -92,9 +92,6 @@
     <ClCompile Include="..\imgui\imgui_stdlib.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="Light.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Material.cpp">
       <Filter>Source Files\Application\Graphics\Materials</Filter>
     </ClCompile>
@@ -124,6 +121,9 @@
     </ClCompile>
     <ClCompile Include="ModelManager.cpp">
       <Filter>Source Files\Application\Graphics\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>Source Files\Application\Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

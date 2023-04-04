@@ -48,10 +48,17 @@ public:
 	Material* material;
 	string materialName;
 
+	// Animation state
 	int selectedBone = 0;
+	int selectedAnimation = 0;
+	bool loopAnimation = true;
+	bool playAnimation = true;
+	float animationSpeed = 1.0f;
+	float animationTime = 0.0f;
 	int selectedFrame = 0;
-
 	mat4* boneTransforms;
+
+
 
 	void Update(float delta);
 	void Draw();
