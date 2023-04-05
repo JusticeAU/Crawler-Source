@@ -99,5 +99,4 @@ void main()
 
 	// Output
 	FragColour = vec4(ambient + diffuse + specular, 1);
-	//FragColour = vec4(_Tangent,1);
 }

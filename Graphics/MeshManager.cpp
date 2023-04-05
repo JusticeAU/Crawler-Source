@@ -326,22 +326,38 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 			float vertWeight = mesh->mBones[i]->mWeights[boneWeightIndex].mWeight;
 
 			// find a slot on this vert to allocate this bone id and weight
-			for (int j = 0; j < 5; j++)
+			bool storedBone = false;
+			int minIndex = -1;
+			float minWeight = FLT_MAX;
+			for (int j = 0; j < 4; j++)
 			{
 				if (vertices[vertID].boneID[j] == -1) // free slot
 				{
 					vertices[vertID].boneID[j] = boneIndex; // assign our bone index to it
 					vertices[vertID].boneWeight[j] = vertWeight; // and weight
+					storedBone = true;
 					//string log = "Placed bone ID" + std::to_string(i) + " in to slot " + std::to_string(j);
 					//LogUtils::Log(log.c_str());
 					break;
 				}
-				if (j > 3)
+				if (minWeight > vertices[vertID].boneWeight[j])
 				{
-					// shouldn't get here - if we did then there is a vert with more than 4 bones allocated to it. rip!
-					LogUtils::Log("More than 4 bones affecting this vert!!!");
-					continue;
+					minWeight = vertices[vertID].boneWeight[j];
+					minIndex = j;
 				}
+			}
+
+			if (!storedBone)
+			{
+				// shouldn't get here - if we did then there is a vert with more than 4 bones allocated to it. rip!
+				LogUtils::Log("More than 4 bones affecting this vert!!!");
+				LogUtils::Log("Dropping off least influenced bone");
+				vertices[vertID].boneID[minIndex] = boneIndex;
+				vertices[vertID].boneWeight[minIndex] = vertWeight;
+				// Scale weights back to 1
+				float totalWeight = 0;
+				for (int j = 0; j < 4; j++)
+					vertices[vertID].boneWeight[j] += minWeight * 0.25f;
 			}
 		}
 	}

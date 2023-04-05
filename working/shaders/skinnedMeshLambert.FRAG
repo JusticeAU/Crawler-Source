@@ -49,10 +49,6 @@ void main()
 		diffuseTotal += GetDiffuse(direction, colour, N);
 	}
 
-	float lightValue = clamp(dot(-sunLightDirection, N), 0.0, 1.0);
-	lightValue += 0.3f;
 	vec3 texColour = texture(diffuseTex, _TexCoords).rgb;
 	FragColour = vec4(texColour * diffuseTotal, 1);	
-	//FragColour = vec4(_Position, 1);	
-	
 }

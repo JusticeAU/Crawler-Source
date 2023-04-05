@@ -35,12 +35,13 @@ void main()
 	vec4 normalTransformed = boneTransform * vec4(Normal, 0);
 	vec4 tangentTransformed = boneTransform * vec4(Tangent.xyz, 0);
 
-	_Position = (mMatrix * vec4(Position,1)).xyz;
+
 	_Normal = (mMatrix * vec4(normalTransformed.xyz,0)).xyz;
 	_TexCoords = texCoords;
 	//_Tangent = (mMatrix * tangentTransformed).xyz;
 	//_BiTangent = cross(_Normal, _Tangent) * Tangent.w;
 	
 	_Colour = Colour;
+	_Position = (mMatrix * posTransformed).xyz;
 	gl_Position = transformMatrix * posTransformed;
 }

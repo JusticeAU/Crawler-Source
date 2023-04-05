@@ -41,9 +41,6 @@
     <Filter Include="Source Files\Application\Graphics\Materials">
       <UniqueIdentifier>{9df2d118-c7ad-49f9-bf57-134178b97899}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Application\Graphics\Shaders\Shaders">
-      <UniqueIdentifier>{8c3239f5-8e2f-4cfe-83fa-e521302c7624}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Application\Graphics\Textures">
       <UniqueIdentifier>{429b2fb2-169c-43f2-8228-5700ad342c89}</UniqueIdentifier>
     </Filter>
@@ -229,61 +226,5 @@
     <ClInclude Include="ModelManager.h">
       <Filter>Source Files\Application\Graphics\Models</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\working\shaders\boneWeights.FRAG">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\boneWeights.SHAD">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\boneWeights.VERT">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\lambertLitSingleLight.FRAG">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\lambertLitSingleLight.SHAD">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\lambertLitSingleLight.VERT">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\phong.FRAG">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\phong.SHAD">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\phong.VERT">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\silhoutteTransparent.FRAG">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\silhoutteTransparent.SHAD">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\silhoutteTransparent.VERT">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\skinnedMeshPhong.FRAG">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\skinnedMeshPhong.SHAD">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\skinnedMeshPhong.VERT">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\unlitTextured.FRAG">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\unlitTextured.SHAD">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
-    <None Include="..\working\shaders\unlitTextured.VERT">
-      <Filter>Source Files\Application\Graphics\Shaders\Shaders</Filter>
-    </None>
   </ItemGroup>
 </Project>
