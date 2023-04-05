@@ -8,6 +8,12 @@
 using std::vector;
 namespace fs = std::filesystem;
 
+MaterialManager::~MaterialManager()
+{
+	for (auto material : materials)
+		delete material.second;
+}
+
 void MaterialManager::Init()
 {
 	if (!s_instance) s_instance = new MaterialManager();

@@ -1,6 +1,24 @@
 #include "Mesh.h"
 #include "Object.h"
 
+Mesh::Mesh()
+{
+	vao = vbo = ibo = tris = 0;
+}
+
+Mesh::~Mesh()
+{
+	// Delete one vertex array at location specified by variable.
+	if(vao != 0)
+		glDeleteVertexArrays(1, &vao);
+
+	// delete one buffer at location specified by variable, twice.
+	if (vbo != 0)
+		glDeleteBuffers(1, &vbo);
+	if(vbo != 0)
+		glDeleteBuffers(1, &ibo);
+}
+
 void Mesh::Initialise(unsigned int vertCount, const Vertex* vertices, unsigned int indexCount, unsigned int* indices)
 {
 	// Check we havent already initialised a mesh. No handling for overwriting at this stage. Should just make a new mesh class.
@@ -8,7 +26,7 @@ void Mesh::Initialise(unsigned int vertCount, const Vertex* vertices, unsigned i
 
 	// Generate buffers we'll need for thismesh
 	glGenBuffers(1, &vbo);
-	glGenVertexArrays(1, & vao);
+	glGenVertexArrays(1, &vao);
 
 	// Bind vertex array - binding is to make 'active' or 'current'
 	glBindVertexArray(vao);

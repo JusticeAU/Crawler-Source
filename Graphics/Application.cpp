@@ -6,50 +6,52 @@
 #include "ShaderManager.h"
 #include "MaterialManager.h"
 #include "ModelManager.h"
+#include "Scene.h"
+#include "Input.h"
+#include "Camera.h"
 
 #include "MathUtils.h"
 #include "FileUtils.h"
-
-#include <iostream>
+#include "LogUtils.h"
 
 Application::Application()
 {
 	// Initialise GLFW. Make sure it works with an error message.
-	std::cout << "Initialising GLFW." << std::endl;
+	LogUtils::Log("Initialising GLFW.");
 	if (!glfwInit())
 	{
-		std::cout << "Failed to initialise GLFW. Closing." << std::endl;
+		LogUtils::Log("Failed to initialise GLFW. Closing.");
 		return;
 	}
 	else
-		std::cout << "Sucessfully initialised GLFW." << std::endl;
+		LogUtils::Log("Sucessfully initialised GLFW.");
 
 	// Set resolution and window name.
-	std::cout << "Creating GLFW Window." << std::endl;
+	LogUtils::Log("Creating GLFW Window.");
 	window = glfwCreateWindow(1600, 900, "Graffix", nullptr, nullptr);
 	if (!window)
 	{
-		std::cout << "Failed to create GLFW Window. Exiting." << std::endl;
+		LogUtils::Log("Failed to create GLFW Window. Exiting.");
 		glfwTerminate();
 		return;
 	}
 	else
-		std::cout << "Sucessfully Created GLFW Window." << std::endl;
+		LogUtils::Log("Sucessfully Created GLFW Window.");
 
 	// Tell GLFW that the window we created is the one we should render to
-	std::cout << "Linking GLFW Window to render target." << std::endl;
+	LogUtils::Log("Linking GLFW Window to render target.");
 	glfwMakeContextCurrent(window);
 	//glfwSwapInterval(0); // Disable vsync
 
 	// Tell GLAD to load its OpenGL functions
-	std::cout << "Loading GLAD OpenGL functions." << std::endl;
+	LogUtils::Log("Loading GLAD OpenGL functions.");
 	if (!gladLoadGL())
 	{
-		std::cout << "Failed to load GLAD OpenGL Functions. Exiting." << std::endl;
+		LogUtils::Log("Failed to load GLAD OpenGL Functions. Exiting.");
 		return;
 	}
 	else
-		std::cout << "Sucessfully loaded GLAD OpenGL Functions." << std::endl;
+		LogUtils::Log("Sucessfully loaded GLAD OpenGL Functions.");
 
 	// Initialise ImGui
 	ImGui::CreateContext();
@@ -70,7 +72,7 @@ Application::Application()
 	TextureManager::Init();
 	ShaderManager::Init();
 	MaterialManager::Init(); // Must be initialised AFTER Texture Manager
-	ModelManager::Init();
+	ModelManager::Init(); // Must be initialised after mesh manager
 	Scene::Init();
 	
 	// Create input system.
@@ -101,7 +103,7 @@ Application::~Application()
 void Application::Run()
 {
 	// Main Application "Loop"
-	std::cout << "Starting Main Loop." << std::endl;
+	LogUtils::Log("Starting Main Loop.");
 	float currentTime = glfwGetTime();
 	while (!glfwWindowShouldClose(window))
 	{
@@ -140,10 +142,10 @@ void Application::Update(float delta)
 	ShaderManager::DrawGUI();
 	MaterialManager::DrawGUI();
 	ModelManager::DrawGUI();
+	camera->DrawGUI();
 
 	Input::Update();
 	camera->Update(delta);
-	camera->DrawGUI();
 
 	Scene::s_instance->Update(delta);
 	Scene::s_instance->DrawObjects();

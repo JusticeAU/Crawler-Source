@@ -49,6 +49,15 @@ void ModelManager::DrawGUI()
 ModelManager::ModelManager()
 {
 	resources.emplace("_null", nullptr);
+	
+	Model* primitive = new Model();
+	primitive->meshes.push_back(MeshManager::GetMesh("_cube"));
+	resources.emplace("_cube", primitive);
+	
+	primitive = new Model();
+	primitive->meshes.push_back(MeshManager::GetMesh("_quad"));
+	resources.emplace("_quad", primitive);
+
 	LoadAllFiles();
 }
 
@@ -90,15 +99,15 @@ void ModelManager::LoadFromFile(const char* filename)
 	// Load Animation Data
 	for (unsigned int i = 0; i < scene->mNumAnimations; i++) // for each animation
 	{
-		Model::Animation anim;
-		anim.name = scene->mAnimations[i]->mName.C_Str();
-		string log = "Processing Animation: " + anim.name;
+		Model::Animation* anim = new Model::Animation();
+		anim->name = scene->mAnimations[i]->mName.C_Str();
+		string log = "Processing Animation: " + anim->name;
 		LogUtils::Log(log.c_str());
-		anim.duration = scene->mAnimations[i]->mDuration;
-		anim.ticksPerSecond = scene->mAnimations[i]->mTicksPerSecond;
-		anim.numChannels = scene->mAnimations[i]->mNumChannels;
+		anim->duration = scene->mAnimations[i]->mDuration;
+		anim->ticksPerSecond = scene->mAnimations[i]->mTicksPerSecond;
+		anim->numChannels = scene->mAnimations[i]->mNumChannels;
 
-		for (int j = 0; j < anim.numChannels; j++) // for each channel in the animation
+		for (int j = 0; j < anim->numChannels; j++) // for each channel in the animation
 		{
 			Model::Animation::AnimationChannel channel;
 			channel.name = scene->mAnimations[i]->mChannels[j]->mNodeName.C_Str();
@@ -109,7 +118,7 @@ void ModelManager::LoadFromFile(const char* filename)
 				channel.keys[k].rotation = quat_cast(scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mValue);
 				channel.keys[k].scale = vec3_cast(scene->mAnimations[i]->mChannels[j]->mScalingKeys[k].mValue);
 			}
-			anim.channels.emplace(channel.name, channel);
+			anim->channels.emplace(channel.name, channel);
 		}
 
 		model->animations.push_back(anim);

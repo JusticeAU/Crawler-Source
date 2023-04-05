@@ -50,7 +50,7 @@ public:
 	};
 
 	vector<Mesh*> meshes;
-	vector<Animation> animations;
+	vector<Animation*> animations;
 	
 	Object* childNodes;
 	BoneStructure* boneStructure;

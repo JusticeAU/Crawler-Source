@@ -1,9 +1,8 @@
 #pragma once
-#include "glm.hpp"
-#include "ShaderProgram.h"
-#include "Camera.h"
-#include "Scene.h"
-#include "Input.h"
+
+struct GLFWwindow;
+class Camera;
+class Scene;
 
 class Application
 {

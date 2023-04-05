@@ -9,6 +9,10 @@ using std::map;
 class MaterialManager
 {
 public:
+	~MaterialManager();
+	MaterialManager(MaterialManager const& other) = delete;
+	MaterialManager& operator=(const MaterialManager& other) = delete;
+
 	static void Init();
 
 	static Material* GetMaterial(string name);

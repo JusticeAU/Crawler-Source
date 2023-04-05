@@ -14,6 +14,12 @@ MeshManager::MeshManager()
 	CreateQuad();
 }
 
+MeshManager::~MeshManager()
+{
+	for (auto mesh : meshes)
+		delete mesh.second;
+}
+
 void MeshManager::Init()
 {
 	if (!s_instance) s_instance = new MeshManager();
@@ -316,7 +322,7 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 			boneIndex = bone->second;
 		}
 
-		// bone offset boi
+		// Store the offset.
 		boneStructure->boneInfo[boneIndex].offset = mat4_cast(mesh->mBones[i]->mOffsetMatrix);
 
 		// process all weights associated with the bone
@@ -325,10 +331,12 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 			int vertID = mesh->mBones[i]->mWeights[boneWeightIndex].mVertexId;
 			float vertWeight = mesh->mBones[i]->mWeights[boneWeightIndex].mWeight;
 
+
 			// find a slot on this vert to allocate this bone id and weight
-			bool storedBone = false;
-			int minIndex = -1;
+			int minIndex = -1; // We're going to track the smallest one for if we need to drop one.
 			float minWeight = FLT_MAX;
+
+			bool storedBone = false;
 			for (int j = 0; j < 4; j++)
 			{
 				if (vertices[vertID].boneID[j] == -1) // free slot
@@ -340,6 +348,7 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 					//LogUtils::Log(log.c_str());
 					break;
 				}
+
 				if (minWeight > vertices[vertID].boneWeight[j])
 				{
 					minWeight = vertices[vertID].boneWeight[j];
@@ -355,7 +364,6 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 				vertices[vertID].boneID[minIndex] = boneIndex;
 				vertices[vertID].boneWeight[minIndex] = vertWeight;
 				// Scale weights back to 1
-				float totalWeight = 0;
 				for (int j = 0; j < 4; j++)
 					vertices[vertID].boneWeight[j] += minWeight * 0.25f;
 			}

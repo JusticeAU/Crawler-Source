@@ -78,19 +78,19 @@ void Object::Update(float delta)
 			selectedFrame = 0;
 		}
 
-		if(playAnimation) animationTime += delta * animationSpeed * model->animations[selectedAnimation].ticksPerSecond;
+		if(playAnimation) animationTime += delta * animationSpeed * model->animations[selectedAnimation]->ticksPerSecond;
 		
-		if (animationTime > model->animations[selectedAnimation].duration)
+		if (animationTime > model->animations[selectedAnimation]->duration)
 		{
 			if (loopAnimation)
-				animationTime -= model->animations[selectedAnimation].duration;
+				animationTime -= model->animations[selectedAnimation]->duration;
 			else
-				animationTime = model->animations[selectedAnimation].duration;
+				animationTime = model->animations[selectedAnimation]->duration;
 		}
 		else if (animationTime < 0.0f)
 		{
 			if (loopAnimation)
-				animationTime += model->animations[selectedAnimation].duration;
+				animationTime += model->animations[selectedAnimation]->duration;
 			else
 				animationTime = 0.0f;
 		}
@@ -255,15 +255,15 @@ void Object::DrawGUI()
 				if (model->animations.size() > 0)
 				{
 					string animationNameStr = "Animation##" + to_string(id);
-					if (ImGui::BeginCombo(animationNameStr.c_str(), model->animations[selectedAnimation].name.c_str()))
+					if (ImGui::BeginCombo(animationNameStr.c_str(), model->animations[selectedAnimation]->name.c_str()))
 					{
 						for (int i = 0; i < model->animations.size(); i++)
 						{
-							const bool is_selected = (model->animations[i].name == animationName);
-							if (ImGui::Selectable(model->animations[i].name.c_str(), is_selected))
+							const bool is_selected = (model->animations[i]->name == animationName);
+							if (ImGui::Selectable(model->animations[i]->name.c_str(), is_selected))
 							{
 								selectedAnimation = i;
-								animationName = model->animations[i].name;
+								animationName = model->animations[i]->name;
 							}
 
 							// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -284,7 +284,7 @@ void Object::DrawGUI()
 					if (ImGui::Button(AnimPlayStr.c_str())) playAnimation = !playAnimation;
 
 					string animTimeStr = "Animation Time##" + to_string(id);
-					ImGui::SliderFloat(animTimeStr.c_str(), &animationTime, 0, model->animations[selectedAnimation].duration);
+					ImGui::SliderFloat(animTimeStr.c_str(), &animationTime, 0, model->animations[selectedAnimation]->duration);
 				}
 			}
 		
@@ -516,7 +516,7 @@ void Object::ProcessNode(float frameTime, int animationIndex, Object* node, mat4
 {
 	// look up if node has a matching bone/animation node
 	int frameIndex = (int)frameTime;
-	int nextFrameIndex = frameTime > model->animations[animationIndex].duration ? 0 : frameIndex + 1;
+	int nextFrameIndex = frameTime > model->animations[animationIndex]->duration ? 0 : frameIndex + 1;
 	float t = frameTime - frameIndex;
 
 	string nodeName = node->objectName;
@@ -525,24 +525,23 @@ void Object::ProcessNode(float frameTime, int animationIndex, Object* node, mat4
 	if (bufferIndex != model->boneStructure->boneMapping.end()) // if it does, look up its keyframe data.
 	{
 		// Get key from animation
-		auto channel = model->animations[animationIndex].channels.find(nodeName);
-		if (channel != model->animations[animationIndex].channels.end())
+		auto channel = model->animations[animationIndex]->channels.find(nodeName);
+		if (channel != model->animations[animationIndex]->channels.end())
 		{
-			Model::Animation::AnimationKey key = channel->second.keys[frameIndex];
-			Model::Animation::AnimationKey nextKey = channel->second.keys[nextFrameIndex];
+			Model::Animation::AnimationKey &key = channel->second.keys[frameIndex];
+			Model::Animation::AnimationKey &nextKey = channel->second.keys[nextFrameIndex];
 
 			// Apply transformation.
 			mat4 scale = glm::scale(glm::mat4(1), glm::mix(key.scale, nextKey.scale, t));				// generate mixed scale matrix		
 			mat4 rotate = glm::mat4_cast(glm::slerp(key.rotation,nextKey.rotation, t));					// generate mixed rotation matrix
 			mat4 translate = glm::translate(glm::mat4(1), glm::mix(key.position, nextKey.position, t));	// generate mixed translation matrix
-			nodeTransformation = translate * rotate * scale;				// combine
+			nodeTransformation = translate * rotate * scale;											// combine
 		}
 	}
 	
-	mat4 globalTransform = accumulated * nodeTransformation;			// Apply matrix to accumulated transform down the tree.
+	mat4 globalTransform = accumulated * nodeTransformation;											// Apply matrix to accumulated transform down the tree.
 
 	// if it was an actual bone - apply it the transform buffer that gets sent to the vertex shader.
-
 	if (bufferIndex != model->boneStructure->boneMapping.end())
 		boneTransforms[bufferIndex->second] = globalTransform * model->boneStructure->boneInfo[bufferIndex->second].offset;
 

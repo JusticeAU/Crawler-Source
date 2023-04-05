@@ -13,9 +13,14 @@ using std::string;
 class Mesh
 {
 public:
+	Mesh();
+	~Mesh();
+	Mesh(Mesh const& other) = delete;
+	Mesh& operator=(const Mesh* other) = delete;
+
 	struct Vertex
 	{
-		vec3 position = {0,0,0};
+		vec3 position =	{ 0,0,0 };
 		vec3 colour = { 0,0,0 };
 		vec3 normal = { 0,0,0 };
 		vec2 uv = { 0,0 };
@@ -29,4 +34,5 @@ public:
 public:
 	unsigned int tris;
 	unsigned int vao, vbo, ibo;
+	bool initialised = false;
 };

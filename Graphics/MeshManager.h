@@ -14,6 +14,10 @@ struct aiScene;
 class MeshManager
 {
 public:
+	~MeshManager();
+	MeshManager(MeshManager const& other) = delete;
+	MeshManager& operator=(const MeshManager& other) = delete;
+
 	static void Init();
 
 	static Mesh* GetMesh(string name);
