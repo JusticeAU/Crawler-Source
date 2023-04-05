@@ -49,6 +49,13 @@ Object::~Object()
 
 void Object::Update(float delta)
 {
+	if (spin)
+	{
+		localRotation.y += delta * spinSpeed;
+
+		if (localRotation.y > 180) localRotation.y -= 360;
+	}
+
 	// Update our transform based on crappy values from ImGui
 	localTransform = glm::translate(glm::mat4(1), localPosition)
 		* glm::rotate(glm::mat4(1), glm::radians(localRotation.z), glm::vec3{ 0,0,1 })
@@ -198,6 +205,12 @@ void Object::DrawGUI()
 
 			string scaleStr = "Scale##" + to_string(id);
 			ImGui::DragFloat3(scaleStr.c_str(), &localScale[0]);
+
+			string rotateBoolStr = "Rotate##" + to_string(id);
+			ImGui::Checkbox(rotateBoolStr.c_str(), &spin);
+			ImGui::SameLine();
+			string rotateSpeedStr = "Speed##" + to_string(id);
+			ImGui::DragFloat(rotateSpeedStr.c_str(), &spinSpeed, 1.0f, -50, 50);
 
 			//ImGui::BeginDisabled();
 			ImGui::InputFloat4("X", &transform[0].x);
@@ -438,6 +451,9 @@ void Object::Write(std::ostream& out)
 	FileUtils::WriteVec(out, localPosition);
 	FileUtils::WriteVec(out, localRotation);
 	FileUtils::WriteVec(out, localScale);
+
+	FileUtils::WriteBool(out, spin);
+	FileUtils::WriteFloat(out, spinSpeed);
 	
 	FileUtils::WriteString(out, modelName);
 
@@ -463,6 +479,9 @@ void Object::Read(std::istream& in)
 	FileUtils::ReadVec(in, localPosition);
 	FileUtils::ReadVec(in, localRotation);
 	FileUtils::ReadVec(in, localScale);
+
+	FileUtils::ReadBool(in, spin);
+	FileUtils::ReadFloat(in, spinSpeed);
 
 	FileUtils::ReadString(in, modelName);
 	model = ModelManager::GetModel(modelName);

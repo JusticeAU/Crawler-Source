@@ -35,7 +35,7 @@ void main()
 	vec4 normalTransformed = boneTransform * vec4(Normal, 0);
 	vec4 tangentTransformed = boneTransform * vec4(Tangent.xyz, 0);
 
-	_Position = (mMatrix * posTransformed).xyz;
+	_Position = (transformMatrix * posTransformed).xyz;
 	_Normal = (mMatrix * normalTransformed).xyz;
 	_TexCoords = texCoords;
 	_Tangent = (mMatrix * tangentTransformed).xyz;

@@ -2,13 +2,9 @@
 
 Camera::Camera(float aspect, GLFWwindow* window)
 {
-	position = { 0, 2, 10 };
-	
-	// back anim test
-	/*position = { 43, 302, 330 };
-	m_horizontal = -94.0f;
-	m_vertical = -26.0f;*/
-	// end buck anim test
+	position = { -6.25, 6.5, 16.38 };
+	m_horizontal = -71.4f;
+	m_vertical = -3.9f;
 
 	this->aspect = aspect;
 

@@ -48,6 +48,10 @@ public:
 	Material* material;
 	string materialName;
 
+	// Debug helpers
+	bool spin = false;
+	float spinSpeed = 10.0f;
+
 	// Animation state
 	int selectedBone = 0;
 	int selectedAnimation = 0;
@@ -58,7 +62,6 @@ public:
 	float animationTime = 0.0f;
 	int selectedFrame = 0;
 	mat4* boneTransforms;
-
 
 
 	void Update(float delta);

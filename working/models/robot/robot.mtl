@@ -2,6 +2,6 @@ Ka 0 0 0
 Kd 1 1 1
 Ks 1 1 1
 Ns 20
-map_Kd 
-map_Ks 
-bump 
+map_Kd robot_steampunk_color.tga.png
+map_Ks robot_steampunk_metalness.tga.png
+bump robot_steampunk_nmap.tga.png

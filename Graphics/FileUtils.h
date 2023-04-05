@@ -85,4 +85,13 @@ public:
 		delete[] stringC;
 		return newString;
 	}
+	static void WriteBool(std::ostream& ostream, bool value)
+	{
+		ostream.write(reinterpret_cast<const char*>(&value), sizeof(bool));
+	}
+	static int ReadBool(std::istream& istream, bool& value)
+	{
+		istream.read(reinterpret_cast<char*>(&value), sizeof(bool));
+		return value;
+	}
 };
