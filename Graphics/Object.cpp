@@ -439,7 +439,12 @@ void Object::Write(std::ostream& out)
 	FileUtils::WriteVec(out, localRotation);
 	FileUtils::WriteVec(out, localScale);
 	
-	//FileUtils::WriteString(out, meshName);
+	FileUtils::WriteString(out, modelName);
+
+	FileUtils::WriteInt(out, selectedAnimation);
+	FileUtils::WriteString(out, animationName);
+	FileUtils::WriteFloat(out, animationSpeed);
+
 	FileUtils::WriteString(out, textureName);
 	FileUtils::WriteString(out, shaderName);
 	FileUtils::WriteString(out, materialName);
@@ -459,8 +464,13 @@ void Object::Read(std::istream& in)
 	FileUtils::ReadVec(in, localRotation);
 	FileUtils::ReadVec(in, localScale);
 
-	/*FileUtils::ReadString(in, meshName);
-	mesh = MeshManager::GetMesh(meshName);*/
+	FileUtils::ReadString(in, modelName);
+	model = ModelManager::GetModel(modelName);
+
+	FileUtils::ReadInt(in, selectedAnimation);
+	FileUtils::ReadString(in, animationName);
+	FileUtils::ReadFloat(in, animationSpeed);
+
 	FileUtils::ReadString(in, textureName);
 	texture = TextureManager::GetTexture(textureName);
 	FileUtils::ReadString(in, shaderName);
