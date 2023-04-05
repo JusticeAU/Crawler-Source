@@ -272,11 +272,6 @@ void Object::DrawGUI()
 
 					string animTimeStr = "Animation Time##" + to_string(id);
 					ImGui::SliderFloat(animTimeStr.c_str(), &animationTime, 0, model->animations[selectedAnimation].duration);
-
-					ImGui::BeginDisabled();
-					string frameStr = "Selected Frame##" + to_string(id);
-					ImGui::DragInt(frameStr.c_str(), &selectedFrame, 0.5, 0, model->animations[selectedAnimation].duration);
-					ImGui::EndDisabled();
 				}
 			}
 		
@@ -354,7 +349,7 @@ void Object::DrawGUI()
 			}
 		}
 
-		int childCount = children.size();
+		int childCount = (int)children.size();
 		string childrenString = "Children (" + to_string(childCount) + ")##" + to_string(id);
 		if (ImGui::CollapsingHeader(childrenString.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
 		{
@@ -396,7 +391,7 @@ void Object::DrawGUISimple()
 			//ImGui::EndDisabled();
 		}
 
-		int childCount = children.size();
+		int childCount = (int)children.size();
 		string childrenString = "Children (" + to_string(childCount) + ")##" + to_string(id);
 		if (ImGui::CollapsingHeader(childrenString.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
 		{
@@ -450,7 +445,7 @@ void Object::Write(std::ostream& out)
 	FileUtils::WriteString(out, materialName);
 
 	// write children
-	int numChildren = children.size();
+	int numChildren = (int)children.size();
 	FileUtils::WriteInt(out, numChildren);
 	for (int i = 0; i < numChildren; i++)
 		children[i]->Write(out);

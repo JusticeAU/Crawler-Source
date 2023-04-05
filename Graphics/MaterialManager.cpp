@@ -44,7 +44,7 @@ void MaterialManager::DrawGUI()
 
 
 	ImGui::BeginDisabled();
-	int materialCount = s_instance->materials.size();
+	int materialCount = (int)s_instance->materials.size();
 	ImGui::DragInt("Material Count", &materialCount);
 	for (auto m : s_instance->materials)
 	{
@@ -72,7 +72,7 @@ void MaterialManager::LoadFromFile(const char* filename)
 
 	// get the path part of the fileName for use with relative paths for maps later
 	std::string directory(filename);
-	int index = directory.rfind('/');
+	int index = (int)directory.rfind('/');
 	if (index != -1)
 		directory = directory.substr(0, index + 1);
 

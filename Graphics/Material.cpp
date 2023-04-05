@@ -96,15 +96,15 @@ void Material::SaveToFile()
 
 	// need to clean filepaths out of filenames here.
 	// Currently .mtl files save the filenames as relative paths to themselves
-	int from = mapKdName.find_last_of('/')+1;
+	int from = (int)mapKdName.find_last_of('/')+1;
 	string filename = mapKdName.substr(from, mapKdName.length() - from);
 	file << "map_Kd " << filename << std::endl;
 
-	from = mapKsName.find_last_of('/') + 1;
+	from = (int)mapKsName.find_last_of('/') + 1;
 	filename = mapKsName.substr(from, mapKsName.length() - from);
 	file << "map_Ks " << filename << std::endl;
 
-	from = mapBumpName.find_last_of('/') + 1;
+	from = (int)mapBumpName.find_last_of('/') + 1;
 	filename = mapBumpName.substr(from, mapBumpName.length() - from);
 	file << "bump " << filename << std::endl;
 	file.close();

@@ -31,7 +31,7 @@ void ShaderManager::DrawGUI()
 {
 	ImGui::Begin("Shader Manager");
 	ImGui::BeginDisabled();
-	int shaderCount = s_instance->shaderPrograms.size();
+	int shaderCount = (int)s_instance->shaderPrograms.size();
 	ImGui::DragInt("Shader Count", &shaderCount);
 	for (auto s : s_instance->shaderPrograms)
 	{

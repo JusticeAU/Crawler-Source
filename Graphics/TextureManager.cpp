@@ -31,7 +31,7 @@ void TextureManager::DrawGUI()
 {
 	ImGui::Begin("Texture Manager");
 	ImGui::BeginDisabled();
-	int meshCount = s_instance->textures.size();
+	int meshCount = (int)s_instance->textures.size();
 	ImGui::DragInt("Texture Count", &meshCount);
 	for (auto m : s_instance->textures)
 	{

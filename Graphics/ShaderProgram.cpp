@@ -25,7 +25,7 @@ void ShaderProgram::LoadFromFiles(std::string vertFilename, std::string fragFile
 		{
 			LogUtils::Log("Vertex shader compilation failure");
 			glGetShaderInfoLog(vertexShaderID, 512, nullptr, errorLog);
-			LogUtils(errorLog);
+			LogUtils::Log(errorLog);
 			loaded = false;
 		}
 		else
@@ -48,7 +48,7 @@ void ShaderProgram::LoadFromFiles(std::string vertFilename, std::string fragFile
 		{
 			LogUtils::Log("Fragment shader compilation failure");
 			glGetShaderInfoLog(fragmentShaderID, 512, nullptr, errorLog);
-			LogUtils(errorLog);
+			LogUtils::Log(errorLog);
 			loaded = false;
 		}
 		else

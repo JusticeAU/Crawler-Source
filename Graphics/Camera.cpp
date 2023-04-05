@@ -73,7 +73,7 @@ void Camera::DrawGUI()
 
 	if(ImGui::DragFloat3("Position", &position[0]))
 		UpdateMatrix();
-	if(ImGui::DragFloat2("Angle", &m_horizontal));
+	if(ImGui::DragFloat2("Angle", &m_horizontal))
 		UpdateMatrix();
 
 	ImGui::End();

@@ -2,15 +2,14 @@
 #include "Model.h"
 #include <string>
 #include <map>
-#include "Mesh.h"
 
 using std::string;
 using std::map;
 
 class Object;
-class aiNode;
-class aiMesh;
-class aiScene;
+struct aiNode;
+struct aiMesh;
+struct aiScene;
 
 class MeshManager
 {

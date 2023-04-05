@@ -36,7 +36,7 @@ void ModelManager::DrawGUI()
 {
 	ImGui::Begin("Model Manager");
 	ImGui::BeginDisabled();
-	int resourceCount = s_instance->resources.size();
+	int resourceCount = (int)s_instance->resources.size();
 	ImGui::DragInt("Model Count", &resourceCount);
 	for (auto m : s_instance->resources)
 	{
@@ -67,7 +67,7 @@ void ModelManager::LoadFromFile(const char* filename)
 	// Create a new model to start pushing our data in to.
 	Model* model = new Model();
 
-	for (int i = 0; i < scene->mNumMeshes; i++)
+	for (unsigned int i = 0; i < scene->mNumMeshes; i++)
 	{
 		aiMesh* inMesh = scene->mMeshes[i];
 		if (inMesh->mNumBones > 0)
@@ -88,7 +88,7 @@ void ModelManager::LoadFromFile(const char* filename)
 	MeshManager::CopyNodeHierarchy(scene, scene->mRootNode, rootNode, model->boneStructure);
 
 	// Load Animation Data
-	for (int i = 0; i < scene->mNumAnimations; i++) // for each animation
+	for (unsigned int i = 0; i < scene->mNumAnimations; i++) // for each animation
 	{
 		Model::Animation anim;
 		anim.name = scene->mAnimations[i]->mName.C_Str();

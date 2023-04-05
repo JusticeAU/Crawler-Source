@@ -4,7 +4,7 @@
 #include <sstream>
 #include <string>
 
-static class FileUtils
+class FileUtils
 {
 public:
 	static std::string LoadFileAsString(std::string filepath)
@@ -66,7 +66,7 @@ public:
 	}
 	static void WriteString(std::ostream& ostream, std::string value)
 	{
-		unsigned int stringLength = value.length();
+		unsigned int stringLength = (unsigned int)value.length();
 		char* stringC = new char[stringLength+1]();
 		strcpy_s(stringC, sizeof(char) * (stringLength+1), value.c_str());
 		ostream.write(reinterpret_cast<const char*>(&stringLength), sizeof(unsigned int));

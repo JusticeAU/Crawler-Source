@@ -33,7 +33,7 @@ void MeshManager::DrawGUI()
 {
 	ImGui::Begin("Mesh Manager");
 	ImGui::BeginDisabled();
-	int meshCount = s_instance->meshes.size();
+	int meshCount = (int)s_instance->meshes.size();
 	ImGui::DragInt("Mesh Count", &meshCount);
 	for (auto m : s_instance->meshes)
 	{
@@ -295,7 +295,7 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 	Mesh* loadedMesh = new Mesh();
 
 	// Load bone data.
-	for (int i = 0; i < mesh->mNumBones; i++)
+	for (unsigned int i = 0; i < mesh->mNumBones; i++)
 	{
 		// find or allocate bone ID;
 		string boneName = mesh->mBones[i]->mName.data;
@@ -320,7 +320,7 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 		boneStructure->boneInfo[boneIndex].offset = mat4_cast(mesh->mBones[i]->mOffsetMatrix);
 
 		// process all weights associated with the bone
-		for (int boneWeightIndex = 0; boneWeightIndex < mesh->mBones[i]->mNumWeights; boneWeightIndex++)
+		for (unsigned int boneWeightIndex = 0; boneWeightIndex < mesh->mBones[i]->mNumWeights; boneWeightIndex++)
 		{
 			int vertID = mesh->mBones[i]->mWeights[boneWeightIndex].mVertexId;
 			float vertWeight = mesh->mBones[i]->mWeights[boneWeightIndex].mWeight;
@@ -347,7 +347,7 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 	}
 
 	// Initialise mesh in OGL
-	loadedMesh->Initialise(numV, vertices, indices.size(), indices.data());
+	loadedMesh->Initialise(numV, vertices, (int)indices.size(), indices.data());
 	delete[] vertices;
 	s_instance->meshes.emplace(name, loadedMesh);
 	return loadedMesh;
@@ -355,7 +355,7 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 
 void MeshManager::CopyNodeHierarchy(const aiScene* scene, aiNode* node, Object* parent, Model::BoneStructure* boneStructure)
 {
-	for (int i = 0; i < node->mNumChildren; i++)
+	for (unsigned int i = 0; i < node->mNumChildren; i++)
 	{
 		Object* object = new Object(0, node->mChildren[i]->mName.C_Str());
 		parent->children.push_back(object);

@@ -173,7 +173,7 @@ void Scene::SetAmbientLightColour(vec3 ambientColour)
 
 int Scene::GetNumPointLights()
 {
-	return s_instance->m_pointLights.size();
+	return (int)s_instance->m_pointLights.size();
 }
 
 void Scene::Save()
@@ -192,7 +192,7 @@ void Scene::Save()
 	FileUtils::WriteVec(out, m_sunDirection);
 	
 	// Point Lights
-	int numPointLights = m_pointLights.size();
+	int numPointLights = (int)m_pointLights.size();
 	FileUtils::WriteInt(out, numPointLights);
 	for (int i = 0; i < numPointLights; i++)
 	{
@@ -202,7 +202,7 @@ void Scene::Save()
 	}
 	
 	// Serialize Objects and Child Objects recursively
-	int numObjects = objects.size();
+	int numObjects = (int)objects.size();
 	FileUtils::WriteInt(out, numObjects);
 	for (int i = 0; i < numObjects; i++)
 		objects[i]->Write(out);
