@@ -8,6 +8,10 @@ void ShaderProgram::LoadFromFiles(std::string vertFilename, std::string fragFile
 	vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 	shaderProgramID = glCreateProgram();
+
+	this->vertFilename = vertFilename;
+	this->fragFilename = fragFilename;
+	
 	GLchar errorLog[512];
 	GLint successStatus = 0;
 
@@ -82,6 +86,12 @@ void ShaderProgram::LoadFromFiles(std::string vertFilename, std::string fragFile
 void ShaderProgram::Bind()
 {
 	glUseProgram(shaderProgramID);
+}
+
+void ShaderProgram::Reload()
+{
+	// Lets do some freeing up here at some point?
+	LoadFromFiles(vertFilename, fragFilename);
 }
 
 void ShaderProgram::SetFloatUniform(std::string variableName, float value)

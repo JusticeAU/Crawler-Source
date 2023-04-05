@@ -22,5 +22,7 @@ protected:
 	void LoadFromFile(string filename);
 
 	void LoadAllFiles();
+
+	void RecompileAllShaderPrograms();
 };
 

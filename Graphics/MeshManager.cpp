@@ -326,7 +326,7 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 			float vertWeight = mesh->mBones[i]->mWeights[boneWeightIndex].mWeight;
 
 			// find a slot on this vert to allocate this bone id and weight
-			for (int j = 0; j < 4; j++)
+			for (int j = 0; j < 5; j++)
 			{
 				if (vertices[vertID].boneID[j] == -1) // free slot
 				{

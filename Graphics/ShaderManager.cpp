@@ -30,6 +30,8 @@ ShaderProgram* ShaderManager::GetShaderProgram(string name)
 void ShaderManager::DrawGUI()
 {
 	ImGui::Begin("Shader Manager");
+	if (ImGui::Button("Reload"))
+		s_instance->RecompileAllShaderPrograms();
 	ImGui::BeginDisabled();
 	int shaderCount = (int)s_instance->shaderPrograms.size();
 	ImGui::DragInt("Shader Count", &shaderCount);
@@ -63,6 +65,15 @@ void ShaderManager::LoadAllFiles()
 			LoadFromFile(shaderPath);
 		}
 
+	}
+}
+
+void ShaderManager::RecompileAllShaderPrograms()
+{
+	for (auto shaderprogram : shaderPrograms)
+	{
+		if(shaderprogram.second)
+			shaderprogram.second->Reload();
 	}
 }
 

@@ -3,6 +3,8 @@
 #include "glm.hpp"
 #include <string>
 
+using std::string;
+
 class ShaderProgram
 {
 public:
@@ -12,8 +14,14 @@ public:
 
 	bool loaded = true;
 
+	string vertFilename;
+	string fragFilename;
+
 	void LoadFromFiles(std::string vertFilename, std::string fragFilename);
 	void Bind();
+
+	void Reload();
+
 	void SetFloatUniform(std::string variableName, float value);
 	void SetFloat3ArrayUniform(std::string arrayName, int elements, const glm::vec3* firstValue);
 	void SetVectorUniform(std::string variableName, glm::vec3 value);
