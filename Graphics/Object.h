@@ -12,6 +12,7 @@ class Model;
 class Texture;
 class ShaderProgram;
 class Material;
+class UniformBuffer;
 
 const int MAX_BONES = 100;
 
@@ -61,8 +62,9 @@ public:
 	float animationSpeed = 1.0f;
 	float animationTime = 0.0f;
 	int selectedFrame = 0;
+	
 	mat4* boneTransforms;
-
+	UniformBuffer* boneTransfomBuffer;
 
 	void Update(float delta);
 	void Draw();

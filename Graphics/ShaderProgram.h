@@ -28,4 +28,6 @@ public:
 	void SetMatrixUniform(std::string variableName, glm::mat4 value);
 	void SetMatrixArrayUniform(std::string variableName, int elements, const glm::mat4* firstValue);
 	void SetIntUniform(std::string variableName, int value);
+
+	void SetUniformBlockIndex(string uniformBlockName, const unsigned int index);
 };

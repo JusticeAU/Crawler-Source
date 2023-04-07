@@ -122,6 +122,9 @@
     <ClCompile Include="Light.cpp">
       <Filter>Source Files\Application\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="UniformBuffer.cpp">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -225,6 +228,9 @@
     </ClInclude>
     <ClInclude Include="ModelManager.h">
       <Filter>Source Files\Application\Graphics\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="UniformBuffer.h">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

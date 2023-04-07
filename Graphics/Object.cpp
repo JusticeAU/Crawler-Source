@@ -5,6 +5,7 @@
 #include "MaterialManager.h"
 
 #include "ShaderProgram.h"
+#include "UniformBuffer.h"
 #include "Camera.h"
 #include "Scene.h"
 #include "Model.h"
@@ -36,7 +37,7 @@ Object::Object(int objectID, string name)
 	shaderName = "";
 	shader = nullptr;
 
-	boneTransforms = new mat4[MAX_BONES];
+	boneTransforms = nullptr;
 }
 
 Object::~Object()
@@ -45,6 +46,13 @@ Object::~Object()
 	{
 		delete child;
 	}
+
+	if (boneTransfomBuffer != nullptr)
+	{
+		delete boneTransfomBuffer;
+		delete[] boneTransforms;
+	}
+
 }
 
 void Object::Update(float delta)
@@ -72,6 +80,12 @@ void Object::Update(float delta)
 	// Update animation state, if we have an animation
 	if (model!= nullptr && model->animations.size() > 0) // We have animations
 	{
+		if (boneTransforms == nullptr)
+		{
+			boneTransforms = new mat4[MAX_BONES]();
+			boneTransfomBuffer = new UniformBuffer(sizeof(mat4) * MAX_BONES); // we need to create buffer to store bonetransforms on the GPU for this object.
+		}
+
 		if (selectedAnimation > model->animations.size() - 1)
 		{
 			selectedAnimation = 0; // avoid overflow
@@ -94,7 +108,7 @@ void Object::Update(float delta)
 			else
 				animationTime = 0.0f;
 		}
-		// TODO - interpolate between frames
+
 		selectedFrame = (int)animationTime;
 		UpdateBoneMatrixBuffer(animationTime);
 	}
@@ -106,7 +120,7 @@ void Object::Update(float delta)
 
 void Object::Draw()
 {
-	if (!(model == nullptr || shader == nullptr))
+	if (model != nullptr && shader != nullptr)
 	{
 		// Combine the matricies
 		glm::mat4 pvm = Camera::s_instance->GetMatrix() * transform;
@@ -130,7 +144,16 @@ void Object::Draw()
 
 		// skinned mesh rendering
 		shader->SetIntUniform("selectedBone", selectedBone); // dev testing really, used by boneWeights shader
-		shader->SetMatrixArrayUniform("boneTransforms", MAX_BONES, &boneTransforms[0]);
+		if (boneTransfomBuffer != nullptr)
+		{
+			// get the shader uniform block index and set binding point - we'll just hardcode 0 for this.
+			shader->SetUniformBlockIndex("boneTransformBuffer", 0);
+			// TODO - this could be done in shader initialisation if it detected that that shader had this uniform buffer
+			// Now long the UniformBufferObject to the bind point in the GL context.
+			boneTransfomBuffer->Bind(0);
+
+			boneTransfomBuffer->SendData(boneTransforms);
+		}
 
 		// Texture Uniforms
 		if (texture)
@@ -193,7 +216,6 @@ void Object::DrawGUI()
 		{
 			objectName = newName;
 		}
-
 		
 		if (ImGui::CollapsingHeader("Transform"))
 		{
