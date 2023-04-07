@@ -57,25 +57,34 @@ Object::~Object()
 
 void Object::Update(float delta)
 {
-	if (spin)
+	if (spin) // just some debug spinning for testing lighting.
 	{
 		localRotation.y += delta * spinSpeed;
+		dirtyTransform = true;
 
 		if (localRotation.y > 180) localRotation.y -= 360;
+		else if (localRotation.y < -180) localRotation.y += 360;
 	}
 
-	// Update our transform based on crappy values from ImGui
-	localTransform = glm::translate(glm::mat4(1), localPosition)
-		* glm::rotate(glm::mat4(1), glm::radians(localRotation.z), glm::vec3{ 0,0,1 })
-		* glm::rotate(glm::mat4(1), glm::radians(localRotation.y), glm::vec3{ 0,1,0 })
-		* glm::rotate(glm::mat4(1), glm::radians(localRotation.x), glm::vec3{ 1,0,0 })
-		* glm::scale(glm::mat4(1), localScale);
+	if (dirtyTransform) // Update our transform based on crappy values from ImGui
+	{
+		localTransform = glm::translate(glm::mat4(1), localPosition)
+			* glm::rotate(glm::mat4(1), glm::radians(localRotation.z), glm::vec3{ 0,0,1 })
+			* glm::rotate(glm::mat4(1), glm::radians(localRotation.y), glm::vec3{ 0,1,0 })
+			* glm::rotate(glm::mat4(1), glm::radians(localRotation.x), glm::vec3{ 1,0,0 })
+			* glm::scale(glm::mat4(1), localScale);
 
-	// Update world transform based on our parent.
-	if (parent)
-		transform = parent->transform * localTransform;
-	else
-		transform = localTransform;
+		// Update world transform based on our parent.
+		if (parent)
+			transform = parent->transform * localTransform;
+		else
+			transform = localTransform;
+
+		for (auto c : children)
+			c->dirtyTransform = true;
+
+		dirtyTransform = false; // clear dirty flag
+	}
 
 	// Update animation state, if we have an animation
 	if (model!= nullptr && model->animations.size() > 0) // We have animations
@@ -203,7 +212,10 @@ void Object::DrawGUI()
 
 		string childStr = "AddChild##" + to_string(id);
 		if (ImGui::Button(childStr.c_str()))
+		{
 			Object* spawn = Scene::CreateObject(this);
+			spawn->Update(0.0f);
+		}
 
 		ImGui::SameLine();
 		ImGui::AlignTextToFramePadding();
@@ -220,30 +232,22 @@ void Object::DrawGUI()
 		if (ImGui::CollapsingHeader("Transform"))
 		{
 			string positionStr = "Pos##" + to_string(id);
-			ImGui::DragFloat3(positionStr.c_str(), &localPosition[0]);
+			if (ImGui::DragFloat3(positionStr.c_str(), &localPosition[0]))
+				dirtyTransform = true;
 
 			string rotationStr = "Rot##" + to_string(id);
-			ImGui::SliderFloat3(rotationStr.c_str(), &localRotation[0], -180, 180);
+			if(ImGui::SliderFloat3(rotationStr.c_str(), &localRotation[0], -180, 180))
+				dirtyTransform = true;
 
 			string scaleStr = "Scale##" + to_string(id);
-			ImGui::DragFloat3(scaleStr.c_str(), &localScale[0]);
+			if(ImGui::DragFloat3(scaleStr.c_str(), &localScale[0]))
+				dirtyTransform = true;
 
 			string rotateBoolStr = "Rotate##" + to_string(id);
 			ImGui::Checkbox(rotateBoolStr.c_str(), &spin);
 			ImGui::SameLine();
 			string rotateSpeedStr = "Speed##" + to_string(id);
 			ImGui::DragFloat(rotateSpeedStr.c_str(), &spinSpeed, 1.0f, -50, 50);
-
-			//ImGui::BeginDisabled();
-			ImGui::InputFloat4("X", &transform[0].x);
-			ImGui::InputFloat4("Y", &transform[1].x);
-			ImGui::InputFloat4("Z", &transform[2].x);
-			ImGui::InputFloat4("T", &transform[3].x);
-			ImGui::InputFloat4("lX", &localTransform[0].x);
-			ImGui::InputFloat4("lY", &localTransform[1].x);
-			ImGui::InputFloat4("lZ", &localTransform[2].x);
-			ImGui::InputFloat4("lT", &localTransform[3].x);
-			//ImGui::EndDisabled();
 		}
 		
 		if (ImGui::CollapsingHeader("Model"))

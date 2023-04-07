@@ -29,6 +29,7 @@ public:
 	vec3 localPosition;
 	vec3 localRotation;
 	vec3 localScale;
+	bool dirtyTransform = true;
 	mat4 transform;
 	mat4 localTransform;
 	
