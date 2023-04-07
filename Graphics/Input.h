@@ -3,6 +3,9 @@
 
 using glm::vec2;
 
+// basic wrapper for GLFW input
+// Will later be used as to handle communication through GLFW -> Imgui -> Application.
+
 class Input
 {
 public:

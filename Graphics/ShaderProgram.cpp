@@ -85,12 +85,22 @@ void ShaderProgram::LoadFromFiles(std::string vertFilename, std::string fragFile
 
 void ShaderProgram::Bind()
 {
+	if (!loaded)
+	{
+		LogUtils::Log("Trying to bind a shader that is not successfully loaded. Bailing.");
+		return;
+	}
 	glUseProgram(shaderProgramID);
 }
 
 void ShaderProgram::Reload()
 {
-	// Lets do some freeing up here at some point?
+	// Delete old shaders.
+	glDeleteShader(vertexShaderID);
+	glDeleteShader(fragmentShaderID);
+	glDeleteProgram(shaderProgramID);
+
+	// Start again.
 	LoadFromFiles(vertFilename, fragFilename);
 }
 

@@ -5,6 +5,8 @@
 using glm::mat4;
 using glm::vec3;
 
+
+// provides a pvm matrix for rendering and some APIs to move it around.
 class Camera
 {
 public:

@@ -62,7 +62,7 @@ Application::Application()
 	// Enable OGL depth testing.
 	glEnable(GL_DEPTH_TEST);
 
-	// Enable blending
+	// Enable blending - only used by the dev transparent shader for now
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -149,6 +149,8 @@ void Application::Update(float delta)
 
 	Scene::s_instance->Update(delta);
 	Scene::s_instance->DrawObjects();
+	Scene::s_instance->DrawGizmos();
+
 	Scene::s_instance->DrawGUI();
 	Scene::s_instance->CleanUp();
 }

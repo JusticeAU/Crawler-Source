@@ -89,20 +89,19 @@ void Object::Update(float delta)
 	// Update animation state, if we have an animation
 	if (model!= nullptr && model->animations.size() > 0) // We have animations
 	{
-		if (boneTransforms == nullptr)
+		if (boneTransforms == nullptr) // only create a boneTransform matrix array and buffer if we need it.
 		{
 			boneTransforms = new mat4[MAX_BONES]();
-			boneTransfomBuffer = new UniformBuffer(sizeof(mat4) * MAX_BONES); // we need to create buffer to store bonetransforms on the GPU for this object.
+			boneTransfomBuffer = new UniformBuffer(sizeof(mat4) * MAX_BONES); 
 		}
 
-		if (selectedAnimation > model->animations.size() - 1)
-		{
-			selectedAnimation = 0; // avoid overflow
-			selectedFrame = 0;
-		}
+		if (selectedAnimation > model->animations.size() - 1) // avoid overflow (could happen if we changed from a model with 3 animations, had the 3rd selected and the new model only had 1 animation.
+			selectedAnimation = 0; 
 
+		// Process animation state and data.
 		if(playAnimation) animationTime += delta * animationSpeed * model->animations[selectedAnimation]->ticksPerSecond;
 		
+		// clamp animation time or loop if enabled.
 		if (animationTime > model->animations[selectedAnimation]->duration)
 		{
 			if (loopAnimation)
@@ -118,7 +117,8 @@ void Object::Update(float delta)
 				animationTime = 0.0f;
 		}
 
-		selectedFrame = (int)animationTime;
+		// Update the array of transform matricies - this is sent in to the shader when Draw is called.
+		// Actually dont need to send this argument in given that its a member function - will refactor this in to an animator component at some point.
 		UpdateBoneMatrixBuffer(animationTime);
 	}
 
@@ -129,18 +129,23 @@ void Object::Update(float delta)
 
 void Object::Draw()
 {
-	if (model != nullptr && shader != nullptr)
+	if (model != nullptr && shader != nullptr) // At minimum we need a model and a shader to draw something.
 	{
 		// Combine the matricies
 		glm::mat4 pvm = Camera::s_instance->GetMatrix() * transform;
 
 		shader->Bind();
 
+
 		// Positions and Rotations
 		shader->SetMatrixUniform("pvmMatrix", pvm);
 		shader->SetMatrixUniform("mMatrix", transform);
 		shader->SetVectorUniform("cameraPosition", Camera::s_instance->GetPosition());
 	
+		// All of the below is fairly poor and just assumes that the shaders have these fields. Realistically some introspection in to the shader would be done to communicate to the application what fields they need.
+		// those fields could be exposed in UI or some logic could intelligently only attemp to send data that is valid.
+		// Likely part of a material system.
+
 		// Lighting
 		shader->SetVectorUniform("ambientLightColour", Scene::GetAmbientLightColour());
 		shader->SetVectorUniform("sunLightDirection", glm::normalize(Scene::GetSunDirection()));
@@ -158,10 +163,15 @@ void Object::Draw()
 			// get the shader uniform block index and set binding point - we'll just hardcode 0 for this.
 			shader->SetUniformBlockIndex("boneTransformBuffer", 0);
 			// TODO - this could be done in shader initialisation if it detected that that shader had this uniform buffer
-			// Now long the UniformBufferObject to the bind point in the GL context.
+			// It only needs to be done once per shader too, assuming im not reusing the index anywhere else (which im not)
+			
+			// Now link the UniformBufferObject to the bind point in the GL context.
 			boneTransfomBuffer->Bind(0);
 
 			boneTransfomBuffer->SendData(boneTransforms);
+
+			// Technically, all animated models can share the same boneTransformBuffer and just keep uploading their data in to it every frame.
+			// A dedicated animation system could provide a single global buffer for the shader for this.
 		}
 
 		// Texture Uniforms
@@ -203,6 +213,7 @@ void Object::Draw()
 		c->Draw();
 }
 
+// Draws all Imgui data for an object in the scene window.
 void Object::DrawGUI()
 {
 	string idStr = to_string(id);
@@ -401,6 +412,7 @@ void Object::DrawGUI()
 	}
 }
 
+// Used to display the bone hierarchy (which is made up of objects repurposed) without dispalying a bunch of other noisy data that's not used in this context.
 void Object::DrawGUISimple()
 {
 	string idStr = to_string(id);
@@ -533,11 +545,13 @@ void Object::Read(std::istream& in)
 	}
 }
 
+// This proceses the Animation data to build a new boneTransform array to send to the GPU.
 void Object::UpdateBoneMatrixBuffer(float frameTime)
 {
 	ProcessNode(frameTime, selectedAnimation, model->childNodes, mat4(1));
 }
 
+// recursively processes each node/bone.
 void Object::ProcessNode(float frameTime, int animationIndex, Object* node, mat4 accumulated)
 {
 	// look up if node has a matching bone/animation node
@@ -569,7 +583,7 @@ void Object::ProcessNode(float frameTime, int animationIndex, Object* node, mat4
 
 	// if it was an actual bone - apply it the transform buffer that gets sent to the vertex shader.
 	if (bufferIndex != model->boneStructure->boneMapping.end())
-		boneTransforms[bufferIndex->second] = globalTransform * model->boneStructure->boneInfo[bufferIndex->second].offset;
+		boneTransforms[bufferIndex->second] = globalTransform * model->boneStructure->boneOffsets[bufferIndex->second];
 
 	// Process children.
 	for (auto c : node->children)

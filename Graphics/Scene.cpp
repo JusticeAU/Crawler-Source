@@ -1,12 +1,14 @@
 #include "Scene.h"
 #include "FileUtils.h"
 #include <fstream>
+#include "ModelManager.h"
+#include "ShaderManager.h"
 
 Scene::Scene()
 {
 	m_pointLightPositions = new vec3[MAX_LIGHTS];
 	m_pointLightColours = new vec3[MAX_LIGHTS];
-
+	lightGizmo = new Object(-1, "Light Gizmo");
 }
 
 Scene::~Scene()
@@ -25,11 +27,10 @@ void Scene::Init()
 
 void Scene::Update(float deltaTime)
 {
-	// Do stuff
 	for (auto o : objects)
 		o->Update(deltaTime);
 
-	// Update point light arrays
+	// Update point light arrays - right now we send this in as ivec and vec4s - should turn this in to a more dynamic uniform buffer.
 	for (int i = 0; i < m_pointLights.size(); i++)
 	{
 		m_pointLightColours[i] = m_pointLights[i].colour * m_pointLights[i].intensity;
@@ -37,10 +38,37 @@ void Scene::Update(float deltaTime)
 	}
 }
 
+
+// Calls Draw on all objects in the objects array, which will call draw on all of their children.
 void Scene::DrawObjects()
 {
 	for (auto o : objects)
 		o->Draw();
+}
+
+void Scene::DrawGizmos()
+{
+	// Draw light gizmos - this is a bit dodgey. will turn this in to something more robust later.
+	if (lightGizmo->model == nullptr)
+	{
+		lightGizmo->model = ModelManager::GetModel("models/Gizmos/bulb.fbx");
+		lightGizmo->shader = ShaderManager::GetShaderProgram("shaders/gizmoShader");
+	}
+	for (auto light : m_pointLights)
+	{
+		lightGizmo->shader->Bind();
+		lightGizmo->shader->SetVectorUniform("gizmoColour", light.colour);
+
+		lightGizmo->localScale = { 0.2, 0.2, 0.2, };
+		lightGizmo->localPosition = light.position;
+		lightGizmo->dirtyTransform = true;
+		lightGizmo->Update(0.0f);
+		
+		// quick wireframe rendering. Will later set up something that renders a quad billboard at the location or something.
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		lightGizmo->Draw();
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
 }
 
 void Scene::DrawGUI()
@@ -103,6 +131,7 @@ void Scene::DrawGUI()
 	ImGui::End();
 }
 
+// This will destroy all objects (and their children) marked for deletion.
 void Scene::CleanUp()
 {
 	for (int i = 0; i < objects.size(); i++)
@@ -116,6 +145,7 @@ void Scene::CleanUp()
 	}
 }
 
+// Creates and object and adds it to the parent or scene hierarchy. If you want an object but dont want it added to the heirarchy, then call new Object.
 Object* Scene::CreateObject(Object* parent)
 {
 	Object* o = new Object(s_instance->objectCount++);

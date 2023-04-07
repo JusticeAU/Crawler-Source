@@ -12,13 +12,11 @@ class Object;
 using std::vector;
 using std::map;
 
+// A model is a container for meshes, bone structures and animation data. They are created by the Model Manager and data populated during import.
 class Model
 {
 public:
-	struct BoneInfo
-	{
-		glm::mat4 offset = glm::mat4(1);
-	};
+	
 
 	struct Animation // an animation contains some meta data and a collection of channels (bones) which contain a collection of keys (position, rotation, scale).
 	{
@@ -45,8 +43,8 @@ public:
 	struct BoneStructure
 	{
 		int numBones = 0;
-		map<string, int> boneMapping;	// boneName and index pair. The index is useed to address in to boneInfo and assign transformations in to the buffer for the vertex shader.
-		vector<BoneInfo> boneInfo;	// contains the offset for the bone.
+		map<string, int> boneMapping;	// boneName and index pair. The index is useed to address in to boneOffset array and assign transformations in to the buffer for the vertex shader.
+		vector<glm::mat4> boneOffsets;	// contains the offset for the bone.
 	};
 
 	vector<Mesh*> meshes;

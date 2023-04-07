@@ -6,6 +6,8 @@
 using std::string;
 using std::map;
 
+
+// Singleton class to handle all texture resources. Call Init() once and then access it through static functions.
 class TextureManager
 {
 public:

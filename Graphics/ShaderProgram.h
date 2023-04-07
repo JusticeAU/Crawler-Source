@@ -8,15 +8,6 @@ using std::string;
 class ShaderProgram
 {
 public:
-	GLuint vertexShaderID;
-	GLuint fragmentShaderID;
-	GLuint shaderProgramID;
-
-	bool loaded = true;
-
-	string vertFilename;
-	string fragFilename;
-
 	void LoadFromFiles(std::string vertFilename, std::string fragFilename);
 	void Bind();
 
@@ -30,4 +21,13 @@ public:
 	void SetIntUniform(std::string variableName, int value);
 
 	void SetUniformBlockIndex(string uniformBlockName, const unsigned int index);
+protected:
+	GLuint vertexShaderID;
+	GLuint fragmentShaderID;
+	GLuint shaderProgramID;
+
+	string vertFilename;
+	string fragFilename;
+
+	bool loaded = true;
 };

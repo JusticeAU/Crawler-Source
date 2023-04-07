@@ -16,6 +16,8 @@ class UniformBuffer;
 
 const int MAX_BONES = 100;
 
+// Primary container for objects in the application. Contains all model, texture, shader, material and animation information.
+// Ideally this should all be split out in to a component system, similar to Unity where this only holds Transform information.
 class Object
 {
 public:
@@ -62,7 +64,6 @@ public:
 	bool playAnimation = true;
 	float animationSpeed = 1.0f;
 	float animationTime = 0.0f;
-	int selectedFrame = 0;
 	
 	mat4* boneTransforms;
 	UniformBuffer* boneTransfomBuffer;

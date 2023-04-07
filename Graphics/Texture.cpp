@@ -2,6 +2,15 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+Texture::Texture() : texID(0)
+{
+}
+
+Texture::~Texture()
+{
+	glDeleteTextures(1, &texID);
+}
+
 void Texture::LoadFromFile(string filename)
 {
 	// Load with stb_image

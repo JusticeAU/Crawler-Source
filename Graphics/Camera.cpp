@@ -20,9 +20,9 @@ Camera::Camera(float aspect, GLFWwindow* window)
 
 void Camera::Update(float delta)
 {
-	if (glfwGetMouseButton(window, 1))
+	if (glfwGetMouseButton(window, 1)) // only accept inputs if rightclick is held down.
 	{
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // lock and hide the cursor whilst moving so it stays in the window.
 
 		// Update camera rotation
 		vec2 mouseDelta = Input::GetMouseDelta();
@@ -49,7 +49,7 @@ void Camera::Update(float delta)
 		UpdateMatrix();
 	}
 	else
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); // unlock the mouse cursor
 }
 
 void Camera::Move(glm::vec3 delta)

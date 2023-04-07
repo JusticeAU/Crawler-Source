@@ -315,7 +315,7 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 			boneIndex = boneStructure->numBones;
 			boneStructure->boneMapping.emplace(boneName, boneIndex);
 			boneStructure->numBones++;
-			boneStructure->boneInfo.resize(boneStructure->numBones);
+			boneStructure->boneOffsets.resize(boneStructure->numBones);
 			/*LogUtils::Log("Creating new Bone:");
 			LogUtils::Log(boneName.c_str());
 			LogUtils::Log(std::to_string(boneIndex).c_str());*/
@@ -326,7 +326,7 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 		}
 
 		// Store the offset.
-		boneStructure->boneInfo[boneIndex].offset = mat4_cast(mesh->mBones[i]->mOffsetMatrix);
+		boneStructure->boneOffsets[boneIndex] = mat4_cast(mesh->mBones[i]->mOffsetMatrix);
 
 		// process all weights associated with the bone
 		for (unsigned int boneWeightIndex = 0; boneWeightIndex < mesh->mBones[i]->mNumWeights; boneWeightIndex++)

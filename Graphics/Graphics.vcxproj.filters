@@ -119,9 +119,6 @@
     <ClCompile Include="ModelManager.cpp">
       <Filter>Source Files\Application\Graphics\Models</Filter>
     </ClCompile>
-    <ClCompile Include="Light.cpp">
-      <Filter>Source Files\Application\Scene</Filter>
-    </ClCompile>
     <ClCompile Include="UniformBuffer.cpp">
       <Filter>Source Files\Application\Graphics\Shaders</Filter>
     </ClCompile>
