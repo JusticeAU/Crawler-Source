@@ -11,5 +11,5 @@ uniform vec3 Ka;
 
 void main()
 {
-	FragColour = vec4(Ka, 0.2);
+	FragColour = vec4(Ka, 0.2); // simply make the alpha low - requires blending enabled.
 }

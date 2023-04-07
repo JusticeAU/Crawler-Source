@@ -6,7 +6,7 @@ layout (location = 2) in vec3 Normal;
 layout (location = 3) in vec2 texCoords;
 layout (location = 4) in vec4 Tangent;
 
-uniform mat4 transformMatrix;
+uniform mat4 pvmMatrix;
 uniform mat4 mMatrix;
 
 out vec3 _Position;
@@ -28,5 +28,5 @@ void main()
 	_Tangent = (mMatrix * vec4(Tangent.xyz,0)).xyz;
 	_BiTangent = cross(_Normal, _Tangent) * Tangent.w;
 	
-	gl_Position = transformMatrix * vec4(Position ,1);
+	gl_Position = pvmMatrix * vec4(Position ,1);
 }

@@ -14,7 +14,7 @@ layout (std140) uniform boneTransformBuffer
     mat4x4[MAX_BONES] bones;
 };
 
-uniform mat4 transformMatrix;
+uniform mat4 pvmMatrix;
 uniform mat4 mMatrix;
 
 out vec3 _Position;
@@ -45,5 +45,5 @@ void main()
 	_BiTangent = cross(_Normal, _Tangent) * Tangent.w;
 	
 	_Colour = Colour;
-	gl_Position = transformMatrix * posTransformed;
+	gl_Position = pvmMatrix * posTransformed;
 }

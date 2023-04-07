@@ -5,7 +5,7 @@ layout (location = 1) in vec3 Colour;
 layout (location = 2) in vec3 Normal;
 layout (location = 3) in vec2 texCoords;
 
-uniform mat4 transformMatrix;
+uniform mat4 pvmMatrix;
 uniform mat4 mMatrix;
 
 out vec3 _Colour;
@@ -14,7 +14,7 @@ out vec2 _TexCoords;
 
 void main()
 {
-	gl_Position = transformMatrix * vec4(Position ,1);
+	gl_Position = pvmMatrix * vec4(Position ,1);
 	_Colour = Colour;
 	_Normal = (mMatrix * vec4(Normal,0)).xyz;
 	_TexCoords = texCoords;

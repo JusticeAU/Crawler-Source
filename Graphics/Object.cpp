@@ -137,7 +137,7 @@ void Object::Draw()
 		shader->Bind();
 
 		// Positions and Rotations
-		shader->SetMatrixUniform("transformMatrix", pvm);
+		shader->SetMatrixUniform("pvmMatrix", pvm);
 		shader->SetMatrixUniform("mMatrix", transform);
 		shader->SetVectorUniform("cameraPosition", Camera::s_instance->GetPosition());
 	

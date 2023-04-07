@@ -6,7 +6,7 @@ layout (location = 0) in vec3 Position;
 layout (location = 1) in vec3 Colour;
 layout (location = 2) in vec3 Normal;
 layout (location = 3) in vec2 texCoords;
-layout (location = 4) in vec4 Tangent;
+//layout (location = 4) in vec4 Tangent;
 layout (location = 5) in ivec4 boneIDs;
 layout (location = 6) in vec4 boneWeights;
 layout (std140) uniform boneTransformBuffer
@@ -14,7 +14,7 @@ layout (std140) uniform boneTransformBuffer
     mat4x4[MAX_BONES] bones;
 };
 
-uniform mat4 transformMatrix;
+uniform mat4 pvmMatrix;
 uniform mat4 mMatrix;
 
 out vec3 _Position;
@@ -29,6 +29,7 @@ uniform int selectedBone;
 
 void main()
 {
+	// Look up 
 	mat4 boneTransform = bones[boneIDs[0]] * boneWeights[0];
 	boneTransform += bones[boneIDs[1]] * boneWeights[1];
     boneTransform += bones[boneIDs[2]] * boneWeights[2];
@@ -36,7 +37,7 @@ void main()
 
 	vec4 posTransformed = boneTransform * vec4(Position, 1);
 	vec4 normalTransformed = boneTransform * vec4(Normal, 0);
-	vec4 tangentTransformed = boneTransform * vec4(Tangent.xyz, 0);
+	//vec4 tangentTransformed = boneTransform * vec4(Tangent.xyz, 0);
 
 
 	_Normal = (mMatrix * vec4(normalTransformed.xyz,0)).xyz;
@@ -46,5 +47,5 @@ void main()
 	
 	_Colour = Colour;
 	_Position = (mMatrix * posTransformed).xyz;
-	gl_Position = transformMatrix * posTransformed;
+	gl_Position = pvmMatrix * posTransformed;
 }
