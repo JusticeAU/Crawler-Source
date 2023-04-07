@@ -45,7 +45,9 @@ void Scene::DrawObjects()
 
 void Scene::DrawGUI()
 {
-	ImGui::Begin("Scene");
+	ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 400, 900 }, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Scene",0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 	if (ImGui::Button("Save"))
 		Save();
 	ImGui::SameLine();

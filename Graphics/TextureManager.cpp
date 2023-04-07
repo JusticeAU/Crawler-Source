@@ -29,7 +29,10 @@ Texture* TextureManager::GetTexture(string name)
 
 void TextureManager::DrawGUI()
 {
-	ImGui::Begin("Texture Manager");
+	ImGui::SetNextWindowPos({ 800, 40 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 400, 860 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Textures", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 	ImGui::BeginDisabled();
 	int meshCount = (int)s_instance->textures.size();
 	ImGui::DragInt("Texture Count", &meshCount);

@@ -37,7 +37,10 @@ Mesh* MeshManager::GetMesh(string name)
 
 void MeshManager::DrawGUI()
 {
-	ImGui::Begin("Mesh Manager");
+	ImGui::SetNextWindowPos({ 400, 20 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 400, 880 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Meshes", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 	ImGui::BeginDisabled();
 	int meshCount = (int)s_instance->meshes.size();
 	ImGui::DragInt("Mesh Count", &meshCount);

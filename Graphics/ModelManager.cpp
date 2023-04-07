@@ -34,7 +34,10 @@ Model* ModelManager::GetModel(string name)
 
 void ModelManager::DrawGUI()
 {
-	ImGui::Begin("Model Manager");
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 400, 900 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Models", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 	ImGui::BeginDisabled();
 	int resourceCount = (int)s_instance->resources.size();
 	ImGui::DragInt("Model Count", &resourceCount);

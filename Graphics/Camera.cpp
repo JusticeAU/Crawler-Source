@@ -59,7 +59,10 @@ void Camera::Move(glm::vec3 delta)
 
 void Camera::DrawGUI()
 {
-	ImGui::Begin("Camera");
+	ImGui::SetNextWindowPos({ 1300, 0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 255 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Camera", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 	ImGui::SliderFloat("Move Speed", &moveSpeed, 0.1f, 50.0f);
 	ImGui::SliderFloat("Look Speed", &lookSpeed, 0.01f, 1.0f);
 	if (ImGui::SliderFloat("Near Clip", &nearClip, 0.001f, 5.0f))
@@ -71,6 +74,12 @@ void Camera::DrawGUI()
 		UpdateMatrix();
 	if(ImGui::DragFloat2("Angle", &m_horizontal))
 		UpdateMatrix();
+
+	ImGui::Text("Controls:");
+	ImGui::Text("Right Click +");
+	ImGui::Text("Mouse to Look");
+	ImGui::Text("WSAD Move");
+	ImGui::Text("QE Down/Up");
 
 	ImGui::End();
 }

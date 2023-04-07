@@ -29,7 +29,10 @@ ShaderProgram* ShaderManager::GetShaderProgram(string name)
 
 void ShaderManager::DrawGUI()
 {
-	ImGui::Begin("Shader Manager");
+	ImGui::SetNextWindowPos({ 800, 20 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 400, 880 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Shaders", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 	if (ImGui::Button("Reload"))
 		s_instance->RecompileAllShaderPrograms();
 	ImGui::BeginDisabled();

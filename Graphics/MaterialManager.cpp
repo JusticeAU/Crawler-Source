@@ -31,7 +31,10 @@ Material* MaterialManager::GetMaterial(string name)
 
 void MaterialManager::DrawGUI()
 {
-	ImGui::Begin("Material Manager");
+	ImGui::SetNextWindowPos({ 800, 0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 400, 900 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Materials", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 	
 	if (ImGui::Button("New"))
 	{
