@@ -100,10 +100,11 @@ void Scene::DrawGUI()
 		if (ImGui::SliderFloat3("Sun Direction", &sunDir[0], -1, 1, "%.3f"))
 			SetSunDirection({ sunDir[0], sunDir[1], sunDir[2] });
 
-		if (m_pointLights.size() == MAX_LIGHTS) ImGui::BeginDisabled();
+		unsigned int lightsAtStartOfFrame = m_pointLights.size();
+		if (lightsAtStartOfFrame == MAX_LIGHTS) ImGui::BeginDisabled();
 		if (ImGui::Button("New Point Light"))
 			m_pointLights.push_back(Light());
-		if (m_pointLights.size() == MAX_LIGHTS) ImGui::EndDisabled();
+		if (lightsAtStartOfFrame == MAX_LIGHTS) ImGui::EndDisabled();
 
 		// Draw all point lights
 		for (int i = 0; i < m_pointLights.size(); i++)
@@ -118,6 +119,12 @@ void Scene::DrawGUI()
 				m_pointLights[i].position = { pointPos[0], pointPos[1], pointPos[2] };
 
 			ImGui::DragFloat("Intensity", &m_pointLights[i].intensity);
+			ImGui::SameLine();
+			if (ImGui::Button("Delete"))
+			{
+				m_pointLights.erase(m_pointLights.begin() + i);
+				i--;
+			}
 			ImGui::PopID();
 		}
 	}
