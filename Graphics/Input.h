@@ -19,4 +19,6 @@ protected:
 
 	vec2 m_mousePosition;
 	vec2 m_lastMousePosition;
+
+	bool fullScreenReleased = true;
 };

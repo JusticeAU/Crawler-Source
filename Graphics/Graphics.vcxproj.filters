@@ -122,6 +122,9 @@
     <ClCompile Include="UniformBuffer.cpp">
       <Filter>Source Files\Application\Graphics\Shaders</Filter>
     </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Source Files\Application</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -228,6 +231,12 @@
     </ClInclude>
     <ClInclude Include="UniformBuffer.h">
       <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Source Files\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="glfwCallbacks.h">
+      <Filter>Source Files\Application</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

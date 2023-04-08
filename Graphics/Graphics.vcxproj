@@ -183,6 +183,7 @@
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="UniformBuffer.cpp" />
+    <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\imgui\imconfig.h" />
@@ -199,6 +200,8 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="FileUtils.h" />
     <ClInclude Include="glad.h" />
+    <ClInclude Include="glfwCallbacks.h" />
+    <ClInclude Include="Window.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Light.h" />

@@ -60,7 +60,7 @@ void Camera::Move(glm::vec3 delta)
 void Camera::DrawGUI()
 {
 	ImGui::SetNextWindowPos({ 1300, 0 }, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize({ 300, 255 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 273 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Camera", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 	ImGui::SliderFloat("Move Speed", &moveSpeed, 0.1f, 50.0f);
@@ -80,6 +80,8 @@ void Camera::DrawGUI()
 	ImGui::Text("Mouse to Look");
 	ImGui::Text("WSAD Move");
 	ImGui::Text("QE Down/Up");
+	ImGui::Text("F10 Fullscreen");
+
 
 	ImGui::End();
 }

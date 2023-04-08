@@ -13,6 +13,7 @@
 #include "MathUtils.h"
 #include "FileUtils.h"
 #include "LogUtils.h"
+#include "Window.h"
 
 Application::Application()
 {
@@ -26,10 +27,9 @@ Application::Application()
 	else
 		LogUtils::Log("Sucessfully initialised GLFW.");
 
-	// Set resolution and window name.
-	LogUtils::Log("Creating GLFW Window.");
-	window = glfwCreateWindow(1600, 900, "Graffix", nullptr, nullptr);
-	if (!window)
+	// Create GLFWwindow Wrapper (class Window).
+	window = new Window(1600, 900, "Graffix", nullptr);
+	if (!window->GetGLFWwindow())
 	{
 		LogUtils::Log("Failed to create GLFW Window. Exiting.");
 		glfwTerminate();
@@ -40,7 +40,7 @@ Application::Application()
 
 	// Tell GLFW that the window we created is the one we should render to
 	LogUtils::Log("Linking GLFW Window to render target.");
-	glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(window->GetGLFWwindow());
 	//glfwSwapInterval(0); // Disable vsync
 
 	// Tell GLAD to load its OpenGL functions
@@ -56,7 +56,7 @@ Application::Application()
 	// Initialise ImGui
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplGlfw_InitForOpenGL(window->GetGLFWwindow(), true);
 	ImGui_ImplOpenGL3_Init();
 
 	// Enable OGL depth testing.
@@ -76,14 +76,14 @@ Application::Application()
 	Scene::Init();
 	
 	// Create input system.
-	Input::Init(window);
+	Input::Init(window->GetGLFWwindow());
 	
 	// Create our Camera
 	float aspect;
 	int width, height;
-	glfwGetWindowSize(window, &width, &height);
+	glfwGetWindowSize(window->GetGLFWwindow(), &width, &height);
 	aspect = width / (float)height;
-	camera = new Camera(aspect,  window);
+	camera = new Camera(aspect,  window->GetGLFWwindow());
 
 	// Create a default object
 	Scene::CreateObject("Default Object");
@@ -105,7 +105,7 @@ void Application::Run()
 	// Main Application "Loop"
 	LogUtils::Log("Starting Main Loop.");
 	float currentTime = glfwGetTime();
-	while (!glfwWindowShouldClose(window))
+	while (!glfwWindowShouldClose(window->GetGLFWwindow()))
 	{
 		float newTime = glfwGetTime();
 		float deltaTime = newTime - currentTime;
@@ -127,7 +127,7 @@ void Application::Run()
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		// Swap the 'working' buffer to the 'live' buffer - this means the frame is over!
-		glfwSwapBuffers(window);
+		glfwSwapBuffers(window->GetGLFWwindow());
 
 		// Tell GLFW to check if anything is going on with input
 		glfwPollEvents();

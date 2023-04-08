@@ -1,8 +1,8 @@
 #pragma once
 
-struct GLFWwindow;
 class Camera;
 class Scene;
+class Window;
 
 class Application
 {
@@ -12,7 +12,7 @@ public:
 	void Run();
 	void Update(float delta);
 protected:
-	GLFWwindow* window;
+	Window* window;
 
 	Camera* camera;
 	Scene* scene;

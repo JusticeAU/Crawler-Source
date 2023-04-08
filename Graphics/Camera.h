@@ -16,6 +16,7 @@ public:
 	void DrawGUI();
 	mat4 GetMatrix();
 	vec3 GetPosition() { return position; };
+	void SetAspect(float value) { aspect = value; UpdateMatrix(); }
 
 	static Camera* s_instance;
 
