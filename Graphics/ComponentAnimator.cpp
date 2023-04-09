@@ -13,6 +13,12 @@ ComponentAnimator::ComponentAnimator(Object* parent, std::istream& istream) : Co
 	FileUtils::ReadFloat(istream, animationSpeed);
 }
 
+ComponentAnimator::~ComponentAnimator()
+{
+	delete boneTransforms;
+	delete boneTransfomBuffer;
+}
+
 void ComponentAnimator::Update(float delta)
 {
 	// Update animation state, if we have an animation
@@ -111,6 +117,8 @@ void ComponentAnimator::OnParentChange()
 	{
 		model = static_cast<ComponentModel*>(component)->model;
 	}
+	else
+		model = nullptr;
 }
 
 // This proceses the Animation data to build a new boneTransform array to send to the GPU.

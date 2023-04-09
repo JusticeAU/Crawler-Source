@@ -16,8 +16,6 @@ class ShaderProgram;
 class Material;
 class UniformBuffer;
 
-const int MAX_BONES = 100;
-
 // Primary container for objects in the application. Contains all model, texture, shader, material and animation information.
 // Ideally this should all be split out in to a component system, similar to Unity where this only holds Transform information.
 class Object
@@ -60,7 +58,4 @@ public:
 	void Read(std::istream& in);
 
 	Component* GetComponent(ComponentType type);
-
-	void UpdateBoneMatrixBuffer(float frameTime);
-	void ProcessNode(float frameTime, int animationIndex, Object* node, mat4 accumulated);
 };

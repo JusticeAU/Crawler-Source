@@ -3,6 +3,8 @@
 #include "Graphics.h"
 #include <string>
 
+const int MAX_BONES = 100;
+
 class Model;
 class UniformBuffer;
 
@@ -14,6 +16,11 @@ class ComponentAnimator : public Component
 public:
 	ComponentAnimator(Object* parent) : Component("Animator", Component_Animator, parent) {};
 	ComponentAnimator(Object* parent, std::istream& istream);
+	
+	~ComponentAnimator();
+	ComponentAnimator(ComponentAnimator& other) = delete;
+	const ComponentAnimator& operator=(const ComponentAnimator& other) = delete;
+
 	
 	void Update(float deltatime) override;
 	void DrawGUI() override;
