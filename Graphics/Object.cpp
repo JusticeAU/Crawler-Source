@@ -44,9 +44,6 @@ Object::~Object()
 
 void Object::Update(float delta)
 {
-	for (auto component : components)
-		component->Update(delta);
-
 	if (spin) // just some debug spinning for testing lighting.
 	{
 		localRotation.y += delta * spinSpeed;
@@ -56,7 +53,7 @@ void Object::Update(float delta)
 		else if (localRotation.y < -180) localRotation.y += 360;
 	}
 
-	if (dirtyTransform) // Update our transform based on crappy values from ImGui
+	if (dirtyTransform) // Our transform has changed. Update it and our childrens transforms.
 	{
 		localTransform = glm::translate(glm::mat4(1), localPosition)
 			* glm::rotate(glm::mat4(1), glm::radians(localRotation.z), glm::vec3{ 0,0,1 })
@@ -71,12 +68,16 @@ void Object::Update(float delta)
 			transform = localTransform;
 
 		for (auto c : children)
-			c->dirtyTransform = true;
+			c->dirtyTransform = true; // set dirty flag on children as they likely need to update now.
 
-		dirtyTransform = false; // clear dirty flag
+		dirtyTransform = false; // clear our dirty flag
 	}
 
+	// Update all components
+	for (auto component : components)
+		component->Update(delta);
 
+	// Update all children recursively.
 	for (auto c : children)
 		c->Update(delta);
 
