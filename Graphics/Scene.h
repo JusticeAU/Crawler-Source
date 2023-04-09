@@ -7,6 +7,9 @@
 using std::vector;
 using std::to_string;
 
+class Model;
+class ShaderProgram;
+
 class Scene
 {
 public:
@@ -35,7 +38,6 @@ public:
 	static Scene* s_instance;
 	
 	vector<Object*> objects;
-	Object* lightGizmo = nullptr;
 	void Update(float deltaTime);
 	void DrawObjects();
 	void DrawGizmos();
@@ -61,5 +63,9 @@ protected:
 	vector<Light> m_pointLights;
 	glm::vec3* m_pointLightPositions;
 	glm::vec3* m_pointLightColours;
+
+	Object* lightGizmo = nullptr;
+	//Model* lightGizmoModel = nullptr;
+	ShaderProgram* lightGizmoShader = nullptr;
 
 };

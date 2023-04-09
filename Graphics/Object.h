@@ -8,6 +8,8 @@ using glm::mat4;
 using std::vector;
 using std::string;
 
+class Component;
+enum ComponentType;
 class Model;
 class Texture;
 class ShaderProgram;
@@ -38,35 +40,12 @@ public:
 	bool markedForDeletion = false;
 
 	string objectName;
-	
-	Model* model;
-	string modelName;
 
-	Texture* texture;
-	string textureName;
-
-	ShaderProgram* shader;
-	string shaderName;
-
-	// "Material" Properties - to be moved to a separate class
-	Material* material;
-	string materialName;
+	vector<Component*> components;
 
 	// Debug helpers
 	bool spin = false;
 	float spinSpeed = 10.0f;
-
-	// Animation state
-	int selectedBone = 0;
-	int selectedAnimation = 0;
-	string animationName = "";
-	bool loopAnimation = true;
-	bool playAnimation = true;
-	float animationSpeed = 1.0f;
-	float animationTime = 0.0f;
-	
-	mat4* boneTransforms;
-	UniformBuffer* boneTransfomBuffer;
 
 	void Update(float delta);
 	void Draw();
@@ -79,6 +58,8 @@ public:
 
 	void Write(std::ostream& out);
 	void Read(std::istream& in);
+
+	Component* GetComponent(ComponentType type);
 
 	void UpdateBoneMatrixBuffer(float frameTime);
 	void ProcessNode(float frameTime, int animationIndex, Object* node, mat4 accumulated);

@@ -166,6 +166,12 @@
     <ClCompile Include="..\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Component.cpp" />
+    <ClCompile Include="ComponentAnimator.cpp" />
+    <ClCompile Include="ComponentFactory.cpp" />
+    <ClCompile Include="ComponentModel.cpp" />
+    <ClCompile Include="ComponentRenderer.cpp" />
+    <ClCompile Include="ComponentSkinnedRenderer.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -198,6 +204,12 @@
     <ClInclude Include="..\imgui\imstb_truetype.h" />
     <ClInclude Include="ai2glm.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="Component.h" />
+    <ClInclude Include="ComponentAnimator.h" />
+    <ClInclude Include="ComponentFactory.h" />
+    <ClInclude Include="ComponentModel.h" />
+    <ClInclude Include="ComponentRenderer.h" />
+    <ClInclude Include="ComponentSkinnedRenderer.h" />
     <ClInclude Include="FileUtils.h" />
     <ClInclude Include="glad.h" />
     <ClInclude Include="glfwCallbacks.h" />

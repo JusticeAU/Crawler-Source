@@ -9,11 +9,14 @@
 #include "Camera.h"
 #include "Scene.h"
 #include "Model.h"
+#include "Component.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
 
 #include <string>
+
+#include "ComponentFactory.h";
 
 using std::to_string;
 
@@ -27,36 +30,23 @@ Object::Object(int objectID, string name)
 	localTransform = mat4(1);
 
 	objectName = name;
-
-	modelName = "";
-	model = nullptr;
-
-	textureName = "";
-	texture = nullptr;
-
-	shaderName = "";
-	shader = nullptr;
-
-	boneTransforms = nullptr;
 }
 
 Object::~Object()
 {
 	for (auto child : children)
-	{
 		delete child;
-	}
 
-	if (boneTransfomBuffer != nullptr)
-	{
-		delete boneTransfomBuffer;
-		delete[] boneTransforms;
-	}
+	for (auto component : components)
+		delete component;
 
 }
 
 void Object::Update(float delta)
 {
+	for (auto component : components)
+		component->Update(delta);
+
 	if (spin) // just some debug spinning for testing lighting.
 	{
 		localRotation.y += delta * spinSpeed;
@@ -86,41 +76,6 @@ void Object::Update(float delta)
 		dirtyTransform = false; // clear dirty flag
 	}
 
-	// Update animation state, if we have an animation
-	if (model!= nullptr && model->animations.size() > 0) // We have animations
-	{
-		if (boneTransforms == nullptr) // only create a boneTransform matrix array and buffer if we need it.
-		{
-			boneTransforms = new mat4[MAX_BONES]();
-			boneTransfomBuffer = new UniformBuffer(sizeof(mat4) * MAX_BONES); 
-		}
-
-		if (selectedAnimation > model->animations.size() - 1) // avoid overflow (could happen if we changed from a model with 3 animations, had the 3rd selected and the new model only had 1 animation.
-			selectedAnimation = 0; 
-
-		// Process animation state and data.
-		if(playAnimation) animationTime += delta * animationSpeed * model->animations[selectedAnimation]->ticksPerSecond;
-		
-		// clamp animation time or loop if enabled.
-		if (animationTime > model->animations[selectedAnimation]->duration)
-		{
-			if (loopAnimation)
-				animationTime -= model->animations[selectedAnimation]->duration;
-			else
-				animationTime = model->animations[selectedAnimation]->duration;
-		}
-		else if (animationTime < 0.0f)
-		{
-			if (loopAnimation)
-				animationTime += model->animations[selectedAnimation]->duration;
-			else
-				animationTime = 0.0f;
-		}
-
-		// Update the array of transform matricies - this is sent in to the shader when Draw is called.
-		// Actually dont need to send this argument in given that its a member function - will refactor this in to an animator component at some point.
-		UpdateBoneMatrixBuffer(animationTime);
-	}
 
 	for (auto c : children)
 		c->Update(delta);
@@ -129,85 +84,8 @@ void Object::Update(float delta)
 
 void Object::Draw()
 {
-	if (model != nullptr && shader != nullptr) // At minimum we need a model and a shader to draw something.
-	{
-		// Combine the matricies
-		glm::mat4 pvm = Camera::s_instance->GetMatrix() * transform;
-
-		shader->Bind();
-
-
-		// Positions and Rotations
-		shader->SetMatrixUniform("pvmMatrix", pvm);
-		shader->SetMatrixUniform("mMatrix", transform);
-		shader->SetVectorUniform("cameraPosition", Camera::s_instance->GetPosition());
-	
-		// All of the below is fairly poor and just assumes that the shaders have these fields. Realistically some introspection in to the shader would be done to communicate to the application what fields they need.
-		// those fields could be exposed in UI or some logic could intelligently only attemp to send data that is valid.
-		// Likely part of a material system.
-
-		// Lighting
-		shader->SetVectorUniform("ambientLightColour", Scene::GetAmbientLightColour());
-		shader->SetVectorUniform("sunLightDirection", glm::normalize(Scene::GetSunDirection()));
-		shader->SetVectorUniform("sunLightColour", Scene::GetSunColour());
-		// Point Lights
-		int numLights = Scene::GetNumPointLights();
-		shader->SetIntUniform("numLights", numLights);
-		shader->SetFloat3ArrayUniform("PointLightPositions", numLights, Scene::GetPointLightPositions());
-		shader->SetFloat3ArrayUniform("PointLightColours", numLights, Scene::GetPointLightColours());
-
-		// skinned mesh rendering
-		shader->SetIntUniform("selectedBone", selectedBone); // dev testing really, used by boneWeights shader
-		if (boneTransfomBuffer != nullptr)
-		{
-			// get the shader uniform block index and set binding point - we'll just hardcode 0 for this.
-			shader->SetUniformBlockIndex("boneTransformBuffer", 0);
-			// TODO - this could be done in shader initialisation if it detected that that shader had this uniform buffer
-			// It only needs to be done once per shader too, assuming im not reusing the index anywhere else (which im not)
-			
-			// Now link the UniformBufferObject to the bind point in the GL context.
-			boneTransfomBuffer->Bind(0);
-
-			boneTransfomBuffer->SendData(boneTransforms);
-
-			// Technically, all animated models can share the same boneTransformBuffer and just keep uploading their data in to it every frame.
-			// A dedicated animation system could provide a single global buffer for the shader for this.
-		}
-
-		// Texture Uniforms
-		if (texture)
-		{
-			texture->Bind(1);
-			shader->SetIntUniform("diffuseTex", 1);
-		}
-
-		// Material Uniforms
-		if (material)
-		{
-			shader->SetVectorUniform("Ka", material->Ka);
-			shader->SetVectorUniform("Kd", material->Kd);
-			shader->SetVectorUniform("Ks", material->Ks);
-			shader->SetFloatUniform("specularPower", material->specularPower);
-
-			if (material->mapKd)
-			{
-				material->mapKd->Bind(1);
-				shader->SetIntUniform("diffuseTex", 1);
-			}
-			if (material->mapKs)
-			{
-				material->mapKs->Bind(2);
-				shader->SetIntUniform("specularTex", 2);
-			}
-			if (material->mapBump)
-			{
-				material->mapBump->Bind(3);
-				shader->SetIntUniform("normalTex", 3);
-			}
-		}
-
-		model->Draw();
-	}
+	for (auto component : components)
+		component->Draw();
 
 	for (auto c : children)
 		c->Draw();
@@ -216,200 +94,127 @@ void Object::Draw()
 // Draws all Imgui data for an object in the scene window.
 void Object::DrawGUI()
 {
-	string idStr = to_string(id);
-	string objectStr = objectName + "##" + idStr;
-	if (ImGui::TreeNode(objectStr.c_str()))
+	ImGui::PushID(id);
+	if (ImGui::CollapsingHeader(objectName.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
 	{
-
-		string childStr = "AddChild##" + to_string(id);
-		if (ImGui::Button(childStr.c_str()))
-		{
-			Object* spawn = Scene::CreateObject(this);
-			spawn->Update(0.0f);
-		}
-
 		ImGui::SameLine();
-		ImGui::AlignTextToFramePadding();
 		string deleteStr = "Delete##" + to_string(id);
 		if (ImGui::Button(deleteStr.c_str()))
 			markedForDeletion = true;
+
+		ImGui::Indent();
 		string newName = objectName;
-		string nameStr = "Name##" + idStr;
-		if (ImGui::InputText(nameStr.c_str(), &newName, ImGuiInputTextFlags_EnterReturnsTrue))
+		if (ImGui::InputText(objectName.c_str(), &newName, ImGuiInputTextFlags_EnterReturnsTrue))
 		{
 			objectName = newName;
 		}
 		
 		if (ImGui::CollapsingHeader("Transform"))
 		{
-			string positionStr = "Pos##" + to_string(id);
-			if (ImGui::DragFloat3(positionStr.c_str(), &localPosition[0]))
+			ImGui::Indent();
+			if (ImGui::DragFloat3("Position", &localPosition[0]))
 				dirtyTransform = true;
 
-			string rotationStr = "Rot##" + to_string(id);
-			if(ImGui::SliderFloat3(rotationStr.c_str(), &localRotation[0], -180, 180))
+			if(ImGui::SliderFloat3("Rotation", &localRotation[0], -180, 180))
 				dirtyTransform = true;
 
-			string scaleStr = "Scale##" + to_string(id);
-			if(ImGui::DragFloat3(scaleStr.c_str(), &localScale[0]))
+			if(ImGui::DragFloat3("Scale", &localScale[0]))
 				dirtyTransform = true;
 
-			string rotateBoolStr = "Rotate##" + to_string(id);
-			ImGui::Checkbox(rotateBoolStr.c_str(), &spin);
+			ImGui::Checkbox("Rotate", &spin);
 			ImGui::SameLine();
-			string rotateSpeedStr = "Speed##" + to_string(id);
-			ImGui::DragFloat(rotateSpeedStr.c_str(), &spinSpeed, 1.0f, -50, 50);
+			ImGui::PushItemWidth(50);
+			ImGui::DragFloat("Speed", &spinSpeed, 1.0f, -50, 50, "%0.1f");
+			ImGui::PopItemWidth();
+			ImGui::Unindent();
 		}
-		
-		if (ImGui::CollapsingHeader("Model"))
+
+		// Draw Components.
+		if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			string ModelStr = "Model##" + to_string(id);
-			if (ImGui::BeginCombo(ModelStr.c_str(), modelName.c_str()))
+			ImGui::SameLine();
+			if (ImGui::Button("Add"))
+				ImGui::OpenPopup("popup_add_componenent");
+
+			ImGui::Indent();
+			for (int i = 0; i < components.size(); i++)
 			{
-				for (auto m : *ModelManager::Resources())
+				ImGui::PushID(i);
+				string componentName = components[i]->GetName();
+				if (ImGui::CollapsingHeader(componentName.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
 				{
-					const bool is_selected = (m.second == model);
-					if (ImGui::Selectable(m.first.c_str(), is_selected))
-					{
-						model = ModelManager::GetModel(m.first);
-						modelName = m.first;
-					}
-
-					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-					if (is_selected)
-						ImGui::SetItemDefaultFocus();
-				}
-				ImGui::EndCombo();
-
-			}
-
-			// Animation information.
-			if (model != nullptr && model->boneStructure != nullptr)
-			{
-				string boneStr = "Selected Bone##" + to_string(id);
-				ImGui::DragInt(boneStr.c_str(), &selectedBone, 0.1, 0, model->boneStructure->numBones);
-
-				if (model->animations.size() > 0)
-				{
-					string animationNameStr = "Animation##" + to_string(id);
-					if (ImGui::BeginCombo(animationNameStr.c_str(), model->animations[selectedAnimation]->name.c_str()))
-					{
-						for (int i = 0; i < model->animations.size(); i++)
-						{
-							const bool is_selected = (model->animations[i]->name == animationName);
-							if (ImGui::Selectable(model->animations[i]->name.c_str(), is_selected))
-							{
-								selectedAnimation = i;
-								animationName = model->animations[i]->name;
-							}
-
-							// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-							if (is_selected)
-								ImGui::SetItemDefaultFocus();
-						}
-						ImGui::EndCombo();
-
-					}
-
-					string AnimSpeedStr = "Animation Speed##" + to_string(id);
-					ImGui::DragFloat(AnimSpeedStr.c_str(), &animationSpeed, 0.1f, -2, 2);
-					
-					string AnimLoopStr = "Loop##" + to_string(id);
-					ImGui::Checkbox(AnimLoopStr.c_str(), &loopAnimation);
 					ImGui::SameLine();
-					string AnimPlayStr = playAnimation ? "Pause##" + to_string(id) : "Play##" + to_string(id);
-					if (ImGui::Button(AnimPlayStr.c_str())) playAnimation = !playAnimation;
-
-					string animTimeStr = "Animation Time##" + to_string(id);
-					ImGui::SliderFloat(animTimeStr.c_str(), &animationTime, 0, model->animations[selectedAnimation]->duration);
-				}
-			}
-		
-
-			// Mesh node hierarchy
-			if (model != nullptr && model->childNodes != nullptr)
-			{
-				model->childNodes->DrawGUISimple();
-			}
-
-			string textureStr = "Texture##" + to_string(id);
-			if (ImGui::BeginCombo(textureStr.c_str(), textureName.c_str()))
-			{
-				for (auto t : *TextureManager::Textures())
-				{
-					const bool is_selected = (t.second == texture);
-					if (ImGui::Selectable(t.first.c_str(), is_selected))
+					if (ImGui::Button("Delete"))
 					{
-						texture = TextureManager::GetTexture(t.first);
-						textureName = t.first;
+						components.erase(components.begin() + i);
+						i--;
 					}
-
-					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-					if (is_selected)
-						ImGui::SetItemDefaultFocus();
+					else
+						components[i]->DrawGUI();
 				}
-				ImGui::EndCombo();
-			}
-
-			string shaderStr = "Shader##" + to_string(id);
-			if (ImGui::BeginCombo(shaderStr.c_str(), shaderName.c_str()))
-			{
-				for (auto s : *ShaderManager::ShaderPrograms())
+				else
 				{
-					const bool is_selected = (s.second == shader);
-					if (ImGui::Selectable(s.first.c_str(), is_selected))
+					ImGui::SameLine();
+					if (ImGui::Button("Delete"))
 					{
-						shader = ShaderManager::GetShaderProgram(s.first);
-						shaderName = s.first;
+						components.erase(components.begin() + i);
+						i--;
 					}
-
-					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-					if (is_selected)
-						ImGui::SetItemDefaultFocus();
 				}
-				ImGui::EndCombo();
+				ImGui::PopID();
 			}
-
-			string materialStr = "Material##" + to_string(id);
-			if (ImGui::BeginCombo(materialStr.c_str(), materialName.c_str()))
-			{
-				for (auto m : *MaterialManager::Materials())
-				{
-					const bool is_selected = (m.second == material);
-					if (ImGui::Selectable(m.first.c_str(), is_selected))
-					{
-						material = MaterialManager::GetMaterial(m.first);
-						materialName = m.first;
-					}
-
-					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-					if (is_selected)
-						ImGui::SetItemDefaultFocus();
-				}
-				ImGui::EndCombo();
-			}
-		
-			if (material)
-			{
-				ImGui::Indent();
-				if (ImGui::CollapsingHeader("Material"))
-				{
-					material->DrawGUI();
-				}
-			}
+			ImGui::Unindent();
+		}
+		else
+		{
+			ImGui::SameLine();
+			if (ImGui::Button("Add"))
+				ImGui::OpenPopup("popup_add_componenent");
 		}
 
-		int childCount = (int)children.size();
-		string childrenString = "Children (" + to_string(childCount) + ")##" + to_string(id);
-		if (ImGui::CollapsingHeader(childrenString.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
+		// Draw Add Component Popup if requested.
+		if (ImGui::BeginPopup("popup_add_componenent"))
 		{
+			ImGui::SameLine();
+			ImGui::SeparatorText("Component");
+			for (int i = 0; i < ComponentFactory::GetComponentCount(); i++)
+			{
+				if (ImGui::Selectable(ComponentFactory::GetComponentName(i).c_str()))
+				{
+					components.push_back(ComponentFactory::NewComponent(this,i));
+					for (auto component : components)
+						component->OnParentChange();
+				}
+			}
+			ImGui::EndPopup();
+		}
+
+		// Draw children information.
+		if (ImGui::CollapsingHeader("Children", ImGuiTreeNodeFlags_AllowItemOverlap))
+		{
+			ImGui::SameLine();
+			if (ImGui::Button("Add"))
+			{
+				Object* spawn = Scene::CreateObject(this);
+				spawn->Update(0.0f);
+			}
+			ImGui::Indent();
 			for (auto c : children)
 				c->DrawGUI();
+			ImGui::Unindent();
 		}
-		
-
-		ImGui::TreePop();
+		else
+		{
+			ImGui::SameLine();
+			if (ImGui::Button("Add"))
+			{
+				Object* spawn = Scene::CreateObject(this);
+				spawn->Update(0.0f);
+			}
+		}
+		ImGui::Unindent();
 	}
+	ImGui::PopID();
 }
 
 // Used to display the bone hierarchy (which is made up of objects repurposed) without dispalying a bunch of other noisy data that's not used in this context.
@@ -492,16 +297,13 @@ void Object::Write(std::ostream& out)
 
 	FileUtils::WriteBool(out, spin);
 	FileUtils::WriteFloat(out, spinSpeed);
-	
-	FileUtils::WriteString(out, modelName);
 
-	FileUtils::WriteInt(out, selectedAnimation);
-	FileUtils::WriteString(out, animationName);
-	FileUtils::WriteFloat(out, animationSpeed);
-
-	FileUtils::WriteString(out, textureName);
-	FileUtils::WriteString(out, shaderName);
-	FileUtils::WriteString(out, materialName);
+	FileUtils::WriteInt(out, components.size());
+	for (int i = 0; i < components.size(); i++)
+	{
+		FileUtils::WriteUInt(out, components[i]->GetType());
+		components[i]->Write(out);
+	}
 
 	// write children
 	int numChildren = (int)children.size();
@@ -521,19 +323,18 @@ void Object::Read(std::istream& in)
 	FileUtils::ReadBool(in, spin);
 	FileUtils::ReadFloat(in, spinSpeed);
 
-	FileUtils::ReadString(in, modelName);
-	model = ModelManager::GetModel(modelName);
-
-	FileUtils::ReadInt(in, selectedAnimation);
-	FileUtils::ReadString(in, animationName);
-	FileUtils::ReadFloat(in, animationSpeed);
-
-	FileUtils::ReadString(in, textureName);
-	texture = TextureManager::GetTexture(textureName);
-	FileUtils::ReadString(in, shaderName);
-	shader = ShaderManager::GetShaderProgram(shaderName);
-	FileUtils::ReadString(in, materialName);
-	material = MaterialManager::GetMaterial(materialName);
+	// Components
+	unsigned int componentCount;
+	FileUtils::ReadUInt(in, componentCount);
+	for (int i = 0; i < componentCount; i++)
+	{
+		unsigned int type;
+		FileUtils::ReadUInt(in, type);
+		components.push_back(ComponentFactory::ReadComponent(this, in, (ComponentType)type));
+	}
+	// Have all components run their OnChange function to init/refresh data
+	for (auto component : components)
+		component->OnParentChange();
 
 	// read children
 	int numChildren;
@@ -545,48 +346,13 @@ void Object::Read(std::istream& in)
 	}
 }
 
-// This proceses the Animation data to build a new boneTransform array to send to the GPU.
-void Object::UpdateBoneMatrixBuffer(float frameTime)
+Component* Object::GetComponent(ComponentType type)
 {
-	ProcessNode(frameTime, selectedAnimation, model->childNodes, mat4(1));
-}
-
-// recursively processes each node/bone.
-void Object::ProcessNode(float frameTime, int animationIndex, Object* node, mat4 accumulated)
-{
-	// look up if node has a matching bone/animation node
-	int frameIndex = (int)frameTime;
-	int nextFrameIndex = frameTime > model->animations[animationIndex]->duration ? 0 : frameIndex + 1;
-	float t = frameTime - frameIndex;
-
-	string nodeName = node->objectName;
-	mat4 nodeTransformation = node->localTransform; // assume it doesnt at first and just use its local transform.
-	auto bufferIndex = model->boneStructure->boneMapping.find(nodeName);
-	if (bufferIndex != model->boneStructure->boneMapping.end()) // if it does, look up its keyframe data.
+	for (auto component : components)
 	{
-		// Get key from animation
-		auto channel = model->animations[animationIndex]->channels.find(nodeName);
-		if (channel != model->animations[animationIndex]->channels.end())
-		{
-			Model::Animation::AnimationKey &key = channel->second.keys[frameIndex];
-			Model::Animation::AnimationKey &nextKey = channel->second.keys[nextFrameIndex];
-
-			// Apply transformation.
-			mat4 scale = glm::scale(glm::mat4(1), glm::mix(key.scale, nextKey.scale, t));				// generate mixed scale matrix		
-			mat4 rotate = glm::mat4_cast(glm::slerp(key.rotation,nextKey.rotation, t));					// generate mixed rotation matrix
-			mat4 translate = glm::translate(glm::mat4(1), glm::mix(key.position, nextKey.position, t));	// generate mixed translation matrix
-			nodeTransformation = translate * rotate * scale;											// combine
-		}
+		if (component->GetType() == type)
+			return component;
 	}
-	
-	mat4 globalTransform = accumulated * nodeTransformation;											// Apply matrix to accumulated transform down the tree.
 
-	// if it was an actual bone - apply it the transform buffer that gets sent to the vertex shader.
-	if (bufferIndex != model->boneStructure->boneMapping.end())
-		boneTransforms[bufferIndex->second] = globalTransform * model->boneStructure->boneOffsets[bufferIndex->second];
-
-	// Process children.
-	for (auto c : node->children)
-		ProcessNode(frameTime, animationIndex, c, globalTransform);
-
+	return nullptr;
 }

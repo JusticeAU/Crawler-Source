@@ -44,6 +44,9 @@
     <Filter Include="Source Files\Application\Graphics\Textures">
       <UniqueIdentifier>{429b2fb2-169c-43f2-8228-5700ad342c89}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Application\Scene\Components">
+      <UniqueIdentifier>{fd4d219c-af33-44f2-8d77-e6312c734544}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -124,6 +127,24 @@
     </ClCompile>
     <ClCompile Include="Window.cpp">
       <Filter>Source Files\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentModel.cpp">
+      <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentFactory.cpp">
+      <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentAnimator.cpp">
+      <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentRenderer.cpp">
+      <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentSkinnedRenderer.cpp">
+      <Filter>Source Files\Application\Scene\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -237,6 +258,24 @@
     </ClInclude>
     <ClInclude Include="glfwCallbacks.h">
       <Filter>Source Files\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentModel.h">
+      <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentFactory.h">
+      <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentAnimator.h">
+      <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentRenderer.h">
+      <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentSkinnedRenderer.h">
+      <Filter>Source Files\Application\Scene\Components</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

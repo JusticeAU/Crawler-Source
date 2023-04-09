@@ -15,6 +15,8 @@
 #include "LogUtils.h"
 #include "Window.h"
 
+#include "ComponentFactory.h"
+
 Application::Application()
 {
 	// Initialise GLFW. Make sure it works with an error message.
@@ -74,6 +76,7 @@ Application::Application()
 	MaterialManager::Init(); // Must be initialised AFTER Texture Manager
 	ModelManager::Init(); // Must be initialised after mesh manager
 	Scene::Init();
+	ComponentFactory::Init();
 	
 	// Create input system.
 	Input::Init(window->GetGLFWwindow());

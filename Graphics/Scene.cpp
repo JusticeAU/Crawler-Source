@@ -2,13 +2,29 @@
 #include "FileUtils.h"
 #include <fstream>
 #include "ModelManager.h"
+#include "Model.h"
+#include "ComponentModel.h"
+#include "ComponentRenderer.h"
 #include "ShaderManager.h"
 
 Scene::Scene()
 {
 	m_pointLightPositions = new vec3[MAX_LIGHTS];
 	m_pointLightColours = new vec3[MAX_LIGHTS];
+	
 	lightGizmo = new Object(-1, "Light Gizmo");
+	
+	ComponentModel* lightGizmoModelComponent = new ComponentModel(lightGizmo);
+	lightGizmoModelComponent->model = ModelManager::GetModel("models/Gizmos/bulb.fbx");
+	lightGizmo->components.push_back(lightGizmoModelComponent);
+	
+	ComponentRenderer* lightGizmoRenderer = new ComponentRenderer(lightGizmo);
+	lightGizmoShader = ShaderManager::GetShaderProgram("shaders/gizmoShader");
+	lightGizmoRenderer->shader = lightGizmoShader;
+	lightGizmo->components.push_back(lightGizmoRenderer);
+	
+	lightGizmoRenderer->OnParentChange();
+		
 }
 
 Scene::~Scene()
@@ -48,27 +64,20 @@ void Scene::DrawObjects()
 
 void Scene::DrawGizmos()
 {
-	// Draw light gizmos - this is a bit dodgey. will turn this in to something more robust later.
-	if (lightGizmo->model == nullptr)
-	{
-		lightGizmo->model = ModelManager::GetModel("models/Gizmos/bulb.fbx");
-		lightGizmo->shader = ShaderManager::GetShaderProgram("shaders/gizmoShader");
-	}
+	// quick wireframe rendering. Will later set up something that renders a quad billboard at the location or something.
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	lightGizmoShader->Bind();
 	for (auto light : m_pointLights)
 	{
-		lightGizmo->shader->Bind();
-		lightGizmo->shader->SetVectorUniform("gizmoColour", light.colour);
+		lightGizmoShader->SetVectorUniform("gizmoColour", light.colour);
 
 		lightGizmo->localScale = { 0.2, 0.2, 0.2, };
 		lightGizmo->localPosition = light.position;
 		lightGizmo->dirtyTransform = true;
 		lightGizmo->Update(0.0f);
-		
-		// quick wireframe rendering. Will later set up something that renders a quad billboard at the location or something.
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		lightGizmo->Draw();
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void Scene::DrawGUI()
