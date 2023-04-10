@@ -9,6 +9,7 @@ using std::to_string;
 
 class Model;
 class ShaderProgram;
+class FrameBuffer;
 
 class Scene
 {
@@ -67,5 +68,8 @@ protected:
 	Object* lightGizmo = nullptr;
 	//Model* lightGizmoModel = nullptr;
 	ShaderProgram* lightGizmoShader = nullptr;
+
+	// Frame Buffer Test
+	FrameBuffer* fb;
 
 };

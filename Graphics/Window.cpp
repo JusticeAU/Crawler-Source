@@ -13,6 +13,17 @@ Window::Window(int width, int height, const char* title, GLFWmonitor* monitor)
 	s_instance = this;
 }
 
+const glm::ivec2 Window::GetWindowSize()
+{
+	if (s_instance->fullScreen)
+	{
+		const GLFWvidmode* vid = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		return { vid->width, vid->height };
+	}
+	else
+		return s_instance->m_windowSize;
+}
+
 void Window::ToggleFullscreen()
 {
 	GLFWmonitor* mon = glfwGetPrimaryMonitor();

@@ -15,6 +15,7 @@ void Texture::LoadFromFile(string filename)
 {
 	// Load with stb_image
 	int width, height, channels;
+	stbi_set_flip_vertically_on_load(true); // OpenGL expect y=0 to be the bottom of the texture.
 	unsigned char* data = stbi_load(filename.c_str(), &width, &height, &channels, 3);
 
 	// transfer to VRAM

@@ -11,6 +11,6 @@ uniform sampler2D diffuseTex;
 
 void main()
 {
-	vec3 texColour = texture(diffuseTex, _TexCoords).rgb;
-	FragColour = vec4(texColour, 1);
+	vec4 texColour = texture(diffuseTex, _TexCoords);
+	FragColour = vec4(texColour.xyz, 1);
 }

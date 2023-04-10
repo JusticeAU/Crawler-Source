@@ -146,6 +146,9 @@
     <ClCompile Include="ComponentSkinnedRenderer.cpp">
       <Filter>Source Files\Application\Scene\Components</Filter>
     </ClCompile>
+    <ClCompile Include="FrameBuffer.cpp">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -276,6 +279,9 @@
     </ClInclude>
     <ClInclude Include="ComponentSkinnedRenderer.h">
       <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameBuffer.h">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

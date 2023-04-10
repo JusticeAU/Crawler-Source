@@ -2,6 +2,7 @@
 #include "Graphics.h"
 #include <filesystem>
 #include "LogUtils.h"
+#include "FrameBuffer.h"
 
 using std::vector;
 namespace fs = std::filesystem;
@@ -49,6 +50,11 @@ void TextureManager::LoadFromFile(const char* filename)
 	Texture* texture = new Texture();
 	texture->LoadFromFile(filename);
 	textures.emplace(filename, texture);
+}
+
+void TextureManager::AddFrameBufferTexture(const char* name, FrameBuffer* fb)
+{
+	textures.emplace(name, fb->GetTexture());
 }
 
 void TextureManager::LoadAllFiles()

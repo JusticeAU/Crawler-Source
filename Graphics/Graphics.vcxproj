@@ -172,6 +172,7 @@
     <ClCompile Include="ComponentModel.cpp" />
     <ClCompile Include="ComponentRenderer.cpp" />
     <ClCompile Include="ComponentSkinnedRenderer.cpp" />
+    <ClCompile Include="FrameBuffer.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -211,6 +212,7 @@
     <ClInclude Include="ComponentRenderer.h" />
     <ClInclude Include="ComponentSkinnedRenderer.h" />
     <ClInclude Include="FileUtils.h" />
+    <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="glad.h" />
     <ClInclude Include="glfwCallbacks.h" />
     <ClInclude Include="Window.h" />

@@ -61,6 +61,10 @@ ModelManager::ModelManager()
 	primitive->meshes.push_back(MeshManager::GetMesh("_quad"));
 	resources.emplace("_quad", primitive);
 
+	primitive = new Model();
+	primitive->meshes.push_back(MeshManager::GetMesh("_fsQuad"));
+	resources.emplace("_fsQuad", primitive);
+
 	LoadAllFiles();
 }
 
@@ -73,8 +77,8 @@ void ModelManager::LoadFromFile(const char* filename)
 	importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
 
 	const aiScene* scene = importer.ReadFile(filename,
-		aiProcess_FlipUVs |
-		aiProcess_CalcTangentSpace);
+		aiProcess_CalcTangentSpace |
+		aiProcess_FlipWindingOrder);
 
 	// Create a new model to start pushing our data in to.
 	Model* model = new Model();

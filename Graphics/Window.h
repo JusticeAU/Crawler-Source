@@ -6,6 +6,7 @@ class Window
 public:
 	Window(int width, int height, const char* title, GLFWmonitor* = nullptr);
 	static Window* GetWindow() { return s_instance; };
+	static const glm::ivec2 GetWindowSize();
 	void ToggleFullscreen();
 	bool GetFullscreen() { return fullScreen; };
 	GLFWwindow* GetGLFWwindow() { return m_window; }

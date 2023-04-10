@@ -7,6 +7,10 @@
 #include "ComponentRenderer.h"
 #include "ShaderManager.h"
 
+#include "FrameBuffer.h"
+#include "TextureManager.h"
+#include "Window.h"
+
 Scene::Scene()
 {
 	m_pointLightPositions = new vec3[MAX_LIGHTS];
@@ -24,6 +28,8 @@ Scene::Scene()
 	lightGizmo->components.push_back(lightGizmoRenderer);
 	
 	lightGizmoRenderer->OnParentChange();
+	fb = new FrameBuffer(1024,1024);
+	TextureManager::s_instance->AddFrameBufferTexture("framebuffer test", fb);
 		
 }
 
@@ -77,7 +83,24 @@ void Scene::DrawGizmos()
 		lightGizmo->Update(0.0f);
 		lightGizmo->Draw();
 	}
+	// render to buffer test
+	fb->BindTarget();
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	for (auto light : m_pointLights)
+	{
+		lightGizmoShader->SetVectorUniform("gizmoColour", light.colour);
+
+		lightGizmo->localScale = { 0.2, 0.2, 0.2, };
+		lightGizmo->localPosition = light.position;
+		lightGizmo->dirtyTransform = true;
+		lightGizmo->Update(0.0f);
+		lightGizmo->Draw();
+	}
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	fb->UnBindTarget();
+	glViewport(0,0,Window::GetWindowSize().x, Window::GetWindowSize().y);
+	glClearColor(clearColour.x, clearColour.y, clearColour.z, 1);
 }
 
 void Scene::DrawGUI()

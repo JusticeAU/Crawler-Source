@@ -33,4 +33,5 @@ protected:
 
 	void CreateCube();
 	void CreateQuad();
+	void CreateFullScreenQuad();
 };
