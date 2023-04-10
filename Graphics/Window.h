@@ -11,12 +11,12 @@ public:
 	bool GetFullscreen() { return fullScreen; };
 	GLFWwindow* GetGLFWwindow() { return m_window; }
 	static Window* Get() { return s_instance; };
+	glm::ivec2 m_windowSize;
 protected:
 	GLFWwindow* m_window;
 	
 	bool fullScreen = false;
 
 	glm::ivec2 m_windowPos;
-	glm::ivec2 m_windowSize;
 	static Window* s_instance;
 };

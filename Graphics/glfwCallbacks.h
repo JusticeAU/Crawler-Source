@@ -5,5 +5,6 @@
 void WindowResizeCallback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
+	Window::Get()->m_windowSize = {width, height};
 	Camera::s_instance->SetAspect(width / (float)height);
 }
