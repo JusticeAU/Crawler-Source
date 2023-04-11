@@ -29,7 +29,7 @@ Scene::Scene()
 	
 	lightGizmoRenderer->OnParentChange();
 	fb = new FrameBuffer(1024,1024);
-	TextureManager::s_instance->AddFrameBufferTexture("framebuffer test", fb);
+	TextureManager::s_instance->AddFrameBuffer("test", fb);
 		
 }
 
@@ -99,7 +99,7 @@ void Scene::DrawGizmos()
 	}
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	fb->UnBindTarget();
-	glViewport(0,0,Window::GetWindowSize().x, Window::GetWindowSize().y);
+	glViewport(0,0,Window::GetViewPortSize().x, Window::GetViewPortSize().y);
 	glClearColor(clearColour.x, clearColour.y, clearColour.z, 1);
 }
 

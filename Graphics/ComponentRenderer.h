@@ -7,6 +7,7 @@ class Model;
 class ShaderProgram;
 class Texture;
 class Material;
+class FrameBuffer;
 
 using std::string;
 
@@ -41,4 +42,7 @@ public:
 	
 	Material* material = nullptr;
 	string materialName = "";
+
+	FrameBuffer* frameBuffer = nullptr;
+	string frameBufferName = "";
 };

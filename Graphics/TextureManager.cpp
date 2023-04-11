@@ -10,7 +10,11 @@ namespace fs = std::filesystem;
 TextureManager::TextureManager()
 {
 	textures.emplace("_null", nullptr);
+	frameBuffers.emplace("_null (backbuffer)", nullptr);
 	LoadAllFiles();
+
+	FrameBuffer* fb = new FrameBuffer(1024, 1024);
+	AddFrameBuffer("test2", fb);
 }
 
 void TextureManager::Init()
@@ -21,11 +25,20 @@ void TextureManager::Init()
 
 Texture* TextureManager::GetTexture(string name)
 {
-	auto meshIt = s_instance->textures.find(name);
-	if (meshIt == s_instance->textures.end())
+	auto texIt = s_instance->textures.find(name);
+	if (texIt == s_instance->textures.end())
 		return nullptr;
 	else
-		return meshIt->second;
+		return texIt->second;
+}
+
+FrameBuffer* TextureManager::GetFrameBuffer(string name)
+{
+	auto fbIt = s_instance->frameBuffers.find(name);
+	if (fbIt == s_instance->frameBuffers.end())
+		return nullptr;
+	else
+		return fbIt->second;
 }
 
 void TextureManager::DrawGUI()
@@ -35,11 +48,26 @@ void TextureManager::DrawGUI()
 	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Textures", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 	ImGui::BeginDisabled();
-	int meshCount = (int)s_instance->textures.size();
-	ImGui::DragInt("Texture Count", &meshCount);
-	for (auto m : s_instance->textures)
+	int texCount = (int)s_instance->textures.size();
+	ImGui::DragInt("Texture Count", &texCount);
+	for (auto t : s_instance->textures)
 	{
-		ImGui::Text(m.first.c_str());
+		ImGui::Text(t.first.c_str());
+	}
+	ImGui::EndDisabled();
+	ImGui::End();
+
+	// buffers
+	ImGui::SetNextWindowPos({ 800, 60 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 400, 840 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Frame Buffers", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+	ImGui::BeginDisabled();
+	int fbCount = (int)s_instance->frameBuffers.size();
+	ImGui::DragInt("Buffer Count", &fbCount);
+	for (auto fb : s_instance->frameBuffers)
+	{
+		ImGui::Text(fb.first.c_str());
 	}
 	ImGui::EndDisabled();
 	ImGui::End();
@@ -52,9 +80,12 @@ void TextureManager::LoadFromFile(const char* filename)
 	textures.emplace(filename, texture);
 }
 
-void TextureManager::AddFrameBufferTexture(const char* name, FrameBuffer* fb)
+void TextureManager::AddFrameBuffer(const char* name, FrameBuffer* fb)
 {
-	textures.emplace(name, fb->GetTexture());
+	frameBuffers.emplace(name, fb);
+	string texName = "framebuffers/";
+	texName += name;
+	textures.emplace(texName, fb->GetTexture());
 }
 
 void TextureManager::LoadAllFiles()

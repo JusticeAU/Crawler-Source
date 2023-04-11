@@ -1,6 +1,8 @@
 #include "FrameBuffer.h"
 #include "Texture.h"
 
+using std::vector;
+
 FrameBuffer::FrameBuffer(int width, int height) : m_width(width), m_height(height)
 {
 	m_texture = new Texture();

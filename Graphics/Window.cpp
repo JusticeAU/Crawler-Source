@@ -9,19 +9,9 @@ Window::Window(int width, int height, const char* title, GLFWmonitor* monitor)
 	m_window = glfwCreateWindow(width, height, title, monitor, nullptr);
 	glfwSetWindowSizeCallback(m_window, WindowResizeCallback);
 	m_windowSize = { width, height };
+	m_viewPortSize = { width, height };
 	glfwGetWindowPos(m_window, &m_windowPos.x, &m_windowPos.x);
 	s_instance = this;
-}
-
-const glm::ivec2 Window::GetWindowSize()
-{
-	if (s_instance->fullScreen)
-	{
-		const GLFWvidmode* vid = glfwGetVideoMode(glfwGetPrimaryMonitor());
-		return { vid->width, vid->height };
-	}
-	else
-		return s_instance->m_windowSize;
 }
 
 void Window::ToggleFullscreen()
@@ -33,8 +23,11 @@ void Window::ToggleFullscreen()
 		glfwSetWindowMonitor(m_window, NULL, m_windowPos.x, m_windowPos.y, m_windowSize.x, m_windowSize.y, vid->refreshRate);
 	else
 	{
+		// Save previous window size for when we go back.
 		glfwGetWindowPos(m_window, &m_windowPos.x, &m_windowPos.y);
 		glfwGetWindowSize(m_window, &m_windowSize.x, &m_windowSize.y);
+
+		// Set fullscreen
 		glfwSetWindowMonitor(m_window, glfwGetPrimaryMonitor(), 0, 0, vid->width, vid->height, vid->refreshRate);
 	}
 
