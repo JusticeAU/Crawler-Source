@@ -61,3 +61,18 @@ void FrameBuffer::UnBindTexture(int texture)
 	glActiveTexture(GL_TEXTURE0 + texture);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
+
+void FrameBuffer::Resize(int width, int height)
+{
+	FrameBuffer* newFB = new FrameBuffer(width, height);
+	glDeleteFramebuffers(1, &m_fbID);
+	glDeleteTextures(1, &m_texID);
+	glDeleteTextures(1, &m_depthID);
+	m_fbID = newFB->m_fbID;
+	m_texID = newFB->m_texID;
+	m_depthID = newFB->m_depthID;
+	m_width = width;
+	m_height = height;
+
+	m_texture->texID = newFB->m_texture->texID;
+}

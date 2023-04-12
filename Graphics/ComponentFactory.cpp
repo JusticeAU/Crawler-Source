@@ -6,8 +6,10 @@ void ComponentFactory::Init()
     components.push_back("Animator");
     components.push_back("Mesh Renderer");
     components.push_back("Skinned Mesh Renderer");
-    //components.push_back("Material");
-    //components.push_back("Point Light");
+    components.push_back("Material");
+    components.push_back("Point Light");
+    components.push_back("Camera");
+
 }
 
 Component* ComponentFactory::NewComponent(Object* parent, int componentIndex)
@@ -22,6 +24,12 @@ Component* ComponentFactory::NewComponent(Object* parent, int componentIndex)
         return new ComponentRenderer(parent);
     case 3:
         return new ComponentSkinnedRenderer(parent);
+    case 4:
+        return nullptr;
+    case 5:
+        return nullptr;
+    case 6:
+        return new ComponentCamera(parent);
     }
 }
 
@@ -37,6 +45,13 @@ Component* ComponentFactory::ReadComponent(Object* parent, std::istream& istream
         return new ComponentRenderer(parent, istream);
     case Component_SkinnedRenderer:
         return new ComponentSkinnedRenderer(parent, istream);
+    case Component_Material:
+        return nullptr;
+    case Component_Light:
+        return nullptr;
+    case Component_Camera:
+        return new ComponentCamera(parent, istream);
+
     }
 }
 

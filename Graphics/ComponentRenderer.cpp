@@ -25,23 +25,16 @@ ComponentRenderer::ComponentRenderer(Object* parent, std::istream& istream) : Co
 	material = MaterialManager::GetMaterial(materialName);
 }
 
-void ComponentRenderer::Draw()
+void ComponentRenderer::Draw(mat4 pv, vec3 position)
 {
 	if (model != nullptr && shader != nullptr) // At minimum we need a model and a shader to draw something.
 	{
 		BindShader();
-		BindMatricies();
+		BindMatricies(pv, position);
 		SetUniforms();
 		ApplyTexture();
 		ApplyMaterials();
-		if (frameBuffer)
-			frameBuffer->BindTarget();
 		DrawModel();
-		if (frameBuffer)
-		{
-			FrameBuffer::UnBindTarget();
-			glViewport(0, 0, Window::GetViewPortSize().x, Window::GetViewPortSize().y);
-		}
 	}
 }
 
@@ -148,6 +141,8 @@ void ComponentRenderer::OnParentChange()
 	{
 		model = static_cast<ComponentModel*>(component)->model;
 	}
+
+	texture = TextureManager::GetTexture(textureName);
 }
 
 void ComponentRenderer::BindShader()
@@ -155,15 +150,15 @@ void ComponentRenderer::BindShader()
 	shader->Bind();
 }
 
-void ComponentRenderer::BindMatricies()
+void ComponentRenderer::BindMatricies(mat4 pv, vec3 position)
 {
 	// Combine the matricies
-	glm::mat4 pvm = Camera::s_instance->GetMatrix() * componentParent->transform;
+	glm::mat4 pvm = pv * componentParent->transform;
 
 	// Positions and Rotations
 	shader->SetMatrixUniform("pvmMatrix", pvm);
 	shader->SetMatrixUniform("mMatrix", componentParent->transform);
-	shader->SetVectorUniform("cameraPosition", Camera::s_instance->GetPosition());
+	shader->SetVectorUniform("cameraPosition", position);
 }
 
 void ComponentRenderer::SetUniforms()

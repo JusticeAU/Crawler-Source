@@ -3,6 +3,7 @@
 
 #include <string>
 
+class Camera;
 class Model;
 class ShaderProgram;
 class Texture;
@@ -17,7 +18,7 @@ public:
 	ComponentRenderer(Object* parent) : Component("Renderer", Component_Renderer, parent) {};
 	ComponentRenderer(Object* parent, std::istream& istream);
 
-	void Draw() override;
+	void Draw(mat4 pv, vec3 position) override;
 
 	void DrawGUI() override;
 
@@ -26,7 +27,7 @@ public:
 	virtual void OnParentChange() override;
 
 	void BindShader();
-	void BindMatricies();
+	void BindMatricies(mat4 pv, vec3 position);
 	void SetUniforms();
 	void ApplyTexture();
 	void ApplyMaterials();

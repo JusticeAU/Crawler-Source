@@ -5,11 +5,15 @@
 #include "Model.h"
 #include "ComponentModel.h"
 #include "ComponentRenderer.h"
+#include "ComponentCamera.h"
 #include "ShaderManager.h"
 
 #include "FrameBuffer.h"
 #include "TextureManager.h"
 #include "Window.h"
+#include "MeshManager.h"
+
+#include "Camera.h"
 
 Scene::Scene()
 {
@@ -28,9 +32,16 @@ Scene::Scene()
 	lightGizmo->components.push_back(lightGizmoRenderer);
 	
 	lightGizmoRenderer->OnParentChange();
-	fb = new FrameBuffer(1024,1024);
-	TextureManager::s_instance->AddFrameBuffer("test", fb);
-		
+	fb = new FrameBuffer(1600,900);
+	frame = MeshManager::GetMesh("_fsQuad");
+	passthroughShad = ShaderManager::GetShaderProgram("shaders/postProcess/passThrough");
+
+
+	TextureManager::s_instance->AddFrameBuffer(Camera::s_instance->name.c_str(), Camera::s_instance->GetFrameBuffer());
+
+	cameras.push_back(Camera::s_instance->GetFrameBuffer());
+	mainCameraFB = cameras[0];
+
 }
 
 Scene::~Scene()
@@ -64,15 +75,41 @@ void Scene::Update(float deltaTime)
 // Calls Draw on all objects in the objects array, which will call draw on all of their children.
 void Scene::DrawObjects()
 {
+	// for each camera in each object, draw to that cameras frame buffer
 	for (auto o : objects)
-		o->Draw();
+	{
+		for (auto c : o->components)
+		{
+			if (c->GetType() == Component_Camera)
+			{
+				ComponentCamera* cam = static_cast<ComponentCamera*>(c);
+				cam->frameBuffer->BindTarget();
+				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+				for (auto oDraw : objects)
+				{
+					oDraw->Draw(cam->matrix, o->localPosition);
+				}
+				FrameBuffer::UnBindTarget();
+			}
+		}
+	}
+
+	// then draw the scene using the Camera class "Editor Camera"
+	Camera::s_instance->GetFrameBuffer()->BindTarget();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	for (auto o : objects)
+		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition());
+
+	FrameBuffer::UnBindTarget();
 }
 
 void Scene::DrawGizmos()
 {
+	// render light gizmos only to main 'editor' camera
 	// quick wireframe rendering. Will later set up something that renders a quad billboard at the location or something.
+	Camera::s_instance->GetFrameBuffer()->BindTarget();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	lightGizmoShader->Bind();
 	for (auto light : m_pointLights)
 	{
 		lightGizmoShader->SetVectorUniform("gizmoColour", light.colour);
@@ -81,30 +118,36 @@ void Scene::DrawGizmos()
 		lightGizmo->localPosition = light.position;
 		lightGizmo->dirtyTransform = true;
 		lightGizmo->Update(0.0f);
-		lightGizmo->Draw();
-	}
-	// render to buffer test
-	fb->BindTarget();
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	for (auto light : m_pointLights)
-	{
-		lightGizmoShader->SetVectorUniform("gizmoColour", light.colour);
-
-		lightGizmo->localScale = { 0.2, 0.2, 0.2, };
-		lightGizmo->localPosition = light.position;
-		lightGizmo->dirtyTransform = true;
-		lightGizmo->Update(0.0f);
-		lightGizmo->Draw();
+		lightGizmo->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition());
 	}
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	fb->UnBindTarget();
-	glViewport(0,0,Window::GetViewPortSize().x, Window::GetViewPortSize().y);
-	glClearColor(clearColour.x, clearColour.y, clearColour.z, 1);
+	FrameBuffer::UnBindTarget();
+}
+
+void Scene::DrawPostProcess()
+{
+	glDisable(GL_DEPTH_TEST);
+	passthroughShad->Bind();
+	passthroughShad->SetIntUniform("frame", 10);
+	mainCameraFB->BindTexture(10);
+
+	// Draw the frame quad
+	glBindVertexArray(frame->vao);
+
+	// check if we're using index buffers on this mesh by hecking if indexbufferObject is valid (was it set up?)
+	if (frame->ibo != 0) // Draw with index buffering
+		glDrawElements(GL_TRIANGLES, 3 * frame->tris, GL_UNSIGNED_INT, 0);
+	else // draw simply.
+		glDrawArrays(GL_TRIANGLES, 0, 3 * frame->tris);
+
+	mainCameraFB->UnBindTexture(10);
+	glEnable(GL_DEPTH_TEST);
 }
 
 void Scene::DrawGUI()
 {
+	
+
 	ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize({ 400, 900 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Scene",0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
@@ -113,6 +156,13 @@ void Scene::DrawGUI()
 	ImGui::SameLine();
 	if (ImGui::Button("Load"))
 		Load();
+
+	if (ImGui::DragInt("Camera Number", &cameraIndex, 1, 0, cameras.size() - 1, "%d", ImGuiSliderFlags_AlwaysClamp))
+	{
+		if (cameraIndex > cameras.size() - 1)
+			cameraIndex = cameras.size() - 1;
+		mainCameraFB = cameras[cameraIndex];
+	}
 
 	float clearCol[3] = { clearColour.r, clearColour.g, clearColour.b, };
 	if (ImGui::ColorEdit3("Clear Colour", clearCol))
@@ -311,6 +361,11 @@ void Scene::Load()
 	}
 	
 	// Clear current objects
+	for (auto object = objects.begin(); object != objects.end(); object++)
+	{
+		auto obj = *object;
+		delete obj;
+	}
 	objects.clear();
 
 	//  Objects and Child Objects
@@ -322,6 +377,11 @@ void Scene::Load()
 		o->Read(in);
 	}
 	in.close();
+
+	for (auto o : objects)
+	{
+		o->RefreshComponents();
+	}
 }
 
 

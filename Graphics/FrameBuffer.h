@@ -18,6 +18,8 @@ public:
 	void BindTexture(int texture);
 	static void UnBindTexture(int texture);
 	Texture* GetTexture() { return m_texture; }
+
+	void Resize(int width, int height);
 protected:
 	GLuint m_fbID;
 	GLuint m_texID;

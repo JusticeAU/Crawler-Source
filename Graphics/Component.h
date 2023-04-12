@@ -3,9 +3,12 @@
 #include "FileUtils.h"
 #include <string>
 
+class Camera;
 class Object;
 
 using std::string;
+using glm::mat4;
+using glm::vec3;
 
 enum ComponentType
 {
@@ -21,8 +24,10 @@ enum ComponentType
 class Component
 {
 public:
+	virtual ~Component() {};
+
 	virtual void Update(float deltaTime) {};
-	virtual void Draw() {};
+	virtual void Draw(mat4 pv, vec3 position) {};
 
 	string GetName() { return componentName; };
 	ComponentType GetType() { return componentType; };

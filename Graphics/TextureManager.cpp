@@ -10,11 +10,8 @@ namespace fs = std::filesystem;
 TextureManager::TextureManager()
 {
 	textures.emplace("_null", nullptr);
-	frameBuffers.emplace("_null (backbuffer)", nullptr);
+	frameBuffers.emplace("_null", nullptr);
 	LoadAllFiles();
-
-	FrameBuffer* fb = new FrameBuffer(1024, 1024);
-	AddFrameBuffer("test2", fb);
 }
 
 void TextureManager::Init()
@@ -82,9 +79,19 @@ void TextureManager::LoadFromFile(const char* filename)
 
 void TextureManager::AddFrameBuffer(const char* name, FrameBuffer* fb)
 {
-	frameBuffers.emplace(name, fb);
 	string texName = "framebuffers/";
 	texName += name;
+
+	auto existingFB = frameBuffers.find(name);
+	if (existingFB != frameBuffers.end())
+	{
+		LogUtils::Log("Trying to add existing FrameBuffer - clobbering over it");
+		LogUtils::Log(existingFB->first.c_str());
+		frameBuffers.erase(existingFB);
+		textures.erase(texName);
+	}
+
+	frameBuffers.emplace(name, fb);
 	textures.emplace(texName, fb->GetTexture());
 }
 

@@ -3,6 +3,7 @@
 #include "ComponentAnimator.h"
 #include "ComponentRenderer.h"
 #include "ComponentSkinnedRenderer.h"
+#include "ComponentCamera.h"
 #include <vector>
 #include <string>
 

@@ -34,11 +34,17 @@ Object::Object(int objectID, string name)
 
 Object::~Object()
 {
-	for (auto child : children)
-		delete child;
+	for (auto child = children.begin(); child != children.end(); child++)
+	{
+		auto c = *child;
+		delete c;
+	}
 
-	for (auto component : components)
-		delete component;
+	for (auto component = components.begin(); component != components.end(); component++)
+	{
+		auto c = *component;
+		delete c;
+	}
 
 }
 
@@ -70,7 +76,6 @@ void Object::Update(float delta)
 		for (auto c : children)
 			c->dirtyTransform = true; // set dirty flag on children as they likely need to update now.
 
-		dirtyTransform = false; // clear our dirty flag
 	}
 
 	// Update all components
@@ -81,15 +86,16 @@ void Object::Update(float delta)
 	for (auto c : children)
 		c->Update(delta);
 
+	dirtyTransform = false; // clear our dirty flag
 }
 
-void Object::Draw()
+void Object::Draw(mat4 pv, vec3 position)
 {
 	for (auto component : components)
-		component->Draw();
+		component->Draw(pv, position);
 
 	for (auto c : children)
-		c->Draw();
+		c->Draw(pv, position);
 }
 
 // Draws all Imgui data for an object in the scene window.
@@ -356,4 +362,13 @@ Component* Object::GetComponent(ComponentType type)
 	}
 
 	return nullptr;
+}
+
+void Object::RefreshComponents()
+{
+	for (auto c : components)
+		c->OnParentChange();
+
+	for (auto c : children)
+		c->RefreshComponents();
 }

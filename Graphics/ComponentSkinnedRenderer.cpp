@@ -15,12 +15,12 @@ ComponentSkinnedRenderer::ComponentSkinnedRenderer(Object* parent, std::istream&
 	componentType = Component_SkinnedRenderer;
 }
 
-void ComponentSkinnedRenderer::Draw()
+void ComponentSkinnedRenderer::Draw(mat4 pv, vec3 position)
 {
 	if (model != nullptr && shader != nullptr) // At minimum we need a model and a shader to draw something.
 	{
 		BindShader();
-		BindMatricies();
+		BindMatricies(pv, position);
 		SetUniforms();
 		ApplyTexture();
 		ApplyMaterials();

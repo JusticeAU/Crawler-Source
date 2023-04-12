@@ -10,6 +10,8 @@ using std::to_string;
 class Model;
 class ShaderProgram;
 class FrameBuffer;
+class Mesh;
+class Camera;
 
 class Scene
 {
@@ -42,11 +44,13 @@ public:
 	void Update(float deltaTime);
 	void DrawObjects();
 	void DrawGizmos();
+	void DrawPostProcess();
 	void DrawGUI();
 	void CleanUp();
 
 	void Save();
 	void Load();
+	vector<FrameBuffer*> cameras;
 protected:
 	Scene();
 	vec3 clearColour;
@@ -71,5 +75,15 @@ protected:
 
 	// Frame Buffer Test
 	FrameBuffer* fb;
+	FrameBuffer* cameraFB;
+
+	Mesh* frame;
+	ShaderProgram* passthroughShad;
+
+	Camera* secondCamera;
+
+
+	FrameBuffer* mainCameraFB;
+	int cameraIndex = 0;
 
 };

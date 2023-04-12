@@ -10,6 +10,8 @@ using std::string;
 
 class Component;
 enum ComponentType;
+
+class Camera;
 class Model;
 class Texture;
 class ShaderProgram;
@@ -46,7 +48,7 @@ public:
 	float spinSpeed = 10.0f;
 
 	void Update(float delta);
-	void Draw();
+	void Draw(mat4 pv, vec3 position);
 	void DrawGUI();
 	void DrawGUISimple();
 	
@@ -58,4 +60,6 @@ public:
 	void Read(std::istream& in);
 
 	Component* GetComponent(ComponentType type);
+
+	void RefreshComponents();
 };

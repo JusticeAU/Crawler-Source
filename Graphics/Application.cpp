@@ -69,6 +69,12 @@ Application::Application()
 	// enable face culling (backface culling is enabled by default).
 	glEnable(GL_CULL_FACE);
 
+	// Create our 'Editor' Camera
+	float aspect;
+	int width, height;
+	glfwGetWindowSize(window->GetGLFWwindow(), &width, &height);
+	aspect = width / (float)height;
+	camera = new Camera(aspect, window->GetGLFWwindow(), "Main Camera");
 
 	// Load Assets
 	MeshManager::Init();
@@ -82,12 +88,6 @@ Application::Application()
 	// Create input system.
 	Input::Init(window->GetGLFWwindow());
 	
-	// Create our Camera
-	float aspect;
-	int width, height;
-	glfwGetWindowSize(window->GetGLFWwindow(), &width, &height);
-	aspect = width / (float)height;
-	camera = new Camera(aspect,  window->GetGLFWwindow());
 
 	// Create a default object
 	Scene::CreateObject("Default Object");
@@ -154,6 +154,8 @@ void Application::Update(float delta)
 	Scene::s_instance->Update(delta);
 	Scene::s_instance->DrawObjects();
 	Scene::s_instance->DrawGizmos();
+	Scene::s_instance->DrawPostProcess();
+
 
 	Scene::s_instance->DrawGUI();
 	Scene::s_instance->CleanUp();

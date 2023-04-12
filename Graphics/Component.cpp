@@ -3,6 +3,5 @@
 
 void Component::AnnounceChange()
 {
-	for (auto component : componentParent->components)
-		component->OnParentChange();
+	componentParent->RefreshComponents();
 }

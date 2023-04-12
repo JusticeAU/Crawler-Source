@@ -1,6 +1,7 @@
 #include "Camera.h"
+#include "FrameBuffer.h"
 
-Camera::Camera(float aspect, GLFWwindow* window)
+Camera::Camera(float aspect, GLFWwindow* window, string name)
 {
 	position = { -6.25, 6.5, 16.38 };
 	m_horizontal = -71.4f;
@@ -8,12 +9,12 @@ Camera::Camera(float aspect, GLFWwindow* window)
 
 	this->aspect = aspect;
 
-	view = glm::translate(glm::mat4(1), position);
-	projection = glm::perspective((float)3.14159 / 4, aspect, .1f, 100.0f);
-	matrix = projection * view;
-
-	s_instance = this;
+	if(s_instance == nullptr)
+		s_instance = this;
 	this->window = window;
+
+	this->name = name;
+	frameBuffer = new FrameBuffer(1600, 900);
 
 	UpdateMatrix();
 }
@@ -87,6 +88,16 @@ void Camera::DrawGUI()
 }
 
 glm::mat4 Camera::GetMatrix() { return matrix; }
+
+FrameBuffer* Camera::GetFrameBuffer()
+{
+	return frameBuffer;
+}
+
+void Camera::ResizeFrameBuffer(int width, int height)
+{
+	frameBuffer->Resize(width, height);
+}
 
 void Camera::UpdateMatrix()
 {

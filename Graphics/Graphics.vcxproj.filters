@@ -149,6 +149,9 @@
     <ClCompile Include="FrameBuffer.cpp">
       <Filter>Source Files\Application\Graphics\Shaders</Filter>
     </ClCompile>
+    <ClCompile Include="ComponentCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -283,5 +286,6 @@
     <ClInclude Include="FrameBuffer.h">
       <Filter>Source Files\Application\Graphics\Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="ComponentCamera.h" />
   </ItemGroup>
 </Project>
