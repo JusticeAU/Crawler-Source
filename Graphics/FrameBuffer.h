@@ -7,7 +7,7 @@ class Texture;
 class FrameBuffer
 {
 public:
-	FrameBuffer(int width, int height);
+	FrameBuffer(int width, int height, bool screenBuffer = false);
 	~FrameBuffer();
 
 	FrameBuffer(const FrameBuffer&) = delete;
@@ -19,6 +19,8 @@ public:
 	static void UnBindTexture(int texture);
 	Texture* GetTexture() { return m_texture; }
 
+	const bool isScreenBuffer() { return m_isScreenBuffer; }
+
 	void Resize(int width, int height);
 protected:
 	GLuint m_fbID;
@@ -26,5 +28,6 @@ protected:
 	GLuint m_depthID;
 	int m_width, m_height;
 	Texture* m_texture;
+	bool m_isScreenBuffer = false;
 };
 

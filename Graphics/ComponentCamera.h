@@ -6,6 +6,7 @@
 
 class Camera;
 class FrameBuffer;
+class Object;
 
 class ComponentCamera : public Component
 {
@@ -37,4 +38,6 @@ public:
 	FrameBuffer* frameBuffer;
 	
 	bool dirtyConfig = false;
+
+	Object* cameraGizmo;
 };

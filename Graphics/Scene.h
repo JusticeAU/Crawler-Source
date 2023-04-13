@@ -41,6 +41,8 @@ public:
 	static Scene* s_instance;
 	
 	vector<Object*> objects;
+	vector<Object*> gizmos;
+
 	void Update(float deltaTime);
 	void DrawObjects();
 	void DrawGizmos();

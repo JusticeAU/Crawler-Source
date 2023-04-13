@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include "FrameBuffer.h"
+#include "Window.h"
 
 Camera::Camera(float aspect, GLFWwindow* window, string name)
 {
@@ -14,7 +15,8 @@ Camera::Camera(float aspect, GLFWwindow* window, string name)
 	this->window = window;
 
 	this->name = name;
-	frameBuffer = new FrameBuffer(1600, 900);
+	vec2 vp = Window::GetViewPortSize();
+	frameBuffer = new FrameBuffer(vp.x, vp.y, true);
 
 	UpdateMatrix();
 }

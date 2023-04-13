@@ -120,6 +120,13 @@ void Scene::DrawGizmos()
 		lightGizmo->Update(0.0f);
 		lightGizmo->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition());
 	}
+	// Draw cameras
+	for (auto o : gizmos)
+	{
+		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition());
+	}
+
+
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	FrameBuffer::UnBindTarget();
 }
@@ -367,6 +374,7 @@ void Scene::Load()
 		delete obj;
 	}
 	objects.clear();
+	gizmos.clear();
 
 	//  Objects and Child Objects
 	int numObjects;

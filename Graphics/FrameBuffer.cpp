@@ -3,7 +3,7 @@
 
 using std::vector;
 
-FrameBuffer::FrameBuffer(int width, int height) : m_width(width), m_height(height)
+FrameBuffer::FrameBuffer(int width, int height, bool screenBuffer) : m_width(width), m_height(height), m_isScreenBuffer(screenBuffer)
 {
 	m_texture = new Texture();
 	// generate frame buffer, texture buffer and depth buffer.
