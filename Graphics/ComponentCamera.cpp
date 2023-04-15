@@ -31,6 +31,7 @@ ComponentCamera::ComponentCamera(Object* parent) : Component("Camera", Component
 	componentRenderer->shader = ShaderManager::GetShaderProgram("shaders/gizmoShader");
 	cameraGizmo->components.push_back(componentRenderer);
 	Scene::s_instance->gizmos.push_back(cameraGizmo);
+	Scene::s_instance->componentCameras.push_back(this);
 }
 
 ComponentCamera::ComponentCamera(Object* parent, std::istream& istream) : ComponentCamera(parent)
@@ -55,6 +56,28 @@ ComponentCamera::~ComponentCamera()
 		}
 		cameraIt++;
 	}
+
+	auto gizmoIt = Scene::s_instance->gizmos.begin();
+	while (gizmoIt != Scene::s_instance->gizmos.end())
+	{
+		if (*gizmoIt == cameraGizmo)
+		{
+			Scene::s_instance->gizmos.erase(gizmoIt);
+			break;
+		}
+		cameraIt++;
+	}
+	auto componentIt = Scene::s_instance->componentCameras.begin();
+	while (componentIt != Scene::s_instance->componentCameras.end())
+	{
+		if (*componentIt == this)
+		{
+			Scene::s_instance->componentCameras.erase(componentIt);
+			break;
+		}
+		cameraIt++;
+	}
+
 }
 
 void ComponentCamera::Update(float deltatime)

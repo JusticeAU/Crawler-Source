@@ -12,6 +12,7 @@ class ShaderProgram;
 class FrameBuffer;
 class Mesh;
 class Camera;
+class ComponentCamera;
 
 class Scene
 {
@@ -43,6 +44,8 @@ public:
 	vector<Object*> objects;
 	vector<Object*> gizmos;
 
+	vector<ComponentCamera*> componentCameras;
+
 	void Update(float deltaTime);
 	void DrawObjects();
 	void DrawGizmos();
@@ -71,21 +74,15 @@ protected:
 	glm::vec3* m_pointLightPositions;
 	glm::vec3* m_pointLightColours;
 
-	Object* lightGizmo = nullptr;
-	//Model* lightGizmoModel = nullptr;
-	ShaderProgram* lightGizmoShader = nullptr;
-
-	// Frame Buffer Test
-	FrameBuffer* fb;
-	FrameBuffer* cameraFB;
-
-	Mesh* frame;
-	ShaderProgram* passthroughShad;
-
-	Camera* secondCamera;
-
-
+	// This is for the 'editor' camera
 	FrameBuffer* mainCameraFB;
+	
+	// selecting which camera ('s framebuffer) we're pushing to the backbuffer and rendering it
+	ShaderProgram* passthroughShad;
 	int cameraIndex = 0;
+	Mesh* frame;
 
+	// Gizmo rendering
+	ShaderProgram* gizmoShader = nullptr;
+	Object* lightGizmo = nullptr; // reusable object to place the light bulb model and render it.
 };

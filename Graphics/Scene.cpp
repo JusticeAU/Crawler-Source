@@ -17,37 +17,38 @@
 
 Scene::Scene()
 {
+	// Create light pos and col arrays for sending to lit phong shader.
 	m_pointLightPositions = new vec3[MAX_LIGHTS];
 	m_pointLightColours = new vec3[MAX_LIGHTS];
-	
+
+	// Create our Light Gizmo for rendering - this will move to a ComponentLight and be handled there.
 	lightGizmo = new Object(-1, "Light Gizmo");
-	
 	ComponentModel* lightGizmoModelComponent = new ComponentModel(lightGizmo);
 	lightGizmoModelComponent->model = ModelManager::GetModel("models/Gizmos/bulb.fbx");
 	lightGizmo->components.push_back(lightGizmoModelComponent);
-	
 	ComponentRenderer* lightGizmoRenderer = new ComponentRenderer(lightGizmo);
-	lightGizmoShader = ShaderManager::GetShaderProgram("shaders/gizmoShader");
-	lightGizmoRenderer->shader = lightGizmoShader;
+	gizmoShader = ShaderManager::GetShaderProgram("shaders/gizmoShader");
+	lightGizmoRenderer->shader = gizmoShader;
 	lightGizmo->components.push_back(lightGizmoRenderer);
-	
 	lightGizmoRenderer->OnParentChange();
-	fb = new FrameBuffer(1600,900);
+
+	// Set up our framebuffer to render our chosen cameras framebuffer to.
 	frame = MeshManager::GetMesh("_fsQuad");
 	passthroughShad = ShaderManager::GetShaderProgram("shaders/postProcess/passThrough");
-
-
 	TextureManager::s_instance->AddFrameBuffer(Camera::s_instance->name.c_str(), Camera::s_instance->GetFrameBuffer());
 
+	// Add editor camera to list of cameras and set our main camera to be it.
 	cameras.push_back(Camera::s_instance->GetFrameBuffer());
 	mainCameraFB = cameras[0];
-
 }
 
 Scene::~Scene()
 {
 	for (auto o : objects)
+	{
 		o->DeleteAllChildren();
+		delete o;
+	}
 
 	objects.clear();
 }
@@ -76,22 +77,15 @@ void Scene::Update(float deltaTime)
 void Scene::DrawObjects()
 {
 	// for each camera in each object, draw to that cameras frame buffer
-	for (auto o : objects)
+	for (auto &c : componentCameras)
 	{
-		for (auto c : o->components)
+		c->frameBuffer->BindTarget();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		for (auto o : objects)
 		{
-			if (c->GetType() == Component_Camera)
-			{
-				ComponentCamera* cam = static_cast<ComponentCamera*>(c);
-				cam->frameBuffer->BindTarget();
-				glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-				for (auto oDraw : objects)
-				{
-					oDraw->Draw(cam->matrix, o->localPosition);
-				}
-				FrameBuffer::UnBindTarget();
-			}
+			o->Draw(c->matrix, o->localPosition);
 		}
+		FrameBuffer::UnBindTarget();
 	}
 
 	// then draw the scene using the Camera class "Editor Camera"
@@ -110,9 +104,10 @@ void Scene::DrawGizmos()
 	// quick wireframe rendering. Will later set up something that renders a quad billboard at the location or something.
 	Camera::s_instance->GetFrameBuffer()->BindTarget();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	for (auto light : m_pointLights)
+	gizmoShader->Bind();
+	for (auto &light : m_pointLights)
 	{
-		lightGizmoShader->SetVectorUniform("gizmoColour", light.colour);
+		gizmoShader->SetVectorUniform("gizmoColour", light.colour);
 
 		lightGizmo->localScale = { 0.2, 0.2, 0.2, };
 		lightGizmo->localPosition = light.position;
@@ -120,12 +115,12 @@ void Scene::DrawGizmos()
 		lightGizmo->Update(0.0f);
 		lightGizmo->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition());
 	}
-	// Draw cameras
-	for (auto o : gizmos)
+
+	// Draw cameras (from gizmo list, all gizmos should move to here)
+	for (auto &o : gizmos)
 	{
 		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition());
 	}
-
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	FrameBuffer::UnBindTarget();
@@ -154,7 +149,6 @@ void Scene::DrawPostProcess()
 void Scene::DrawGUI()
 {
 	
-
 	ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize({ 400, 900 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Scene",0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
@@ -235,6 +229,7 @@ void Scene::CleanUp()
 		objects[i]->CleanUpChildren();
 		if (objects[i]->markedForDeletion)
 		{
+			delete objects[i];
 			objects.erase(objects.begin() + i);
 			i--;
 		}

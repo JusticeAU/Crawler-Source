@@ -105,8 +105,7 @@ void Object::DrawGUI()
 	if (ImGui::CollapsingHeader(objectName.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
 	{
 		ImGui::SameLine();
-		string deleteStr = "Delete##" + to_string(id);
-		if (ImGui::Button(deleteStr.c_str()))
+		if (ImGui::Button("Delete"))
 			markedForDeletion = true;
 
 		ImGui::Indent();
@@ -140,7 +139,7 @@ void Object::DrawGUI()
 		if (ImGui::CollapsingHeader("Components", ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::SameLine();
-			if (ImGui::Button("Add"))
+			if (ImGui::Button("Add Component"))
 				ImGui::OpenPopup("popup_add_componenent");
 
 			ImGui::Indent();
@@ -175,7 +174,7 @@ void Object::DrawGUI()
 		else
 		{
 			ImGui::SameLine();
-			if (ImGui::Button("Add"))
+			if (ImGui::Button("Add Component"))
 				ImGui::OpenPopup("popup_add_componenent");
 		}
 
@@ -200,7 +199,7 @@ void Object::DrawGUI()
 		if (ImGui::CollapsingHeader("Children", ImGuiTreeNodeFlags_AllowItemOverlap))
 		{
 			ImGui::SameLine();
-			if (ImGui::Button("Add"))
+			if (ImGui::Button("Add Child"))
 			{
 				Object* spawn = Scene::CreateObject(this);
 				spawn->Update(0.0f);
@@ -213,7 +212,7 @@ void Object::DrawGUI()
 		else
 		{
 			ImGui::SameLine();
-			if (ImGui::Button("Add"))
+			if (ImGui::Button("Add Child"))
 			{
 				Object* spawn = Scene::CreateObject(this);
 				spawn->Update(0.0f);
