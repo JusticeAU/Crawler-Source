@@ -47,13 +47,12 @@ public:
 	
 	vector<Object*> objects;
 	vector<Object*> gizmos;
-
 	vector<ComponentCamera*> componentCameras;
 
 	void Update(float deltaTime);
 	void DrawObjects();
 	void DrawGizmos();
-	void DrawPostProcess();
+	void DrawCameraToBackBuffer();
 	void DrawGUI();
 	void CleanUp();
 

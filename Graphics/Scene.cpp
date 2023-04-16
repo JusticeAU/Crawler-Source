@@ -82,11 +82,11 @@ void Scene::DrawObjects()
 	// for each camera in each object, draw to that cameras frame buffer
 	for (auto &c : componentCameras)
 	{
-		c->frameBuffer->BindTarget();
-		glm::vec3 cameraPos = { c->GetComponentParentObject()->transform[0][3], c->GetComponentParentObject()->transform[1][3],c->GetComponentParentObject()->transform[2][3] };
+		c->SetAsRenderTarget();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		for (auto o : objects)
-			o->Draw(c->matrix, cameraPos);
+		vec3 cameraPosition = c->GetWorldSpacePosition();
+		for (auto &o : objects)
+			o->Draw(c->GetViewProjectionMatrix(), cameraPosition);
 		c->RunPostProcess();
 	}
 
@@ -94,7 +94,7 @@ void Scene::DrawObjects()
 	Camera::s_instance->GetFrameBuffer()->BindTarget();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	for (auto o : objects)
+	for (auto &o : objects)
 		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition());
 
 	FrameBuffer::UnBindTarget();
@@ -120,6 +120,7 @@ void Scene::DrawGizmos()
 	}
 
 	// Draw cameras (from gizmo list, all gizmos should move to here)
+	gizmoShader->SetVectorUniform("gizmoColour", { 1,1,1 });
 	for (auto &o : gizmos)
 	{
 		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition());
@@ -129,7 +130,7 @@ void Scene::DrawGizmos()
 	FrameBuffer::UnBindTarget();
 }
 
-void Scene::DrawPostProcess()
+void Scene::DrawCameraToBackBuffer()
 {
 	outputCameraFrameBuffer->BindTexture(20);
 	PostProcess::PassThrough();

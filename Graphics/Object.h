@@ -55,6 +55,8 @@ public:
 	void CleanUpChildren();
 	void DeleteAllChildren();
 
+	vec3 GetWorldSpacePosition() { return { transform[0][3], transform[1][3], transform[2][3] }; }
+
 	void Write(std::ostream& out);
 	void Read(std::istream& in);
 

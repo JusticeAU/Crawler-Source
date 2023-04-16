@@ -25,9 +25,7 @@ using std::to_string;
 Object::Object(int objectID, string name)
 {
 	id = objectID;
-	//localPosition = { 0,0,0 };
 	eulerRotation = { 0,0,0 };
-	//localScale = { 1,1,1 };
 	transform = mat4(1);
 	localTransform = mat4(1);
 
@@ -165,6 +163,8 @@ void Object::DrawGUI()
 					ImGui::SameLine();
 					if (ImGui::Button("Delete"))
 					{
+						Component* comp = components[i];
+						delete comp;
 						components.erase(components.begin() + i);
 						i--;
 					}
@@ -176,6 +176,8 @@ void Object::DrawGUI()
 					ImGui::SameLine();
 					if (ImGui::Button("Delete"))
 					{
+						Component* comp = components[i];
+						delete comp;
 						components.erase(components.begin() + i);
 						i--;
 					}

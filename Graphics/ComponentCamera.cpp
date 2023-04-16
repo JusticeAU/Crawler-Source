@@ -12,14 +12,16 @@
 
 ComponentCamera::ComponentCamera(Object* parent) : Component("Camera", Component_Camera, parent)
 {
+	// Hold on to your seatbelt.
+	// Set base matrix.
 	view = componentParent->transform;
 	projection = glm::perspective((float)3.14159 / 4, aspect, nearClip, farClip);
 	matrix = projection * view;
-
+	
+	// Initilise framebuffers. We create two initially. 1 to render the scene to, then a 2nd for the final post processing effects to land to.
 	glm::vec2 vp = Window::GetViewPortSize();
-	frameBuffer = new FrameBuffer(vp.x, vp.y, true);
-	//Scene::s_instance->cameras.push_back(frameBuffer);
-	TextureManager::s_instance->AddFrameBuffer(componentParent->objectName.c_str(), frameBuffer);
+	m_frameBufferRaw = new FrameBuffer(vp.x, vp.y, true);
+	TextureManager::s_instance->AddFrameBuffer(componentParent->objectName.c_str(), m_frameBufferRaw); // add the texture to the manager so we can bind it to meshes and stuff.
 	
 	m_frameBufferProcessed = new FrameBuffer(vp.x, vp.y, true);
 	Scene::s_instance->cameras.push_back(m_frameBufferProcessed);
@@ -27,7 +29,7 @@ ComponentCamera::ComponentCamera(Object* parent) : Component("Camera", Component
 	TextureManager::s_instance->AddFrameBuffer(processedFBName.c_str(), m_frameBufferProcessed);
 
 
-	// In Scene Editor Camera Gizmo
+	// In Scene Editor Camera Gizmo - It'd be nice to move some of this info out of here. Perhaps a Gizmo factory or something.
 	cameraGizmo = new Object(-1, "Camera Gizmo");
 	ComponentModel* componentModel = new ComponentModel(parent);
 	componentModel->model = ModelManager::GetModel("models/Gizmos/camera.fbx");
@@ -38,8 +40,9 @@ ComponentCamera::ComponentCamera(Object* parent) : Component("Camera", Component
 	componentRenderer->texture = TextureManager::GetTexture("models/colour_blue.bmp");
 	componentRenderer->shader = ShaderManager::GetShaderProgram("shaders/gizmoShader");
 	cameraGizmo->components.push_back(componentRenderer);
-	Scene::s_instance->gizmos.push_back(cameraGizmo);
-	Scene::s_instance->componentCameras.push_back(this);
+	
+	Scene::s_instance->gizmos.push_back(cameraGizmo); // the scene gizmo renderer needs to be aware of this component.
+	Scene::s_instance->componentCameras.push_back(this); // Must be added here so the scene can render all in-scene cameras before rendering itself.
 }
 
 ComponentCamera::ComponentCamera(Object* parent, std::istream& istream) : ComponentCamera(parent)
@@ -51,6 +54,7 @@ ComponentCamera::ComponentCamera(Object* parent, std::istream& istream) : Compon
 	FileUtils::ReadFloat(istream, aspect);
 	dirtyConfig = true;
 
+	// see if there were any post process effects applied and create them.
 	int postProcessCount;
 	FileUtils::ReadInt(istream, postProcessCount);
 	for (int i = 0; i < postProcessCount; i++)
@@ -68,10 +72,11 @@ ComponentCamera::ComponentCamera(Object* parent, std::istream& istream) : Compon
 
 ComponentCamera::~ComponentCamera()
 {
+	// Remove self from scene camera list.
 	auto cameraIt = Scene::s_instance->cameras.begin();
 	while (cameraIt != Scene::s_instance->cameras.end())
 	{
-		if (*cameraIt == frameBuffer)
+		if (*cameraIt == m_frameBufferProcessed)
 		{
 			Scene::s_instance->cameras.erase(cameraIt);
 			break;
@@ -79,6 +84,7 @@ ComponentCamera::~ComponentCamera()
 		cameraIt++;
 	}
 
+	// remove self from scene gizmo list.
 	auto gizmoIt = Scene::s_instance->gizmos.begin();
 	while (gizmoIt != Scene::s_instance->gizmos.end())
 	{
@@ -87,8 +93,9 @@ ComponentCamera::~ComponentCamera()
 			Scene::s_instance->gizmos.erase(gizmoIt);
 			break;
 		}
-		cameraIt++;
+		gizmoIt++;
 	}
+	// remove self from scene component camera list.
 	auto componentIt = Scene::s_instance->componentCameras.begin();
 	while (componentIt != Scene::s_instance->componentCameras.end())
 	{
@@ -97,8 +104,21 @@ ComponentCamera::~ComponentCamera()
 			Scene::s_instance->componentCameras.erase(componentIt);
 			break;
 		}
-		cameraIt++;
+		componentIt++;
 	}
+	 // clear post process stack
+	for (auto &pp : m_postProcessStack)
+	{
+		delete pp;
+	}
+
+	// delete Raw and Processed FBs from manager, then from memory.
+	TextureManager::s_instance->RemoveFrameBuffer(componentParent->objectName.c_str());
+	delete m_frameBufferRaw;
+
+	string processedFBName = componentParent->objectName + "_Processed";
+	TextureManager::s_instance->RemoveFrameBuffer(processedFBName.c_str());
+	delete m_frameBufferProcessed;
 
 }
 
@@ -145,7 +165,6 @@ void ComponentCamera::DrawGUI()
 
 				m_postProcessStack.push_back(pp);
 			}
-
 		}
 		ImGui::EndPopup();
 	}
@@ -179,15 +198,21 @@ void ComponentCamera::Write(std::ostream& ostream)
 	// Write post process stack
 	FileUtils::WriteInt(ostream, m_postProcessStack.size());
 	for (auto pp : m_postProcessStack)
-	{
-		FileUtils::WriteString(ostream, pp->GetShaderName());
-	}
+		FileUtils::WriteString(ostream, pp->GetShaderName()); // All thats needed at this point in time.
 }
 
+// binds the cameras base framebuffer, ready to render meshes to. This clears the color and depth buffer of the camera too.
+void ComponentCamera::SetAsRenderTarget()
+{
+	m_frameBufferRaw->BindTarget();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+// If there are any post process effects applied, they are processed here. Regardless of if there are effects or not, the frame buffer is transfered from Raw to Processed.
 void ComponentCamera::RunPostProcess()
 {
 	// bind output of first pass (raw render with no processing)
-	frameBuffer->BindTexture(20);
+	m_frameBufferRaw->BindTexture(20);
 	// loop through post processing stack
 	for (auto postProcess : m_postProcessStack)
 	{
@@ -201,5 +226,4 @@ void ComponentCamera::RunPostProcess()
 	PostProcess::PassThrough();
 	FrameBuffer::UnBindTarget();
 	FrameBuffer::UnBindTexture(20);
-	
 }
