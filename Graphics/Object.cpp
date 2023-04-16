@@ -131,10 +131,14 @@ void Object::DrawGUI()
 			if(dirtyTransform)
 				ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&eulerRotation, (float*)&localScale, (float*)&localTransform);
 
-			// Draw Guizmo - very simple implementation - TODO have a 'selected object' context and mousewheel scroll through translate, rotate, scale options - rotate will need to be reworked.
-			ImGuizmo::SetRect(0, 0, Window::GetViewPortSize().x, Window::GetViewPortSize().y);
-			if (ImGuizmo::Manipulate((float*)&Camera::s_instance->view, (float*)&Camera::s_instance->projection, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, (float*)&localTransform))
-				dirtyTransform = true;
+			if (Scene::GetCameraIndex() == 0 && !Scene::s_instance->drawn3DGizmo)
+			{
+				// Draw Guizmo - very simple implementation - TODO have a 'selected object' context and mousewheel scroll through translate, rotate, scale options - rotate will need to be reworked.
+				ImGuizmo::SetRect(0, 0, Window::GetViewPortSize().x, Window::GetViewPortSize().y);
+				if (ImGuizmo::Manipulate((float*)&Camera::s_instance->view, (float*)&Camera::s_instance->projection, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, (float*)&localTransform))
+					dirtyTransform = true;
+				Scene::s_instance->drawn3DGizmo = true;
+			}
 
 			ImGui::Checkbox("Rotate", &spin);
 			ImGui::SameLine();

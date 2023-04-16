@@ -38,6 +38,8 @@ public:
 	static glm::vec3* GetPointLightPositions() { return &s_instance->m_pointLightPositions[0]; }
 	static glm::vec3* GetPointLightColours() { return &s_instance->m_pointLightColours[0]; }
 
+	static int GetCameraIndex() { return s_instance->cameraIndex; }
+	bool drawn3DGizmo = false;;
 
 	static Scene* s_instance;
 	

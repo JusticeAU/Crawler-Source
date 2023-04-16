@@ -142,6 +142,7 @@ void Application::Run()
 
 void Application::Update(float delta)
 {
+	// All of these managers can probably be just one single asset manager.
 	MeshManager::DrawGUI();
 	TextureManager::DrawGUI();
 	ShaderManager::DrawGUI();
@@ -151,12 +152,11 @@ void Application::Update(float delta)
 
 	Input::Update();
 	camera->Update(delta);
-
+	
 	Scene::s_instance->Update(delta);
 	Scene::s_instance->DrawObjects();
 	Scene::s_instance->DrawGizmos();
 	Scene::s_instance->DrawPostProcess();
-
 
 	Scene::s_instance->DrawGUI();
 	Scene::s_instance->CleanUp();

@@ -151,8 +151,7 @@ void Scene::DrawPostProcess()
 }
 
 void Scene::DrawGUI()
-{
-	
+{	
 	ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize({ 400, 900 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Scene",0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
@@ -218,7 +217,8 @@ void Scene::DrawGUI()
 
 	if (ImGui::Button("New Object"))
 		Scene::CreateObject();
-
+	
+	drawn3DGizmo = false;
 	for (auto o : objects)
 		o->DrawGUI();
 
