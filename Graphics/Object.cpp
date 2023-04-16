@@ -18,14 +18,16 @@
 
 #include "ComponentFactory.h";
 
+#include "Window.h"
+
 using std::to_string;
 
 Object::Object(int objectID, string name)
 {
 	id = objectID;
-	localPosition = { 0,0,0 };
-	localRotation = { 0,0,0 };
-	localScale = { 1,1,1 };
+	//localPosition = { 0,0,0 };
+	eulerRotation = { 0,0,0 };
+	//localScale = { 1,1,1 };
 	transform = mat4(1);
 	localTransform = mat4(1);
 
@@ -52,21 +54,19 @@ void Object::Update(float delta)
 {
 	if (spin) // just some debug spinning for testing lighting.
 	{
-		localRotation.y += delta * spinSpeed;
-		dirtyTransform = true;
+		vec3 localPosition, localRotation, localScale;
+		ImGuizmo::DecomposeMatrixToComponents((float*)&localTransform, (float*)&localPosition, (float*)&localRotation, (float*)&localScale);
+		eulerRotation.y += delta * spinSpeed;
 
-		if (localRotation.y > 180) localRotation.y -= 360;
-		else if (localRotation.y < -180) localRotation.y += 360;
+		if (eulerRotation.y > 180) eulerRotation.y -= 360;
+		else if (eulerRotation.y < -180) eulerRotation.y += 360;
+
+		ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&eulerRotation, (float*)&localScale, (float*)&localTransform);
+		dirtyTransform = true;
 	}
 
 	if (dirtyTransform) // Our transform has changed. Update it and our childrens transforms.
 	{
-		localTransform = glm::translate(glm::mat4(1), localPosition)
-			* glm::rotate(glm::mat4(1), glm::radians(localRotation.z), glm::vec3{ 0,0,1 })
-			* glm::rotate(glm::mat4(1), glm::radians(localRotation.y), glm::vec3{ 0,1,0 })
-			* glm::rotate(glm::mat4(1), glm::radians(localRotation.x), glm::vec3{ 1,0,0 })
-			* glm::scale(glm::mat4(1), localScale);
-
 		// Update world transform based on our parent.
 		if (parent)
 			transform = parent->transform * localTransform;
@@ -75,7 +75,6 @@ void Object::Update(float delta)
 
 		for (auto c : children)
 			c->dirtyTransform = true; // set dirty flag on children as they likely need to update now.
-
 	}
 
 	// Update all components
@@ -118,13 +117,23 @@ void Object::DrawGUI()
 		if (ImGui::CollapsingHeader("Transform"))
 		{
 			ImGui::Indent();
+			vec3 localPosition, localRotation, localScale;
+			ImGuizmo::DecomposeMatrixToComponents((float*)&localTransform, (float*)&localPosition, (float*)&localRotation, (float*)&localScale);
 			if (ImGui::DragFloat3("Position", &localPosition[0]))
 				dirtyTransform = true;
 
-			if(ImGui::SliderFloat3("Rotation", &localRotation[0], -180, 180))
+			if(ImGui::SliderFloat3("Rotation", &eulerRotation[0], -180, 180))
 				dirtyTransform = true;
 
 			if(ImGui::DragFloat3("Scale", &localScale[0]))
+				dirtyTransform = true;
+
+			if(dirtyTransform)
+				ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&eulerRotation, (float*)&localScale, (float*)&localTransform);
+
+			// Draw Guizmo - very simple implementation - TODO have a 'selected object' context and mousewheel scroll through translate, rotate, scale options - rotate will need to be reworked.
+			ImGuizmo::SetRect(0, 0, Window::GetViewPortSize().x, Window::GetViewPortSize().y);
+			if (ImGuizmo::Manipulate((float*)&Camera::s_instance->view, (float*)&Camera::s_instance->projection, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, (float*)&localTransform))
 				dirtyTransform = true;
 
 			ImGui::Checkbox("Rotate", &spin);
@@ -232,25 +241,19 @@ void Object::DrawGUISimple()
 	{
 		if (ImGui::CollapsingHeader("Transform"))
 		{
-			string positionStr = "Pos##" + to_string(id);
-			ImGui::DragFloat3(positionStr.c_str(), &localPosition[0]);
+			vec3 localPosition, localRotation, localScale;
+			ImGuizmo::DecomposeMatrixToComponents((float*)&localTransform, (float*)&localPosition, (float*)&localRotation, (float*)&localScale);
+			if (ImGui::DragFloat3("Position", &localPosition[0]))
+				dirtyTransform = true;
 
-			string rotationStr = "Rot##" + to_string(id);
-			ImGui::SliderFloat3(rotationStr.c_str(), &localRotation[0], -180, 180);
+			if (ImGui::SliderFloat3("Rotation", &eulerRotation[0], -180, 180))
+				dirtyTransform = true;
 
-			string scaleStr = "Scale##" + to_string(id);
-			ImGui::DragFloat3(scaleStr.c_str(), &localScale[0]);
+			if (ImGui::DragFloat3("Scale", &localScale[0]))
+				dirtyTransform = true;
 
-			//ImGui::BeginDisabled();
-			/*ImGui::InputFloat4("X", &transform[0].x);
-			ImGui::InputFloat4("Y", &transform[1].x);
-			ImGui::InputFloat4("Z", &transform[2].x);
-			ImGui::InputFloat4("T", &transform[3].x);
-			ImGui::InputFloat4("lX", &localTransform[0].x);
-			ImGui::InputFloat4("lY", &localTransform[1].x);
-			ImGui::InputFloat4("lZ", &localTransform[2].x);
-			ImGui::InputFloat4("lT", &localTransform[3].x);*/
-			//ImGui::EndDisabled();
+			if (dirtyTransform)
+				ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&eulerRotation, (float*)&localScale, (float*)&localTransform);
 		}
 
 		int childCount = (int)children.size();
@@ -297,8 +300,10 @@ void Object::Write(std::ostream& out)
 {
 	FileUtils::WriteString(out, objectName);
 	
+	glm::vec3 localPosition, localRotation, localScale;
+	ImGuizmo::DecomposeMatrixToComponents((float*)&localTransform, (float*)&localPosition, (float*)&localRotation, (float*)&localScale);
 	FileUtils::WriteVec(out, localPosition);
-	FileUtils::WriteVec(out, localRotation);
+	FileUtils::WriteVec(out, eulerRotation); // store the rotation from the object, not the decomposed matrix.
 	FileUtils::WriteVec(out, localScale);
 
 	FileUtils::WriteBool(out, spin);
@@ -322,9 +327,15 @@ void Object::Read(std::istream& in)
 {
 	FileUtils::ReadString(in, objectName);
 	
+	glm::vec3 localPosition, localScale;
 	FileUtils::ReadVec(in, localPosition);
-	FileUtils::ReadVec(in, localRotation);
+	FileUtils::ReadVec(in, eulerRotation);
 	FileUtils::ReadVec(in, localScale);
+	ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&eulerRotation, (float*)&localScale, (float*)&localTransform);
+	if (parent)
+		transform = parent->transform * localTransform;
+	else
+		transform = localTransform;
 
 	FileUtils::ReadBool(in, spin);
 	FileUtils::ReadFloat(in, spinSpeed);

@@ -47,6 +47,9 @@
     <Filter Include="Source Files\Application\Scene\Components">
       <UniqueIdentifier>{fd4d219c-af33-44f2-8d77-e6312c734544}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ImGuizmo">
+      <UniqueIdentifier>{c8cf5cf9-dd70-444b-8e6a-2c339c5f8bfe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -151,6 +154,9 @@
     </ClCompile>
     <ClCompile Include="ComponentCamera.cpp">
       <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="..\imguizmo\ImGuizmo.cpp">
+      <Filter>ImGuizmo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -288,6 +294,9 @@
     </ClInclude>
     <ClInclude Include="ComponentCamera.h">
       <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\imguizmo\ImGuizmo.h">
+      <Filter>ImGuizmo</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

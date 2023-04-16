@@ -10,8 +10,11 @@
 #include "ext\quaternion_common.hpp"
 #include "gtx/quaternion.hpp"
 
-// for imgui
+// for imGui
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_stdlib.h"
+
+// for ImGuizmo
+#include "ImGuizmo.h"

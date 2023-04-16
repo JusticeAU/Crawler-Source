@@ -15,6 +15,8 @@
 
 #include "Camera.h"
 
+#include "LogUtils.h"
+
 Scene::Scene()
 {
 	// Create light pos and col arrays for sending to lit phong shader.
@@ -80,10 +82,11 @@ void Scene::DrawObjects()
 	for (auto &c : componentCameras)
 	{
 		c->frameBuffer->BindTarget();
+		glm::vec3 cameraPos = { c->GetComponentParentObject()->transform[0][3], c->GetComponentParentObject()->transform[1][3],c->GetComponentParentObject()->transform[2][3] };
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		for (auto o : objects)
 		{
-			o->Draw(c->matrix, o->localPosition);
+			o->Draw(c->matrix, cameraPos);
 		}
 		FrameBuffer::UnBindTarget();
 	}
@@ -109,10 +112,11 @@ void Scene::DrawGizmos()
 	{
 		gizmoShader->SetVectorUniform("gizmoColour", light.colour);
 
-		lightGizmo->localScale = { 0.2, 0.2, 0.2, };
-		lightGizmo->localPosition = light.position;
-		lightGizmo->dirtyTransform = true;
-		lightGizmo->Update(0.0f);
+		vec3 localPosition, localRotation, localScale;
+		localPosition = light.position;
+		localScale = { 0.2f, 0.2f, 0.2f, };
+		localRotation = { 0, 0, 0 };
+		ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&localRotation, (float*)&localScale, (float*)&lightGizmo->transform);
 		lightGizmo->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition());
 	}
 

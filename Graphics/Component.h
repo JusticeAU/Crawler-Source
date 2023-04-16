@@ -38,6 +38,8 @@ public:
 	void AnnounceChange();
 	virtual void OnParentChange() {};
 
+	const Object* GetComponentParentObject() { return componentParent; }
+
 protected:
 	Component(string name, ComponentType type, Object* parent) : componentName(name), componentType(type), componentParent(parent) {};
 	Object* componentParent;

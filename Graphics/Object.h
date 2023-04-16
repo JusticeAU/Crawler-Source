@@ -30,9 +30,8 @@ public:
 	Object* parent = nullptr;
 	vector<Object*> children;
 	
-	vec3 localPosition;
-	vec3 localRotation;
-	vec3 localScale;
+	vec3 eulerRotation; // Keep this around to avoid Imguizmo decomposing it and potentially flipping what is 'up'
+
 	bool dirtyTransform = true;
 	mat4 transform;
 	mat4 localTransform;
