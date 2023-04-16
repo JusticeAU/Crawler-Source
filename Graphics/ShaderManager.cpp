@@ -58,6 +58,7 @@ void ShaderManager::LoadFromFile(string filename)
 void ShaderManager::LoadAllFiles()
 {
 	LogUtils::Log("Loading Shaders");
+	string postProcessFolder = "postProcess";
 	for (auto d : fs::recursive_directory_iterator("shaders"))
 	{
 		if (d.path().extension() == ".SHAD")
@@ -66,8 +67,11 @@ void ShaderManager::LoadAllFiles()
 			LogUtils::Log(output.c_str());
 			string shaderPath = d.path().parent_path().generic_string() + "/" + d.path().stem().generic_string();
 			LoadFromFile(shaderPath);
+			
+			// check if its a post process shader and if so, add to that list.
+			if (shaderPath.find(postProcessFolder) != std::string::npos)
+				m_postProcessShaderNames.push_back(shaderPath);
 		}
-
 	}
 }
 

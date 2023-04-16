@@ -185,6 +185,7 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="ModelManager.cpp" />
     <ClCompile Include="Object.cpp" />
+    <ClCompile Include="PostProcess.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
@@ -219,6 +220,7 @@
     <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="glad.h" />
     <ClInclude Include="glfwCallbacks.h" />
+    <ClInclude Include="PostProcess.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Input.h" />

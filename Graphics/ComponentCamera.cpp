@@ -8,6 +8,7 @@
 #include "ShaderManager.h"
 #include "ComponentModel.h"
 #include "ComponentRenderer.h"
+#include "PostProcess.h"
 
 ComponentCamera::ComponentCamera(Object* parent) : Component("Camera", Component_Camera, parent)
 {
@@ -17,9 +18,16 @@ ComponentCamera::ComponentCamera(Object* parent) : Component("Camera", Component
 
 	glm::vec2 vp = Window::GetViewPortSize();
 	frameBuffer = new FrameBuffer(vp.x, vp.y, true);
-	Scene::s_instance->cameras.push_back(frameBuffer);
+	//Scene::s_instance->cameras.push_back(frameBuffer);
 	TextureManager::s_instance->AddFrameBuffer(componentParent->objectName.c_str(), frameBuffer);
 	
+	m_frameBufferProcessed = new FrameBuffer(vp.x, vp.y, true);
+	Scene::s_instance->cameras.push_back(m_frameBufferProcessed);
+	string processedFBName = componentParent->objectName + "_Processed";
+	TextureManager::s_instance->AddFrameBuffer(processedFBName.c_str(), m_frameBufferProcessed);
+
+
+	// In Scene Editor Camera Gizmo
 	cameraGizmo = new Object(-1, "Camera Gizmo");
 	ComponentModel* componentModel = new ComponentModel(parent);
 	componentModel->model = ModelManager::GetModel("models/Gizmos/camera.fbx");
@@ -42,6 +50,20 @@ ComponentCamera::ComponentCamera(Object* parent, std::istream& istream) : Compon
 	FileUtils::ReadFloat(istream, fieldOfView);
 	FileUtils::ReadFloat(istream, aspect);
 	dirtyConfig = true;
+
+	int postProcessCount;
+	FileUtils::ReadInt(istream, postProcessCount);
+	for (int i = 0; i < postProcessCount; i++)
+	{
+		string ppShaderName;
+		FileUtils::ReadString(istream, ppShaderName);
+		PostProcess* pp = new PostProcess(componentParent->objectName + "_PP_" + ppShaderName);
+		pp->SetShader(ShaderManager::GetShaderProgram(ppShaderName));
+		pp->SetShaderName(ppShaderName);
+
+		m_postProcessStack.push_back(pp);
+
+	}
 }
 
 ComponentCamera::~ComponentCamera()
@@ -102,8 +124,48 @@ void ComponentCamera::DrawGUI()
 	if (ImGui::SliderFloat("Aspect Ratio", &aspect,0, 3))
 		dirtyConfig = true;
 	glm::vec2 size = { 100,100 };
-	ImGui::Image((ImTextureID)(frameBuffer->GetTexture()->texID), { 260,147 }, {0,1}, {1,0});
+	ImGui::Image((ImTextureID)(m_frameBufferProcessed->GetTexture()->texID), { 260,147 }, {0,1}, {1,0});
+	
+	if (ImGui::Button("Add Post Process Effect"))
+		ImGui::OpenPopup("popup_add_pp_effect");
 
+	// Draw Add Component Popup if requested.
+	if (ImGui::BeginPopup("popup_add_pp_effect"))
+	{
+		ImGui::SameLine();
+		ImGui::SeparatorText("Effect");
+		for (int i = 0; i < ShaderManager::GetPostProcessShaderCount(); i++)
+		{
+			string ppName = ShaderManager::GetPostProcessShaderName(i);
+			if (ImGui::Selectable(ppName.c_str()))
+			{
+				PostProcess* pp = new PostProcess(componentParent->objectName+"_PP_"+ppName);
+				pp->SetShader(ShaderManager::GetShaderProgram(ppName));
+				pp->SetShaderName(ppName);
+
+				m_postProcessStack.push_back(pp);
+			}
+
+		}
+		ImGui::EndPopup();
+	}
+
+	// List Post Processes
+	for (int i = 0; i < m_postProcessStack.size(); i++)
+	{
+		ImGui::PushID(i);
+		if (ImGui::Button("Delete"))
+		{
+			delete m_postProcessStack[i];
+			m_postProcessStack.erase(m_postProcessStack.begin() + i);
+			i--;
+		}
+		else
+		{
+			ImGui::SameLine();
+			ImGui::Text(m_postProcessStack[i]->GetName().c_str());
+		}
+	}
 }
 
 void ComponentCamera::Write(std::ostream& ostream)
@@ -113,4 +175,31 @@ void ComponentCamera::Write(std::ostream& ostream)
 
 	FileUtils::WriteFloat(ostream, fieldOfView);
 	FileUtils::WriteFloat(ostream, aspect);
+
+	// Write post process stack
+	FileUtils::WriteInt(ostream, m_postProcessStack.size());
+	for (auto pp : m_postProcessStack)
+	{
+		FileUtils::WriteString(ostream, pp->GetShaderName());
+	}
+}
+
+void ComponentCamera::RunPostProcess()
+{
+	// bind output of first pass (raw render with no processing)
+	frameBuffer->BindTexture(20);
+	// loop through post processing stack
+	for (auto postProcess : m_postProcessStack)
+	{
+		postProcess->BindFrameBuffer();
+		postProcess->Process();
+		postProcess->BindOutput();
+	}
+	//finally, take the output and send to the processed framebuffer
+	// either the raw render will be bound, or the last postprocess that ran (if any)
+	m_frameBufferProcessed->BindTarget();
+	PostProcess::PassThrough();
+	FrameBuffer::UnBindTarget();
+	FrameBuffer::UnBindTexture(20);
+	
 }

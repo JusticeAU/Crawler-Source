@@ -158,6 +158,9 @@
     <ClCompile Include="..\imguizmo\ImGuizmo.cpp">
       <Filter>ImGuizmo</Filter>
     </ClCompile>
+    <ClCompile Include="PostProcess.cpp">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -297,6 +300,9 @@
     </ClInclude>
     <ClInclude Include="..\imguizmo\ImGuizmo.h">
       <Filter>ImGuizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="PostProcess.h">
+      <Filter>Source Files\Application\Graphics\Shaders</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

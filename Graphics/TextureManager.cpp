@@ -95,6 +95,19 @@ void TextureManager::AddFrameBuffer(const char* name, FrameBuffer* fb)
 	textures.emplace(texName, fb->GetTexture());
 }
 
+void TextureManager::RemoveFrameBuffer(const char* name)
+{
+	string texName = "framebuffers/";
+	texName += name;
+
+	auto existingFB = frameBuffers.find(name);
+	if (existingFB != frameBuffers.end())
+	{
+		frameBuffers.erase(existingFB);
+		textures.erase(texName);
+	}
+}
+
 void TextureManager::LoadAllFiles()
 {
 	LogUtils::Log("Loading Textures");

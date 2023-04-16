@@ -16,6 +16,7 @@
 #include "Camera.h"
 
 #include "LogUtils.h"
+#include "PostProcess.h"
 
 Scene::Scene()
 {
@@ -41,7 +42,7 @@ Scene::Scene()
 
 	// Add editor camera to list of cameras and set our main camera to be it.
 	cameras.push_back(Camera::s_instance->GetFrameBuffer());
-	mainCameraFB = cameras[0];
+	outputCameraFrameBuffer = cameras[0];
 }
 
 Scene::~Scene()
@@ -85,10 +86,8 @@ void Scene::DrawObjects()
 		glm::vec3 cameraPos = { c->GetComponentParentObject()->transform[0][3], c->GetComponentParentObject()->transform[1][3],c->GetComponentParentObject()->transform[2][3] };
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		for (auto o : objects)
-		{
 			o->Draw(c->matrix, cameraPos);
-		}
-		FrameBuffer::UnBindTarget();
+		c->RunPostProcess();
 	}
 
 	// then draw the scene using the Camera class "Editor Camera"
@@ -132,22 +131,8 @@ void Scene::DrawGizmos()
 
 void Scene::DrawPostProcess()
 {
-	glDisable(GL_DEPTH_TEST);
-	passthroughShad->Bind();
-	passthroughShad->SetIntUniform("frame", 10);
-	mainCameraFB->BindTexture(10);
-
-	// Draw the frame quad
-	glBindVertexArray(frame->vao);
-
-	// check if we're using index buffers on this mesh by hecking if indexbufferObject is valid (was it set up?)
-	if (frame->ibo != 0) // Draw with index buffering
-		glDrawElements(GL_TRIANGLES, 3 * frame->tris, GL_UNSIGNED_INT, 0);
-	else // draw simply.
-		glDrawArrays(GL_TRIANGLES, 0, 3 * frame->tris);
-
-	mainCameraFB->UnBindTexture(10);
-	glEnable(GL_DEPTH_TEST);
+	outputCameraFrameBuffer->BindTexture(20);
+	PostProcess::PassThrough();
 }
 
 void Scene::DrawGUI()
@@ -161,11 +146,11 @@ void Scene::DrawGUI()
 	if (ImGui::Button("Load"))
 		Load();
 
-	if (ImGui::DragInt("Camera Number", &cameraIndex, 1, 0, cameras.size() - 1, "%d", ImGuiSliderFlags_AlwaysClamp))
+	if (ImGui::InputInt("Camera Number", &cameraIndex, 1))
 	{
 		if (cameraIndex > cameras.size() - 1)
 			cameraIndex = cameras.size() - 1;
-		mainCameraFB = cameras[cameraIndex];
+		outputCameraFrameBuffer = cameras[cameraIndex];
 	}
 
 	float clearCol[3] = { clearColour.r, clearColour.g, clearColour.b, };

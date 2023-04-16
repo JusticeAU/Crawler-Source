@@ -91,6 +91,8 @@ Application::Application()
 
 	// Create a default object
 	Scene::CreateObject("Default Object");
+
+	Scene::s_instance->Load();
 }
 
 Application::~Application()

@@ -14,6 +14,8 @@ class Mesh;
 class Camera;
 class ComponentCamera;
 
+class PostProcess;
+
 class Scene
 {
 public:
@@ -77,7 +79,7 @@ protected:
 	glm::vec3* m_pointLightColours;
 
 	// This is for the 'editor' camera
-	FrameBuffer* mainCameraFB;
+	FrameBuffer* outputCameraFrameBuffer;
 	
 	// selecting which camera ('s framebuffer) we're pushing to the backbuffer and rendering it
 	ShaderProgram* passthroughShad;
@@ -87,4 +89,7 @@ protected:
 	// Gizmo rendering
 	ShaderProgram* gizmoShader = nullptr;
 	Object* lightGizmo = nullptr; // reusable object to place the light bulb model and render it.
+
+	// Post process dev
+	//vector<PostProcess*> postProcessStack;
 };

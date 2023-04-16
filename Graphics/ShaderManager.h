@@ -1,10 +1,12 @@
 #pragma once
+#include "ShaderProgram.h"
 #include <string>
 #include <map>
-#include "ShaderProgram.h"
+#include <vector>
 
 using std::string;
 using std::map;
+using std::vector;
 
 class ShaderManager
 {
@@ -15,6 +17,9 @@ public:
 	static void DrawGUI();
 	static ShaderManager* s_instance;
 	static const map<string, ShaderProgram*>* ShaderPrograms() { return &s_instance->shaderPrograms; }
+	static int GetPostProcessShaderCount() { return (int)s_instance->m_postProcessShaderNames.size(); }
+	static string GetPostProcessShaderName(int i) { return s_instance->m_postProcessShaderNames[i]; }
+
 protected:
 	ShaderManager();
 	map<string, ShaderProgram*> shaderPrograms;
@@ -24,5 +29,6 @@ protected:
 	void LoadAllFiles();
 
 	void RecompileAllShaderPrograms();
+	vector<string> m_postProcessShaderNames;
 };
 

@@ -23,6 +23,7 @@ public:
 	static const map<string, FrameBuffer*>* FrameBuffers() { return &s_instance->frameBuffers; }
 
 	void AddFrameBuffer(const char* name, FrameBuffer* fb);
+	void RemoveFrameBuffer(const char* name);
 protected:
 	TextureManager();
 	map<string, Texture*> textures;
