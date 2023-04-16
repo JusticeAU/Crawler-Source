@@ -6,8 +6,8 @@ void ComponentFactory::Init()
     components.push_back("Animator");
     components.push_back("Mesh Renderer");
     components.push_back("Skinned Mesh Renderer");
-    components.push_back("Material");
-    components.push_back("Point Light");
+    components.push_back("Material (Not Yet Implemented)");
+    components.push_back("Point Light (Not Yet Implemented)");
     components.push_back("Camera");
 
 }
