@@ -28,6 +28,8 @@ public:
 
 	void Write(std::ostream& ostream) override;
 
+	void UpdateViewProjectionMatrix();
+
 	const vec3 GetWorldSpacePosition() { return componentParent->GetWorldSpacePosition(); }
 	const mat4 GetViewProjectionMatrix() { return matrix; }
 

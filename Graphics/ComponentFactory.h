@@ -4,6 +4,7 @@
 #include "ComponentRenderer.h"
 #include "ComponentSkinnedRenderer.h"
 #include "ComponentCamera.h"
+#include "ComponentFPSTest.h"
 #include <vector>
 #include <string>
 

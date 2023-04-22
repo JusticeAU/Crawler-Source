@@ -31,6 +31,15 @@ void Input::Update()
 
 	if (glfwGetKey(s_instance->m_window, GLFW_KEY_F10) == GLFW_RELEASE)
 		s_instance->fullScreenReleased = true;
+
+	if (glfwGetKey(s_instance->m_window, GLFW_KEY_F9) == GLFW_PRESS && s_instance->hideCursorReleased)
+	{
+		s_instance->hideCursorReleased = false;
+		Window::Get()->ToggleMouseCursor();
+	}
+
+	if (glfwGetKey(s_instance->m_window, GLFW_KEY_F9) == GLFW_RELEASE)
+		s_instance->hideCursorReleased = true;
 }
 
 Input* Input::s_instance = nullptr;

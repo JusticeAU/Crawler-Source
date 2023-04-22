@@ -63,4 +63,5 @@ public:
 	Component* GetComponent(ComponentType type);
 
 	void RefreshComponents();
+	void RecalculateTransforms();
 };

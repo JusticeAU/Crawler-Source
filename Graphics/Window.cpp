@@ -34,4 +34,24 @@ void Window::ToggleFullscreen()
 	fullScreen = !fullScreen;
 }
 
+void Window::ToggleMouseCursor()
+{
+	showMouseCursor = !showMouseCursor;
+
+	if (showMouseCursor)
+		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	else
+		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+void Window::SetMouseCursorHidden(bool hidden)
+{
+	showMouseCursor = !hidden;
+
+	if (showMouseCursor)
+		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	else
+		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
 Window* Window::s_instance = nullptr;

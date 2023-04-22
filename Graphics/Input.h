@@ -21,4 +21,5 @@ protected:
 	vec2 m_lastMousePosition;
 
 	bool fullScreenReleased = true;
+	bool hideCursorReleased = true;
 };

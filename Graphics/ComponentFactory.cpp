@@ -9,6 +9,8 @@ void ComponentFactory::Init()
     components.push_back("Material (Not Yet Implemented)");
     components.push_back("Point Light (Not Yet Implemented)");
     components.push_back("Camera");
+    components.push_back("FPSTest");
+
 
 }
 
@@ -30,6 +32,9 @@ Component* ComponentFactory::NewComponent(Object* parent, int componentIndex)
         return nullptr;
     case 6:
         return new ComponentCamera(parent);
+    case 7:
+        return new ComponentFPSTest(parent);
+
     }
 }
 

@@ -124,13 +124,6 @@ ComponentCamera::~ComponentCamera()
 
 void ComponentCamera::Update(float deltatime)
 {
-	if (componentParent->dirtyTransform || dirtyConfig)
-	{
-		view = glm::inverse(componentParent->transform);
-		projection = glm::perspective(glm::radians(fieldOfView), aspect, nearClip, farClip);
-		matrix = projection * view;
-		dirtyConfig = false;
-	}
 }
 
 void ComponentCamera::DrawGUI()
@@ -199,6 +192,13 @@ void ComponentCamera::Write(std::ostream& ostream)
 	FileUtils::WriteInt(ostream, m_postProcessStack.size());
 	for (auto pp : m_postProcessStack)
 		FileUtils::WriteString(ostream, pp->GetShaderName()); // All thats needed at this point in time.
+}
+
+void ComponentCamera::UpdateViewProjectionMatrix()
+{
+	view = glm::inverse(componentParent->transform);
+	projection = glm::perspective(glm::radians(fieldOfView), aspect, nearClip, farClip);
+	matrix = projection * view;
 }
 
 // binds the cameras base framebuffer, ready to render meshes to. This clears the color and depth buffer of the camera too.

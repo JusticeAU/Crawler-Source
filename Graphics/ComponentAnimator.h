@@ -32,6 +32,8 @@ public:
 	void UpdateBoneMatrixBuffer(float frameTime);
 	void ProcessNode(float frameTime, int animationIndex, Object* node, mat4 accumulated);
 
+	void StartAnimation(string name, bool loop = false);
+
 	// dependencies
 	Model* model = nullptr;
 

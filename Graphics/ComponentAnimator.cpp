@@ -154,3 +154,21 @@ void ComponentAnimator::ProcessNode(float frameTime, int animationIndex, Object*
 		ProcessNode(frameTime, animationIndex, c, globalTransform);
 
 }
+
+void ComponentAnimator::StartAnimation(string name, bool loop)
+{
+	
+
+	for (int i = 0; i < model->animations.size(); i++)
+	{
+		if (model->animations[i]->name == name)
+		{
+			animationTime = 0.0f;
+			playAnimation = true;
+			loopAnimation = loop;
+
+			animationName = name;
+			selectedAnimation = i;
+		}
+	}
+}

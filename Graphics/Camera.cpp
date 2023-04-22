@@ -23,10 +23,19 @@ Camera::Camera(float aspect, GLFWwindow* window, string name)
 
 void Camera::Update(float delta)
 {
-	if (glfwGetMouseButton(window, 1)) // only accept inputs if rightclick is held down.
+	if (glfwGetMouseButton(window, 1) && !isAdjusting)
 	{
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // lock and hide the cursor whilst moving so it stays in the window.
+		Window::Get()->SetMouseCursorHidden(true);
+		isAdjusting = true;
+	}
+	else if (!glfwGetMouseButton(window, 1) && isAdjusting)
+	{
+		Window::Get()->SetMouseCursorHidden(false);
+		isAdjusting = false;
+	}
 
+	if (isAdjusting) // only accept inputs if rightclick is held down.
+	{
 		// Update camera rotation
 		vec2 mouseDelta = Input::GetMouseDelta();
 		m_horizontal += lookSpeed * mouseDelta.x;
@@ -51,8 +60,7 @@ void Camera::Update(float delta)
 
 		UpdateMatrix();
 	}
-	else
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); // unlock the mouse cursor
+	
 }
 
 void Camera::Move(glm::vec3 delta)

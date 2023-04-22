@@ -17,6 +17,8 @@ public:
 	void Update(float delta);
 	void Move(glm::vec3 delta);
 	void DrawGUI();
+	mat4 GetView() { return view; }
+	mat4 GetProjection() { return projection; }
 	mat4 GetMatrix();
 	vec3 GetPosition() { return position; };
 	void SetAspect(float value) { aspect = value; UpdateMatrix(); }
@@ -34,7 +36,7 @@ public:
 
 	string name = "";
 
-public:
+protected:
 	glm::vec3 position;
 	glm::vec3 forward;
 	glm::vec3 right;
@@ -49,6 +51,8 @@ public:
 	GLFWwindow* window = nullptr;
 
 	FrameBuffer* frameBuffer;
+
+	bool isAdjusting = false;
 
 	void UpdateMatrix();
 	void SetFramebuffer(FrameBuffer* fb) { frameBuffer = fb; };

@@ -83,6 +83,7 @@ void Scene::DrawObjects()
 	for (auto &c : componentCameras)
 	{
 		c->SetAsRenderTarget();
+		c->UpdateViewProjectionMatrix();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		vec3 cameraPosition = c->GetWorldSpacePosition();
 		for (auto &o : objects)

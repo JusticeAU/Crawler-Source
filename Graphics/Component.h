@@ -18,7 +18,8 @@ enum ComponentType
 	Component_SkinnedRenderer,
 	Component_Material,
 	Component_Light,
-	Component_Camera
+	Component_Camera,
+	Component_FPSTest
 };
 
 class Component

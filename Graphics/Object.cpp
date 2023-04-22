@@ -50,40 +50,29 @@ Object::~Object()
 
 void Object::Update(float delta)
 {
+	// Update all components
+	for (auto component : components)
+		component->Update(delta);
+
 	if (spin) // just some debug spinning for testing lighting.
 	{
-		vec3 localPosition, localRotation, localScale;
-		ImGuizmo::DecomposeMatrixToComponents((float*)&localTransform, (float*)&localPosition, (float*)&localRotation, (float*)&localScale);
 		eulerRotation.y += delta * spinSpeed;
-
 		if (eulerRotation.y > 180) eulerRotation.y -= 360;
 		else if (eulerRotation.y < -180) eulerRotation.y += 360;
-
-		ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&eulerRotation, (float*)&localScale, (float*)&localTransform);
 		dirtyTransform = true;
 	}
 
 	if (dirtyTransform) // Our transform has changed. Update it and our childrens transforms.
 	{
-		// Update world transform based on our parent.
-		if (parent)
-			transform = parent->transform * localTransform;
-		else
-			transform = localTransform;
-
-		for (auto c : children)
-			c->dirtyTransform = true; // set dirty flag on children as they likely need to update now.
+		RecalculateTransforms();
+		dirtyTransform = false; // clear our dirty flag
 	}
-
-	// Update all components
-	for (auto component : components)
-		component->Update(delta);
 
 	// Update all children recursively.
 	for (auto c : children)
 		c->Update(delta);
 
-	dirtyTransform = false; // clear our dirty flag
+	
 }
 
 void Object::Draw(mat4 pv, vec3 position)
@@ -133,7 +122,10 @@ void Object::DrawGUI()
 			{
 				// Draw Guizmo - very simple implementation - TODO have a 'selected object' context and mousewheel scroll through translate, rotate, scale options - rotate will need to be reworked.
 				ImGuizmo::SetRect(0, 0, Window::GetViewPortSize().x, Window::GetViewPortSize().y);
-				if (ImGuizmo::Manipulate((float*)&Camera::s_instance->view, (float*)&Camera::s_instance->projection, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, (float*)&localTransform))
+				mat4 view, projection;
+				view = Camera::s_instance->GetView();
+				projection = Camera::s_instance->GetProjection();
+				if (ImGuizmo::Manipulate((float*)&view, (float*)&projection, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, (float*)&localTransform))
 					dirtyTransform = true;
 				Scene::s_instance->drawn3DGizmo = true;
 			}
@@ -387,4 +379,24 @@ void Object::RefreshComponents()
 
 	for (auto c : children)
 		c->RefreshComponents();
+}
+
+void Object::RecalculateTransforms()
+{
+	vec3 localPosition, localRotation, localScale;
+	ImGuizmo::DecomposeMatrixToComponents((float*)&localTransform, (float*)&localPosition, (float*)&localRotation, (float*)&localScale);
+
+	if (eulerRotation.y > 180) eulerRotation.y -= 360;
+	else if (eulerRotation.y < -180) eulerRotation.y += 360;
+
+	ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&eulerRotation, (float*)&localScale, (float*)&localTransform);
+
+	// Update world transform based on our parent.
+	if (parent)
+		transform = parent->transform * localTransform;
+	else
+		transform = localTransform;
+
+	for (auto c : children)
+		c->RecalculateTransforms();
 }
