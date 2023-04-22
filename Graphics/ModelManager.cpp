@@ -78,7 +78,8 @@ void ModelManager::LoadFromFile(const char* filename)
 
 	const aiScene* scene = importer.ReadFile(filename,
 		aiProcess_CalcTangentSpace |
-		aiProcess_FlipWindingOrder);
+		aiProcess_FlipWindingOrder |
+		aiProcess_LimitBoneWeights);
 
 	// Create a new model to start pushing our data in to.
 	Model* model = new Model();
@@ -89,7 +90,6 @@ void ModelManager::LoadFromFile(const char* filename)
 		if (inMesh->mNumBones > 0)
 		{
 			if (model->boneStructure == nullptr) model->boneStructure = new Model::BoneStructure();
-
 		}
 		string name = filename;
 		string subname = name + "_" + scene->mMeshes[i]->mName.C_Str();
@@ -114,16 +114,19 @@ void ModelManager::LoadFromFile(const char* filename)
 		anim->ticksPerSecond = scene->mAnimations[i]->mTicksPerSecond;
 		anim->numChannels = scene->mAnimations[i]->mNumChannels;
 
-		for (int j = 0; j < anim->numChannels; j++) // for each channel in the animation
+		for (int j = 0; j < anim->numChannels; j++) // for each channel (bone) in the animation
 		{
 			Model::Animation::AnimationChannel channel;
 			channel.name = scene->mAnimations[i]->mChannels[j]->mNodeName.C_Str();
 			int keyCount = scene->mAnimations[i]->mChannels[j]->mNumPositionKeys;
-			for (int k = 0; k < keyCount; k++) // for each key in the channel in the animation
+			for (int k = 0; k < keyCount; k++) // for each key frame in the channel in the animation
 			{
-				channel.keys[k].position = vec3_cast(scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mValue);
-				channel.keys[k].rotation = quat_cast(scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mValue);
-				channel.keys[k].scale = vec3_cast(scene->mAnimations[i]->mChannels[j]->mScalingKeys[k].mValue);
+				Model::Animation::AnimationKey newKey;
+				newKey.time = scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mTime; // Thus far for FBXs I have seen that keyframes exist at the same time for pos/rot/scale, so we can grab the time from any.
+				newKey.position = vec3_cast(scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mValue);
+				newKey.rotation = quat_cast(scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mValue);
+				newKey.scale = vec3_cast(scene->mAnimations[i]->mChannels[j]->mScalingKeys[k].mValue);
+				channel.keys.push_back(newKey);
 			}
 			anim->channels.emplace(channel.name, channel);
 		}

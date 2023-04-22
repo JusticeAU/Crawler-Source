@@ -130,34 +130,22 @@ void ComponentAnimator::UpdateBoneMatrixBuffer(float frameTime)
 // recursively processes each node/bone.
 void ComponentAnimator::ProcessNode(float frameTime, int animationIndex, Object* node, mat4 accumulated)
 {
-	// look up if node has a matching bone/animation node
-	int frameIndex = (int)frameTime;
-	int nextFrameIndex = frameTime > model->animations[animationIndex]->duration ? 0 : frameIndex + 1;
-	float t = frameTime - frameIndex;
-
+	// look up if node has a matching bone mapping.
 	string nodeName = node->objectName;
-	mat4 nodeTransformation = node->localTransform; // assume it doesnt at first and just use its local transform.
-	auto bufferIndex = model->boneStructure->boneMapping.find(nodeName);
-	if (bufferIndex != model->boneStructure->boneMapping.end()) // if it does, look up its keyframe data.
+	mat4 nodeTransformation = node->localTransform; // assume it doesnt at first and just use its local transform. (which should be its base offset data)
+
+	auto bufferIndex = model->boneStructure->boneMapping.find(nodeName); // first search the bonemap for a valid index. We can't do anything with the data if it's not mapped in to the buffer.
+	if (bufferIndex != model->boneStructure->boneMapping.end()) // if it has one, look up its keyframe data.
 	{
 		// Get key from animation
 		auto channel = model->animations[animationIndex]->channels.find(nodeName);
 		if (channel != model->animations[animationIndex]->channels.end())
-		{
-			Model::Animation::AnimationKey& key = channel->second.keys[frameIndex];
-			Model::Animation::AnimationKey& nextKey = channel->second.keys[nextFrameIndex];
-
-			// Apply transformation.
-			mat4 scale = glm::scale(glm::mat4(1), glm::mix(key.scale, nextKey.scale, t));				// generate mixed scale matrix		
-			mat4 rotate = glm::mat4_cast(glm::slerp(key.rotation, nextKey.rotation, t));				// generate mixed rotation matrix
-			mat4 translate = glm::translate(glm::mat4(1), glm::mix(key.position, nextKey.position, t));	// generate mixed translation matrix
-			nodeTransformation = translate * rotate * scale;											// combine
-		}
+			nodeTransformation = channel->second.GetTransformation(frameTime);
 	}
 
-	mat4 globalTransform = accumulated * nodeTransformation;											// Apply matrix to accumulated transform down the tree.
+	mat4 globalTransform = accumulated * nodeTransformation; // Apply matrix to accumulated transform down the tree.
 
-	// if it was an actual bone - apply it the transform buffer that gets sent to the vertex shader.
+	// if it was an actual bone - apply it to the transform buffer that gets sent to the vertex shader.
 	if (bufferIndex != model->boneStructure->boneMapping.end())
 		boneTransforms[bufferIndex->second] = globalTransform * model->boneStructure->boneOffsets[bufferIndex->second];
 

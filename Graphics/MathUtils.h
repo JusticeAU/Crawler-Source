@@ -7,4 +7,8 @@ public:
 	{
 		return a * (1.0 - t) + (b * t);
 	}
+	static float InverseLerp(float a, float b, float value)
+	{
+		return (value - a) / (b - a);
+	}
 };

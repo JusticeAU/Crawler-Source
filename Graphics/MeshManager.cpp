@@ -357,7 +357,7 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 
 			if (!storedBone)
 			{
-				// shouldn't get here - if we did then there is a vert with more than 4 bones allocated to it. rip!
+				// shouldn't get here - we've configured Assimp to handle this on loading the asset file.
 				LogUtils::Log("More than 4 bones affecting this vert!!!");
 				LogUtils::Log("Dropping off least influenced bone");
 				vertices[vertID].boneID[minIndex] = boneIndex;
