@@ -3,6 +3,7 @@
 #include "LogUtils.h"
 #include "Model.h"
 #include "Mesh.h"
+#include "Animation.h"
 #include "MeshManager.h"
 #include "Object.h"
 #include "ai2glm.h"
@@ -44,6 +45,17 @@ void ModelManager::DrawGUI()
 	for (auto m : s_instance->resources)
 	{
 		ImGui::Text(m.first.c_str());
+	}
+	ImGui::EndDisabled();
+	ImGui::End();
+
+	ImGui::Begin("Animations", nullptr);
+	ImGui::BeginDisabled();
+	int animationCount = (int)s_instance->animations.size();
+	ImGui::DragInt("Animation Count", &animationCount);
+	for (auto a : s_instance->animations)
+	{
+		ImGui::Text(a.first.c_str());
 	}
 	ImGui::EndDisabled();
 	ImGui::End();
@@ -106,7 +118,7 @@ void ModelManager::LoadFromFile(const char* filename)
 	// Load Animation Data
 	for (unsigned int i = 0; i < scene->mNumAnimations; i++) // for each animation
 	{
-		Model::Animation* anim = new Model::Animation();
+		Animation* anim = new Animation();
 		anim->name = scene->mAnimations[i]->mName.C_Str();
 		string log = "Processing Animation: " + anim->name;
 		LogUtils::Log(log.c_str());
@@ -116,12 +128,12 @@ void ModelManager::LoadFromFile(const char* filename)
 
 		for (int j = 0; j < anim->numChannels; j++) // for each channel (bone) in the animation
 		{
-			Model::Animation::AnimationChannel channel;
+			Animation::AnimationChannel channel;
 			channel.name = scene->mAnimations[i]->mChannels[j]->mNodeName.C_Str();
 			int keyCount = scene->mAnimations[i]->mChannels[j]->mNumPositionKeys;
 			for (int k = 0; k < keyCount; k++) // for each key frame in the channel in the animation
 			{
-				Model::Animation::AnimationKey newKey;
+				Animation::AnimationKey newKey;
 				newKey.time = scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mTime; // Thus far for FBXs I have seen that keyframes exist at the same time for pos/rot/scale, so we can grab the time from any.
 				newKey.position = vec3_cast(scene->mAnimations[i]->mChannels[j]->mPositionKeys[k].mValue);
 				newKey.rotation = quat_cast(scene->mAnimations[i]->mChannels[j]->mRotationKeys[k].mValue);
@@ -132,6 +144,7 @@ void ModelManager::LoadFromFile(const char* filename)
 		}
 
 		model->animations.push_back(anim);
+		animations.emplace(filename+anim->name,anim);
 	}
 	resources.emplace(filename, model);
 }

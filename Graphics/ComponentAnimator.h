@@ -6,6 +6,7 @@
 const int MAX_BONES = 100;
 
 class Model;
+class Animation;
 class UniformBuffer;
 
 using std::string;
@@ -29,10 +30,20 @@ public:
 
 	void OnParentChange() override;
 
-	void UpdateBoneMatrixBuffer(float frameTime);
-	void ProcessNode(float frameTime, int animationIndex, Object* node, mat4 accumulated);
+	void UpdateBoneMatrixBuffer();
+	void ProcessNode(Object* node, mat4 accumulated);
 
 	void StartAnimation(string name, bool loop = false);
+
+	struct AnimationState
+	{
+		Animation* animation = nullptr;
+		float animationSpeedScale = 1.0f;
+		bool looping = true;
+		float position = 0.0f;
+
+		void Update(float delta);
+	};
 
 	// dependencies
 	Model* model = nullptr;
@@ -48,4 +59,11 @@ public:
 
 	mat4* boneTransforms = nullptr;
 	UniformBuffer* boneTransfomBuffer = nullptr;
+
+	// New stuff, transition
+	AnimationState* current = nullptr;
+	AnimationState* next = nullptr;
+	float transitionTime = 0.3f;
+	float transitionProgress = 0.0f;
+	float transitionWeight = 0.0f;
 };

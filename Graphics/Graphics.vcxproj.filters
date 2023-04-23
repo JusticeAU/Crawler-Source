@@ -170,6 +170,9 @@
     <ClCompile Include="ComponentFPSTest.cpp">
       <Filter>Source Files\Application\Scene\Components\dev</Filter>
     </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Source Files\Application\Graphics\Models</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -318,6 +321,9 @@
     </ClInclude>
     <ClInclude Include="ComponentFPSTest.h">
       <Filter>Source Files\Application\Scene\Components\dev</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Source Files\Application\Graphics\Models</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

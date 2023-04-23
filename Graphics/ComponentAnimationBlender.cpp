@@ -1,6 +1,7 @@
 #include "ComponentAnimationBlender.h"
 #include "ComponentModel.h"
 #include "Model.h"
+#include "Animation.h"
 #include "Object.h"
 #include "UniformBuffer.h"
 
@@ -140,23 +141,4 @@ void ComponentAnimationBlender::ProcessNode(float frameTimeA, int animationIndex
 	for (auto c : node->children)
 		ProcessNode(frameTimeA, animationIndexA, frameTimeB, animationIndexB, weightAB, c, globalTransform);
 
-}
-
-void ComponentAnimationBlender::AnimationState::Update(float delta)
-{
-	/*position += delta;
-	if (position > animation->duration)
-	{
-		if (looping)
-			position -= animation->duration;
-		else
-			position = animation->duration;
-	}
-	else if (position < 0.0f)
-	{
-		if (looping)
-			position += animation->duration;
-		else
-			position = 0.0f;
-	}*/
 }

@@ -37,15 +37,6 @@ public:
 	mat4* boneTransforms = nullptr;
 	UniformBuffer* boneTransfomBuffer = nullptr;
 
-	struct AnimationState
-	{
-		//Model::Animation* animation = nullptr;
-		bool looping = true;
-		float position = 0.0f;
-
-		void Update(float delta);
-	};
-
 	// Blender configuration
 	int animationA = 0;
 	string animationAName = "";

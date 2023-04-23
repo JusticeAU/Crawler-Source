@@ -1,8 +1,11 @@
 #include "ComponentAnimator.h"
 #include "ComponentModel.h"
 #include "Model.h"
+#include "Animation.h"
 #include "Object.h"
 #include "UniformBuffer.h"
+
+#include "ModelManager.h"
 
 using std::to_string;
 
@@ -11,6 +14,7 @@ ComponentAnimator::ComponentAnimator(Object* parent, std::istream& istream) : Co
 	FileUtils::ReadInt(istream, selectedAnimation);
 	FileUtils::ReadString(istream, animationName);
 	FileUtils::ReadFloat(istream, animationSpeed);
+	current = new AnimationState();
 }
 
 ComponentAnimator::~ComponentAnimator()
@@ -22,6 +26,31 @@ ComponentAnimator::~ComponentAnimator()
 
 void ComponentAnimator::Update(float delta)
 {
+
+	if (current)
+	{
+		if (current->animation == nullptr && model->animations.size() > 0)
+		{
+			current->animation = model->animations[selectedAnimation];
+		}
+		if(current->animation != nullptr)
+			current->Update(delta);
+	}
+	
+	if (next)
+	{
+		next->Update(delta);
+		transitionProgress += delta;
+		if (transitionProgress >= transitionTime)
+		{
+			current = next;
+			next = nullptr; // TO DO animation manager? ahahahaha more managers.
+			transitionProgress = 0.0f;
+		}
+
+		transitionWeight = transitionProgress / transitionTime;
+	}
+
 	// Update animation state, if we have an animation
 	if (model != nullptr && model->animations.size() > 0) // We have animations
 	{
@@ -31,31 +60,9 @@ void ComponentAnimator::Update(float delta)
 			boneTransfomBuffer = new UniformBuffer(sizeof(mat4) * MAX_BONES);
 		}
 
-		if (selectedAnimation > model->animations.size() - 1) // avoid overflow (could happen if we changed from a model with 3 animations, had the 3rd selected and the new model only had 1 animation.
-			selectedAnimation = 0;
-
-		// Process animation state and data.
-		if (playAnimation) animationTime += delta * animationSpeed * model->animations[selectedAnimation]->ticksPerSecond;
-
-		// clamp animation time or loop if enabled.
-		if (animationTime > model->animations[selectedAnimation]->duration)
-		{
-			if (loopAnimation)
-				animationTime -= model->animations[selectedAnimation]->duration;
-			else
-				animationTime = model->animations[selectedAnimation]->duration;
-		}
-		else if (animationTime < 0.0f)
-		{
-			if (loopAnimation)
-				animationTime += model->animations[selectedAnimation]->duration;
-			else
-				animationTime = 0.0f;
-		}
-
 		// Update the array of transform matricies - this is sent in to the shader when Draw is called.
 		// Actually dont need to send this argument in given that its a member function - will refactor this in to an animator component at some point.
-		UpdateBoneMatrixBuffer(animationTime);
+		UpdateBoneMatrixBuffer();
 	}
 }
 
@@ -70,15 +77,17 @@ void ComponentAnimator::DrawGUI()
 		if (model->animations.size() > 0)
 		{
 			string animationNameStr = "Animation##" + to_string(componentParent->id);
-			if (ImGui::BeginCombo(animationNameStr.c_str(), model->animations[selectedAnimation]->name.c_str()))
+			if (ImGui::BeginCombo(animationNameStr.c_str(), current->animation->name.c_str()))
 			{
-				for (int i = 0; i < model->animations.size(); i++)
+				for (auto a : *ModelManager::Animations())
 				{
-					const bool is_selected = (model->animations[i]->name == animationName);
-					if (ImGui::Selectable(model->animations[i]->name.c_str(), is_selected))
+					const bool is_selected = (a.second == current->animation);
+					if (ImGui::Selectable(a.first.c_str(), is_selected))
 					{
-						selectedAnimation = i;
-						animationName = model->animations[i]->name;
+						next = new AnimationState();
+						next->animation = a.second;
+						next->looping = true;
+						next->position = current->position;
 					}
 
 					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -90,16 +99,26 @@ void ComponentAnimator::DrawGUI()
 			}
 
 			string AnimSpeedStr = "Animation Speed##" + to_string(componentParent->id);
-			ImGui::DragFloat(AnimSpeedStr.c_str(), &animationSpeed, 0.1f, -2, 2);
+			ImGui::DragFloat(AnimSpeedStr.c_str(), &current->animationSpeedScale, 0.1f, -2, 2);
 
 			string AnimLoopStr = "Loop##" + to_string(componentParent->id);
-			ImGui::Checkbox(AnimLoopStr.c_str(), &loopAnimation);
+			ImGui::Checkbox(AnimLoopStr.c_str(), &current->looping);
 			ImGui::SameLine();
 			string AnimPlayStr = playAnimation ? "Pause##" + to_string(componentParent->id) : "Play##" + to_string(componentParent->id);
 			if (ImGui::Button(AnimPlayStr.c_str())) playAnimation = !playAnimation;
 
 			string animTimeStr = "Animation Time##" + to_string(componentParent->id);
-			ImGui::SliderFloat(animTimeStr.c_str(), &animationTime, 0, model->animations[selectedAnimation]->duration);
+			ImGui::SliderFloat(animTimeStr.c_str(), &current->position, 0, current->animation->duration);
+
+			// blending
+			if (next)
+			{
+				string nextName = "Blending to.." + next->animation->name;
+				ImGui::Text(nextName.c_str());
+				ImGui::BeginDisabled();
+				ImGui::SliderFloat("Blend", &transitionWeight,0, 1);
+				ImGui::EndDisabled();
+			}
 		}
 	}
 }
@@ -123,28 +142,36 @@ void ComponentAnimator::OnParentChange()
 }
 
 // This proceses the Animation data to build a new boneTransform array to send to the GPU.
-void ComponentAnimator::UpdateBoneMatrixBuffer(float frameTime)
+void ComponentAnimator::UpdateBoneMatrixBuffer()
 {
-	ProcessNode(frameTime, selectedAnimation, model->childNodes, mat4(1));
+	ProcessNode(model->childNodes, mat4(1));
 }
 
 // recursively processes each node/bone.
-void ComponentAnimator::ProcessNode(float frameTime, int animationIndex, Object* node, mat4 accumulated)
+void ComponentAnimator::ProcessNode(Object* node, mat4 accumulated)
 {
 	// look up if node has a matching bone mapping.
 	string nodeName = node->objectName;
-	mat4 nodeTransformation = node->localTransform; // assume it doesnt at first and just use its local transform. (which should be its base offset data)
+	mat4 nodeTransformationA = node->localTransform * (1 - transitionWeight); // assume it doesnt at first and just use its local transform. (which should be its base offset data)
+	mat4 nodeTransformationB = node->localTransform * transitionWeight;
 
 	auto bufferIndex = model->boneStructure->boneMapping.find(nodeName); // first search the bonemap for a valid index. We can't do anything with the data if it's not mapped in to the buffer.
 	if (bufferIndex != model->boneStructure->boneMapping.end()) // if it has one, look up its keyframe data.
 	{
 		// Get key from animation
-		auto channel = model->animations[animationIndex]->channels.find(nodeName);
-		if (channel != model->animations[animationIndex]->channels.end())
-			nodeTransformation = channel->second.GetTransformation(frameTime);
+		auto channelA = current->animation->channels.find(nodeName);
+		if (channelA != current->animation->channels.end())
+			nodeTransformationA = channelA->second.GetTransformation(current->position) * (1 - transitionWeight);
+		if (next != nullptr)
+		{
+			auto channelB = next->animation->channels.find(nodeName);
+			if (channelB != next->animation->channels.end())
+				nodeTransformationB = channelB->second.GetTransformation(next->position) * transitionWeight;
+		}
+
 	}
 
-	mat4 globalTransform = accumulated * nodeTransformation; // Apply matrix to accumulated transform down the tree.
+	mat4 globalTransform = accumulated * (nodeTransformationA + nodeTransformationB); // Apply matrix to accumulated transform down the tree.
 
 	// if it was an actual bone - apply it to the transform buffer that gets sent to the vertex shader.
 	if (bufferIndex != model->boneStructure->boneMapping.end())
@@ -152,7 +179,7 @@ void ComponentAnimator::ProcessNode(float frameTime, int animationIndex, Object*
 
 	// Process children.
 	for (auto c : node->children)
-		ProcessNode(frameTime, animationIndex, c, globalTransform);
+		ProcessNode(c, globalTransform);
 
 }
 
@@ -171,5 +198,24 @@ void ComponentAnimator::StartAnimation(string name, bool loop)
 			animationName = name;
 			selectedAnimation = i;
 		}
+	}
+}
+
+void ComponentAnimator::AnimationState::Update(float delta)
+{
+	position += delta * animationSpeedScale * animation->ticksPerSecond;
+	if (position > animation->duration)
+	{
+		if (looping)
+			position -= animation->duration;
+		else
+			position = animation->duration;
+	}
+	else if (position < 0.0f)
+	{
+		if (looping)
+			position += animation->duration;
+		else
+			position = 0.0f;
 	}
 }
