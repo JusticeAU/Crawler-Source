@@ -1,9 +1,10 @@
 #include "Animation.h"
 
-mat4 Animation::AnimationChannel::GetTransformation(float t)
+Animation::AnimationKey Animation::AnimationChannel::GetKeyAtTime(float t)
 {
 	AnimationKey* to = nullptr; // in is the frame we are lerping in to.
 	AnimationKey* from = nullptr;
+	AnimationKey key;
 
 	for (int i = 0; i < keys.size(); i++)
 	{
@@ -21,13 +22,10 @@ mat4 Animation::AnimationChannel::GetTransformation(float t)
 		float t2 = (t - from->time) / (to->time - from->time);
 
 		// mix transformations based on t2 and return combination.
-		mat4 scale = glm::scale(mat4(1), glm::mix(from->scale, to->scale, t2));					// generate mixed scale matrix		
-		mat4 rotate = glm::mat4_cast(glm::slerp(from->rotation, to->rotation, t2));					// generate mixed rotation matrix
-		mat4 translate = glm::translate(mat4(1), glm::mix(from->position, to->position, t2));	// generate mixed translation matrix
-		return translate * rotate * scale;															// combine
+		key.scale = glm::mix(from->scale, to->scale, t2);					// generate mixed scale		
+		key.rotation = glm::slerp(from->rotation, to->rotation, t2);		// generate mixed rotation
+		key.position = glm::mix(from->position, to->position, t2);			// generate mixed translation
 	}
-	else
-	{
-		return mat4(1);
-	}
+	
+	return key;
 }

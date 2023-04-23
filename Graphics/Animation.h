@@ -35,7 +35,7 @@ public:
 		string name;
 		vector<AnimationKey> keys; // keys are stored in order, but are displaced by their duration. key 1-2 might have a bigger gap than key 2-3. GetTransformation handles this.
 
-		mat4 GetTransformation(float t);
+		AnimationKey GetKeyAtTime(float t);
 	};
 
 	string name;

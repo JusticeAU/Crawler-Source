@@ -113,25 +113,39 @@ void ComponentAnimationBlender::ProcessNode(float frameTimeA, int animationIndex
 {
 	// look up if node has a matching bone mapping.
 	string nodeName = node->objectName;
-	mat4 nodeTransformationA = node->localTransform * weightAB; // assume it doesnt at first and just use its local transform. (which should be its base offset data)
-	mat4 nodeTransformationB = node->localTransform * (1 - weightAB);
+	mat4 nodeTransformation = node->localTransform; // Assume it doesnt at first and just use its local transform. (which should be its base offset data)
+	Animation::AnimationKey key;
 
 	auto bufferIndex = model->boneStructure->boneMapping.find(nodeName); // first search the bonemap for a valid index. We can't do anything with the data if it's not mapped in to the buffer.
 	if (bufferIndex != model->boneStructure->boneMapping.end()) // if it has one, look up its keyframe data.
 	{
 		// Get key from animation
-		auto channelA = model->animations[animationIndexA]->channels.find(nodeName);
-		if (channelA != model->animations[animationIndexA]->channels.end())
-			nodeTransformationA = channelA->second.GetTransformation(frameTimeA) * weightAB;
+		Animation::AnimationKey A;
+		auto channelA = model->animations[animationA]->channels.find(nodeName);
+		if (channelA != model->animations[animationA]->channels.end())
+			A = channelA->second.GetKeyAtTime(animationATime);
+		
+		Animation::AnimationKey B;
 
-		auto channelB = model->animations[animationIndexB]->channels.find(nodeName);
-		if (channelB != model->animations[animationIndexB]->channels.end())
-			nodeTransformationB = channelB->second.GetTransformation(frameTimeB) * (1 - weightAB);
+		auto channelB = model->animations[animationB]->channels.find(nodeName);
+		if (channelB != model->animations[animationB]->channels.end())
+		{
+			B = channelB->second.GetKeyAtTime(animationBTime);
+			Animation::AnimationKey mixed;
+			mixed.scale = glm::mix(A.scale, B.scale, weightAB);					// generate mixed scale		
+			mixed.rotation = glm::slerp(A.rotation, B.rotation, weightAB);		// generate mixed rotation
+			mixed.position = glm::mix(A.position, B.position, weightAB);			// generate mixed translation
+			
+			mat4 scale = glm::scale(mat4(1), mixed.scale);					// generate mixed scale matrix		
+			mat4 rotate = glm::mat4_cast(mixed.rotation);					// generate mixed rotation matrix
+			mat4 translate = glm::translate(mat4(1), mixed.position);	// generate mixed translation matrix
+			nodeTransformation = translate * rotate * scale;
+		}
 
 
 	}
 
-	mat4 globalTransform = accumulated * (nodeTransformationA + nodeTransformationB); // Apply matrix to accumulated transform down the tree.
+	mat4 globalTransform = accumulated * nodeTransformation; // Apply matrix to accumulated transform down the tree.
 
 	// if it was an actual bone - apply it to the transform buffer that gets sent to the vertex shader.
 	if (bufferIndex != model->boneStructure->boneMapping.end())
