@@ -19,7 +19,8 @@ enum ComponentType
 	Component_Material,
 	Component_Light,
 	Component_Camera,
-	Component_FPSTest
+	Component_FPSTest,
+	Component_AnimationBlender
 };
 
 class Component
@@ -40,6 +41,8 @@ public:
 	virtual void OnParentChange() {};
 
 	const Object* GetComponentParentObject() { return componentParent; }
+
+	bool markedForDeletion = false;
 
 protected:
 	Component(string name, ComponentType type, Object* parent) : componentName(name), componentType(type), componentParent(parent) {};

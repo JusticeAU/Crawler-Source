@@ -10,7 +10,7 @@ void ComponentFactory::Init()
     components.push_back("Point Light (Not Yet Implemented)");
     components.push_back("Camera");
     components.push_back("FPSTest");
-
+    components.push_back("AnimationBlender");
 
 }
 
@@ -34,7 +34,8 @@ Component* ComponentFactory::NewComponent(Object* parent, int componentIndex)
         return new ComponentCamera(parent);
     case 7:
         return new ComponentFPSTest(parent);
-
+    case 8:
+        return new ComponentAnimationBlender(parent);
     }
 }
 

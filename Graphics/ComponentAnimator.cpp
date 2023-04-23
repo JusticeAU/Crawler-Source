@@ -17,6 +17,7 @@ ComponentAnimator::~ComponentAnimator()
 {
 	delete boneTransforms;
 	delete boneTransfomBuffer;
+	AnnounceChange();
 }
 
 void ComponentAnimator::Update(float delta)

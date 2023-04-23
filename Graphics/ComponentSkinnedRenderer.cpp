@@ -1,6 +1,7 @@
 #include "ComponentSkinnedRenderer.h"
 #include "ShaderProgram.h"
 #include "ComponentAnimator.h"
+#include "ComponentAnimationBlender.h"
 #include "UniformBuffer.h"
 
 ComponentSkinnedRenderer::ComponentSkinnedRenderer(Object* parent) : ComponentRenderer(parent)
@@ -24,14 +25,17 @@ void ComponentSkinnedRenderer::Draw(mat4 pv, vec3 position)
 		SetUniforms();
 		ApplyTexture();
 		ApplyMaterials();
-		if(animator)
-			BindBoneTransform(); // This is one is added on top of ComponentRenderer.
+		
+		BindBoneTransform(); // This is one is added on top of ComponentRenderer.
 		DrawModel();
 	}
 }
 
 void ComponentSkinnedRenderer::OnParentChange()
 {
+	animator = nullptr;
+	animationBlender = nullptr;
+
 	ComponentRenderer::OnParentChange();
 
 	Component* component = componentParent->GetComponent(Component_Animator);
@@ -39,13 +43,18 @@ void ComponentSkinnedRenderer::OnParentChange()
 	{
 		animator = static_cast<ComponentAnimator*>(component);
 	}
+	else
+	{
+		component = componentParent->GetComponent(Component_AnimationBlender);
+		animationBlender = static_cast<ComponentAnimationBlender*>(component);
+	}
 }
 
 void ComponentSkinnedRenderer::BindBoneTransform()
 {
 	// skinned mesh rendering
-	shader->SetIntUniform("selectedBone", animator->selectedBone); // dev testing really, used by boneWeights shader
-	if (animator->boneTransfomBuffer != nullptr)
+	//shader->SetIntUniform("selectedBone", animator->selectedBone); // dev testing really, used by boneWeights shader
+	if (animator != nullptr && animator->boneTransfomBuffer != nullptr)
 	{
 		// get the shader uniform block index and set binding point - we'll just hardcode 0 for this.
 		shader->SetUniformBlockIndex("boneTransformBuffer", 0);
@@ -59,5 +68,12 @@ void ComponentSkinnedRenderer::BindBoneTransform()
 
 		// Technically, all animated models can share the same boneTransformBuffer and just keep uploading their data in to it every frame.
 		// A dedicated animation system could provide a single global buffer for the shader for this.
+	}
+
+	if (animationBlender != nullptr && animationBlender->boneTransfomBuffer != nullptr)
+	{
+		shader->SetUniformBlockIndex("boneTransformBuffer", 0);
+		animationBlender->boneTransfomBuffer->Bind(0);
+		animationBlender->boneTransfomBuffer->SendData(animationBlender->boneTransforms);
 	}
 }

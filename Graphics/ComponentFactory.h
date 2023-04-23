@@ -5,6 +5,8 @@
 #include "ComponentSkinnedRenderer.h"
 #include "ComponentCamera.h"
 #include "ComponentFPSTest.h"
+#include "ComponentAnimationBlender.h"
+
 #include <vector>
 #include <string>
 

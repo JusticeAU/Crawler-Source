@@ -169,6 +169,7 @@ void Object::DrawGUI()
 					if (ImGui::Button("Delete"))
 					{
 						Component* comp = components[i];
+						comp->markedForDeletion = true;
 						delete comp;
 						components.erase(components.begin() + i);
 						i--;
@@ -365,7 +366,7 @@ Component* Object::GetComponent(ComponentType type)
 {
 	for (auto component : components)
 	{
-		if (component->GetType() == type)
+		if (component->GetType() == type && !component->markedForDeletion)
 			return component;
 	}
 

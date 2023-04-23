@@ -4,6 +4,7 @@
 
 class Camera;
 class ComponentAnimator;
+class ComponentAnimationBlender;
 
 using glm::mat4;
 using glm::vec3;
@@ -20,4 +21,5 @@ public:
 	void BindBoneTransform();
 protected:
 	ComponentAnimator* animator = nullptr;
+	ComponentAnimationBlender* animationBlender = nullptr;
 };
