@@ -61,6 +61,9 @@ public:
 	vector<FrameBuffer*> cameras;
 protected:
 	Scene();
+	string sceneSubfolder = "scenes/";
+	string sceneFilename = "default.scene";
+
 	vec3 clearColour;
 	int objectCount = 0;
 

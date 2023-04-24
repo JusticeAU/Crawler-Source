@@ -147,6 +147,9 @@ void Scene::DrawGUI()
 	ImGui::SameLine();
 	if (ImGui::Button("Load"))
 		Load();
+	ImGui::SameLine();
+	ImGui::InputText("Name", &sceneFilename);
+
 
 	if (ImGui::InputInt("Camera Number", &cameraIndex, 1))
 	{
@@ -293,7 +296,7 @@ int Scene::GetNumPointLights()
 void Scene::Save()
 {
 	// Create/Open file for writing
-	std::ofstream out("scenes/default.scene", std::ofstream::binary);
+	std::ofstream out((sceneSubfolder+sceneFilename).c_str(), std::ofstream::binary);
 
 	// Serialize Scene Configuration
 	
@@ -329,7 +332,7 @@ void Scene::Load()
 {
 
 	// Create/Open file for writing
-	std::ifstream in("scenes/default.scene", std::ifstream::binary);
+	std::ifstream in((sceneSubfolder+sceneFilename).c_str(), std::ifstream::binary);
 
 	// Serialize Scene Configuration
 	
