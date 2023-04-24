@@ -24,8 +24,8 @@ void ComponentFPSTest::Update(float delta)
 	{
 		fireDown = true;
 		clipRounds -= 1;
-		animator->StartAnimation("Armature|FPS_Pistol_Fire");
-		nextAnimation = "Armature|FPS_Pistol_Idle";
+		animator->StartAnimation("models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Fire");
+		nextAnimation = "models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Idle";
 		nextLooping = true;
 		nextAnimTime = 0.3f;
 	}
@@ -35,22 +35,22 @@ void ComponentFPSTest::Update(float delta)
 	{
 		reloadDown = true;
 		clipRounds = clipCapacity;
-		animator->StartAnimation("Armature|FPS_Pistol_Reload_full");
-		nextAnimation = "Armature|FPS_Pistol_Idle";
+		animator->StartAnimation("models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Reload_full");
+		nextAnimation = "models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Idle";
 		nextLooping = true;
 		nextAnimTime = 1.6f;
 	}
 	if (!glfwGetKey(window, GLFW_KEY_R))
 		reloadDown = false;
 
-	if (glfwGetKey(window, GLFW_KEY_W) && animator->animationName == "Armature|FPS_Pistol_Idle")
+	if (glfwGetKey(window, GLFW_KEY_W) && animator->animationName == "models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Idle")
 	{
-		animator->StartAnimation("Armature|FPS_Pistol_Walk", true);
+		animator->BlendToAnimation("models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Walk", 0.25f, 0.0f, true);
 		nextAnimation = "";
 	}
-	else if (!glfwGetKey(window, GLFW_KEY_W) && animator->animationName == "Armature|FPS_Pistol_Walk")
+	else if (!glfwGetKey(window, GLFW_KEY_W) && animator->animationName == "models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Walk")
 	{
-		animator->StartAnimation("Armature|FPS_Pistol_Idle", true);
+		animator->BlendToAnimation("models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Idle", 0.25f, 0.0f, true);
 	}
 
 

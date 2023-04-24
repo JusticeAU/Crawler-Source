@@ -33,6 +33,15 @@ Model* ModelManager::GetModel(string name)
         return iterator->second;
 }
 
+Animation* ModelManager::GetAnimation(string name)
+{
+	auto iterator = s_instance->animations.find(name);
+	if (iterator == s_instance->animations.end())
+		return nullptr;
+	else
+		return iterator->second;
+}
+
 void ModelManager::DrawGUI()
 {
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);

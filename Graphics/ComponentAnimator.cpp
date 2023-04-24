@@ -203,20 +203,29 @@ void ComponentAnimator::ProcessNode(Object* node, mat4 accumulated)
 
 void ComponentAnimator::StartAnimation(string name, bool loop)
 {
-	
+	Animation* animation = ModelManager::GetAnimation(name);
+	if (animation == nullptr)
+		return;
 
-	for (int i = 0; i < model->animations.size(); i++)
-	{
-		if (model->animations[i]->name == name)
-		{
-			animationTime = 0.0f;
-			playAnimation = true;
-			loopAnimation = loop;
+	AnimationState* newAnimation = new AnimationState();
+	newAnimation->animation = animation;
+	newAnimation->looping = loop;
+	animationName = name;
+	current = newAnimation;
+}
 
-			animationName = name;
-			selectedAnimation = i;
-		}
-	}
+void ComponentAnimator::BlendToAnimation(string name, float time, float offset, bool loop)
+{
+	Animation* animation = ModelManager::GetAnimation(name);
+	if (animation == nullptr)
+		return;
+
+	AnimationState* newAnimation = new AnimationState();
+	newAnimation->animation = animation;
+	newAnimation->looping = loop;
+	animationName = name;
+	next = newAnimation;
+	transitionTime = time;
 }
 
 void ComponentAnimator::AnimationState::Update(float delta)

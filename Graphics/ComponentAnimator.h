@@ -34,6 +34,7 @@ public:
 	void ProcessNode(Object* node, mat4 accumulated);
 
 	void StartAnimation(string name, bool loop = false);
+	void BlendToAnimation(string name, float transitionTime, float offset = 0.0f, bool loop = false);
 
 	struct AnimationState
 	{
