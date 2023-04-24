@@ -22,10 +22,11 @@ Animation::AnimationKey Animation::AnimationChannel::GetKeyAtTime(float t)
 		float t2 = (t - from->time) / (to->time - from->time);
 
 		// mix transformations based on t2 and return combination.
+		key.time = t;
 		key.scale = glm::mix(from->scale, to->scale, t2);					// generate mixed scale		
 		key.rotation = glm::slerp(from->rotation, to->rotation, t2);		// generate mixed rotation
 		key.position = glm::mix(from->position, to->position, t2);			// generate mixed translation
 	}
-	
+
 	return key;
 }

@@ -87,7 +87,7 @@ void ComponentAnimator::DrawGUI()
 						next = new AnimationState();
 						next->animation = a.second;
 						next->looping = true;
-						next->position = current->position;
+						//next->position = current->position; // just assume the blended animation is in sync timing wise. like a walk cycle
 					}
 
 					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -161,7 +161,13 @@ void ComponentAnimator::ProcessNode(Object* node, mat4 accumulated)
 		Animation::AnimationKey A;
 		auto channelA = current->animation->channels.find(nodeName);
 		if (channelA != current->animation->channels.end())
+		{
 			A = channelA->second.GetKeyAtTime(current->position);
+			mat4 scale = glm::scale(mat4(1), A.scale);					// generate mixed scale matrix		
+			mat4 rotate = glm::mat4_cast(A.rotation);					// generate mixed rotation matrix
+			mat4 translate = glm::translate(mat4(1), A.position);	// generate mixed translation matrix
+			nodeTransformation = translate * rotate * scale;
+		}
 		
 		Animation::AnimationKey B;
 		if (next != nullptr)
@@ -181,14 +187,6 @@ void ComponentAnimator::ProcessNode(Object* node, mat4 accumulated)
 				nodeTransformation = translate * rotate * scale;
 			}
 		}
-		else
-		{
-			mat4 scale = glm::scale(mat4(1), A.scale);					// generate mixed scale matrix		
-			mat4 rotate = glm::mat4_cast(A.rotation);					// generate mixed rotation matrix
-			mat4 translate = glm::translate(mat4(1), A.position);	// generate mixed translation matrix
-			nodeTransformation = translate * rotate * scale;
-		}
-
 	}
 
 	mat4 globalTransform = accumulated * nodeTransformation; // Apply matrix to accumulated transform down the tree.

@@ -24,10 +24,10 @@ class Animation // an animation contains some meta data and a collection of chan
 public:
 	struct AnimationKey // a key is a keyframe of information about a particular bone.
 	{
-		float time;
-		vec3 position;
-		quat rotation;
-		vec3 scale;
+		float time = 0.0f;
+		vec3 position = vec3(0);
+		quat rotation = quat();
+		vec3 scale = vec3(0);;
 	};
 
 	struct AnimationChannel // a channel describes animation keys for a particular bone.
