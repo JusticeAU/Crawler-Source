@@ -15,7 +15,7 @@ Camera::Camera(float aspect, GLFWwindow* window, string name)
 	this->window = window;
 
 	this->name = name;
-	vec2 vp = Window::GetViewPortSize();
+	glm::ivec2 vp = Window::GetViewPortSize();
 	frameBuffer = new FrameBuffer(vp.x, vp.y, true);
 
 	UpdateMatrix();

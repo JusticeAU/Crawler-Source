@@ -28,8 +28,8 @@ public:
 	vector<Mesh*> meshes;
 	vector<Animation*> animations;
 	
-	Object* childNodes;
-	BoneStructure* boneStructure;
+	Object* childNodes = nullptr;
+	BoneStructure* boneStructure = nullptr;
 
 	void Draw();
 };

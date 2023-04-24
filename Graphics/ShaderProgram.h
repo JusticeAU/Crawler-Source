@@ -22,12 +22,12 @@ public:
 
 	void SetUniformBlockIndex(string uniformBlockName, const unsigned int index);
 protected:
-	GLuint vertexShaderID;
-	GLuint fragmentShaderID;
-	GLuint shaderProgramID;
+	GLuint vertexShaderID = 0;
+	GLuint fragmentShaderID = 0;
+	GLuint shaderProgramID = 0;
 
-	string vertFilename;
-	string fragFilename;
+	string vertFilename = "";
+	string fragFilename ="";
 
 	bool loaded = true;
 };

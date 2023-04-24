@@ -37,6 +37,8 @@ Component* ComponentFactory::NewComponent(Object* parent, int componentIndex)
     case 8:
         return new ComponentAnimationBlender(parent);
     }
+
+    return nullptr; // shouldn't get here
 }
 
 Component* ComponentFactory::ReadComponent(Object* parent, std::istream& istream, ComponentType type)
@@ -57,8 +59,11 @@ Component* ComponentFactory::ReadComponent(Object* parent, std::istream& istream
         return nullptr;
     case Component_Camera:
         return new ComponentCamera(parent, istream);
-
+    default:
+        return nullptr;
     }
+
+    return nullptr; // shouldn't get here
 }
 
 vector<string> ComponentFactory::components;

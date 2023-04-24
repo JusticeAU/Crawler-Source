@@ -19,7 +19,7 @@ ComponentCamera::ComponentCamera(Object* parent) : Component("Camera", Component
 	matrix = projection * view;
 	
 	// Initilise framebuffers. We create two initially. 1 to render the scene to, then a 2nd for the final post processing effects to land to.
-	glm::vec2 vp = Window::GetViewPortSize();
+	glm::ivec2 vp = Window::GetViewPortSize();
 	m_frameBufferRaw = new FrameBuffer(vp.x, vp.y, true);
 	TextureManager::s_instance->AddFrameBuffer(componentParent->objectName.c_str(), m_frameBufferRaw); // add the texture to the manager so we can bind it to meshes and stuff.
 	

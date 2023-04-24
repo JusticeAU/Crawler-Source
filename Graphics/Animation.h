@@ -32,16 +32,16 @@ public:
 
 	struct AnimationChannel // a channel describes animation keys for a particular bone.
 	{
-		string name;
+		string name = "";
 		vector<AnimationKey> keys; // keys are stored in order, but are displaced by their duration. key 1-2 might have a bigger gap than key 2-3. GetTransformation handles this.
 
 		AnimationKey GetKeyAtTime(float t);
 	};
 
-	string name;
-	float duration;
-	float ticksPerSecond;
-	int numChannels;
+	string name = "";
+	float duration = 0.0f;
+	float ticksPerSecond = 0.0f;
+	int numChannels = 0;
 	map<string, AnimationChannel> channels;
 };
 
