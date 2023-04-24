@@ -1,6 +1,5 @@
 #include "Scene.h"
 #include "FileUtils.h"
-#include <fstream>
 #include "ModelManager.h"
 #include "Model.h"
 #include "ComponentModel.h"
@@ -17,6 +16,10 @@
 
 #include "LogUtils.h"
 #include "PostProcess.h"
+
+#include <fstream>
+#include <filesystem>
+namespace fs = std::filesystem;
 
 Scene::Scene()
 {
@@ -146,7 +149,32 @@ void Scene::DrawGUI()
 		Save();
 	ImGui::SameLine();
 	if (ImGui::Button("Load"))
-		Load();
+	{
+		ImGui::OpenPopup("popup_load_scene");
+		//Load();
+	}
+
+	// Draw scene file list if requested
+	if (ImGui::BeginPopup("popup_load_scene"))
+	{
+		ImGui::SameLine();
+		ImGui::SeparatorText("Scene Name");
+		for (auto d : fs::recursive_directory_iterator("scenes"))
+		{
+			if (d.path().has_extension() && d.path().extension() == ".scene")
+			{
+				string foundSceneName = d.path().filename().string();
+				string foundScenePath = d.path().relative_path().string();
+				if (ImGui::Selectable(foundScenePath.c_str()))
+				{
+					sceneFilename = foundSceneName;
+					Load();
+				}
+			}
+		}
+		ImGui::EndPopup();
+	}
+
 	ImGui::SameLine();
 	ImGui::InputText("Name", &sceneFilename);
 
