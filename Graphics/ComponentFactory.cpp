@@ -59,6 +59,8 @@ Component* ComponentFactory::ReadComponent(Object* parent, std::istream& istream
         return nullptr;
     case Component_Camera:
         return new ComponentCamera(parent, istream);
+    case Component_FPSTest:
+        return new ComponentFPSTest(parent, istream);
     default:
         return nullptr;
     }
