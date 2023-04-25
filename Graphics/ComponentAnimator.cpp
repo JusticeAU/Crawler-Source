@@ -84,9 +84,7 @@ void ComponentAnimator::DrawGUI()
 					const bool is_selected = (a.second == current->animation);
 					if (ImGui::Selectable(a.first.c_str(), is_selected))
 					{
-						next = new AnimationState();
-						next->animation = a.second;
-						next->looping = true;
+						BlendToAnimation(a.first, 1.0f, 0.0f, true);
 						//next->position = current->position; // just assume the blended animation is in sync timing wise. like a walk cycle
 					}
 
@@ -216,6 +214,9 @@ void ComponentAnimator::StartAnimation(string name, bool loop)
 
 void ComponentAnimator::BlendToAnimation(string name, float time, float offset, bool loop)
 {
+	if (next != nullptr) // If we're already in the process of blending to an animation, just terminate the blend and set the next animation as current.
+		current = next;
+
 	Animation* animation = ModelManager::GetAnimation(name);
 	if (animation == nullptr)
 		return;

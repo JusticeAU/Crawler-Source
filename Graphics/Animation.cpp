@@ -6,6 +6,9 @@ Animation::AnimationKey Animation::AnimationChannel::GetKeyAtTime(float t)
 	AnimationKey* from = nullptr;
 	AnimationKey key;
 
+	if (keys.size() == 1) //Sometimes instead of having no animation data and relying on the offset - There might be a single keyframe for that bone. if thats the case just return it, no point lerping.
+		return keys[0];
+
 	for (int i = 0; i < keys.size(); i++)
 	{
 		if (keys[i].time >= t) // found key we're moving to. It is the AnimatorComponents job not to overflow this operation. (don't go beyond animation duration)
