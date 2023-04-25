@@ -41,6 +41,7 @@ public:
 	static glm::vec3* GetPointLightColours() { return &s_instance->m_pointLightColours[0]; }
 
 	static int GetCameraIndex() { return s_instance->cameraIndex; }
+	static unsigned int GetSelectedObject() { return s_instance->selectedObject; }
 	bool drawn3DGizmo = false;;
 
 	static Scene* s_instance;
@@ -92,6 +93,9 @@ protected:
 	ShaderProgram* gizmoShader = nullptr;
 	Object* lightGizmo = nullptr; // reusable object to place the light bulb model and render it.
 
-	// Post process dev
-	//vector<PostProcess*> postProcessStack;
+	// Object picking buffer dev
+	FrameBuffer* objectPickBuffer = nullptr;
+	unsigned int selectedObject = 0;
+	bool requestedObjectSelection = false;
+	glm::ivec2 requestedSelectionPosition = { 0,0 };
 };

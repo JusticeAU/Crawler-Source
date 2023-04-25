@@ -75,20 +75,21 @@ void Object::Update(float delta)
 	
 }
 
-void Object::Draw(mat4 pv, vec3 position)
+void Object::Draw(mat4 pv, vec3 position, bool picking)
 {
 	for (auto component : components)
-		component->Draw(pv, position);
+		component->Draw(pv, position, picking);
 
 	for (auto c : children)
-		c->Draw(pv, position);
+		c->Draw(pv, position, picking);
 }
 
 // Draws all Imgui data for an object in the scene window.
 void Object::DrawGUI()
 {
 	ImGui::PushID(id);
-	if (ImGui::CollapsingHeader(objectName.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
+	string headerTitle = objectName + " (" + to_string(id) + ")";
+	if (ImGui::CollapsingHeader(headerTitle.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
 	{
 		ImGui::SameLine();
 		if (ImGui::Button("Delete"))
@@ -117,18 +118,6 @@ void Object::DrawGUI()
 
 			if(dirtyTransform)
 				ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&eulerRotation, (float*)&localScale, (float*)&localTransform);
-
-			if (Scene::GetCameraIndex() == 0 && !Scene::s_instance->drawn3DGizmo)
-			{
-				// Draw Guizmo - very simple implementation - TODO have a 'selected object' context and mousewheel scroll through translate, rotate, scale options - rotate will need to be reworked.
-				ImGuizmo::SetRect(0, 0, Window::GetViewPortSize().x, Window::GetViewPortSize().y);
-				mat4 view, projection;
-				view = Camera::s_instance->GetView();
-				projection = Camera::s_instance->GetProjection();
-				if (ImGuizmo::Manipulate((float*)&view, (float*)&projection, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, (float*)&localTransform))
-					dirtyTransform = true;
-				Scene::s_instance->drawn3DGizmo = true;
-			}
 
 			ImGui::Checkbox("Rotate", &spin);
 			ImGui::SameLine();
@@ -228,6 +217,19 @@ void Object::DrawGUI()
 		}
 		ImGui::Unindent();
 	}
+	
+	if (Scene::GetSelectedObject() == id)
+	{
+		// Draw Guizmo - very simple implementation - TODO have a 'selected object' context and mousewheel scroll through translate, rotate, scale options - rotate will need to be reworked.
+		ImGuizmo::SetRect(0, 0, Window::GetViewPortSize().x, Window::GetViewPortSize().y);
+		mat4 view, projection;
+		view = Camera::s_instance->GetView();
+		projection = Camera::s_instance->GetProjection();
+		if (ImGuizmo::Manipulate((float*)&view, (float*)&projection, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, (float*)&localTransform))
+			dirtyTransform = true;
+		Scene::s_instance->drawn3DGizmo = true;
+	}
+
 	ImGui::PopID();
 }
 

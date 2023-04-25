@@ -140,6 +140,11 @@ void ShaderProgram::SetIntUniform(std::string variableName, int value)
 	GLint uniformLocation = glGetUniformLocation(shaderProgramID, variableName.c_str());
 	glUniform1i(uniformLocation, value);
 }
+void ShaderProgram::SetUIntUniform(std::string variableName, unsigned int value)
+{
+	GLint uniformLocation = glGetUniformLocation(shaderProgramID, variableName.c_str());
+	glUniform1ui(uniformLocation, value);
+}
 
 void ShaderProgram::SetUniformBlockIndex(string uniformBlockName, const unsigned int index)
 {

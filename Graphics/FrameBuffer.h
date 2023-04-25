@@ -22,6 +22,9 @@ public:
 	const bool isScreenBuffer() { return m_isScreenBuffer; }
 
 	void Resize(int width, int height);
+
+	void MakeObjectPicker();
+	unsigned int GetObjectID(int x, int y);
 protected:
 	GLuint m_fbID;
 	GLuint m_texID;
@@ -29,5 +32,6 @@ protected:
 	int m_width, m_height;
 	Texture* m_texture;
 	bool m_isScreenBuffer = false;
+	bool m_isObjectPicker = false;
 };
 

@@ -46,6 +46,11 @@ Scene::Scene()
 	// Add editor camera to list of cameras and set our main camera to be it.
 	cameras.push_back(Camera::s_instance->GetFrameBuffer());
 	outputCameraFrameBuffer = cameras[0];
+
+	// Object picking dev
+	objectPickBuffer = new FrameBuffer(1600, 900, true);
+	objectPickBuffer->MakeObjectPicker();
+	TextureManager::s_instance->AddFrameBuffer("Objecting Picking Buffer", objectPickBuffer);
 }
 
 Scene::~Scene()
@@ -67,6 +72,14 @@ void Scene::Init()
 
 void Scene::Update(float deltaTime)
 {
+	if (glfwGetMouseButton(Window::Get()->GetGLFWwindow(), 0) && !ImGuizmo::IsOver())
+	{
+		requestedObjectSelection = true;
+		double mouseX, mouseY;
+		glfwGetCursorPos(Window::Get()->GetGLFWwindow(), &mouseX, &mouseY);
+		requestedSelectionPosition = { (int)mouseX, (int)mouseY };
+	}
+
 	for (auto o : objects)
 		o->Update(deltaTime);
 
@@ -77,7 +90,6 @@ void Scene::Update(float deltaTime)
 		m_pointLightPositions[i] = m_pointLights[i].position;
 	}
 }
-
 
 // Calls Draw on all objects in the objects array, which will call draw on all of their children.
 void Scene::DrawObjects()
@@ -93,6 +105,20 @@ void Scene::DrawObjects()
 			o->Draw(c->GetViewProjectionMatrix(), cameraPosition);
 		c->RunPostProcess();
 	}
+
+	// Draw the scene to the object picking buffer.
+	if (requestedObjectSelection)
+	{
+		objectPickBuffer->BindTarget();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		for (auto& o : objects)
+			o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), true);
+
+		LogUtils::Log("Checking pixel..");
+		selectedObject = objectPickBuffer->GetObjectID(requestedSelectionPosition.x, requestedSelectionPosition.y);
+		requestedObjectSelection = false;
+	}
+
 
 	// then draw the scene using the Camera class "Editor Camera"
 	Camera::s_instance->GetFrameBuffer()->BindTarget();
@@ -178,6 +204,10 @@ void Scene::DrawGUI()
 	ImGui::SameLine();
 	ImGui::InputText("Name", &sceneFilename);
 
+	ImGui::BeginDisabled();
+	int obj = selectedObject;
+	ImGui::InputInt("Selected Object", &obj);
+	ImGui::EndDisabled();
 
 	if (ImGui::InputInt("Camera Number", &cameraIndex, 1))
 	{

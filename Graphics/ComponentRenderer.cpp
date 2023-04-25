@@ -13,6 +13,7 @@
 #include "Window.h"
 
 #include <string>
+#include "LogUtils.h"
 using std::string;
 
 ComponentRenderer::ComponentRenderer(Object* parent, std::istream& istream) : ComponentRenderer(parent)
@@ -25,12 +26,28 @@ ComponentRenderer::ComponentRenderer(Object* parent, std::istream& istream) : Co
 	material = MaterialManager::GetMaterial(materialName);
 }
 
-void ComponentRenderer::Draw(mat4 pv, vec3 position)
+void ComponentRenderer::Draw(mat4 pv, vec3 position, bool picking)
 {
 	if (model != nullptr && shader != nullptr) // At minimum we need a model and a shader to draw something.
 	{
-		BindShader();
-		BindMatricies(pv, position);
+		if (!picking)
+		{
+			BindShader();
+			BindMatricies(pv, position);
+		}
+		else
+		{
+			ShaderProgram* shad = ShaderManager::GetShaderProgram("shaders/picking");
+			shad->Bind();
+			shad->SetUIntUniform("objectID", componentParent->id);
+			glm::mat4 pvm = pv * componentParent->transform;
+
+			// Positions and Rotations
+			shad->SetMatrixUniform("pvmMatrix", pvm);
+			shad->SetMatrixUniform("mMatrix", componentParent->transform);
+			shad->SetVectorUniform("cameraPosition", position);
+		}
+
 		SetUniforms();
 		ApplyTexture();
 		ApplyMaterials();
@@ -176,6 +193,8 @@ void ComponentRenderer::SetUniforms()
 	shader->SetIntUniform("numLights", numLights);
 	shader->SetFloat3ArrayUniform("PointLightPositions", numLights, Scene::GetPointLightPositions());
 	shader->SetFloat3ArrayUniform("PointLightColours", numLights, Scene::GetPointLightColours());
+
+	shader->SetIntUniform("objectID", componentParent->id);
 }
 
 void ComponentRenderer::ApplyTexture()

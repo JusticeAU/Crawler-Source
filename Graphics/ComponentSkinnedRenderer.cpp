@@ -1,5 +1,5 @@
 #include "ComponentSkinnedRenderer.h"
-#include "ShaderProgram.h"
+#include "ShaderManager.h"
 #include "ComponentAnimator.h"
 #include "ComponentAnimationBlender.h"
 #include "UniformBuffer.h"
@@ -16,12 +16,29 @@ ComponentSkinnedRenderer::ComponentSkinnedRenderer(Object* parent, std::istream&
 	componentType = Component_SkinnedRenderer;
 }
 
-void ComponentSkinnedRenderer::Draw(mat4 pv, vec3 position)
+void ComponentSkinnedRenderer::Draw(mat4 pv, vec3 position, bool picking)
 {
 	if (model != nullptr && shader != nullptr) // At minimum we need a model and a shader to draw something.
 	{
-		BindShader();
-		BindMatricies(pv, position);
+		if (!picking)
+		{
+			BindShader();
+			BindMatricies(pv, position);
+		}
+		else
+		{
+			ShaderProgram* shad = ShaderManager::GetShaderProgram("shaders/skinnedPicking");
+			shad->Bind();
+			shad->SetUIntUniform("objectID", componentParent->id);
+			shad->SetUniformBlockIndex("boneTransformBuffer", 0);
+			glm::mat4 pvm = pv * componentParent->transform;
+
+			// Positions and Rotations
+			shad->SetMatrixUniform("pvmMatrix", pvm);
+			shad->SetMatrixUniform("mMatrix", componentParent->transform);
+			shad->SetVectorUniform("cameraPosition", position);
+		}
+		
 		SetUniforms();
 		ApplyTexture();
 		ApplyMaterials();

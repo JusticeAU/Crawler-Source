@@ -27,6 +27,8 @@ vec3 GetDiffuse(vec3 direction, vec3 colour, vec3 normal)
 	return colour * max( 0, dot( normal, -direction ) );
 }
 
+uniform int objectID;
+
 void main()
 {
 	// Normalize all direction vectors

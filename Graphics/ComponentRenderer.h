@@ -18,7 +18,7 @@ public:
 	ComponentRenderer(Object* parent) : Component("Renderer", Component_Renderer, parent) {};
 	ComponentRenderer(Object* parent, std::istream& istream);
 
-	void Draw(mat4 pv, vec3 position) override;
+	void Draw(mat4 pv, vec3 position, bool picking) override;
 
 	void DrawGUI() override;
 

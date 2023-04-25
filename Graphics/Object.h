@@ -47,7 +47,7 @@ public:
 	float spinSpeed = 10.0f;
 
 	void Update(float delta);
-	void Draw(mat4 pv, vec3 position);
+	void Draw(mat4 pv, vec3 position, bool picking = false);
 	void DrawGUI();
 	void DrawGUISimple();
 	

@@ -29,7 +29,7 @@ public:
 	virtual ~Component() {};
 
 	virtual void Update(float deltaTime) {};
-	virtual void Draw(mat4 pv, vec3 position) {};
+	virtual void Draw(mat4 pv, vec3 position, bool picking) {};
 
 	string GetName() { return componentName; };
 	ComponentType GetType() { return componentType; };
