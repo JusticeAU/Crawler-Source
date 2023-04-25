@@ -25,7 +25,7 @@ void ComponentFPSTest::Update(float delta)
 			nextAnimation = "";
 		}
 	}
-	if (glfwGetMouseButton(window, 0) && !fireDown)
+	if(Input::Mouse(0).Down())
 	{
 		fireDown = true;
 		clipRounds -= 1;
@@ -34,9 +34,8 @@ void ComponentFPSTest::Update(float delta)
 		nextLooping = true;
 		nextAnimTime = 0.3f;
 	}
-	if(!glfwGetMouseButton(window, 0))
-		fireDown = false;
-	if (glfwGetKey(window, GLFW_KEY_R) && !reloadDown)
+
+	if (Input::Keyboard(GLFW_KEY_R).Down())
 	{
 		reloadDown = true;
 		clipRounds = clipCapacity;
@@ -45,15 +44,14 @@ void ComponentFPSTest::Update(float delta)
 		nextLooping = true;
 		nextAnimTime = 1.6f;
 	}
-	if (!glfwGetKey(window, GLFW_KEY_R))
-		reloadDown = false;
 
-	if (glfwGetKey(window, GLFW_KEY_W) && animator->animationName == "models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Idle")
+
+	if (Input::Keyboard(GLFW_KEY_W).Pressed() && animator->animationName == "models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Idle")
 	{
 		animator->BlendToAnimation("models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Walk", 0.25f, 0.0f, true);
 		nextAnimation = "";
 	}
-	else if (!glfwGetKey(window, GLFW_KEY_W) && animator->animationName == "models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Walk")
+	else if (!Input::Keyboard(GLFW_KEY_W).Pressed() && animator->animationName == "models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Walk")
 	{
 		animator->BlendToAnimation("models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Idle", 0.25f, 0.0f, true);
 	}

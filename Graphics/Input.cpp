@@ -17,29 +17,70 @@ void Input::Init(GLFWwindow* window)
 
 void Input::Update()
 {
+	// update status of all buttons
+	auto& io = ImGui::GetIO();
+	if (!io.WantCaptureKeyboard)
+	{
+		for (auto& b : s_instance->keyButtons)
+		{
+			b.second.Update(s_instance->m_window);
+		}
+	}
+
+	if (!io.WantCaptureMouse)
+	{
+		for (auto& b : s_instance->mouseButtons)
+		{
+			b.second.Update(s_instance->m_window);
+		}
+	}
 
 	s_instance->m_lastMousePosition = s_instance->m_mousePosition;
 	double mouseX, mouseY;
 	glfwGetCursorPos(s_instance->m_window, &mouseX, &mouseY);
 	s_instance->m_mousePosition = { mouseX, mouseY };
 
-	if (glfwGetKey(s_instance->m_window, GLFW_KEY_F10) == GLFW_PRESS && s_instance->fullScreenReleased)
-	{
-		s_instance->fullScreenReleased = false;
+	if (Input::Keyboard(GLFW_KEY_F10).Down())
 		Window::Get()->ToggleFullscreen();
-	}
 
-	if (glfwGetKey(s_instance->m_window, GLFW_KEY_F10) == GLFW_RELEASE)
-		s_instance->fullScreenReleased = true;
-
-	if (glfwGetKey(s_instance->m_window, GLFW_KEY_F9) == GLFW_PRESS && s_instance->hideCursorReleased)
-	{
-		s_instance->hideCursorReleased = false;
+	if (Input::Keyboard(GLFW_KEY_F9).Down())
 		Window::Get()->ToggleMouseCursor();
+}
+
+Input::KeyButton& Input::Keyboard(int GLFW_KEY)
+{
+	if (s_instance->keyButtons.find(GLFW_KEY) == s_instance->keyButtons.end())
+	{
+		Input::KeyButton button;
+		button.GLFW_KEY_ = GLFW_KEY;
+		s_instance->keyButtons.emplace(GLFW_KEY, button);
 	}
 
-	if (glfwGetKey(s_instance->m_window, GLFW_KEY_F9) == GLFW_RELEASE)
-		s_instance->hideCursorReleased = true;
+	return s_instance->keyButtons[GLFW_KEY];
+}
+
+Input::MouseButton& Input::Mouse(int number)
+{
+	if (s_instance->mouseButtons.find(number) == s_instance->mouseButtons.end())
+	{
+		Input::MouseButton button;
+		button.GLFW_KEY_ = number;
+		s_instance->mouseButtons.emplace(number, button);
+	}
+
+	return s_instance->mouseButtons[number];
 }
 
 Input* Input::s_instance = nullptr;
+
+void Input::KeyButton::Update(GLFWwindow* window)
+{
+	last = down;
+	down = glfwGetKey(window, GLFW_KEY_);
+}
+
+void Input::MouseButton::Update(GLFWwindow* window)
+{
+	last = down;
+	down = glfwGetMouseButton(window, GLFW_KEY_);
+}
