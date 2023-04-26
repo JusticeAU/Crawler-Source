@@ -22,17 +22,13 @@ void Input::Update()
 	if (!io.WantCaptureKeyboard)
 	{
 		for (auto& b : s_instance->keyButtons)
-		{
-			b.second.Update(s_instance->m_window);
-		}
+			b.second.Update(s_instance->m_window, b.first);
 	}
 
 	if (!io.WantCaptureMouse)
 	{
 		for (auto& b : s_instance->mouseButtons)
-		{
-			b.second.Update(s_instance->m_window);
-		}
+			b.second.Update(s_instance->m_window, b.first);
 	}
 
 	s_instance->m_lastMousePosition = s_instance->m_mousePosition;
@@ -47,40 +43,16 @@ void Input::Update()
 		Window::Get()->ToggleMouseCursor();
 }
 
-Input::KeyButton& Input::Keyboard(int GLFW_KEY)
-{
-	if (s_instance->keyButtons.find(GLFW_KEY) == s_instance->keyButtons.end())
-	{
-		Input::KeyButton button;
-		button.GLFW_KEY_ = GLFW_KEY;
-		s_instance->keyButtons.emplace(GLFW_KEY, button);
-	}
-
-	return s_instance->keyButtons[GLFW_KEY];
-}
-
-Input::MouseButton& Input::Mouse(int number)
-{
-	if (s_instance->mouseButtons.find(number) == s_instance->mouseButtons.end())
-	{
-		Input::MouseButton button;
-		button.GLFW_KEY_ = number;
-		s_instance->mouseButtons.emplace(number, button);
-	}
-
-	return s_instance->mouseButtons[number];
-}
-
 Input* Input::s_instance = nullptr;
 
-void Input::KeyButton::Update(GLFWwindow* window)
+void Input::KeyButton::Update(GLFWwindow* window, int key)
 {
 	last = down;
-	down = glfwGetKey(window, GLFW_KEY_);
+	down = glfwGetKey(window, key);
 }
 
-void Input::MouseButton::Update(GLFWwindow* window)
+void Input::MouseButton::Update(GLFWwindow* window, int number)
 {
 	last = down;
-	down = glfwGetMouseButton(window, GLFW_KEY_);
+	down = glfwGetMouseButton(window, number);
 }

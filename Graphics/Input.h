@@ -17,26 +17,25 @@ public:
 		bool last = false;
 
 	public:
-		int GLFW_KEY_ = 0;
 		bool Down()		{ return down && !last; };
 		bool Pressed()	{ return down; };
 		bool Up()		{ return !down && last; };
 
-		virtual void Update(GLFWwindow* window);
+		virtual void Update(GLFWwindow* window, int index);
 	};
 
 	class MouseButton : public KeyButton
 	{
 	public:
-		void Update(GLFWwindow* window) override;
+		void Update(GLFWwindow* window, int index) override;
 	};
 
 public:
 	static void Init(GLFWwindow* window);
 	static void Update();
 	static vec2 GetMouseDelta() { return s_instance->m_mousePosition - s_instance->m_lastMousePosition; };
-	static KeyButton& Keyboard(int GLFW_KEY);
-	static MouseButton& Mouse(int number);
+	static KeyButton& Keyboard(int GLFW_KEY) { return s_instance->keyButtons[GLFW_KEY]; };
+	static MouseButton& Mouse(int number) { return s_instance->mouseButtons[number]; };
 
 protected:
 	Input(GLFWwindow* window);

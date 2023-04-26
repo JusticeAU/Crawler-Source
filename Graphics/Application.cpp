@@ -74,7 +74,7 @@ Application::Application()
 	int width, height;
 	glfwGetWindowSize(window->GetGLFWwindow(), &width, &height);
 	aspect = width / (float)height;
-	camera = new Camera(aspect, window->GetGLFWwindow(), "Main Camera");
+	camera = new Camera(aspect, "Main Camera");
 
 	// Load Assets
 	MeshManager::Init();

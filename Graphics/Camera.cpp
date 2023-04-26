@@ -1,8 +1,9 @@
 #include "Camera.h"
 #include "FrameBuffer.h"
 #include "Window.h"
+#include "Input.h"
 
-Camera::Camera(float aspect, GLFWwindow* window, string name)
+Camera::Camera(float aspect, string name)
 {
 	position = { -6.25, 6.5, 16.38 };
 	m_horizontal = -71.4f;
@@ -12,7 +13,6 @@ Camera::Camera(float aspect, GLFWwindow* window, string name)
 
 	if(s_instance == nullptr)
 		s_instance = this;
-	this->window = window;
 
 	this->name = name;
 	glm::ivec2 vp = Window::GetViewPortSize();
@@ -23,12 +23,12 @@ Camera::Camera(float aspect, GLFWwindow* window, string name)
 
 void Camera::Update(float delta)
 {
-	if (glfwGetMouseButton(window, 1) && !isAdjusting)
+	if (Input::Mouse(1).Down())
 	{
 		Window::Get()->SetMouseCursorHidden(true);
 		isAdjusting = true;
 	}
-	else if (!glfwGetMouseButton(window, 1) && isAdjusting)
+	else if (Input::Mouse(1).Up())
 	{
 		Window::Get()->SetMouseCursorHidden(false);
 		isAdjusting = false;
@@ -43,19 +43,19 @@ void Camera::Update(float delta)
 		// clamp to avoid gimbal lock
 		m_vertical = glm::clamp(m_vertical, -80.0f, 80.0f);
 
-		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+		if (Input::Keyboard(GLFW_KEY_A).Pressed() || Input::Keyboard(GLFW_KEY_LEFT).Pressed())
 			Move(-right * moveSpeed * delta);
-		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+		if (Input::Keyboard(GLFW_KEY_D).Pressed() || Input::Keyboard(GLFW_KEY_RIGHT).Pressed())
 			Move(right * moveSpeed * delta);
 
-		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		if (Input::Keyboard(GLFW_KEY_W).Pressed() || Input::Keyboard(GLFW_KEY_UP).Pressed())
 			Move(forward * moveSpeed * delta);
-		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		if (Input::Keyboard(GLFW_KEY_S).Pressed() || Input::Keyboard(GLFW_KEY_DOWN).Pressed())
 			Move(-forward * moveSpeed * delta);
 
-		if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		if (Input::Keyboard(GLFW_KEY_E).Pressed())
 			Move(up * moveSpeed * delta);
-		if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		if (Input::Keyboard(GLFW_KEY_Q).Pressed())
 			Move(-up * moveSpeed * delta);
 
 		UpdateMatrix();

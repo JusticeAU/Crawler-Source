@@ -13,7 +13,7 @@ class FrameBuffer;
 class Camera
 {
 public:
-	Camera(float aspect, GLFWwindow* window, string name);
+	Camera(float aspect, string name);
 	void Update(float delta);
 	void Move(glm::vec3 delta);
 	void DrawGUI();
@@ -47,8 +47,6 @@ protected:
 	glm::mat4 view;
 	glm::mat4 projection;
 	glm::mat4 matrix;
-
-	GLFWwindow* window = nullptr;
 
 	FrameBuffer* frameBuffer;
 

@@ -194,7 +194,7 @@ void Scene::DrawGUI()
 				if (ImGui::Selectable(foundScenePath.c_str()))
 				{
 					sceneFilename = foundSceneName;
-					Load();
+					Load(); // TODO - sanitize these paths properly 
 				}
 			}
 		}
