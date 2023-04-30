@@ -88,8 +88,8 @@ FrameBuffer::FrameBuffer(Type type)
 	}
 	case Type::ShadowMap:
 	{
-		m_width = 1024;
-		m_height = 1024;
+		m_width = 4096;
+		m_height = 4096;
 
 		// Generate the depth map and store in m_depthID
 		glBindTexture(GL_TEXTURE_2D, m_depthID);

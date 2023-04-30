@@ -96,6 +96,8 @@ void Scene::Update(float deltaTime)
 // Calls Draw on all objects in the objects array, which will call draw on all of their children.
 void Scene::DrawObjects()
 {
+	float startTime = glfwGetTime();
+
 	// Render Directional light to shadow map
 	shadowMap->BindTarget();
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -149,6 +151,10 @@ void Scene::DrawObjects()
 		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), Component::DrawMode::Standard);
 
 	FrameBuffer::UnBindTarget();
+
+	float endTime = glfwGetTime();
+
+	renderTime = endTime - startTime;
 }
 
 void Scene::DrawGizmos()
@@ -191,6 +197,10 @@ void Scene::DrawGUI()
 {	
 	ImGui::Begin("Shadow Map Dev");
 	ImGui::PushID(6969);
+
+	ImGui::BeginDisabled();
+	ImGui::InputFloat("Render Time", &renderTime, 0,0, "%0.6f");
+	ImGui::EndDisabled();
 
 	ImGui::DragFloat("Ortho Near",		&orthoNear);
 	ImGui::DragFloat("Ortho Far",		&orthoFar);
