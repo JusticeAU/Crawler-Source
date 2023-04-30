@@ -16,7 +16,7 @@ Camera::Camera(float aspect, string name)
 
 	this->name = name;
 	glm::ivec2 vp = Window::GetViewPortSize();
-	frameBuffer = new FrameBuffer(vp.x, vp.y, true);
+	frameBuffer = new FrameBuffer(FrameBuffer::Type::CameraTarget);
 
 	UpdateMatrix();
 }
@@ -102,11 +102,6 @@ glm::mat4 Camera::GetMatrix() { return matrix; }
 FrameBuffer* Camera::GetFrameBuffer()
 {
 	return frameBuffer;
-}
-
-void Camera::ResizeFrameBuffer(int width, int height)
-{
-	frameBuffer->Resize(width, height);
 }
 
 void Camera::UpdateMatrix()

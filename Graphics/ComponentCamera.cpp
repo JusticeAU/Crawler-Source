@@ -20,10 +20,10 @@ ComponentCamera::ComponentCamera(Object* parent) : Component("Camera", Component
 	
 	// Initilise framebuffers. We create two initially. 1 to render the scene to, then a 2nd for the final post processing effects to land to.
 	glm::ivec2 vp = Window::GetViewPortSize();
-	m_frameBufferRaw = new FrameBuffer(vp.x, vp.y, true);
+	m_frameBufferRaw = new FrameBuffer(FrameBuffer::Type::CameraTarget);
 	TextureManager::s_instance->AddFrameBuffer(componentParent->objectName.c_str(), m_frameBufferRaw); // add the texture to the manager so we can bind it to meshes and stuff.
 	
-	m_frameBufferProcessed = new FrameBuffer(vp.x, vp.y, true);
+	m_frameBufferProcessed = new FrameBuffer(FrameBuffer::Type::PostProcess);
 	Scene::s_instance->cameras.push_back(m_frameBufferProcessed);
 	string processedFBName = componentParent->objectName + "_Processed";
 	TextureManager::s_instance->AddFrameBuffer(processedFBName.c_str(), m_frameBufferProcessed);

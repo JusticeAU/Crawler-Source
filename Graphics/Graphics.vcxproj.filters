@@ -152,9 +152,6 @@
     <ClCompile Include="ComponentSkinnedRenderer.cpp">
       <Filter>Source Files\Application\Scene\Components</Filter>
     </ClCompile>
-    <ClCompile Include="FrameBuffer.cpp">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </ClCompile>
     <ClCompile Include="ComponentCamera.cpp">
       <Filter>Source Files\Application\Scene\Components</Filter>
     </ClCompile>
@@ -172,6 +169,9 @@
     </ClCompile>
     <ClCompile Include="Animation.cpp">
       <Filter>Source Files\Application\Graphics\Models</Filter>
+    </ClCompile>
+    <ClCompile Include="FrameBuffer.cpp">
+      <Filter>Source Files\Application\Graphics\Textures</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -304,9 +304,6 @@
     <ClInclude Include="ComponentSkinnedRenderer.h">
       <Filter>Source Files\Application\Scene\Components</Filter>
     </ClInclude>
-    <ClInclude Include="FrameBuffer.h">
-      <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </ClInclude>
     <ClInclude Include="ComponentCamera.h">
       <Filter>Source Files\Application\Scene\Components</Filter>
     </ClInclude>
@@ -324,6 +321,9 @@
     </ClInclude>
     <ClInclude Include="Animation.h">
       <Filter>Source Files\Application\Graphics\Models</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameBuffer.h">
+      <Filter>Source Files\Application\Graphics\Textures</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

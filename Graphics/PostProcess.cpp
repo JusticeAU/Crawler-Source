@@ -8,7 +8,7 @@
 PostProcess::PostProcess(string name) : m_name(name)
 {
 	glm::vec2 size = Window::GetViewPortSize();
-	m_frameBuffer = new FrameBuffer(size.x, size.y, true);
+	m_frameBuffer = new FrameBuffer(FrameBuffer::Type::PostProcess);
 	TextureManager::s_instance->AddFrameBuffer(name.c_str(), m_frameBuffer);
 	
 	if (s_passthroughShader == nullptr)

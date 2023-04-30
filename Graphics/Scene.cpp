@@ -48,8 +48,7 @@ Scene::Scene()
 	outputCameraFrameBuffer = cameras[0];
 
 	// Object picking dev
-	objectPickBuffer = new FrameBuffer(1600, 900, true);
-	objectPickBuffer->MakeObjectPicker();
+	objectPickBuffer = new FrameBuffer(FrameBuffer::Type::ObjectPicker);
 	TextureManager::s_instance->AddFrameBuffer("Objecting Picking Buffer", objectPickBuffer);
 }
 
@@ -72,7 +71,7 @@ void Scene::Init()
 
 void Scene::Update(float deltaTime)
 {
-	if (glfwGetMouseButton(Window::Get()->GetGLFWwindow(), 0) && !ImGuizmo::IsOver())
+	if (Input::Mouse(0).Down() && !ImGuizmo::IsOver())
 	{
 		requestedObjectSelection = true;
 		double mouseX, mouseY;

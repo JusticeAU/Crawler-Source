@@ -16,6 +16,6 @@ void WindowResizeCallback(GLFWwindow* window, int width, int height)
 	for (auto fb : *fbList)
 	{
 		if (fb.second != nullptr && fb.second->isScreenBuffer())
-			fb.second->Resize(width, height);
+			fb.second->Resize();
 	}
 }

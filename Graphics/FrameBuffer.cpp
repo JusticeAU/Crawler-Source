@@ -1,10 +1,12 @@
 #include "FrameBuffer.h"
 #include "Texture.h"
+#include "Window.h"
 
 using std::vector;
 
-FrameBuffer::FrameBuffer(int width, int height, bool screenBuffer) : m_width(width), m_height(height), m_isScreenBuffer(screenBuffer)
+FrameBuffer::FrameBuffer(Type type)
 {
+	m_type = type;
 	m_texture = new Texture();
 	// generate frame buffer, texture buffer and depth buffer.
 	glGenFramebuffers(1, &m_fbID);
@@ -13,25 +15,85 @@ FrameBuffer::FrameBuffer(int width, int height, bool screenBuffer) : m_width(wid
 
 	// Generate the texture
 	glBindTexture(GL_TEXTURE_2D, m_texID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	switch (type)
+	{
+	case Type::CameraTarget:
+	{
+		glm::ivec2 res = Window::GetViewPortSize();
+		m_width = res.x;
+		m_height = res.y;
+		m_isScreenBuffer = true;
 
-	// Generate the depth stencil
-	glBindTexture(GL_TEXTURE_2D, m_depthID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL, m_width, m_height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, res.x, res.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+		// Generate the depth stencil
+		glBindTexture(GL_TEXTURE_2D, m_depthID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL, res.x, res.y, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+		// Link
+		glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_texID, 0);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthID, 0);
+		break;
+	}
+	case Type::PostProcess:
+	{
+		glm::ivec2 res = Window::GetViewPortSize();
+		m_width = res.x;
+		m_height = res.y;
+		m_isScreenBuffer = true;
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, res.x, res.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+		// Link
+		glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_texID, 0);
+		break;
+	}
+	case Type::ObjectPicker:
+	{
+		glm::ivec2 res = Window::GetViewPortSize();
+		m_width = res.x;
+		m_height = res.y;
+		m_isScreenBuffer = true;
+
+		// generate frame buffer, texture buffer and depth buffer.
+		glGenFramebuffers(1, &m_fbID);
+		glGenTextures(1, &m_texID);
+		glGenTextures(1, &m_depthID);
+
+		// Generate the texture
+		glBindTexture(GL_TEXTURE_2D, m_texID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, res.x, res.y, 0, GL_RGB, GL_FLOAT, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+		// Generate the depth stencil
+		glBindTexture(GL_TEXTURE_2D, m_depthID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL, res.x, res.y, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+		// Link
+		glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_texID, 0);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthID, 0);
+		break;
+	}
+	case Type::ShadowMap:
+	{
+		break;
+	}
+	}
+	
 	// unbind.
 	glBindTexture(GL_TEXTURE_2D, 0);
-
-	// Link
-	glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_texID, 0);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthID, 0);
-
-	// Unbind
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	m_texture->texID = m_texID;
@@ -62,69 +124,25 @@ void FrameBuffer::UnBindTexture(int texture)
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void FrameBuffer::Resize(int width, int height)
+void FrameBuffer::Resize()
 {
-	FrameBuffer* newFB = new FrameBuffer(width, height);
+	FrameBuffer* newFB = new FrameBuffer(m_type);
 	glDeleteFramebuffers(1, &m_fbID);
 	glDeleteTextures(1, &m_texID);
 	glDeleteTextures(1, &m_depthID);
 	m_fbID = newFB->m_fbID;
 	m_texID = newFB->m_texID;
 	m_depthID = newFB->m_depthID;
-	m_width = width;
-	m_height = height;
+	m_width = newFB->m_width;
+	m_height = newFB->m_height;
 
 	m_texture->texID = newFB->m_texture->texID;
-
-	if (m_isObjectPicker) // This is bogus. do it properly once working.
-		MakeObjectPicker();
 }
-
-void FrameBuffer::MakeObjectPicker()
-{
-	m_isObjectPicker = true;
-	glDeleteFramebuffers(1, &m_fbID);
-	glDeleteTextures(1, &m_texID);
-	glDeleteTextures(1, &m_depthID);
-
-	// generate frame buffer, texture buffer and depth buffer.
-	glGenFramebuffers(1, &m_fbID);
-	glGenTextures(1, &m_texID);
-	glGenTextures(1, &m_depthID);
-
-	// Generate the texture
-	glBindTexture(GL_TEXTURE_2D, m_texID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, m_width, m_height, 0, GL_RGB, GL_FLOAT, nullptr);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	// Generate the depth stencil
-	glBindTexture(GL_TEXTURE_2D, m_depthID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL, m_width, m_height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-
-	// unbind.
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-	// Link
-	glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_texID, 0);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthID, 0);
-
-	// Unbind
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	m_texture->texID = m_texID;
-
-}
-
 
 unsigned int FrameBuffer::GetObjectID(int x, int y)
 {
-	if (!m_isObjectPicker)
-		return 6969;
+	if (m_type != Type::ObjectPicker)
+		return 0;
 
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbID);
 	glReadBuffer(GL_COLOR_ATTACHMENT0);

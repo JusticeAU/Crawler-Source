@@ -23,7 +23,6 @@ public:
 	vec3 GetPosition() { return position; };
 	void SetAspect(float value) { aspect = value; UpdateMatrix(); }
 	FrameBuffer* GetFrameBuffer();
-	void ResizeFrameBuffer(int width, int height);
 
 	static Camera* s_instance;
 
