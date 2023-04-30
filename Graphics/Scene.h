@@ -99,12 +99,12 @@ protected:
 
 	// Directional light shadow map
 	FrameBuffer* shadowMap;
-	float orthoLeft = -10.0f;
+	float orthoLeft = -13.0f;
 	float orthoRight = 10.0f;
-	float orthoBottom = -10.0f;
-	float orthoTop = 10.0f;
-	float orthoFar = 7.5f;
-	float orthoNear = 1.0f;
+	float orthoBottom = -8.0f;
+	float orthoTop = 17.0f;
+	float orthoFar = 20.0f;
+	float orthoNear = -8.5f;
 	vec3 orthoLookAt = { -2.0f, 4.0f, -1.0f };
 	vec3 orthoPosition = { 0,9,0 };
 

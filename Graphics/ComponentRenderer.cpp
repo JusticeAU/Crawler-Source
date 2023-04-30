@@ -213,6 +213,11 @@ void ComponentRenderer::SetUniforms()
 	shader->SetFloat3ArrayUniform("PointLightColours", numLights, Scene::GetPointLightColours());
 
 	shader->SetIntUniform("objectID", componentParent->id);
+
+	if (receivesShadows)
+	{
+		shader->SetFloatUniform("shadowBias", shadowBias);
+	}
 }
 
 void ComponentRenderer::ApplyTexture()
