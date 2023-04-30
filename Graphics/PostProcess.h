@@ -27,7 +27,7 @@ public:
 
 	string GetName() { return m_name; }
 
-	static void PassThrough();
+	static void PassThrough(ShaderProgram* shader = nullptr);
 protected:
 	string m_name;
 	string m_shaderName;

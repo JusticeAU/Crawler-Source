@@ -16,27 +16,45 @@ ComponentSkinnedRenderer::ComponentSkinnedRenderer(Object* parent, std::istream&
 	componentType = Component_SkinnedRenderer;
 }
 
-void ComponentSkinnedRenderer::Draw(mat4 pv, vec3 position, bool picking)
+void ComponentSkinnedRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 {
 	if (model != nullptr && shader != nullptr) // At minimum we need a model and a shader to draw something.
 	{
-		if (!picking)
+		switch (mode)
 		{
-			BindShader();
-			BindMatricies(pv, position);
-		}
-		else
-		{
-			ShaderProgram* shad = ShaderManager::GetShaderProgram("shaders/skinnedPicking");
-			shad->Bind();
-			shad->SetUIntUniform("objectID", componentParent->id);
-			shad->SetUniformBlockIndex("boneTransformBuffer", 0);
-			glm::mat4 pvm = pv * componentParent->transform;
+			case DrawMode::Standard:
+			{
+				BindShader();
+				BindMatricies(pv, position);
+				break;
+			}
+			case DrawMode::ObjectPicking:
+			{
+				ShaderProgram* shad = ShaderManager::GetShaderProgram("shaders/skinnedPicking");
+				shad->Bind();
+				shad->SetUIntUniform("objectID", componentParent->id);
+				shad->SetUniformBlockIndex("boneTransformBuffer", 0);
+				glm::mat4 pvm = pv * componentParent->transform;
 
-			// Positions and Rotations
-			shad->SetMatrixUniform("pvmMatrix", pvm);
-			shad->SetMatrixUniform("mMatrix", componentParent->transform);
-			shad->SetVectorUniform("cameraPosition", position);
+				// Positions and Rotations
+				shad->SetMatrixUniform("pvmMatrix", pvm);
+				shad->SetMatrixUniform("mMatrix", componentParent->transform);
+				shad->SetVectorUniform("cameraPosition", position);
+				break;
+			}
+			case DrawMode::ShadowMapping:
+			{
+				ShaderProgram* shad = ShaderManager::GetShaderProgram("shaders/simpleDepthShaderSkinned");
+				shad->Bind();
+				glm::mat4 pvm = pv * componentParent->transform;
+
+				// Positions and Rotations
+				shad->SetMatrixUniform("pvmMatrix", pvm);
+				shad->SetMatrixUniform("mMatrix", componentParent->transform);
+				shad->SetVectorUniform("cameraPosition", position);
+				// shadow mapping shader config here
+				break;
+			}
 		}
 		
 		SetUniforms();

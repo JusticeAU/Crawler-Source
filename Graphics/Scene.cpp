@@ -39,8 +39,6 @@ Scene::Scene()
 	lightGizmoRenderer->OnParentChange();
 
 	// Set up our framebuffer to render our chosen cameras framebuffer to.
-	frame = MeshManager::GetMesh("_fsQuad");
-	passthroughShad = ShaderManager::GetShaderProgram("shaders/postProcess/passThrough");
 	TextureManager::s_instance->AddFrameBuffer(Camera::s_instance->name.c_str(), Camera::s_instance->GetFrameBuffer());
 
 	// Add editor camera to list of cameras and set our main camera to be it.
@@ -50,6 +48,11 @@ Scene::Scene()
 	// Object picking dev
 	objectPickBuffer = new FrameBuffer(FrameBuffer::Type::ObjectPicker);
 	TextureManager::s_instance->AddFrameBuffer("Objecting Picking Buffer", objectPickBuffer);
+
+	// Shadow Mapping dev
+	shadowMap = new FrameBuffer(FrameBuffer::Type::ShadowMap);
+	shadowMapDevOutput = new FrameBuffer(FrameBuffer::Type::PostProcess);
+	depthMapOutputShader = ShaderManager::GetShaderProgram("shaders/zzShadowMapDev");
 }
 
 Scene::~Scene()
@@ -93,6 +96,24 @@ void Scene::Update(float deltaTime)
 // Calls Draw on all objects in the objects array, which will call draw on all of their children.
 void Scene::DrawObjects()
 {
+	// Render Directional light to shadow map
+	shadowMap->BindTarget();
+	glClear(GL_DEPTH_BUFFER_BIT);
+	// Generate shadow map VPM and camera pos
+	glm::mat4 lightProjection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, orthoNear, orthoFar);
+	glm::mat4 lightView = glm::lookAt(orthoLookAt,
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+	for (auto& o : objects)
+		o->Draw(lightSpaceMatrix, orthoPosition, Component::DrawMode::ShadowMapping);
+
+	FrameBuffer::UnBindTarget();
+	// Need to bind this texture somewhere for sampling.
+	shadowMap->BindTexture(20);
+	shadowMapDevOutput->BindTarget();
+	PostProcess::PassThrough(depthMapOutputShader);
+
 	// for each camera in each object, draw to that cameras frame buffer
 	for (auto &c : componentCameras)
 	{
@@ -101,7 +122,7 @@ void Scene::DrawObjects()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		vec3 cameraPosition = c->GetWorldSpacePosition();
 		for (auto &o : objects)
-			o->Draw(c->GetViewProjectionMatrix(), cameraPosition);
+			o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::Standard);
 		c->RunPostProcess();
 	}
 
@@ -111,7 +132,7 @@ void Scene::DrawObjects()
 		objectPickBuffer->BindTarget();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		for (auto& o : objects)
-			o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), true);
+			o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), Component::DrawMode::ObjectPicking);
 
 		LogUtils::Log("Checking pixel..");
 		selectedObject = objectPickBuffer->GetObjectID(requestedSelectionPosition.x, requestedSelectionPosition.y);
@@ -124,7 +145,7 @@ void Scene::DrawObjects()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	for (auto &o : objects)
-		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition());
+		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), Component::DrawMode::Standard);
 
 	FrameBuffer::UnBindTarget();
 }
@@ -145,14 +166,14 @@ void Scene::DrawGizmos()
 		localScale = { 0.2f, 0.2f, 0.2f, };
 		localRotation = { 0, 0, 0 };
 		ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&localRotation, (float*)&localScale, (float*)&lightGizmo->transform);
-		lightGizmo->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition());
+		lightGizmo->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), Component::DrawMode::Standard);
 	}
 
 	// Draw cameras (from gizmo list, all gizmos should move to here)
 	gizmoShader->SetVectorUniform("gizmoColour", { 1,1,1 });
 	for (auto &o : gizmos)
 	{
-		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition());
+		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), Component::DrawMode::Standard);
 	}
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -167,6 +188,21 @@ void Scene::DrawCameraToBackBuffer()
 
 void Scene::DrawGUI()
 {	
+	ImGui::Begin("Shadow Map Dev");
+	ImGui::PushID(6969);
+
+	ImGui::DragFloat("Ortho Near",		&orthoNear);
+	ImGui::DragFloat("Ortho Far",		&orthoFar);
+	ImGui::DragFloat("Ortho Left",		&orthoLeft);
+	ImGui::DragFloat("Ortho Right",		&orthoRight);
+	ImGui::DragFloat("Ortho Bottom",	&orthoBottom);
+	ImGui::DragFloat("Ortho Top",		&orthoTop);
+	ImGui::DragFloat3("Ortho Lookat",	&orthoLookAt.x);	
+	ImGui::Image((ImTextureID)(shadowMapDevOutput->GetTexture()->texID), { 512,512 }, { 0,1 }, { 1,0 });
+	
+	ImGui::PopID();
+	ImGui::End();
+
 	ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize({ 400, 900 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Scene",0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);

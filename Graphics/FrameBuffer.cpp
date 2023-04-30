@@ -88,6 +88,24 @@ FrameBuffer::FrameBuffer(Type type)
 	}
 	case Type::ShadowMap:
 	{
+		m_width = 1024;
+		m_height = 1024;
+
+		// Generate the depth map and store in m_depthID
+		glBindTexture(GL_TEXTURE_2D, m_depthID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		// Link
+		glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthID, 0);
+		
+		// Tell OpenGL explicitly that we're not rendering any colour data.
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
 		break;
 	}
 	}
@@ -115,7 +133,10 @@ void FrameBuffer::BindTarget()
 void FrameBuffer::BindTexture(int texture)
 {
 	glActiveTexture(GL_TEXTURE0 + texture);
-	glBindTexture(GL_TEXTURE_2D, m_texID);
+	if(m_type == Type::ShadowMap)
+		glBindTexture(GL_TEXTURE_2D, m_depthID);
+	else
+		glBindTexture(GL_TEXTURE_2D, m_texID);
 }
 
 void FrameBuffer::UnBindTexture(int texture)

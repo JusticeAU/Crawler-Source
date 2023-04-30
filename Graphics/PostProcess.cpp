@@ -7,7 +7,6 @@
 
 PostProcess::PostProcess(string name) : m_name(name)
 {
-	glm::vec2 size = Window::GetViewPortSize();
 	m_frameBuffer = new FrameBuffer(FrameBuffer::Type::PostProcess);
 	TextureManager::s_instance->AddFrameBuffer(name.c_str(), m_frameBuffer);
 	
@@ -52,15 +51,25 @@ void PostProcess::BindOutput()
 	m_frameBuffer->BindTexture(m_textureBindPoint);
 }
 
-void PostProcess::PassThrough()
+// Suppler a shader or a standard passthrough shader will be used.
+void PostProcess::PassThrough(ShaderProgram* shader)
 {
+	// check that the reference has been initialised first
 	if (s_passthroughShader == nullptr)
 		Init();
 
 	glDisable(GL_DEPTH_TEST);
-	s_passthroughShader->Bind();
-	s_passthroughShader->SetIntUniform("frame", 20);
-
+	if (shader == nullptr)
+	{
+		s_passthroughShader->Bind();
+		s_passthroughShader->SetIntUniform("frame", 20);
+	}
+	else
+	{
+		shader->Bind();
+		shader->SetIntUniform("frame", 20);
+	}
+	
 	// Draw the frame quad
 	glBindVertexArray(s_frame->vao);
 

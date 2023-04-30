@@ -26,10 +26,16 @@ enum ComponentType
 class Component
 {
 public:
+	enum class DrawMode
+	{
+		Standard,
+		ObjectPicking,
+		ShadowMapping
+	};
 	virtual ~Component() {};
 
 	virtual void Update(float deltaTime) {};
-	virtual void Draw(mat4 pv, vec3 position, bool picking) {};
+	virtual void Draw(mat4 pv, vec3 position, DrawMode mode) {};
 
 	string GetName() { return componentName; };
 	ComponentType GetType() { return componentType; };

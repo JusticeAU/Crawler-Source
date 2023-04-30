@@ -85,9 +85,7 @@ protected:
 	FrameBuffer* outputCameraFrameBuffer;
 	
 	// selecting which camera ('s framebuffer) we're pushing to the backbuffer and rendering it
-	ShaderProgram* passthroughShad;
 	int cameraIndex = 0;
-	Mesh* frame;
 
 	// Gizmo rendering
 	ShaderProgram* gizmoShader = nullptr;
@@ -98,4 +96,19 @@ protected:
 	unsigned int selectedObject = 0;
 	bool requestedObjectSelection = false;
 	glm::ivec2 requestedSelectionPosition = { 0,0 };
+
+	// Directional light shadow map
+	FrameBuffer* shadowMap;
+	float orthoLeft = -10.0f;
+	float orthoRight = 10.0f;
+	float orthoBottom = -10.0f;
+	float orthoTop = 10.0f;
+	float orthoFar = 7.5f;
+	float orthoNear = 1.0f;
+	vec3 orthoLookAt = { -2.0f, 4.0f, -1.0f };
+	vec3 orthoPosition = { 0,9,0 };
+
+	FrameBuffer* shadowMapDevOutput;
+	ShaderProgram* depthMapOutputShader;
+
 };

@@ -9,7 +9,6 @@
 #include "Camera.h"
 #include "Scene.h"
 #include "Model.h"
-#include "Component.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
@@ -75,13 +74,13 @@ void Object::Update(float delta)
 	
 }
 
-void Object::Draw(mat4 pv, vec3 position, bool picking)
+void Object::Draw(mat4 pv, vec3 position, Component::DrawMode mode)
 {
 	for (auto component : components)
-		component->Draw(pv, position, picking);
+		component->Draw(pv, position, mode);
 
 	for (auto c : children)
-		c->Draw(pv, position, picking);
+		c->Draw(pv, position, mode);
 }
 
 // Draws all Imgui data for an object in the scene window.

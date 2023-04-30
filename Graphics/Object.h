@@ -1,5 +1,7 @@
 #pragma once
 #include "Graphics.h"
+#include "Component.h"
+
 #include <vector>
 #include <string>
 
@@ -7,9 +9,6 @@ using glm::vec3;
 using glm::mat4;
 using std::vector;
 using std::string;
-
-class Component;
-enum ComponentType;
 
 class Camera;
 class Model;
@@ -47,7 +46,7 @@ public:
 	float spinSpeed = 10.0f;
 
 	void Update(float delta);
-	void Draw(mat4 pv, vec3 position, bool picking = false);
+	void Draw(mat4 pv, vec3 position, Component::DrawMode mode);
 	void DrawGUI();
 	void DrawGUISimple();
 	

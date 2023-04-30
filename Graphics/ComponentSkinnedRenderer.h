@@ -14,7 +14,7 @@ class ComponentSkinnedRenderer : public ComponentRenderer
 public:
 	ComponentSkinnedRenderer(Object* parent);
 	ComponentSkinnedRenderer(Object* parent, std::istream& istream);
-	void Draw(mat4 pv, vec3 position, bool picking) override;
+	void Draw(mat4 pv, vec3 position, DrawMode mode) override;
 
 	void OnParentChange() override;
 
