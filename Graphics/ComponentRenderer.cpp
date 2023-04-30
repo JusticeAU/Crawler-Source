@@ -193,6 +193,7 @@ void ComponentRenderer::BindMatricies(mat4 pv, vec3 position)
 	shader->SetMatrixUniform("pvmMatrix", pvm);
 	shader->SetMatrixUniform("mMatrix", componentParent->transform);
 	shader->SetVectorUniform("cameraPosition", position);
+	shader->SetMatrixUniform("lightSpaceMatrix", Scene::GetLightSpaceMatrix());
 }
 
 void ComponentRenderer::SetUniforms()
@@ -222,6 +223,9 @@ void ComponentRenderer::ApplyTexture()
 		texture->Bind(1);
 		shader->SetIntUniform("diffuseTex", 1);
 	}
+
+	// bind shadow map
+	shader->SetIntUniform("shadowMap", 69);
 }
 
 void ComponentRenderer::ApplyMaterials()

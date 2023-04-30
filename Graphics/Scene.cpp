@@ -114,6 +114,7 @@ void Scene::DrawObjects()
 	shadowMapDevOutput->BindTarget();
 	PostProcess::PassThrough(depthMapOutputShader);
 
+	shadowMap->BindTexture(69);
 	// for each camera in each object, draw to that cameras frame buffer
 	for (auto &c : componentCameras)
 	{
@@ -474,6 +475,14 @@ void Scene::Load()
 	}
 }
 
-
+mat4 Scene::GetLightSpaceMatrix()
+{
+	glm::mat4 lightProjection = glm::ortho(s_instance->orthoLeft, s_instance->orthoRight, s_instance->orthoBottom, s_instance->orthoTop, s_instance->orthoNear, s_instance->orthoFar);
+	glm::mat4 lightView = glm::lookAt(s_instance->orthoLookAt,
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f));
+	glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+	return lightSpaceMatrix;
+}
 
 Scene* Scene::s_instance = nullptr;

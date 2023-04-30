@@ -110,5 +110,7 @@ protected:
 
 	FrameBuffer* shadowMapDevOutput;
 	ShaderProgram* depthMapOutputShader;
+public:
+	static glm::mat4 GetLightSpaceMatrix();
 
 };
