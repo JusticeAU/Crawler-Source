@@ -53,6 +53,9 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 			}
 			case DrawMode::ShadowMapping:
 			{
+				if (!castsShadows)
+					return;
+
 				ShaderProgram* shad = ShaderManager::GetShaderProgram("shaders/simpleDepthShader");
 				shad->Bind();
 				glm::mat4 pvm = pv * componentParent->transform;
@@ -74,6 +77,7 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 
 void ComponentRenderer::DrawGUI()
 {
+	ImGui::Checkbox("Casts Shadows", &castsShadows);
 	string textureStr = "Texture##" + to_string(componentParent->id);
 	if (ImGui::BeginCombo(textureStr.c_str(), textureName.c_str()))
 	{

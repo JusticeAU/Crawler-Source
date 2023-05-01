@@ -102,11 +102,11 @@ void Scene::DrawObjects()
 	shadowMap->BindTarget();
 	glClear(GL_DEPTH_BUFFER_BIT);
 	// Generate shadow map VPM and camera pos
-	glm::mat4 lightProjection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, orthoNear, orthoFar);
-	glm::mat4 lightView = glm::lookAt(orthoLookAt,
-		glm::vec3(0.0f, 0.0f, 0.0f),
+	lightProjection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, orthoNear, orthoFar);
+	lightView = glm::lookAt(Camera::s_instance->GetPosition(),
+		Camera::s_instance->GetPosition() - glm::vec3(0.001f, 1.0f, 0.001f),
 		glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+	lightSpaceMatrix = lightProjection * lightView;
 	for (auto& o : objects)
 		o->Draw(lightSpaceMatrix, orthoPosition, Component::DrawMode::ShadowMapping);
 
@@ -487,12 +487,7 @@ void Scene::Load()
 
 mat4 Scene::GetLightSpaceMatrix()
 {
-	glm::mat4 lightProjection = glm::ortho(s_instance->orthoLeft, s_instance->orthoRight, s_instance->orthoBottom, s_instance->orthoTop, s_instance->orthoNear, s_instance->orthoFar);
-	glm::mat4 lightView = glm::lookAt(s_instance->orthoLookAt,
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f));
-	glm::mat4 lightSpaceMatrix = lightProjection * lightView;
-	return lightSpaceMatrix;
+	return s_instance->lightSpaceMatrix;
 }
 
 Scene* Scene::s_instance = nullptr;

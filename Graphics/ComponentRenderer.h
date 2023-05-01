@@ -47,6 +47,7 @@ public:
 	FrameBuffer* frameBuffer = nullptr;
 	string frameBufferName = "";
 
+	bool castsShadows = true;
 	bool receivesShadows = true;
 	float shadowBias = 0.005f;
 };
