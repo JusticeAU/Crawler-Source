@@ -12,7 +12,7 @@ uniform mat4 lightSpaceMatrix;
 out vec3 _Colour;
 out vec3 _Normal;
 out vec2 _TexCoords;
-out vec4 FragPosLightSpace;
+out vec4 _FragPosLightSpace;
 
 void main()
 {
@@ -21,5 +21,5 @@ void main()
 	_Colour = Colour;
 	_Normal = (mMatrix * vec4(Normal,0)).xyz;
 	_TexCoords = texCoords;
-	FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
+	_FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
 }

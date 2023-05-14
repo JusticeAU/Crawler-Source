@@ -6,6 +6,7 @@ in vec3 _Position;
 in vec3 _Colour;
 in vec3 _Normal;
 in vec2 _TexCoords;
+in vec4 _FragPosLightSpace;
 
 in vec3 _Tangent;
 in vec3 _BiTangent;
@@ -34,6 +35,9 @@ uniform sampler2D diffuseTex;
 uniform sampler2D specularTex;
 uniform sampler2D normalTex;
 
+uniform sampler2D shadowMap;
+uniform float shadowBias;
+
 // Functions
 vec3 GetDiffuse(vec3 direction, vec3 colour, vec3 normal)
 {
@@ -45,6 +49,39 @@ vec3 GetSpecular(vec3 direction, vec3 colour, vec3 normal, vec3 view)
 	vec3 R = reflect( direction, normal );
 	float specularTerm = pow( max( 0, dot( R, view ) ), specularPower );
 	return specularTerm * colour;
+}
+
+float ShadowCalculation(vec4 fragPosLightSpace)
+{
+	// perform perspective divide
+	vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+	projCoords = projCoords * 0.5 + 0.5;
+	
+	// if the shadow is outside of the orthographic far clip
+	if(projCoords.z > 1.0) return 0.0;
+        
+	
+	float closestDepth = texture(shadowMap, projCoords.xy).r;
+	float currentDepth = projCoords.z;
+	
+	// if we get the direction in we can do this a bit more smartly with a dot product
+	//float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);  
+	float shadow = currentDepth - shadowBias > closestDepth  ? 1.0 : 0.0;
+	
+	// Simple PCF
+	shadow = 0.0;
+	vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+	for(int x = -1; x <= 1; ++x)
+	{
+		for(int y = -1; y <= 1; ++y)
+		{
+			float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+			shadow += currentDepth - shadowBias > pcfDepth ? 1.0 : 0.0;        
+		}    
+	}
+	shadow /= 9.0;
+	
+	return shadow;
 }
 
 void main()
@@ -96,7 +133,9 @@ void main()
 	// Specular
 	vec3 texSpecular = texture(specularTex, _TexCoords).rgb;
 	vec3 specular = Ks * texSpecular * specularTotal;
+	
+	float shadow = ShadowCalculation(_FragPosLightSpace);
 
 	// Output
-	FragColour = vec4(ambient + diffuse + specular, 1);
+	FragColour = vec4((ambient + diffuse + specular) * (1.0 - shadow), 1) ;
 }

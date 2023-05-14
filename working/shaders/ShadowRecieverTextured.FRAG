@@ -5,7 +5,7 @@ out vec4 FragColour;
 in vec3 _Colour;
 in vec3 _Normal;
 in vec2 _TexCoords;
-in vec4 FragPosLightSpace;
+in vec4 _FragPosLightSpace;
 
 // first texture!
 uniform sampler2D diffuseTex;
@@ -49,7 +49,7 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 void main()
 {
 	// Calculate ShadowCalculation
-	float shadow = ShadowCalculation(FragPosLightSpace);
+	float shadow = ShadowCalculation(_FragPosLightSpace);
 	vec4 texColour = texture(diffuseTex, _TexCoords);
 	FragColour = vec4(texColour.xyz * (1.0 - shadow), 1);
 }

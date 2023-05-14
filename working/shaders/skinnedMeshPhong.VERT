@@ -21,11 +21,14 @@ out vec3 _Position;
 out vec3 _Colour;
 out vec3 _Normal;
 out vec2 _TexCoords;
+out vec4 _FragPosLightSpace;
 
 out vec3 _Tangent;
 out vec3 _BiTangent;
 
 uniform int selectedBone;
+uniform mat4 lightSpaceMatrix;
+
 
 void main()
 {
@@ -46,4 +49,6 @@ void main()
 	
 	_Colour = Colour;
 	gl_Position = pvmMatrix * posTransformed;
+	vec3 FragPos = vec3(mMatrix * vec4(posTransformed.xyz, 1.0));
+	_FragPosLightSpace = lightSpaceMatrix * vec4(FragPos, 1.0);
 }
