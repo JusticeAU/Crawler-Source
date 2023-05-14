@@ -99,14 +99,12 @@ protected:
 
 	// Directional light shadow map
 	FrameBuffer* shadowMap;
-	float orthoLeft = -50.0f;
-	float orthoRight = 50.0f;
-	float orthoBottom = -50.0f;
-	float orthoTop = 50.0f;
-	float orthoFar = 50.0f;
-	float orthoNear = -50.0f;
-	vec3 orthoLookAt = { -2.0f, 4.0f, -1.0f };
-	vec3 orthoPosition = { 0,9,0 };
+	float orthoLeft = -100.0f;
+	float orthoRight = 100.0f;
+	float orthoBottom = -100.0f;
+	float orthoTop = 100.0f;
+	float orthoFar = 120.0f;
+	float orthoNear = -120.0f;
 
 	glm::mat4 lightProjection;
 	glm::mat4 lightView;

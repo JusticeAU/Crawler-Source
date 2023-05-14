@@ -104,13 +104,14 @@ void Scene::DrawObjects()
 	// Generate shadow map VPM and camera pos
 	lightProjection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, orthoNear, orthoFar);
 	lightView = glm::lookAt(Camera::s_instance->GetPosition(),
-		Camera::s_instance->GetPosition() - glm::vec3(0.001f, 1.0f, 0.001f),
+		Camera::s_instance->GetPosition() + Scene::GetSunDirection(),
 		glm::vec3(0.0f, 1.0f, 0.0f));
 	lightSpaceMatrix = lightProjection * lightView;
 	for (auto& o : objects)
-		o->Draw(lightSpaceMatrix, orthoPosition, Component::DrawMode::ShadowMapping);
+		o->Draw(lightSpaceMatrix, { 0,0,0 }, Component::DrawMode::ShadowMapping);
 
 	FrameBuffer::UnBindTarget();
+
 	// Need to bind this texture somewhere for sampling.
 	shadowMap->BindTexture(20);
 	shadowMapDevOutput->BindTarget();
@@ -208,7 +209,6 @@ void Scene::DrawGUI()
 	ImGui::DragFloat("Ortho Right",		&orthoRight);
 	ImGui::DragFloat("Ortho Bottom",	&orthoBottom);
 	ImGui::DragFloat("Ortho Top",		&orthoTop);
-	ImGui::DragFloat3("Ortho Lookat",	&orthoLookAt.x);	
 	ImGui::Image((ImTextureID)(shadowMapDevOutput->GetTexture()->texID), { 512,512 }, { 0,1 }, { 1,0 });
 	
 	ImGui::PopID();
@@ -374,7 +374,7 @@ void Scene::SetSunColour(vec3 sunColour)
 
 vec3 Scene::GetSunDirection()
 {
-	return s_instance->m_sunDirection;
+	return glm::normalize(s_instance->m_sunDirection);
 }
 
 void Scene::SetSunDirection(vec3 sunDirection)
