@@ -117,7 +117,7 @@ void Scene::DrawObjects()
 	shadowMapDevOutput->BindTarget();
 	PostProcess::PassThrough(depthMapOutputShader);
 
-	shadowMap->BindTexture(69);
+	shadowMap->BindTexture(5);
 	// for each camera in each object, draw to that cameras frame buffer
 	for (auto &c : componentCameras)
 	{

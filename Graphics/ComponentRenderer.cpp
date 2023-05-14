@@ -234,7 +234,7 @@ void ComponentRenderer::ApplyTexture()
 	}
 
 	// bind shadow map
-	shader->SetIntUniform("shadowMap", 69);
+	shader->SetIntUniform("shadowMap", 5);
 }
 
 void ComponentRenderer::ApplyMaterials()
