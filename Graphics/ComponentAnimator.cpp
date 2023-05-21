@@ -9,12 +9,19 @@
 
 using std::to_string;
 
+ComponentAnimator::ComponentAnimator(Object* parent) : Component("Animator", Component_Animator, parent)
+{
+	current = new AnimationState();
+
+	boneTransforms = new mat4[MAX_BONES]();
+	boneTransfomBuffer = new UniformBuffer(sizeof(mat4) * MAX_BONES);
+}
+
 ComponentAnimator::ComponentAnimator(Object* parent, std::istream& istream) : ComponentAnimator(parent)
 {
 	FileUtils::ReadInt(istream, selectedAnimation);
 	FileUtils::ReadString(istream, animationName);
 	FileUtils::ReadFloat(istream, animationSpeed);
-	current = new AnimationState();
 }
 
 ComponentAnimator::~ComponentAnimator()
@@ -26,21 +33,20 @@ ComponentAnimator::~ComponentAnimator()
 
 void ComponentAnimator::Update(float delta)
 {
+	if (!model) // Can't do anything without a model.
+		return;
 
-	if (current)
-	{
-		if (current->animation == nullptr && model->animations.size() > 0)
-		{
-			current->animation = model->animations[selectedAnimation];
-		}
-		if(current->animation != nullptr)
-			current->Update(delta);
-	}
+	if (current->animation == nullptr && model->animations.size() > 0) // pick first animation if we dont have one.
+		current->animation = model->animations[selectedAnimation];
 	
-	if (next)
+	if(current->animation != nullptr)
+		current->Update(delta);
+	
+	if (next) // if we have an animation to transition to
 	{
 		next->Update(delta);
 		transitionProgress += delta;
+
 		if (transitionProgress >= transitionTime)
 		{
 			current = next;
@@ -52,14 +58,8 @@ void ComponentAnimator::Update(float delta)
 	}
 
 	// Update animation state, if we have an animation
-	if (model != nullptr && model->animations.size() > 0) // We have animations
+	if (current->animation != nullptr) // We have an animation
 	{
-		if (boneTransforms == nullptr) // only create a boneTransform matrix array and buffer if we need it.
-		{
-			boneTransforms = new mat4[MAX_BONES]();
-			boneTransfomBuffer = new UniformBuffer(sizeof(mat4) * MAX_BONES);
-		}
-
 		// Update the array of transform matricies - this is sent in to the shader when Draw is called.
 		// Actually dont need to send this argument in given that its a member function - will refactor this in to an animator component at some point.
 		UpdateBoneMatrixBuffer();

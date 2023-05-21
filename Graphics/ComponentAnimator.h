@@ -15,7 +15,7 @@ using glm::mat4;
 class ComponentAnimator : public Component
 {
 public:
-	ComponentAnimator(Object* parent) : Component("Animator", Component_Animator, parent) {};
+	ComponentAnimator(Object* parent);
 	ComponentAnimator(Object* parent, std::istream& istream);
 	
 	~ComponentAnimator();
