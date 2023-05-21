@@ -369,6 +369,31 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 		}
 	}
 
+	// Ensure all bone weights per vertex total to 1.0f 
+	for (int i = 0; i < numV; i++)
+	{
+		// Get bone count
+		int weights = 0;
+		float totalWeight = 0.0f;
+		for (int j = 0; j < 4; j++)
+		{
+			if (vertices[i].boneID[j] == -1)
+			{
+				weights = j;
+				break;
+			}
+
+			weights++;
+			totalWeight += vertices[i].boneWeight[j];
+		}
+		
+		// Divide each weight by total boneweight to scale em
+		for (int j = 0; j < weights; j++)
+		{
+			vertices[i].boneWeight[j] /= totalWeight;
+		}
+	}
+
 	// Initialise mesh in OGL
 	loadedMesh->Initialise(numV, vertices, (int)indices.size(), indices.data());
 	delete[] vertices;

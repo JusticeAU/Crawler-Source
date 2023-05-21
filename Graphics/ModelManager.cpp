@@ -98,8 +98,8 @@ void ModelManager::LoadFromFile(const char* filename)
 	importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
 
 	const aiScene* scene = importer.ReadFile(filename,
-		aiProcess_CalcTangentSpace |
-		aiProcess_FlipWindingOrder |
+		aiProcess_CalcTangentSpace	|
+		aiProcess_FlipWindingOrder	|
 		aiProcess_LimitBoneWeights);
 
 	// Create a new model to start pushing our data in to.

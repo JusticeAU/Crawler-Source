@@ -28,7 +28,7 @@ uniform float shadowBias;
 // Functions
 vec3 GetDiffuse(vec3 direction, vec3 colour, vec3 normal)
 {
-	return colour * max( 0, dot( normal, -direction ) );
+	return colour * max(0.0, dot( normal, -direction ) );
 }
 
 float ShadowCalculation(vec4 fragPosLightSpace)

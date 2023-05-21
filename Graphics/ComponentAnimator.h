@@ -3,7 +3,7 @@
 #include "Graphics.h"
 #include <string>
 
-const int MAX_BONES = 100;
+const int MAX_BONES = 200;
 
 class Model;
 class Animation;
