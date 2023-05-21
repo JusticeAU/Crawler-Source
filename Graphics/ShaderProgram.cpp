@@ -76,7 +76,10 @@ void ShaderProgram::LoadFromFiles(std::string vertFilename, std::string fragFile
 		loaded = false;
 	}
 	else
+	{
 		LogUtils::Log("Shader Link Success");
+		loaded = true;
+	}
 
 	if (loaded)
 		LogUtils::Log("Shader loaded successfully");

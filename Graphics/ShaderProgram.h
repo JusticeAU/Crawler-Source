@@ -30,5 +30,5 @@ protected:
 	string vertFilename = "";
 	string fragFilename ="";
 
-	bool loaded = true;
+	bool loaded = false;
 };
