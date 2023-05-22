@@ -32,6 +32,8 @@ public:
 	void ApplyTexture();
 	void ApplyMaterials();
 	void DrawModel();
+
+	Component* Clone(Object* parent);
 public:
 	Model* model = nullptr;
 	

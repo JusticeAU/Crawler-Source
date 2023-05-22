@@ -30,6 +30,8 @@ public:
 
 	void OnParentChange() override;
 
+	Component* Clone(Object* parent);
+
 	void UpdateBoneMatrixBuffer();
 	void ProcessNode(Object* node, mat4 accumulated);
 

@@ -48,6 +48,8 @@ public:
 
 	const Object* GetComponentParentObject() { return componentParent; }
 
+	virtual Component* Clone(Object* parent) { return nullptr; }
+
 	bool markedForDeletion = false;
 
 protected:

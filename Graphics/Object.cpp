@@ -216,17 +216,17 @@ void Object::DrawGUI()
 		}
 		ImGui::Unindent();
 	}
-	
-	if (Scene::GetSelectedObject() == id)
+	else
 	{
-		// Draw Guizmo - very simple implementation - TODO have a 'selected object' context and mousewheel scroll through translate, rotate, scale options - rotate will need to be reworked.
-		ImGuizmo::SetRect(0, 0, Window::GetViewPortSize().x, Window::GetViewPortSize().y);
-		mat4 view, projection;
-		view = Camera::s_instance->GetView();
-		projection = Camera::s_instance->GetProjection();
-		if (ImGuizmo::Manipulate((float*)&view, (float*)&projection, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, (float*)&localTransform))
-			dirtyTransform = true;
-		Scene::s_instance->drawn3DGizmo = true;
+		ImGui::SameLine();
+		if (ImGui::Button("Duplicate"))
+		{
+			Scene::DuplicateObject(this);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Delete"))
+			markedForDeletion = true;
+		
 	}
 
 	ImGui::PopID();
@@ -401,4 +401,16 @@ void Object::RecalculateTransforms()
 
 	for (auto c : children)
 		c->RecalculateTransforms();
+}
+
+Object* Object::FindObjectWithID(unsigned int id)
+{
+	if (id == this->id) return this;
+	else
+	{
+		for (auto c : children)
+			if (c->FindObjectWithID(id) != nullptr) return c;
+	}
+
+	return nullptr;
 }

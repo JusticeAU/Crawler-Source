@@ -157,7 +157,7 @@ void Application::Update(float delta)
 	camera->Update(delta);
 	
 	Scene::s_instance->Update(delta);
-	Scene::s_instance->DrawObjects();
+	Scene::s_instance->Render();
 	Scene::s_instance->DrawGizmos();
 	Scene::s_instance->DrawCameraToBackBuffer();
 

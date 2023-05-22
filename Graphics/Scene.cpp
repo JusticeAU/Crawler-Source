@@ -45,16 +45,15 @@ Scene::Scene()
 	cameras.push_back(Camera::s_instance->GetFrameBuffer());
 	outputCameraFrameBuffer = cameras[0];
 
-	// Object picking dev
+	// Object picking dev - Might be able to refactor this to be something that gets attached to a camera. It needs to be used by both scene editor camera, but also 'in game' camera - not unreasonable for these to be seperate implementations though.
 	objectPickBuffer = new FrameBuffer(FrameBuffer::Type::ObjectPicker);
 	TextureManager::s_instance->AddFrameBuffer("Objecting Picking Buffer", objectPickBuffer);
 
-	// Shadow Mapping dev
+	// Shadow Mapping dev - This will get refactored in to something more robust once I've set up PBR.
 	shadowMap = new FrameBuffer(FrameBuffer::Type::ShadowMap);
 	shadowMapDevOutput = new FrameBuffer(FrameBuffer::Type::PostProcess);
 	depthMapOutputShader = ShaderManager::GetShaderProgram("shaders/zzShadowMapDev");
 }
-
 Scene::~Scene()
 {
 	for (auto o : objects)
@@ -74,14 +73,9 @@ void Scene::Init()
 
 void Scene::Update(float deltaTime)
 {
-	if (Input::Mouse(0).Down() && !ImGuizmo::IsOver())
-	{
-		requestedObjectSelection = true;
-		double mouseX, mouseY;
-		glfwGetCursorPos(Window::Get()->GetGLFWwindow(), &mouseX, &mouseY);
-		requestedSelectionPosition = { (int)mouseX, (int)mouseY };
-	}
+	UpdateInputs();
 
+	// Updatee all Objects
 	for (auto o : objects)
 		o->Update(deltaTime);
 
@@ -92,13 +86,36 @@ void Scene::Update(float deltaTime)
 		m_pointLightPositions[i] = m_pointLights[i].position;
 	}
 }
+void Scene::UpdateInputs()
+{
+	if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_D).Down())
+		DuplicateObject(selectedObject);
 
-// Calls Draw on all objects in the objects array, which will call draw on all of their children.
-void Scene::DrawObjects()
+	if (Input::Mouse(0).Down() && !ImGuizmo::IsOver())
+	{
+		requestedObjectSelection = true;
+		double mouseX, mouseY;
+		glfwGetCursorPos(Window::Get()->GetGLFWwindow(), &mouseX, &mouseY);
+		requestedSelectionPosition = { (int)mouseX, (int)mouseY };
+	}
+}
+
+void Scene::Render()
 {
 	float startTime = glfwGetTime();
 
-	// Render Directional light to shadow map
+	RenderShadowMaps();
+	RenderSceneCameras();
+	if (requestedObjectSelection)
+		RenderObjectPicking();
+	RenderEditorCamera();
+
+	float endTime = glfwGetTime();
+
+	renderTime = endTime - startTime;
+}
+void Scene::RenderShadowMaps()
+{
 	shadowMap->BindTarget();
 	glClear(GL_DEPTH_BUFFER_BIT);
 	// Generate shadow map VPM and camera pos
@@ -111,51 +128,47 @@ void Scene::DrawObjects()
 		o->Draw(lightSpaceMatrix, { 0,0,0 }, Component::DrawMode::ShadowMapping);
 
 	FrameBuffer::UnBindTarget();
-
-	// Need to bind this texture somewhere for sampling.
+}
+void Scene::RenderSceneCameras()
+{
+	// Bind recently rendered shadowmap.
 	shadowMap->BindTexture(20);
 	shadowMapDevOutput->BindTarget();
 	PostProcess::PassThrough(depthMapOutputShader);
 
 	shadowMap->BindTexture(5);
 	// for each camera in each object, draw to that cameras frame buffer
-	for (auto &c : componentCameras)
+	for (auto& c : componentCameras)
 	{
 		c->SetAsRenderTarget();
 		c->UpdateViewProjectionMatrix();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		vec3 cameraPosition = c->GetWorldSpacePosition();
-		for (auto &o : objects)
+		for (auto& o : objects)
 			o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::Standard);
 		c->RunPostProcess();
 	}
+}
+void Scene::RenderObjectPicking()
+{
+	objectPickBuffer->BindTarget();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	for (auto& o : objects)
+		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), Component::DrawMode::ObjectPicking);
 
-	// Draw the scene to the object picking buffer.
-	if (requestedObjectSelection)
-	{
-		objectPickBuffer->BindTarget();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		for (auto& o : objects)
-			o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), Component::DrawMode::ObjectPicking);
-
-		LogUtils::Log("Checking pixel..");
-		selectedObject = objectPickBuffer->GetObjectID(requestedSelectionPosition.x, requestedSelectionPosition.y);
-		requestedObjectSelection = false;
-	}
-
-
+	SetSelectedObject(objectPickBuffer->GetObjectID(requestedSelectionPosition.x, requestedSelectionPosition.y));
+	requestedObjectSelection = false;
+}
+void Scene::RenderEditorCamera()
+{
 	// then draw the scene using the Camera class "Editor Camera"
 	Camera::s_instance->GetFrameBuffer()->BindTarget();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	for (auto &o : objects)
+	for (auto& o : objects)
 		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), Component::DrawMode::Standard);
 
 	FrameBuffer::UnBindTarget();
-
-	float endTime = glfwGetTime();
-
-	renderTime = endTime - startTime;
 }
 
 void Scene::DrawGizmos()
@@ -187,13 +200,11 @@ void Scene::DrawGizmos()
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	FrameBuffer::UnBindTarget();
 }
-
 void Scene::DrawCameraToBackBuffer()
 {
 	outputCameraFrameBuffer->BindTexture(20);
 	PostProcess::PassThrough();
 }
-
 void Scene::DrawGUI()
 {	
 	ImGui::Begin("Shadow Map Dev");
@@ -251,7 +262,7 @@ void Scene::DrawGUI()
 	ImGui::InputText("Name", &sceneFilename);
 
 	ImGui::BeginDisabled();
-	int obj = selectedObject;
+	int obj = selectedObjectID;
 	ImGui::InputInt("Selected Object", &obj);
 	ImGui::EndDisabled();
 
@@ -317,6 +328,18 @@ void Scene::DrawGUI()
 		o->DrawGUI();
 
 	ImGui::End();
+
+	if (Scene::GetSelectedObject() > 0)
+	{
+		// Draw Guizmo - very simple implementation - TODO have a 'selected object' context and mousewheel scroll through translate, rotate, scale options - rotate will need to be reworked.
+		ImGuizmo::SetRect(0, 0, Window::GetViewPortSize().x, Window::GetViewPortSize().y);
+		mat4 view, projection;
+		view = Camera::s_instance->GetView();
+		projection = Camera::s_instance->GetProjection();
+		if (ImGuizmo::Manipulate((float*)&view, (float*)&projection, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, (float*)&s_instance->selectedObject->localTransform))
+			s_instance->selectedObject->dirtyTransform = true;
+		Scene::s_instance->drawn3DGizmo = true;
+	}
 }
 
 // This will destroy all objects (and their children) marked for deletion.
@@ -348,11 +371,27 @@ Object* Scene::CreateObject(Object* parent)
 
 	return o;
 }
-
 Object* Scene::CreateObject(string name, Object* parent)
 {
 	Object* o = Scene::CreateObject(parent);
 	o->objectName = name;
+	return o;
+}
+Object* Scene::DuplicateObject(Object* object)
+{
+	Object* o = CreateObject(object->parent);
+	o->objectName = object->objectName;
+
+	for (auto component : object->components)
+	{
+		o->components.push_back(component->Clone(o));
+	}
+
+	o->localTransform = object->localTransform;
+	o->dirtyTransform = true;
+	o->RefreshComponents();
+	SetSelectedObject(o->id);
+
 	return o;
 }
 
@@ -366,7 +405,6 @@ vec3 Scene::GetSunColour()
 {
 	return s_instance->m_sunColour;
 }
-
 void Scene::SetSunColour(vec3 sunColour)
 {
 	s_instance->m_sunColour = sunColour;
@@ -376,7 +414,6 @@ vec3 Scene::GetSunDirection()
 {
 	return glm::normalize(s_instance->m_sunDirection);
 }
-
 void Scene::SetSunDirection(vec3 sunDirection)
 {
 	s_instance->m_sunDirection = sunDirection;
@@ -386,7 +423,6 @@ vec3 Scene::GetAmbientLightColour()
 {
 	return s_instance->m_ambientColour;
 }
-
 void Scene::SetAmbientLightColour(vec3 ambientColour)
 {
 	s_instance->m_ambientColour = ambientColour;
@@ -395,6 +431,22 @@ void Scene::SetAmbientLightColour(vec3 ambientColour)
 int Scene::GetNumPointLights()
 {
 	return (int)s_instance->m_pointLights.size();
+}
+
+void Scene::SetSelectedObject(unsigned int selected)
+{
+	s_instance->selectedObjectID = selected;
+	s_instance->selectedObject = Scene::FindObjectWithID(selected);
+}
+
+Object* Scene::FindObjectWithID(unsigned int id)
+{
+	for (auto o : s_instance->objects)
+	{
+		if (o->FindObjectWithID(id) != nullptr) return o;
+	}
+
+	return nullptr;
 }
 
 void Scene::Save()

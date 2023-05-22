@@ -16,6 +16,8 @@ public:
 
 	void Write(std::ostream& ostream) override;
 
+	Component* Clone(Object* parent);
+
 	string modelName = "";
 	Model* model = nullptr;
 };

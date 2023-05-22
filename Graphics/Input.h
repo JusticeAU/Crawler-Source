@@ -17,17 +17,16 @@ public:
 		bool last = false;
 
 	public:
-		bool Down()		{ return down && !last; };
-		bool Pressed()	{ return down; };
-		bool Up()		{ return !down && last; };
+		bool Down()		{ return down && !last; };	// The button went down this frame and was up last frame.
+		bool Pressed()	{ return down; };			// The button is down.
+		bool Up()		{ return !down && last; };	// The button went up this frame and was down last frame.
 
 		virtual void Update(GLFWwindow* window, int index);
 	};
-
 	class MouseButton : public KeyButton
 	{
 	public:
-		void Update(GLFWwindow* window, int index) override;
+		virtual void Update(GLFWwindow* window, int index) override;
 	};
 
 public:

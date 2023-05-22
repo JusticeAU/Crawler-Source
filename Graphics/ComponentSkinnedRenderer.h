@@ -19,6 +19,8 @@ public:
 	void OnParentChange() override;
 
 	void BindBoneTransform();
+
+	Component* Clone(Object* parent);
 protected:
 	ComponentAnimator* animator = nullptr;
 	ComponentAnimationBlender* animationBlender = nullptr;

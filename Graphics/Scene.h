@@ -24,6 +24,7 @@ public:
 
 	static Object* CreateObject(Object* parent = nullptr);
 	static Object* CreateObject(string name, Object * parent = nullptr);
+	static Object* DuplicateObject(Object* object);
 	
 	static void SetClearColour(vec3 clearColour);
 	
@@ -41,7 +42,12 @@ public:
 	static glm::vec3* GetPointLightColours() { return &s_instance->m_pointLightColours[0]; }
 
 	static int GetCameraIndex() { return s_instance->cameraIndex; }
-	static unsigned int GetSelectedObject() { return s_instance->selectedObject; }
+	static unsigned int GetSelectedObject() { return s_instance->selectedObjectID; }
+	static void SetSelectedObject(unsigned int selected);
+
+	static Object* FindObjectWithID(unsigned int id);
+
+
 	bool drawn3DGizmo = false;;
 
 	static Scene* s_instance;
@@ -51,7 +57,7 @@ public:
 	vector<ComponentCamera*> componentCameras;
 
 	void Update(float deltaTime);
-	void DrawObjects();
+	void Render();
 	void DrawGizmos();
 	void DrawCameraToBackBuffer();
 	void DrawGUI();
@@ -62,6 +68,14 @@ public:
 	vector<FrameBuffer*> cameras;
 protected:
 	Scene();
+
+	void UpdateInputs();
+
+	void RenderShadowMaps();
+	void RenderSceneCameras();
+	void RenderObjectPicking();
+	void RenderEditorCamera();
+
 	string sceneSubfolder = "scenes/";
 	string sceneFilename = "default.scene";
 
@@ -93,7 +107,9 @@ protected:
 
 	// Object picking buffer dev
 	FrameBuffer* objectPickBuffer = nullptr;
-	unsigned int selectedObject = 0;
+	unsigned int selectedObjectID = 0;
+	Object* selectedObject = nullptr;
+
 	bool requestedObjectSelection = false;
 	glm::ivec2 requestedSelectionPosition = { 0,0 };
 

@@ -141,6 +141,14 @@ void ComponentAnimator::OnParentChange()
 		model = nullptr;
 }
 
+Component* ComponentAnimator::Clone(Object* parent)
+{
+	ComponentAnimator* copy = new ComponentAnimator(parent);
+	copy->model = model;
+	return copy;
+}
+
+
 // This proceses the Animation data to build a new boneTransform array to send to the GPU.
 void ComponentAnimator::UpdateBoneMatrixBuffer()
 {

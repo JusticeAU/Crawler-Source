@@ -38,3 +38,11 @@ void ComponentModel::Write(std::ostream& ostream)
 {
 	FileUtils::WriteString(ostream, modelName);
 }
+
+Component* ComponentModel::Clone(Object* parent)
+{
+	ComponentModel* copy = new ComponentModel(parent);
+	copy->model = model;
+	copy->modelName = modelName;
+	return copy;
+}

@@ -17,7 +17,7 @@ void Input::Init(GLFWwindow* window)
 
 void Input::Update()
 {
-	// update status of all buttons
+	// update status of all buttons - We check io.WantCaptureX first to see if Imgui is taking precedence over mouse or keyb input.
 	auto& io = ImGui::GetIO();
 	if (!io.WantCaptureKeyboard)
 	{

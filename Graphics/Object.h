@@ -63,4 +63,6 @@ public:
 
 	void RefreshComponents();
 	void RecalculateTransforms();
+
+	Object* FindObjectWithID(unsigned int id);
 };

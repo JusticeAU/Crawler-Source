@@ -112,3 +112,19 @@ void ComponentSkinnedRenderer::BindBoneTransform()
 		animationBlender->boneTransfomBuffer->SendData(animationBlender->boneTransforms);
 	}
 }
+
+Component* ComponentSkinnedRenderer::Clone(Object* parent)
+{
+	ComponentSkinnedRenderer* copy = new ComponentSkinnedRenderer(parent);
+	copy->castsShadows = castsShadows;
+	copy->material = material;
+	copy->materialName = materialName;
+	copy->model = model;
+	copy->receivesShadows = receivesShadows;
+	copy->shader = shader;
+	copy->shaderName = shaderName;
+	copy->shadowBias = shadowBias;
+	copy->texture = texture;
+	copy->textureName = textureName;
+	return copy;
+}
