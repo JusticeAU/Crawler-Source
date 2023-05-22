@@ -370,27 +370,38 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 	}
 
 	// Ensure all bone weights per vertex total to 1.0f 
-	for (int i = 0; i < numV; i++)
+	if (mesh->mNumBones > 0)
 	{
-		// Get bone count
-		int weights = 0;
-		float totalWeight = 0.0f;
-		for (int j = 0; j < 4; j++)
+		bool triggered = false;
+		for (int i = 0; i < numV; i++)
 		{
-			if (vertices[i].boneID[j] == -1)
+			// Get bone count
+			int weights = 0;
+			float totalWeight = 0.0f;
+			for (int j = 0; j < 4; j++)
 			{
-				weights = j;
-				break;
+				if (vertices[i].boneID[j] == -1)
+				{
+					weights = j;
+					break;
+				}
+
+				weights++;
+				totalWeight += vertices[i].boneWeight[j];
+			}
+			const float weightAccuracyThreshold = 0.01f;
+			if (glm::abs(1.0 - totalWeight) > weightAccuracyThreshold && !triggered)
+			{
+				triggered = true;
+				LogUtils::Log("***** Detected large bone weight error ***** Correcting, but artist should fix this ******");
+				LogUtils::Log(name);
 			}
 
-			weights++;
-			totalWeight += vertices[i].boneWeight[j];
-		}
-		
-		// Divide each weight by total boneweight to scale em
-		for (int j = 0; j < weights; j++)
-		{
-			vertices[i].boneWeight[j] /= totalWeight;
+			// Divide each weight by total boneweight to scale em
+			for (int j = 0; j < weights; j++)
+			{
+				vertices[i].boneWeight[j] /= totalWeight;
+			}
 		}
 	}
 

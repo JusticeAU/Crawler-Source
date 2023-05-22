@@ -52,10 +52,8 @@ public:
 	// Animation state
 	int selectedBone = 0;
 	int selectedAnimation = 0;
-	string animationName = "";
 	bool loopAnimation = true;
 	bool playAnimation = true;
-	float animationSpeed = 1.0f;
 	float animationTime = 0.0f;
 
 	mat4* boneTransforms = nullptr;

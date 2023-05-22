@@ -19,9 +19,12 @@ ComponentAnimator::ComponentAnimator(Object* parent) : Component("Animator", Com
 
 ComponentAnimator::ComponentAnimator(Object* parent, std::istream& istream) : ComponentAnimator(parent)
 {
-	FileUtils::ReadInt(istream, selectedAnimation);
+	string animationName;
+	float animationSpeed;
 	FileUtils::ReadString(istream, animationName);
 	FileUtils::ReadFloat(istream, animationSpeed);
+	StartAnimation(animationName, true);
+	current->animationSpeedScale = animationSpeed;
 }
 
 ComponentAnimator::~ComponentAnimator()
@@ -37,9 +40,9 @@ void ComponentAnimator::Update(float delta)
 		return;
 
 	if (current->animation == nullptr && model->animations.size() > 0) // pick first animation if we dont have one.
-		current->animation = model->animations[selectedAnimation];
+		current->animation = model->animations[0];
 	
-	if(current->animation != nullptr)
+	if(current->animation)
 		current->Update(delta);
 	
 	if (next) // if we have an animation to transition to
@@ -123,9 +126,8 @@ void ComponentAnimator::DrawGUI()
 
 void ComponentAnimator::Write(std::ostream& ostream)
 {
-	FileUtils::WriteInt(ostream, selectedAnimation);
-	FileUtils::WriteString(ostream, animationName);
-	FileUtils::WriteFloat(ostream, animationSpeed);
+	FileUtils::WriteString(ostream, current->animation->name);
+	FileUtils::WriteFloat(ostream, current->animationSpeedScale);
 }
 
 void ComponentAnimator::OnParentChange()
@@ -208,7 +210,8 @@ void ComponentAnimator::StartAnimation(string name, bool loop)
 	AnimationState* newAnimation = new AnimationState();
 	newAnimation->animation = animation;
 	newAnimation->looping = loop;
-	animationName = name;
+
+	delete current;
 	current = newAnimation;
 }
 
@@ -224,7 +227,6 @@ void ComponentAnimator::BlendToAnimation(string name, float time, float offset, 
 	AnimationState* newAnimation = new AnimationState();
 	newAnimation->animation = animation;
 	newAnimation->looping = loop;
-	animationName = name;
 	next = newAnimation;
 	transitionTime = time;
 }

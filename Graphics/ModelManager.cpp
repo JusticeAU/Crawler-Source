@@ -129,6 +129,7 @@ void ModelManager::LoadFromFile(const char* filename)
 	{
 		Animation* anim = new Animation();
 		anim->name = scene->mAnimations[i]->mName.C_Str();
+		anim->name = filename + anim->name;
 		string log = "Processing Animation: " + anim->name;
 		LogUtils::Log(log.c_str());
 		anim->duration = scene->mAnimations[i]->mDuration;
@@ -153,7 +154,7 @@ void ModelManager::LoadFromFile(const char* filename)
 		}
 
 		model->animations.push_back(anim);
-		animations.emplace(filename+anim->name,anim);
+		animations.emplace(anim->name,anim);
 	}
 	resources.emplace(filename, model);
 }

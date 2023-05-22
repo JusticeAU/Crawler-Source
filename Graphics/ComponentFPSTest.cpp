@@ -1,8 +1,9 @@
 #include "ComponentFPSTest.h"
 #include "ComponentAnimator.h"
+#include "Animation.h"
 #include "Object.h"
 #include "Input.h"
-
+#include "LogUtils.h"
 
 ComponentFPSTest::ComponentFPSTest(Object* parent, std::istream& istream) : ComponentFPSTest(parent)
 {
@@ -46,14 +47,16 @@ void ComponentFPSTest::Update(float delta)
 	}
 
 
-	if (Input::Keyboard(GLFW_KEY_W).Pressed() && animator->animationName == "models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Idle")
+	if (Input::Keyboard(GLFW_KEY_W).Pressed() && animator->current->animation->name == "models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Idle")
 	{
 		animator->BlendToAnimation("models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Walk", 0.25f, 0.0f, true);
 		nextAnimation = "";
 	}
-	else if (!Input::Keyboard(GLFW_KEY_W).Pressed() && animator->animationName == "models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Walk")
+	
+	if (Input::Keyboard(GLFW_KEY_W).Up() && animator->current->animation->name == "models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Walk")
 	{
 		animator->BlendToAnimation("models/FPSPistol/Armpist.fbxArmature|FPS_Pistol_Idle", 0.25f, 0.0f, true);
+		nextAnimation = "";
 	}
 
 
