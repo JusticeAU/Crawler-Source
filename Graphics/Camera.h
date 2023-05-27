@@ -35,11 +35,11 @@ public:
 
 	string name = "";
 
-protected:
 	glm::vec3 position;
 	glm::vec3 forward;
 	glm::vec3 right;
 	glm::vec3 up;
+protected:
 
 	float aspect;
 
