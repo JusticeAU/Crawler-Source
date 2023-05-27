@@ -77,7 +77,7 @@ protected:
 	void RenderEditorCamera();
 
 	string sceneSubfolder = "scenes/";
-	string sceneFilename = "default.scene";
+	string sceneFilename = "PBR.scene";
 
 	vec3 clearColour;
 	int objectCount = 0;

@@ -119,6 +119,41 @@ void MaterialManager::LoadFromFile(const char* filename)
 			ss >> header >> mapFileName;
 			material->mapBump = TextureManager::GetTexture(directory + mapFileName);
 			material->mapBumpName = directory + mapFileName;
+		} // PBR
+		else if (line.find("albedoMap") == 0)
+		{
+			std::string mapFileName;
+			ss >> header >> mapFileName;
+			material->albedoMap = TextureManager::GetTexture(directory + mapFileName);
+			material->albedoMapName = directory + mapFileName;
+		}
+		else if (line.find("normalMap") == 0)
+		{
+			std::string mapFileName;
+			ss >> header >> mapFileName;
+			material->normalMap = TextureManager::GetTexture(directory + mapFileName);
+			material->normalMapName = directory + mapFileName;
+		}
+		else if (line.find("metallicMap") == 0)
+		{
+			std::string mapFileName;
+			ss >> header >> mapFileName;
+			material->metallicMap = TextureManager::GetTexture(directory + mapFileName);
+			material->metallicMapName = directory + mapFileName;
+		}
+		else if (line.find("roughnessMap") == 0)
+		{
+			std::string mapFileName;
+			ss >> header >> mapFileName;
+			material->roughnessMap = TextureManager::GetTexture(directory + mapFileName);
+			material->roughnessMapName = directory + mapFileName;
+		}
+		else if (line.find("aoMap") == 0)
+		{
+			std::string mapFileName;
+			ss >> header >> mapFileName;
+			material->aoMap = TextureManager::GetTexture(directory + mapFileName);
+			material->aoMapName = directory + mapFileName;
 		}
 	}
 	materials.emplace(filename, material);

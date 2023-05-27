@@ -1,0 +1,12 @@
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Ns 20
+map_Kd 
+map_Ks 
+bump 
+albedoMap for_texturing_None.001_Diffuse.png
+normalMap for_texturing_None.001_Normal.png
+metallicMap for_texturing_None.001_Specular.png
+roughnessMap for_texturing_None.001_Glossiness.png
+aoMap 

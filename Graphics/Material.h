@@ -26,4 +26,17 @@ public:
 	string mapKsName = "";
 	Texture* mapBump = nullptr; // normal map
 	string mapBumpName = "";
+
+	// PBR
+	Texture* albedoMap		= nullptr;
+	Texture* normalMap		= nullptr;
+	Texture* metallicMap	= nullptr;
+	Texture* roughnessMap	= nullptr;
+	Texture* aoMap			= nullptr;
+	string albedoMapName	= "";
+	string normalMapName	= "";
+	string metallicMapName	= "";
+	string roughnessMapName = "";
+	string aoMapName		= "";
+
 };

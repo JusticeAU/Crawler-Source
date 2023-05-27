@@ -262,6 +262,34 @@ void ComponentRenderer::ApplyMaterials()
 			material->mapBump->Bind(3);
 			shader->SetIntUniform("normalTex", 3);
 		}
+
+		// PBR
+		if (material->albedoMap)
+		{
+			material->albedoMap->Bind(4);
+			shader->SetIntUniform("albedoMap", 4);
+		}
+		if (material->normalMap)
+		{
+			material->normalMap->Bind(5);
+			shader->SetIntUniform("normalMap", 5);
+		}
+		if (material->metallicMap)
+		{
+			material->metallicMap->Bind(6);
+			shader->SetIntUniform("metallicMap", 6);
+		}
+		if (material->roughnessMap)
+		{
+			material->roughnessMap->Bind(7);
+			shader->SetIntUniform("roughnessMap", 7);
+		}
+		if (material->aoMap)
+		{
+			material->aoMap->Bind(8);
+			shader->SetIntUniform("aoMap", 8);
+		}
+
 	}
 }
 
