@@ -1,6 +1,7 @@
 #pragma once
 #include "Graphics.h"
 #include "Input.h"
+#include "AudioListener.h"
 #include <string>
 
 using glm::mat4;
@@ -23,6 +24,7 @@ public:
 	vec3 GetPosition() { return position; };
 	void SetAspect(float value) { aspect = value; UpdateMatrix(); }
 	FrameBuffer* GetFrameBuffer();
+	AudioListener* GetAudioListener() { return &m_audioListener; }
 
 	static Camera* s_instance;
 
@@ -35,12 +37,12 @@ public:
 
 	string name = "";
 
-protected:
 	glm::vec3 position;
 	glm::vec3 forward;
 	glm::vec3 right;
 	glm::vec3 up;
-
+protected:
+	AudioListener m_audioListener;
 	float aspect;
 
 	glm::mat4 view;
@@ -52,6 +54,7 @@ protected:
 	bool isAdjusting = false;
 
 	void UpdateMatrix();
+	void UpdateAudioListener();
 	void SetFramebuffer(FrameBuffer* fb) { frameBuffer = fb; };
 };
 

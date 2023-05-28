@@ -6,6 +6,7 @@
 #include "ShaderManager.h"
 #include "MaterialManager.h"
 #include "ModelManager.h"
+#include "AudioManager.h"
 #include "Scene.h"
 #include "Input.h"
 #include "Camera.h"
@@ -84,6 +85,8 @@ Application::Application()
 	ModelManager::Init(); // Must be initialised after mesh manager
 	Scene::Init();
 	ComponentFactory::Init();
+	AudioManager::Init();
+	AudioManager::SetAudioListener(camera->GetAudioListener());
 	
 	// Create input system.
 	Input::Init(window->GetGLFWwindow());
@@ -151,11 +154,14 @@ void Application::Update(float delta)
 	ShaderManager::DrawGUI();
 	MaterialManager::DrawGUI();
 	ModelManager::DrawGUI();
+	AudioManager::DrawGUI();
+	
 	camera->DrawGUI();
 
 	Input::Update();
 	camera->Update(delta);
 	
+	AudioManager::s_instance->Update();
 	Scene::s_instance->Update(delta);
 	Scene::s_instance->Render();
 	Scene::s_instance->DrawGizmos();

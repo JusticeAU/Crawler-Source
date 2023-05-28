@@ -90,7 +90,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)assimp\out\build\x64-$(Configuration)\include;$(SolutionDir)assimp;$(SolutionDir)imgui;$(SolutionDir)GLFW;$(SolutionDir)glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)soloud\include;$(SolutionDir)assimp\out\build\x64-$(Configuration)\include;$(SolutionDir)assimp;$(SolutionDir)imgui;$(SolutionDir)GLFW;$(SolutionDir)glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -107,7 +107,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)assimp\out\build\x64-$(Configuration)\include;$(SolutionDir)assimp;$(SolutionDir)imgui;$(SolutionDir)GLFW;$(SolutionDir)glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)soloud\include;$(SolutionDir)assimp\out\build\x64-$(Configuration)\include;$(SolutionDir)assimp;$(SolutionDir)imgui;$(SolutionDir)GLFW;$(SolutionDir)glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -124,7 +124,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)assimp\out\build\x64-$(Configuration)\include;$(SolutionDir)assimp;$(SolutionDir)imguizmo;$(SolutionDir)imgui;$(SolutionDir)GLFW;$(SolutionDir)glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)soloud\include;$(SolutionDir)assimp\out\build\x64-$(Configuration)\include;$(SolutionDir)assimp;$(SolutionDir)imguizmo;$(SolutionDir)imgui;$(SolutionDir)GLFW;$(SolutionDir)glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -141,9 +141,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WITH_WINMM;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)assimp\out\build\x64-$(Configuration)\include;$(SolutionDir)assimp;$(SolutionDir)imguizmo;$(SolutionDir)imgui;$(SolutionDir)GLFW;$(SolutionDir)glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)soloud\include;$(SolutionDir)assimp\out\build\x64-$(Configuration)\include;$(SolutionDir)assimp;$(SolutionDir)imguizmo;$(SolutionDir)imgui;$(SolutionDir)GLFW;$(SolutionDir)glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -166,11 +166,37 @@
     <ClCompile Include="..\imgui\imgui_stdlib.cpp" />
     <ClCompile Include="..\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="..\soloud\src\audiosource\wav\dr_impl.cpp" />
+    <ClCompile Include="..\soloud\src\audiosource\wav\soloud_wav.cpp" />
+    <ClCompile Include="..\soloud\src\audiosource\wav\soloud_wavstream.cpp" />
+    <ClCompile Include="..\soloud\src\audiosource\wav\stb_vorbis.c" />
+    <ClCompile Include="..\soloud\src\backend\winmm\soloud_winmm.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_audiosource.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_bus.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_core_3d.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_core_basicops.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_core_faderops.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_core_filterops.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_core_getters.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_core_setters.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_core_voicegroup.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_core_voiceops.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_fader.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_fft.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_fft_lut.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_file.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_filter.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_misc.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_queue.cpp" />
+    <ClCompile Include="..\soloud\src\core\soloud_thread.cpp" />
     <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentAnimationBlender.cpp" />
     <ClCompile Include="ComponentAnimator.cpp" />
+    <ClCompile Include="ComponentAudioSource.cpp" />
     <ClCompile Include="ComponentCamera.cpp" />
     <ClCompile Include="ComponentFactory.cpp" />
     <ClCompile Include="ComponentFPSTest.cpp" />
@@ -210,12 +236,19 @@
     <ClInclude Include="..\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\imgui\imstb_textedit.h" />
     <ClInclude Include="..\imgui\imstb_truetype.h" />
+    <ClInclude Include="..\soloud\src\audiosource\wav\dr_flac.h" />
+    <ClInclude Include="..\soloud\src\audiosource\wav\dr_mp3.h" />
+    <ClInclude Include="..\soloud\src\audiosource\wav\dr_wav.h" />
+    <ClInclude Include="..\soloud\src\audiosource\wav\stb_vorbis.h" />
     <ClInclude Include="ai2glm.h" />
     <ClInclude Include="Animation.h" />
+    <ClInclude Include="AudioListener.h" />
+    <ClInclude Include="AudioManager.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentAnimationBlender.h" />
     <ClInclude Include="ComponentAnimator.h" />
+    <ClInclude Include="ComponentAudioSource.h" />
     <ClInclude Include="ComponentCamera.h" />
     <ClInclude Include="ComponentFactory.h" />
     <ClInclude Include="ComponentFPSTest.h" />

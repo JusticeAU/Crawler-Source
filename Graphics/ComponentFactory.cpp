@@ -11,7 +11,7 @@ void ComponentFactory::Init()
     components.push_back("Camera");
     components.push_back("FPSTest");
     components.push_back("AnimationBlender");
-
+    components.push_back("Audio Source");
 }
 
 Component* ComponentFactory::NewComponent(Object* parent, int componentIndex)
@@ -36,6 +36,9 @@ Component* ComponentFactory::NewComponent(Object* parent, int componentIndex)
         return new ComponentFPSTest(parent);
     case 8:
         return new ComponentAnimationBlender(parent);
+    case 9:
+        return new ComponentAudioSource(parent);
+
     }
 
     return nullptr; // shouldn't get here

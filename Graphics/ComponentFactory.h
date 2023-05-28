@@ -6,6 +6,7 @@
 #include "ComponentCamera.h"
 #include "ComponentFPSTest.h"
 #include "ComponentAnimationBlender.h"
+#include "ComponentAudioSource.h"
 
 #include <vector>
 #include <string>

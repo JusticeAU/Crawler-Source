@@ -6,6 +6,7 @@
 #include "ComponentRenderer.h"
 #include "ComponentCamera.h"
 #include "ShaderManager.h"
+#include "AudioManager.h"
 
 #include "FrameBuffer.h"
 #include "TextureManager.h"
@@ -271,6 +272,14 @@ void Scene::DrawGUI()
 		if (cameraIndex > cameras.size() - 1)
 			cameraIndex = cameras.size() - 1;
 		outputCameraFrameBuffer = cameras[cameraIndex];
+
+
+		// This is fairly hacky. maybe the cameras should handle setting the audio listener themselves.
+		// Perhaps scenee camera and editor camera can become same thing and then audio manager can just look at camera::main or something
+		if (cameraIndex == 0)
+			AudioManager::SetAudioListener(Camera::s_instance->GetAudioListener());
+		else
+			AudioManager::SetAudioListener(componentCameras[cameraIndex - 1]->GetAudioListener());
 	}
 
 	float clearCol[3] = { clearColour.r, clearColour.g, clearColour.b, };

@@ -2,6 +2,7 @@
 #include "Component.h"
 #include "Graphics.h"
 #include "Object.h"
+#include "AudioListener.h"
 #include <string>
 #include <vector>
 
@@ -33,6 +34,8 @@ public:
 	const vec3 GetWorldSpacePosition() { return componentParent->GetWorldSpacePosition(); }
 	const mat4 GetViewProjectionMatrix() { return matrix; }
 
+	AudioListener* GetAudioListener() { return &m_audioListener; }
+
 	void SetAsRenderTarget();
 	// Runs the post processing stack. This is also required to run to transfer the frame from the Raw to Processed Framebuffer, regardless of if there is a stack or not.
 	void RunPostProcess();
@@ -47,6 +50,9 @@ protected:
 	glm::mat4 view;
 	glm::mat4 projection;
 	glm::mat4 matrix;
+
+	AudioListener m_audioListener;
+	void UpdateAudioListener();
 
 	// Store framebuffers for pre and post processing, we can access them as textures if we want, for debugging or whatever.
 	FrameBuffer* m_frameBufferRaw;

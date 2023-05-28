@@ -20,7 +20,8 @@ enum ComponentType
 	Component_Light,
 	Component_Camera,
 	Component_FPSTest,
-	Component_AnimationBlender
+	Component_AnimationBlender,
+	Component_AudioSource
 };
 
 class Component
