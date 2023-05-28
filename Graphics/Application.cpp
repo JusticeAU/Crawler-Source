@@ -86,6 +86,7 @@ Application::Application()
 	Scene::Init();
 	ComponentFactory::Init();
 	AudioManager::Init();
+	AudioManager::SetAudioListener(camera->GetAudioListener());
 	
 	// Create input system.
 	Input::Init(window->GetGLFWwindow());
@@ -155,12 +156,12 @@ void Application::Update(float delta)
 	ModelManager::DrawGUI();
 	AudioManager::DrawGUI();
 	
-	AudioManager::Set3DListener(camera->GetPosition(), camera->forward);
 	camera->DrawGUI();
 
 	Input::Update();
 	camera->Update(delta);
 	
+	AudioManager::s_instance->Update();
 	Scene::s_instance->Update(delta);
 	Scene::s_instance->Render();
 	Scene::s_instance->DrawGizmos();

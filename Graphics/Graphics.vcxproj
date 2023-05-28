@@ -241,6 +241,7 @@
     <ClInclude Include="..\soloud\src\audiosource\wav\stb_vorbis.h" />
     <ClInclude Include="ai2glm.h" />
     <ClInclude Include="Animation.h" />
+    <ClInclude Include="AudioListener.h" />
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Component.h" />

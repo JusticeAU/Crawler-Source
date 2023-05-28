@@ -6,6 +6,12 @@
 using std::vector;
 namespace fs = std::filesystem;
 
+AudioManager::AudioManager()
+{
+	gSoloud.init();
+	LoadAllFiles();
+}
+
 AudioManager::~AudioManager()
 {
 	gSoloud.deinit();
@@ -23,6 +29,23 @@ void AudioManager::Init()
 	else LogUtils::Log("Tried to Init AudioManager when it was already initialised");
 }
 
+void AudioManager::Update()
+{
+	if (m_audioListener != nullptr)
+	{
+		gSoloud.set3dListenerParameters(
+			m_audioListener->position.x,
+			m_audioListener->position.y,
+			m_audioListener->position.z,
+			m_audioListener->forward.x,
+			m_audioListener->forward.y,
+			m_audioListener->forward.z,
+			0,1,0);
+
+		gSoloud.update3dAudio(); // This tells all current playing sounds to respect the above update.
+	}
+}
+
 void AudioManager::DrawGUI()
 {
 	//ImGui::SetNextWindowPos({ 800, 0 }, ImGuiCond_FirstUseEver);
@@ -33,6 +56,9 @@ void AudioManager::DrawGUI()
 	ImGui::BeginDisabled();
 	int loadCount = (int)s_instance->m_loaded.size();
 	ImGui::DragInt("Loaded Count", &loadCount);
+	ImGui::DragFloat3("Audio Listener Position", (float*)&s_instance->m_audioListener->position);
+	ImGui::DragFloat3("Audio Listener Forward", (float*)&s_instance->m_audioListener->forward);
+
 	ImGui::EndDisabled();
 	ImGui::DragFloat3("Test Audio Source Position", (float*)&s_instance->test3Dpos);
 	for (auto m : s_instance->m_loaded)
@@ -78,7 +104,7 @@ void AudioManager::StartMusic()
 void AudioManager::ChangeMusic(string name)
 {
 	s_instance->gSoloud.fadeVolume(s_instance->m_currentTrack, 0.0f, 1.0f);
-	s_instance->m_currentTrack = s_instance->gSoloud.play(*s_instance->m_stream[name]);
+	s_instance->m_currentTrack = s_instance->gSoloud.play3d(*s_instance->m_stream[name], 0,0,0);
 }
 
 void AudioManager::StopMusic()
@@ -110,17 +136,9 @@ void AudioManager::PlaySound(string soundname, glm::vec3 position3D)
 		position3D.z);
 }
 
-void AudioManager::Set3DListener(glm::vec3 position, glm::vec3 lookingAt)
+void AudioManager::SetAudioListener(AudioListener* listener)
 {
-	s_instance->gSoloud.set3dListenerPosition(position.x, position.y, position.z);
-	s_instance->gSoloud.set3dListenerAt(lookingAt.x, lookingAt.y, lookingAt.z);
-
-}
-
-AudioManager::AudioManager()
-{
-	gSoloud.init();
-	LoadAllFiles();
+	s_instance->m_audioListener = listener;
 }
 
 void AudioManager::LoadFromFile(const char* filename)

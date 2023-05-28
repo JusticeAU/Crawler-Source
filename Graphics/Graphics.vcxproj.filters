@@ -421,5 +421,8 @@
     <ClInclude Include="AudioManager.h">
       <Filter>Source Files\Application\Audio</Filter>
     </ClInclude>
+    <ClInclude Include="AudioListener.h">
+      <Filter>Source Files\Application\Audio</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

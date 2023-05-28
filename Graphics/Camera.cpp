@@ -19,6 +19,7 @@ Camera::Camera(float aspect, string name)
 	frameBuffer = new FrameBuffer(FrameBuffer::Type::CameraTarget);
 
 	UpdateMatrix();
+	UpdateAudioListener();
 }
 
 void Camera::Update(float delta)
@@ -59,8 +60,8 @@ void Camera::Update(float delta)
 			Move(-up * moveSpeed * delta);
 
 		UpdateMatrix();
+		UpdateAudioListener();
 	}
-	
 }
 
 void Camera::Move(glm::vec3 delta)
@@ -117,6 +118,12 @@ void Camera::UpdateMatrix()
 	view = glm::lookAt(position, position + forward, glm::vec3(0, 1, 0));
 	projection = glm::perspective((float)3.14159 / 4, aspect, nearClip, farClip);
 	matrix = projection * view;
+}
+
+void Camera::UpdateAudioListener()
+{
+	m_audioListener.position = position;
+	m_audioListener.forward = forward;
 }
 
 Camera* Camera::s_instance = nullptr;

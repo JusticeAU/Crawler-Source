@@ -1,4 +1,5 @@
 #pragma once
+#include "AudioListener.h"
 #include <string>
 #include <unordered_map>
 
@@ -25,6 +26,8 @@ public:
 
 	static void Init();
 
+	void Update();
+
 	static void DrawGUI();
 	static AudioManager* s_instance;
 
@@ -37,7 +40,7 @@ public:
 
 	static void PlaySound(string soundname);
 	static void PlaySound(string soundname, glm::vec3 position3D);
-	static void Set3DListener(glm::vec3 position, glm::vec3 lookingAt);
+	static void SetAudioListener(AudioListener* listener);
 protected:
 	AudioManager();
 
@@ -48,6 +51,8 @@ protected:
 	SoLoud::handle m_currentTrack;
 
 	glm::vec3 test3Dpos;
+
+	AudioListener* m_audioListener = nullptr;
 
 	void LoadFromFile(const char* filename);
 	void StreamFromFile(const char* filename);
