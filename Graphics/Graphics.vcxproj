@@ -196,6 +196,7 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentAnimationBlender.cpp" />
     <ClCompile Include="ComponentAnimator.cpp" />
+    <ClCompile Include="ComponentAudioSource.cpp" />
     <ClCompile Include="ComponentCamera.cpp" />
     <ClCompile Include="ComponentFactory.cpp" />
     <ClCompile Include="ComponentFPSTest.cpp" />
@@ -247,6 +248,7 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentAnimationBlender.h" />
     <ClInclude Include="ComponentAnimator.h" />
+    <ClInclude Include="ComponentAudioSource.h" />
     <ClInclude Include="ComponentCamera.h" />
     <ClInclude Include="ComponentFactory.h" />
     <ClInclude Include="ComponentFPSTest.h" />

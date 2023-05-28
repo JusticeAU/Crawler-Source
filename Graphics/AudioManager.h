@@ -31,6 +31,9 @@ public:
 	static void DrawGUI();
 	static AudioManager* s_instance;
 
+	static const unordered_map<string, Wav*>* Loaded() { return &s_instance->m_loaded; }
+	static const unordered_map<string, WavStream*>* Streams() { return &s_instance->m_stream; }
+
 	static void StartMusic();
 	static void ChangeMusic(string name);
 	static void StopMusic();
@@ -38,9 +41,14 @@ public:
 	static void PauseMusic();
 	static void UnPauseMusic();
 
-	static void PlaySound(string soundname);
-	static void PlaySound(string soundname, glm::vec3 position3D);
+	static SoLoud::handle PlaySound(string soundname, bool loop = false);
+	static SoLoud::handle PlaySound(string soundname, glm::vec3 position3D, bool loop = false);
+	static SoLoud::handle PlayStream(string streamname, bool loop = false);
+	static SoLoud::handle PlayStream(string streamname, glm::vec3 position3D, bool loop = false);
+
+	static void Stop(SoLoud::handle handle);
 	static void SetAudioListener(AudioListener* listener);
+	static void Set3dSourcePosition(SoLoud::handle handle, vec3 position);
 protected:
 	AudioManager();
 

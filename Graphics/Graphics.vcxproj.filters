@@ -254,6 +254,9 @@
     <ClCompile Include="AudioManager.cpp">
       <Filter>Source Files\Application\Audio</Filter>
     </ClCompile>
+    <ClCompile Include="ComponentAudioSource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -424,5 +427,6 @@
     <ClInclude Include="AudioListener.h">
       <Filter>Source Files\Application\Audio</Filter>
     </ClInclude>
+    <ClInclude Include="ComponentAudioSource.h" />
   </ItemGroup>
 </Project>

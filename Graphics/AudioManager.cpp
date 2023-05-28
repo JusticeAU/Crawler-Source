@@ -122,23 +122,51 @@ void AudioManager::UnPauseMusic()
 	s_instance->gSoloud.setPause(s_instance->m_currentTrack, false);
 }
 
-void AudioManager::PlaySound(string soundname)
+SoLoud::handle AudioManager::PlaySound(string soundname, bool loop)
 {
-	s_instance->gSoloud.play(*s_instance->m_loaded[soundname]);
+	s_instance->m_loaded[soundname]->setLooping(loop);
+	return s_instance->gSoloud.play(*s_instance->m_loaded[soundname]);
 }
 
-void AudioManager::PlaySound(string soundname, glm::vec3 position3D)
+SoLoud::handle AudioManager::PlaySound(string soundname, glm::vec3 position3D, bool loop)
 {
-	s_instance->gSoloud.play3d(
+	s_instance->m_loaded[soundname]->setLooping(loop);
+	return s_instance->gSoloud.play3d(
 		*s_instance->m_loaded[soundname],
 		position3D.x,
 		position3D.y,
 		position3D.z);
 }
 
+SoLoud::handle AudioManager::PlayStream(string streamname, bool loop)
+{
+	s_instance->m_stream[streamname]->setLooping(loop);
+	return s_instance->gSoloud.play(*s_instance->m_stream[streamname]);
+}
+
+SoLoud::handle AudioManager::PlayStream(string streamname, glm::vec3 position3D, bool loop)
+{
+	s_instance->m_stream[streamname]->setLooping(loop);
+	return s_instance->gSoloud.play3d(
+		*s_instance->m_stream[streamname],
+		position3D.x,
+		position3D.y,
+		position3D.z);
+}
+
+void AudioManager::Stop(SoLoud::handle handle)
+{
+	s_instance->gSoloud.stop(handle);
+}
+
 void AudioManager::SetAudioListener(AudioListener* listener)
 {
 	s_instance->m_audioListener = listener;
+}
+
+void AudioManager::Set3dSourcePosition(SoLoud::handle handle, vec3 position)
+{
+	s_instance->gSoloud.set3dSourcePosition(handle, position.x, position.y, position.z);
 }
 
 void AudioManager::LoadFromFile(const char* filename)
