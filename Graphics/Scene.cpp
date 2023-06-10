@@ -95,9 +95,12 @@ void Scene::UpdateInputs()
 	if (Input::Mouse(0).Down() && !ImGuizmo::IsOver())
 	{
 		requestedObjectSelection = true;
-		double mouseX, mouseY;
-		glfwGetCursorPos(Window::Get()->GetGLFWwindow(), &mouseX, &mouseY);
-		requestedSelectionPosition = { (int)mouseX, (int)mouseY };
+		requestedSelectionPosition = Input::GetMousePosPixel();
+
+		// Testing getting screenpoint to ray
+		//std::cout << requestedSelectionPosition.x << " " << requestedSelectionPosition.y << std::endl;
+		std::cout << Input::GetMousePosNDC().x << " " << Input::GetMousePosNDC().y << std::endl;
+
 	}
 }
 

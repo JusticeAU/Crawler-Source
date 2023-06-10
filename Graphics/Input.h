@@ -32,6 +32,8 @@ public:
 public:
 	static void Init(GLFWwindow* window);
 	static void Update();
+	static vec2 GetMousePosPixel();
+	static vec2 GetMousePosNDC();
 	static vec2 GetMouseDelta() { return s_instance->m_mousePosition - s_instance->m_lastMousePosition; };
 	static KeyButton& Keyboard(int GLFW_KEY) { return s_instance->keyButtons[GLFW_KEY]; };
 	static MouseButton& Mouse(int number) { return s_instance->mouseButtons[number]; };

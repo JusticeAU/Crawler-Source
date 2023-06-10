@@ -43,6 +43,24 @@ void Input::Update()
 		Window::Get()->ToggleMouseCursor();
 }
 
+vec2 Input::GetMousePosPixel()
+{
+	double mouseX, mouseY;
+	glfwGetCursorPos(s_instance->m_window, &mouseX, &mouseY);
+	return { mouseX, mouseY };
+}
+
+vec2 Input::GetMousePosNDC()
+{
+	vec2 mousePosPixel = GetMousePosPixel();
+	vec2 windowSizePixels = Window::GetViewPortSize();
+	
+	float ndcX = ((2 * mousePosPixel.x) / windowSizePixels.x) - 1;
+	float ndcY = ((2 * mousePosPixel.y) / windowSizePixels.y) - 1;
+
+	return { ndcX, ndcY };
+}
+
 Input* Input::s_instance = nullptr;
 
 void Input::KeyButton::Update(GLFWwindow* window, int key)
