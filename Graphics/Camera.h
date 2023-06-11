@@ -25,6 +25,7 @@ public:
 	void SetAspect(float value) { aspect = value; UpdateMatrix(); }
 	FrameBuffer* GetFrameBuffer();
 	AudioListener* GetAudioListener() { return &m_audioListener; }
+	vec3 GetRayFromNDC(vec2 NDC);
 
 	static Camera* s_instance;
 

@@ -76,6 +76,11 @@ protected:
 	void RenderObjectPicking();
 	void RenderEditorCamera();
 
+	// Grid Level Editing Stuff. To be moved in to own class possibly.
+	void UpdateMousePosOnGrid();
+	const unsigned int GRID_SCALE = 5;
+	glm::ivec2 gridSelected;
+
 	string sceneSubfolder = "scenes/";
 	string sceneFilename = "PBR.scene";
 

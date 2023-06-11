@@ -96,12 +96,9 @@ void Scene::UpdateInputs()
 	{
 		requestedObjectSelection = true;
 		requestedSelectionPosition = Input::GetMousePosPixel();
-
-		// Testing getting screenpoint to ray
-		//std::cout << requestedSelectionPosition.x << " " << requestedSelectionPosition.y << std::endl;
-		std::cout << Input::GetMousePosNDC().x << " " << Input::GetMousePosNDC().y << std::endl;
-
 	}
+
+	UpdateMousePosOnGrid();
 }
 
 void Scene::Render()
@@ -175,6 +172,19 @@ void Scene::RenderEditorCamera()
 	FrameBuffer::UnBindTarget();
 }
 
+void Scene::UpdateMousePosOnGrid()
+{
+	vec2 NDC = Input::GetMousePosNDC();
+
+	vec3 rayStart = Camera::s_instance->position;
+	vec3 rayDir = Camera::s_instance->GetRayFromNDC(NDC);
+
+	float scale = rayStart.y / rayDir.y;
+	vec3 groundPos = rayStart - (rayDir * scale);
+	gridSelected.x = groundPos.x / GRID_SCALE;
+	gridSelected.y = groundPos.z / GRID_SCALE;
+}
+
 void Scene::DrawGizmos()
 {
 	// render light gizmos only to main 'editor' camera
@@ -211,6 +221,13 @@ void Scene::DrawCameraToBackBuffer()
 }
 void Scene::DrawGUI()
 {	
+	ImGui::Begin("World Edit");
+	ImGui::BeginDisabled();
+	ImGui::DragInt2("Grid Selected", &gridSelected.x);
+	ImGui::EndDisabled();
+	ImGui::End();
+
+
 	ImGui::Begin("Shadow Map Dev");
 	ImGui::PushID(6969);
 

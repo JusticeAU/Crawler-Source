@@ -42,7 +42,7 @@ void Camera::Update(float delta)
 		m_horizontal += lookSpeed * mouseDelta.x;
 		m_vertical -= lookSpeed * mouseDelta.y;
 		// clamp to avoid gimbal lock
-		m_vertical = glm::clamp(m_vertical, -80.0f, 80.0f);
+		m_vertical = glm::clamp(m_vertical, -89.9f, 89.9f);
 
 		if (Input::Keyboard(GLFW_KEY_A).Pressed() || Input::Keyboard(GLFW_KEY_LEFT).Pressed())
 			Move(-right * moveSpeed * delta);
@@ -103,6 +103,23 @@ glm::mat4 Camera::GetMatrix() { return matrix; }
 FrameBuffer* Camera::GetFrameBuffer()
 {
 	return frameBuffer;
+}
+
+vec3 Camera::GetRayFromNDC(vec2 NDC)
+{
+	// convert to clip space
+	glm::vec4 clipSpace = { NDC.x, NDC.y, -1.0f, 1.0f };
+	// convert to eye space
+	glm::mat4 inverseProjection = glm::inverse(projection);
+	glm::vec4 eyeSpace = inverseProjection * clipSpace;
+	eyeSpace.z = -1.0f;  eyeSpace.w = 0.0f; // review this
+	// convert to world space
+	glm::mat4 inverseView = glm::inverse(view);
+	glm::vec4 worldSpace = inverseView * eyeSpace;
+	vec3 mouseRay{ worldSpace.x, worldSpace.y, worldSpace.z };
+	mouseRay = glm::normalize(mouseRay);
+
+	return mouseRay;
 }
 
 void Camera::UpdateMatrix()
