@@ -58,7 +58,7 @@ vec2 Input::GetMousePosNDC()
 	float ndcX = ((2 * mousePosPixel.x) / windowSizePixels.x) - 1;
 	float ndcY = ((2 * mousePosPixel.y) / windowSizePixels.y) - 1;
 
-	return { ndcX, ndcY };
+	return { ndcX, -ndcY };
 }
 
 Input* Input::s_instance = nullptr;
