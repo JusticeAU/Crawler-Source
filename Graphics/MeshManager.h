@@ -32,6 +32,7 @@ protected:
 	map<string, Mesh*> meshes;
 
 	void CreateCube();
+	void CreateCrawlCube();
 	void CreateQuad();
 	void CreateFullScreenQuad();
 };

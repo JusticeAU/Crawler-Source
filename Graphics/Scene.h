@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+#include "Dungeon.h"
+
 using std::vector;
 using std::to_string;
 
@@ -47,6 +49,7 @@ public:
 
 	static Object* FindObjectWithID(unsigned int id);
 
+	static bool IsDungeonEditing() { return s_instance->dungeonEditingEnabled; }
 
 	bool drawn3DGizmo = false;;
 
@@ -76,13 +79,17 @@ protected:
 	void RenderObjectPicking();
 	void RenderEditorCamera();
 
-	// Grid Level Editing Stuff. To be moved in to own class possibly.
+	// Dungeon Level Editing Stuff. To be moved in to own class possibly.
 	void UpdateMousePosOnGrid();
-	const unsigned int GRID_SCALE = 5;
+	const int GRID_SCALE = 5;
 	glm::ivec2 gridSelected;
+	Crawl::Dungeon dungeon;
+public:
+	bool dungeonEditingEnabled = false;
 
+protected:
 	string sceneSubfolder = "scenes/";
-	string sceneFilename = "PBR.scene";
+	string sceneFilename = "CrawlTest.scene";
 
 	vec3 clearColour;
 	int objectCount = 0;

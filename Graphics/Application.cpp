@@ -109,6 +109,17 @@ Application::~Application()
 	glfwTerminate();
 }
 
+void Application::LaunchArgument(char* arg)
+{
+	std::string argument = arg;
+	if (argument == "dungeon")
+		Scene::s_instance->dungeonEditingEnabled = true;
+	else if (argument == "model")
+		LogUtils::Log("Model mode was request - Not yet implemented");
+	else if (argument == "dev")
+		LogUtils::Log("dev mode was request - this is currently the default mode anyway");
+}
+
 void Application::Run()
 {
 	// Main Application "Loop"
@@ -149,12 +160,15 @@ void Application::Run()
 void Application::Update(float delta)
 {
 	// All of these managers can probably be just one single asset manager.
-	MeshManager::DrawGUI();
-	TextureManager::DrawGUI();
-	ShaderManager::DrawGUI();
-	MaterialManager::DrawGUI();
-	ModelManager::DrawGUI();
-	AudioManager::DrawGUI();
+	if (!Scene::IsDungeonEditing())
+	{
+		MeshManager::DrawGUI();
+		TextureManager::DrawGUI();
+		ShaderManager::DrawGUI();
+		MaterialManager::DrawGUI();
+		ModelManager::DrawGUI();
+		AudioManager::DrawGUI();
+	}
 	
 	camera->DrawGUI();
 

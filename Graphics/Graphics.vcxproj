@@ -203,6 +203,7 @@
     <ClCompile Include="ComponentModel.cpp" />
     <ClCompile Include="ComponentRenderer.cpp" />
     <ClCompile Include="ComponentSkinnedRenderer.cpp" />
+    <ClCompile Include="Dungeon.cpp" />
     <ClCompile Include="FrameBuffer.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Input.cpp" />
@@ -255,6 +256,7 @@
     <ClInclude Include="ComponentModel.h" />
     <ClInclude Include="ComponentRenderer.h" />
     <ClInclude Include="ComponentSkinnedRenderer.h" />
+    <ClInclude Include="Dungeon.h" />
     <ClInclude Include="FileUtils.h" />
     <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="glad.h" />

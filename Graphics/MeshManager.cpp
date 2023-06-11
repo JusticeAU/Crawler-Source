@@ -11,6 +11,7 @@ MeshManager::MeshManager()
 {
 	meshes.emplace("_null", nullptr);
     CreateCube();
+	CreateCrawlCube();
 	CreateQuad();
 	CreateFullScreenQuad();
 }
@@ -176,6 +177,131 @@ void MeshManager::CreateCube()
 
 	cube->Initialise(24, vertices, 36, indicies);
 	meshes.emplace("_cube", cube);
+}
+
+void MeshManager::CreateCrawlCube()
+{
+	Mesh* cube = new Mesh();
+	Mesh::Vertex vertices[24];
+
+#pragma region cube
+	// Front
+	vertices[0].position = { 2.5,	5,	2.5 };
+	vertices[0].normal = { 0,0,1 };
+	vertices[0].uv = { 1,1 };
+
+	vertices[1].position = { -2.5,	5,	2.5 };
+	vertices[1].normal = { 0,0,1 };
+	vertices[1].uv = { 0,1 };
+
+	vertices[2].position = { -2.5,	0,	2.5 };
+	vertices[2].normal = { 0,0,1 };
+	vertices[2].uv = { 0,0 };
+
+	vertices[3].position = { 2.5,	0,	2.5 };
+	vertices[3].normal = { 0,0,1 };
+	vertices[3].uv = { 1,0 };
+
+	// Right
+	vertices[4].position = { 2.5, 5,	-2.5 };
+	vertices[4].normal = { 1, 0,0 };
+	vertices[4].uv = { 1,1 };
+
+	vertices[5].position = { 2.5, 5, 2.5 };
+	vertices[5].normal = { 1, 0,0 };
+	vertices[5].uv = { 0,1 };
+
+	vertices[6].position = { 2.5,0, 2.5 };
+	vertices[6].normal = { 1, 0, 0 };
+	vertices[6].uv = { 0,0 };
+
+	vertices[7].position = { 2.5,0,-2.5 };
+	vertices[7].normal = { 1, 0,0 };
+	vertices[7].uv = { 1,0 };
+
+	// Back
+	vertices[8].position = { -2.5,	5,	-2.5 };
+	vertices[8].normal = { 0,0,-1 };
+	vertices[8].uv = { 1,1 };
+
+	vertices[9].position = { 2.5,	5,	-2.5 };
+	vertices[9].normal = { 0,0,1 };
+	vertices[9].uv = { 0,1 };
+
+	vertices[10].position = { 2.5,	0,	-2.5 };
+	vertices[10].normal = { 0,0,1 };
+	vertices[10].uv = { 0,0 };
+
+	vertices[11].position = { -2.5,	0,	-2.5 };
+	vertices[11].normal = { 0,0,1 };
+	vertices[11].uv = { 1,0 };
+
+	// Left
+	vertices[12].position = { -2.5,	5,	2.5 };
+	vertices[12].normal = { -1,0,0 };
+	vertices[12].uv = { 1,1 };
+
+	vertices[13].position = { -2.5,	5,	-2.5 };
+	vertices[13].normal = { -1,0,0 };
+	vertices[13].uv = { 0,1 };
+
+	vertices[14].position = { -2.5,	0,	-2.5 };
+	vertices[14].normal = { -1,0,0 };
+	vertices[14].uv = { 0,0 };
+
+	vertices[15].position = { -2.5,	0, 2.5 };
+	vertices[15].normal = { -1,0,0 };
+	vertices[15].uv = { 1,0 };
+
+	// Top
+	vertices[16].position = { 2.5, 5,-2.5 };
+	vertices[16].normal = { 0,1,0 };
+	vertices[16].uv = { 1,1 };
+
+	vertices[17].position = { -2.5, 5,-2.5 };
+	vertices[17].normal = { 0,1,0 };
+	vertices[17].uv = { 0,1 };
+
+	vertices[18].position = { -2.5, 5, 2.5 };
+	vertices[18].normal = { 0,1,0 };
+	vertices[18].uv = { 0,0 };
+
+	vertices[19].position = { 2.5, 5, 2.5 };
+	vertices[19].normal = { 0,1,0 };
+	vertices[19].uv = { 1,0 };
+
+	// Bottom
+	vertices[20].position = { 2.5,	0,	2.5 };
+	vertices[20].normal = { 0,-1,0 };
+	vertices[20].uv = { 1,1 };
+
+	vertices[21].position = { -2.5,	0,	2.5 };
+	vertices[21].normal = { 0,-1,0 };
+	vertices[21].uv = { 0,1 };
+
+	vertices[22].position = { -2.5,	0,	-2.5 };
+	vertices[22].normal = { 0,-1,0 };
+	vertices[22].uv = { 0,0 };
+
+	vertices[23].position = { 2.5,	0,	-2.5 };
+	vertices[23].normal = { 0,-1,0 };
+	vertices[23].uv = { 1,0 };
+
+	// Indicies
+	unsigned int indicies[36] =
+	{
+		0, 1, 2, 0 ,2, 3, // front
+		4, 5, 6, 4, 6, 7, // right
+		8, 9,10, 8,10,11, // back
+		12,13,14,12,14,15, // left
+		16,17,18,16,18,19, // top
+		20,21,22,20,22,23 // bottom
+	};
+
+#pragma endregion
+
+	cube->Initialise(24, vertices, 36, indicies);
+	meshes.emplace("_crawlCube", cube);
 }
 
 void MeshManager::CreateQuad()

@@ -77,6 +77,10 @@ ModelManager::ModelManager()
 	Model* primitive = new Model();
 	primitive->meshes.push_back(MeshManager::GetMesh("_cube"));
 	resources.emplace("_cube", primitive);
+
+	primitive = new Model();
+	primitive->meshes.push_back(MeshManager::GetMesh("_crawlCube"));
+	resources.emplace("_crawlCube", primitive);
 	
 	primitive = new Model();
 	primitive->meshes.push_back(MeshManager::GetMesh("_quad"));

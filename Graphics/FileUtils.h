@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <glm.hpp>
 
 class FileUtils
 {
@@ -93,5 +94,14 @@ public:
 	{
 		istream.read(reinterpret_cast<char*>(&value), sizeof(bool));
 		return value;
+	}
+
+	static void StrWriteLine(std::ostream& ostream, std::string line)
+	{
+		ostream << line << std::endl;
+	}
+	static void StrWriteInt(std::ostream& ostream, int number)
+	{
+		StrWriteLine(ostream, std::to_string(number));
 	}
 };

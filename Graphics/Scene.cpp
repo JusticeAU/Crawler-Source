@@ -92,13 +92,37 @@ void Scene::UpdateInputs()
 	if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_D).Down())
 		DuplicateObject(selectedObject);
 
-	if (Input::Mouse(0).Down() && !ImGuizmo::IsOver())
+	// Disable Image render based object picking for now.
+	/*if (Input::Mouse(0).Down() && !ImGuizmo::IsOver())
 	{
 		requestedObjectSelection = true;
 		requestedSelectionPosition = Input::GetMousePosPixel();
-	}
+	}*/
+	
+	// Dungeon Editing
+	if (Input::Keyboard(GLFW_KEY_1).Down())
+		dungeonEditingEnabled = !dungeonEditingEnabled;
 
-	UpdateMousePosOnGrid();
+	if (dungeonEditingEnabled)
+	{
+		UpdateMousePosOnGrid();
+		if(Input::Mouse(0).Down())
+		{
+			Crawl::Hall* hall = dungeon.AddHall(gridSelected.x, gridSelected.y);
+			if (hall != nullptr)
+			{
+				Object* obj = DuplicateObject(objects[1]);
+				obj->localTransform[3][0] = gridSelected.x * GRID_SCALE;
+				obj->localTransform[3][2] = gridSelected.y * GRID_SCALE;
+
+				hall->object = obj;
+			}
+		}
+		if (Input::Mouse(2).Down())
+		{
+			dungeon.DeleteHall(gridSelected.x, gridSelected.y);
+		}
+	}
 }
 
 void Scene::Render()
@@ -181,8 +205,14 @@ void Scene::UpdateMousePosOnGrid()
 
 	float scale = rayStart.y / rayDir.y;
 	vec3 groundPos = rayStart - (rayDir * scale);
-	gridSelected.x = groundPos.x / GRID_SCALE;
-	gridSelected.y = groundPos.z / GRID_SCALE;
+	gridSelected.x = glm::round(groundPos.x / GRID_SCALE);
+	gridSelected.y = glm::round(groundPos.z / GRID_SCALE);
+
+	objects[0]->localTransform[3][0] = gridSelected.x * GRID_SCALE;
+	//objects[0]->localTransform[3][1] = 0;
+	objects[0]->localTransform[3][2] = gridSelected.y * GRID_SCALE;
+	objects[0]->dirtyTransform = true;
+
 }
 
 void Scene::DrawGizmos()
@@ -221,153 +251,175 @@ void Scene::DrawCameraToBackBuffer()
 }
 void Scene::DrawGUI()
 {	
-	ImGui::Begin("World Edit");
-	ImGui::BeginDisabled();
-	ImGui::DragInt2("Grid Selected", &gridSelected.x);
-	ImGui::EndDisabled();
-	ImGui::End();
-
-
-	ImGui::Begin("Shadow Map Dev");
-	ImGui::PushID(6969);
-
-	ImGui::BeginDisabled();
-	ImGui::InputFloat("Render Time", &renderTime, 0,0, "%0.6f");
-	ImGui::EndDisabled();
-
-	ImGui::DragFloat("Ortho Near",		&orthoNear);
-	ImGui::DragFloat("Ortho Far",		&orthoFar);
-	ImGui::DragFloat("Ortho Left",		&orthoLeft);
-	ImGui::DragFloat("Ortho Right",		&orthoRight);
-	ImGui::DragFloat("Ortho Bottom",	&orthoBottom);
-	ImGui::DragFloat("Ortho Top",		&orthoTop);
-	ImGui::Image((ImTextureID)(shadowMapDevOutput->GetTexture()->texID), { 512,512 }, { 0,1 }, { 1,0 });
-	
-	ImGui::PopID();
-	ImGui::End();
-
-	ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize({ 400, 900 }, ImGuiCond_FirstUseEver);
-	ImGui::Begin("Scene",0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-	if (ImGui::Button("Save"))
-		Save();
-	ImGui::SameLine();
-	if (ImGui::Button("Load"))
+	if (dungeonEditingEnabled)
 	{
-		ImGui::OpenPopup("popup_load_scene");
-		//Load();
-	}
+		ImGui::Begin("Dungeon Edit");
 
-	// Draw scene file list if requested
-	if (ImGui::BeginPopup("popup_load_scene"))
-	{
+		if (ImGui::Button("Save"))
+			dungeon.Save();
 		ImGui::SameLine();
-		ImGui::SeparatorText("Scene Name");
-		for (auto d : fs::recursive_directory_iterator("scenes"))
+		if (ImGui::Button("Load"))
 		{
-			if (d.path().has_extension() && d.path().extension() == ".scene")
+			dungeon.Load();
+			// Clear all Objects and create based on loaded dungeon.
+		}
+
+		ImGui::BeginDisabled();
+		ImGui::DragInt2("Grid Selected", &gridSelected.x);
+		// list coordinates as a test
+		for (auto& column : dungeon.halls)
+		{
+			for (auto& row : column.second.row)
 			{
-				string foundSceneName = d.path().filename().string();
-				string foundScenePath = d.path().relative_path().string();
-				if (ImGui::Selectable(foundScenePath.c_str()))
+				ImGui::DragInt2("Coordinate", &row.second.column);
+			}
+		}
+		ImGui::EndDisabled();
+		ImGui::End();
+	}
+	else
+	{
+		ImGui::Begin("Shadow Map Dev");
+		ImGui::PushID(6969);
+
+		ImGui::BeginDisabled();
+		ImGui::InputFloat("Render Time", &renderTime, 0, 0, "%0.6f");
+		ImGui::EndDisabled();
+
+		ImGui::DragFloat("Ortho Near", &orthoNear);
+		ImGui::DragFloat("Ortho Far", &orthoFar);
+		ImGui::DragFloat("Ortho Left", &orthoLeft);
+		ImGui::DragFloat("Ortho Right", &orthoRight);
+		ImGui::DragFloat("Ortho Bottom", &orthoBottom);
+		ImGui::DragFloat("Ortho Top", &orthoTop);
+		ImGui::Image((ImTextureID)(shadowMapDevOutput->GetTexture()->texID), { 512,512 }, { 0,1 }, { 1,0 });
+
+		ImGui::PopID();
+		ImGui::End();
+
+		ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize({ 400, 900 }, ImGuiCond_FirstUseEver);
+		ImGui::Begin("Scene", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+		if (ImGui::Button("Save"))
+			Save();
+		ImGui::SameLine();
+		if (ImGui::Button("Load"))
+		{
+			ImGui::OpenPopup("popup_load_scene");
+			//Load();
+		}
+
+		// Draw scene file list if requested
+		if (ImGui::BeginPopup("popup_load_scene"))
+		{
+			ImGui::SameLine();
+			ImGui::SeparatorText("Scene Name");
+			for (auto d : fs::recursive_directory_iterator("scenes"))
+			{
+				if (d.path().has_extension() && d.path().extension() == ".scene")
 				{
-					sceneFilename = foundSceneName;
-					Load(); // TODO - sanitize these paths properly 
+					string foundSceneName = d.path().filename().string();
+					string foundScenePath = d.path().relative_path().string();
+					if (ImGui::Selectable(foundScenePath.c_str()))
+					{
+						sceneFilename = foundSceneName;
+						Load(); // TODO - sanitize these paths properly 
+					}
 				}
 			}
+			ImGui::EndPopup();
 		}
-		ImGui::EndPopup();
-	}
 
-	ImGui::SameLine();
-	ImGui::InputText("Name", &sceneFilename);
+		ImGui::SameLine();
+		ImGui::InputText("Name", &sceneFilename);
 
-	ImGui::BeginDisabled();
-	int obj = selectedObjectID;
-	ImGui::InputInt("Selected Object", &obj);
-	ImGui::EndDisabled();
+		ImGui::BeginDisabled();
+		int obj = selectedObjectID;
+		ImGui::InputInt("Selected Object", &obj);
+		ImGui::EndDisabled();
 
-	if (ImGui::InputInt("Camera Number", &cameraIndex, 1))
-	{
-		if (cameraIndex > cameras.size() - 1)
-			cameraIndex = cameras.size() - 1;
-		outputCameraFrameBuffer = cameras[cameraIndex];
-
-
-		// This is fairly hacky. maybe the cameras should handle setting the audio listener themselves.
-		// Perhaps scenee camera and editor camera can become same thing and then audio manager can just look at camera::main or something
-		if (cameraIndex == 0)
-			AudioManager::SetAudioListener(Camera::s_instance->GetAudioListener());
-		else
-			AudioManager::SetAudioListener(componentCameras[cameraIndex - 1]->GetAudioListener());
-	}
-
-	float clearCol[3] = { clearColour.r, clearColour.g, clearColour.b, };
-	if (ImGui::ColorEdit3("Clear Colour", clearCol))
-		Scene::SetClearColour({ clearCol[0], clearCol[1], clearCol[2] });
-	
-	if (ImGui::CollapsingHeader("Scene Lighting"))
-	{
-		float ambientCol[3] = { m_ambientColour.r, m_ambientColour.g, m_ambientColour.b, };
-		if (ImGui::ColorEdit3("Ambient Light", ambientCol))
-			SetAmbientLightColour({ ambientCol[0], ambientCol[1], ambientCol[2] });
-		
-		float sunCol[3] = { m_sunColour.r, m_sunColour.g, m_sunColour.b, };
-		if (ImGui::ColorEdit3("Sun Colour", sunCol))
-			SetSunColour({ sunCol[0], sunCol[1], sunCol[2] });
-
-		float sunDir[3] = { m_sunDirection.x, m_sunDirection.y, m_sunDirection.z, };
-		if (ImGui::SliderFloat3("Sun Direction", &sunDir[0], -1, 1, "%.3f"))
-			SetSunDirection({ sunDir[0], sunDir[1], sunDir[2] });
-
-		unsigned int lightsAtStartOfFrame = m_pointLights.size();
-		if (lightsAtStartOfFrame == MAX_LIGHTS) ImGui::BeginDisabled();
-		if (ImGui::Button("New Point Light"))
-			m_pointLights.push_back(Light());
-		if (lightsAtStartOfFrame == MAX_LIGHTS) ImGui::EndDisabled();
-
-		// Draw all point lights
-		for (int i = 0; i < m_pointLights.size(); i++)
+		if (ImGui::InputInt("Camera Number", &cameraIndex, 1))
 		{
-			ImGui::PushID(i);
-			float pointCol[3] = { m_pointLights[i].colour.r, m_pointLights[i].colour.g, m_pointLights[i].colour.b,};
-			if (ImGui::ColorEdit3("Point Light Colour", &pointCol[0]))
-				m_pointLights[i].colour = { pointCol[0], pointCol[1], pointCol[2] };
+			if (cameraIndex > cameras.size() - 1)
+				cameraIndex = cameras.size() - 1;
+			outputCameraFrameBuffer = cameras[cameraIndex];
 
-			float pointPos[3] = { m_pointLights[i].position.x, m_pointLights[i].position.y, m_pointLights[i].position.z, };
-			if (ImGui::DragFloat3("Point Light Position", &pointPos[0]))
-				m_pointLights[i].position = { pointPos[0], pointPos[1], pointPos[2] };
 
-			ImGui::DragFloat("Intensity", &m_pointLights[i].intensity);
-			ImGui::SameLine();
-			if (ImGui::Button("Delete"))
-			{
-				m_pointLights.erase(m_pointLights.begin() + i);
-				i--;
-			}
-			ImGui::PopID();
+			// This is fairly hacky. maybe the cameras should handle setting the audio listener themselves.
+			// Perhaps scenee camera and editor camera can become same thing and then audio manager can just look at camera::main or something
+			if (cameraIndex == 0)
+				AudioManager::SetAudioListener(Camera::s_instance->GetAudioListener());
+			else
+				AudioManager::SetAudioListener(componentCameras[cameraIndex - 1]->GetAudioListener());
 		}
-	}
 
-	if (ImGui::Button("New Object"))
-		Scene::CreateObject();
-	
-	drawn3DGizmo = false;
-	for (auto o : objects)
-		o->DrawGUI();
+		float clearCol[3] = { clearColour.r, clearColour.g, clearColour.b, };
+		if (ImGui::ColorEdit3("Clear Colour", clearCol))
+			Scene::SetClearColour({ clearCol[0], clearCol[1], clearCol[2] });
 
-	ImGui::End();
+		if (ImGui::CollapsingHeader("Scene Lighting"))
+		{
+			float ambientCol[3] = { m_ambientColour.r, m_ambientColour.g, m_ambientColour.b, };
+			if (ImGui::ColorEdit3("Ambient Light", ambientCol))
+				SetAmbientLightColour({ ambientCol[0], ambientCol[1], ambientCol[2] });
 
-	if (Scene::GetSelectedObject() > 0)
-	{
-		// Draw Guizmo - very simple implementation - TODO have a 'selected object' context and mousewheel scroll through translate, rotate, scale options - rotate will need to be reworked.
-		ImGuizmo::SetRect(0, 0, Window::GetViewPortSize().x, Window::GetViewPortSize().y);
-		mat4 view, projection;
-		view = Camera::s_instance->GetView();
-		projection = Camera::s_instance->GetProjection();
-		if (ImGuizmo::Manipulate((float*)&view, (float*)&projection, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, (float*)&s_instance->selectedObject->localTransform))
-			s_instance->selectedObject->dirtyTransform = true;
-		Scene::s_instance->drawn3DGizmo = true;
+			float sunCol[3] = { m_sunColour.r, m_sunColour.g, m_sunColour.b, };
+			if (ImGui::ColorEdit3("Sun Colour", sunCol))
+				SetSunColour({ sunCol[0], sunCol[1], sunCol[2] });
+
+			float sunDir[3] = { m_sunDirection.x, m_sunDirection.y, m_sunDirection.z, };
+			if (ImGui::SliderFloat3("Sun Direction", &sunDir[0], -1, 1, "%.3f"))
+				SetSunDirection({ sunDir[0], sunDir[1], sunDir[2] });
+
+			unsigned int lightsAtStartOfFrame = m_pointLights.size();
+			if (lightsAtStartOfFrame == MAX_LIGHTS) ImGui::BeginDisabled();
+			if (ImGui::Button("New Point Light"))
+				m_pointLights.push_back(Light());
+			if (lightsAtStartOfFrame == MAX_LIGHTS) ImGui::EndDisabled();
+
+			// Draw all point lights
+			for (int i = 0; i < m_pointLights.size(); i++)
+			{
+				ImGui::PushID(i);
+				float pointCol[3] = { m_pointLights[i].colour.r, m_pointLights[i].colour.g, m_pointLights[i].colour.b, };
+				if (ImGui::ColorEdit3("Point Light Colour", &pointCol[0]))
+					m_pointLights[i].colour = { pointCol[0], pointCol[1], pointCol[2] };
+
+				float pointPos[3] = { m_pointLights[i].position.x, m_pointLights[i].position.y, m_pointLights[i].position.z, };
+				if (ImGui::DragFloat3("Point Light Position", &pointPos[0]))
+					m_pointLights[i].position = { pointPos[0], pointPos[1], pointPos[2] };
+
+				ImGui::DragFloat("Intensity", &m_pointLights[i].intensity);
+				ImGui::SameLine();
+				if (ImGui::Button("Delete"))
+				{
+					m_pointLights.erase(m_pointLights.begin() + i);
+					i--;
+				}
+				ImGui::PopID();
+			}
+		}
+
+		if (ImGui::Button("New Object"))
+			Scene::CreateObject();
+
+		drawn3DGizmo = false;
+		for (auto o : objects)
+			o->DrawGUI();
+
+		ImGui::End();
+
+		if (Scene::GetSelectedObject() > 0)
+		{
+			// Draw Guizmo - very simple implementation - TODO have a 'selected object' context and mousewheel scroll through translate, rotate, scale options - rotate will need to be reworked.
+			ImGuizmo::SetRect(0, 0, Window::GetViewPortSize().x, Window::GetViewPortSize().y);
+			mat4 view, projection;
+			view = Camera::s_instance->GetView();
+			projection = Camera::s_instance->GetProjection();
+			if (ImGuizmo::Manipulate((float*)&view, (float*)&projection, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, (float*)&s_instance->selectedObject->localTransform))
+				s_instance->selectedObject->dirtyTransform = true;
+			Scene::s_instance->drawn3DGizmo = true;
+		}
 	}
 }
 
@@ -419,7 +471,7 @@ Object* Scene::DuplicateObject(Object* object)
 	o->localTransform = object->localTransform;
 	o->dirtyTransform = true;
 	o->RefreshComponents();
-	SetSelectedObject(o->id);
+	//SetSelectedObject(o->id);
 
 	return o;
 }

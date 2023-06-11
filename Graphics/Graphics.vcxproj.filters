@@ -59,6 +59,9 @@
     <Filter Include="Source Files\Application\Audio">
       <UniqueIdentifier>{800c4311-ed0d-4827-b2a4-3c4eff7b86ec}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Application\Crawl">
+      <UniqueIdentifier>{e59a8875-a180-4083-99f7-968dc4fabf36}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -257,6 +260,9 @@
     <ClCompile Include="ComponentAudioSource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Dungeon.cpp">
+      <Filter>Source Files\Application\Crawl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -428,5 +434,8 @@
       <Filter>Source Files\Application\Audio</Filter>
     </ClInclude>
     <ClInclude Include="ComponentAudioSource.h" />
+    <ClInclude Include="Dungeon.h">
+      <Filter>Source Files\Application\Crawl</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
