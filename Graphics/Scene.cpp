@@ -104,25 +104,7 @@ void Scene::UpdateInputs()
 		dungeonEditingEnabled = !dungeonEditingEnabled;
 
 	if (dungeonEditingEnabled)
-	{
-		UpdateMousePosOnGrid();
-		if(Input::Mouse(0).Down())
-		{
-			Crawl::Hall* hall = dungeon.AddHall(gridSelected.x, gridSelected.y);
-			if (hall != nullptr)
-			{
-				Object* obj = DuplicateObject(objects[1]);
-				obj->localTransform[3][0] = gridSelected.x * GRID_SCALE;
-				obj->localTransform[3][2] = gridSelected.y * GRID_SCALE;
-
-				hall->object = obj;
-			}
-		}
-		if (Input::Mouse(2).Down())
-		{
-			dungeon.DeleteHall(gridSelected.x, gridSelected.y);
-		}
-	}
+		dungeonEditor.Update();
 }
 
 void Scene::Render()
@@ -196,25 +178,6 @@ void Scene::RenderEditorCamera()
 	FrameBuffer::UnBindTarget();
 }
 
-void Scene::UpdateMousePosOnGrid()
-{
-	vec2 NDC = Input::GetMousePosNDC();
-
-	vec3 rayStart = Camera::s_instance->position;
-	vec3 rayDir = Camera::s_instance->GetRayFromNDC(NDC);
-
-	float scale = rayStart.y / rayDir.y;
-	vec3 groundPos = rayStart - (rayDir * scale);
-	gridSelected.x = glm::round(groundPos.x / GRID_SCALE);
-	gridSelected.y = glm::round(groundPos.z / GRID_SCALE);
-
-	objects[0]->localTransform[3][0] = gridSelected.x * GRID_SCALE;
-	//objects[0]->localTransform[3][1] = 0;
-	objects[0]->localTransform[3][2] = gridSelected.y * GRID_SCALE;
-	objects[0]->dirtyTransform = true;
-
-}
-
 void Scene::DrawGizmos()
 {
 	// render light gizmos only to main 'editor' camera
@@ -252,31 +215,7 @@ void Scene::DrawCameraToBackBuffer()
 void Scene::DrawGUI()
 {	
 	if (dungeonEditingEnabled)
-	{
-		ImGui::Begin("Dungeon Edit");
-
-		if (ImGui::Button("Save"))
-			dungeon.Save();
-		ImGui::SameLine();
-		if (ImGui::Button("Load"))
-		{
-			dungeon.Load();
-			// Clear all Objects and create based on loaded dungeon.
-		}
-
-		ImGui::BeginDisabled();
-		ImGui::DragInt2("Grid Selected", &gridSelected.x);
-		// list coordinates as a test
-		for (auto& column : dungeon.halls)
-		{
-			for (auto& row : column.second.row)
-			{
-				ImGui::DragInt2("Coordinate", &row.second.column);
-			}
-		}
-		ImGui::EndDisabled();
-		ImGui::End();
-	}
+		dungeonEditor.DrawGUI();
 	else
 	{
 		ImGui::Begin("Shadow Map Dev");

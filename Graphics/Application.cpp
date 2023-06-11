@@ -117,7 +117,7 @@ void Application::LaunchArgument(char* arg)
 	else if (argument == "model")
 		LogUtils::Log("Model mode was request - Not yet implemented");
 	else if (argument == "dev")
-		LogUtils::Log("dev mode was request - this is currently the default mode anyway");
+		LogUtils::Log("dev mode was request - this is currently the default mode for now");
 }
 
 void Application::Run()

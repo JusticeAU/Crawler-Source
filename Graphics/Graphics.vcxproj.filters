@@ -263,6 +263,9 @@
     <ClCompile Include="Dungeon.cpp">
       <Filter>Source Files\Application\Crawl</Filter>
     </ClCompile>
+    <ClCompile Include="DungeonEditor.cpp">
+      <Filter>Source Files\Application\Crawl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -435,6 +438,9 @@
     </ClInclude>
     <ClInclude Include="ComponentAudioSource.h" />
     <ClInclude Include="Dungeon.h">
+      <Filter>Source Files\Application\Crawl</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonEditor.h">
       <Filter>Source Files\Application\Crawl</Filter>
     </ClInclude>
   </ItemGroup>

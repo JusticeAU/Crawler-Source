@@ -104,4 +104,10 @@ public:
 	{
 		StrWriteLine(ostream, std::to_string(number));
 	}
+
+	static bool CheckFileExists(std::string filepath)
+	{
+		std::ifstream f(filepath.c_str());
+		return f.good();
+	}
 };
