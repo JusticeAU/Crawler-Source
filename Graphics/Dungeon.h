@@ -12,14 +12,24 @@ namespace Crawl
 	{
 		int column, row;
 		bool occupied = false;
-
 		Object* object = nullptr;
 	};
 	struct Column
 	{
 		std::map<int, Hall> row;
 	};
-
+	struct Position
+	{
+		int column = 0;
+		int row = 0;
+	};
+	enum DIRECTION
+	{
+		NORTH,
+		EAST,
+		SOUTH,
+		WEST
+	};
 	class Dungeon
 	{
 	public:
@@ -41,6 +51,9 @@ namespace Crawl
 	
 	protected:
 		void InitialiseTileMap();
+
+		// Before loading a dungeon, this will mark every scene object for deletion before clearing off the hallways.
+		void DestroySceneFromDungeonLayout();
 		// After loading a dungeon, this will build it in the Scene graph based on tile adjacency. used on editor and playmode dungeon loading.
 		void BuildSceneFromDungeonLayout();
 		// Calculates the tile mask based on adjacent tiles
@@ -51,6 +64,7 @@ namespace Crawl
 
 		const int version = 1; // increment this when the .dungeon file schema changes and ensure backwards compatibility.
 		std::map<int, Column> halls;
+		Position spawn;
 		Object* tilemap[16];
 	};
 }

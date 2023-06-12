@@ -25,9 +25,7 @@ void Crawl::DungeonEditor::DrawGUI()
 		ImGui::BeginDisabled();
 
 	if (ImGui::Button("Save"))
-	{
 		Save();
-	}
 
 	if (dungeonFilePath == "")
 		ImGui::EndDisabled();

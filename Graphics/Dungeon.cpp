@@ -117,6 +117,7 @@ void Crawl::Dungeon::Load(std::string filename)
 	std::string line;
 	if (inFile.is_open())
 	{
+		DestroySceneFromDungeonLayout();
 		halls.clear();
 
 		int version = 0;
@@ -248,6 +249,18 @@ void Crawl::Dungeon::InitialiseTileMap()
 
 }
 
+void Crawl::Dungeon::DestroySceneFromDungeonLayout()
+{
+	for (auto& column : halls)
+	{
+		for (auto& row : column.second.row)
+		{
+			Crawl::Hall* hall = &row.second;
+			hall->object->markedForDeletion = true;
+		}
+	}
+}
+
 Object* Crawl::Dungeon::GetTileTemplate(int mask)
 {
 	return tilemap[mask];
@@ -285,10 +298,6 @@ int Crawl::Dungeon::GetTileMask(int col, int row)
 
 void Crawl::Dungeon::BuildSceneFromDungeonLayout()
 {
-	// delete all objects representing dungeon bits
-	while (Scene::s_instance->objects.size() > 1) // this is shit
-		Scene::s_instance->objects.erase(Scene::s_instance->objects.end() - 1);
-
 	// for each hallway, create an object.
 	for (auto& column : halls)
 	{
