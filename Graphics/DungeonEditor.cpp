@@ -15,41 +15,55 @@ Crawl::DungeonEditor::DungeonEditor()
 
 void Crawl::DungeonEditor::DrawGUI()
 {
-	ImGui::Begin("Dungeon Edit");
+	ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_Always);
+	ImGui::Begin("Dungeon Edit", 0, ImGuiWindowFlags_NoMove);
 	ImGui::BeginDisabled();
 	ImGui::Text(dungeonFileName.c_str());
 	ImGui::EndDisabled();
+	
+	if(dungeonFilePath == "")
+		ImGui::BeginDisabled();
+
 	if (ImGui::Button("Save"))
-		dungeon->Save(dungeonFileName);
+	{
+		Save();
+	}
+
+	if (dungeonFilePath == "")
+		ImGui::EndDisabled();
+
 	ImGui::SameLine();
 	if (ImGui::Button("Save As"))
 	{
 		didSaveAs = false;
-		ImGui::OpenPopup("dungeon_save_as");
+		ImGui::OpenPopup("Save As");
 		dungeonFileNameSaveAs = dungeonFileName;
 	}
 
 	ImGui::SameLine();
 	if (ImGui::Button("Load"))
-		ImGui::OpenPopup("popup_load_dungeon");
+		ImGui::OpenPopup("Load Dungeon");
 
 	ImGui::BeginDisabled();
 	ImGui::DragInt2("Grid Selected", &gridSelected.x);
 	ImGui::EndDisabled();
 
 	// Save As prompt
-	if (ImGui::BeginPopupModal("dungeon_save_as"))
+	ImGui::SetNextWindowSize({ 300, 100 });
+	ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_Always);
+	if (ImGui::BeginPopupModal("Save As",0, ImGuiWindowFlags_NoCollapse & ImGuiWindowFlags_NoResize & ImGuiWindowFlags_NoMove))
 	{
 		ImGui::PushID("save_popup");
-		ImGui::InputText("File Name", &dungeonFileNameSaveAs);
+		ImGui::InputText(extension.c_str(), &dungeonFileNameSaveAs);
 		if (ImGui::Button("Save"))
 		{
-			if (FileUtils::CheckFileExists(dungeonFileNameSaveAs))
-				ImGui::OpenPopup("dungeon_save_as_file_exists");
+			if (FileUtils::CheckFileExists(GetDungeonFilePath()))
+				ImGui::OpenPopup("Overwrite Existing File");
 			else
 			{
 				dungeonFileName = dungeonFileNameSaveAs;
-				dungeon->Save(dungeonFileName);
+				didSaveAs = true;
+				Save();
 			}
 
 		}
@@ -57,16 +71,18 @@ void Crawl::DungeonEditor::DrawGUI()
 		if (ImGui::Button("Cancel"))
 			ImGui::CloseCurrentPopup();
 
-		if (ImGui::BeginPopupModal("dungeon_save_as_file_exists"))
+		ImGui::SetNextWindowSize({ 300, 100 });
+		ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_Always);
+		if (ImGui::BeginPopupModal("Overwrite Existing File", 0, ImGuiWindowFlags_NoCollapse & ImGuiWindowFlags_NoResize & ImGuiWindowFlags_NoMove))
 		{
 			ImGui::PushID("save_popup_exists");
 			ImGui::Text("File already exists. Are you sure?");
 			if (ImGui::Button("Save"))
 			{
 				dungeonFileName = dungeonFileNameSaveAs;
-				dungeon->Save(dungeonFileName);
 				ImGui::CloseCurrentPopup();
 				didSaveAs = true;
+				Save();
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("Cancel"))
@@ -81,21 +97,22 @@ void Crawl::DungeonEditor::DrawGUI()
 		ImGui::EndPopup();
 	}
 
-	// Draw scene file list if requested
-	if (ImGui::BeginPopup("popup_load_dungeon"))
+	// Draw dungeon file list if requested
+	if (ImGui::BeginPopup("Load Dungeon"))
 	{
 		ImGui::SameLine();
 		ImGui::SeparatorText("Dungeon Name");
-		for (auto d : fs::recursive_directory_iterator("crawl/dungeons"))
+		for (auto d : fs::recursive_directory_iterator(subfolder))
 		{
-			if (d.path().has_extension() && d.path().extension() == ".dungeon")
+			if (d.path().has_extension() && d.path().extension() == extension)
 			{
-				string foundSceneName = d.path().filename().string();
-				string foundScenePath = d.path().relative_path().string();
-				if (ImGui::Selectable(foundScenePath.c_str()))
+				string foundDungeonName = d.path().stem().string();
+				string foundDungeonPath = d.path().relative_path().string();
+				if (ImGui::Selectable(foundDungeonPath.c_str()))
 				{
-					dungeonFileName = foundScenePath;
-					dungeon->Load(dungeonFileName);
+					dungeonFilePath = foundDungeonPath;
+					dungeonFileName = foundDungeonName;
+					dungeon->Load(dungeonFilePath);
 				}
 			}
 		}
@@ -160,4 +177,19 @@ void Crawl::DungeonEditor::UpdateSurroundingTiles(int column, int row)
 			}
 		}
 	}
+}
+
+void Crawl::DungeonEditor::Save()
+{
+	
+	dungeon->Save(GetDungeonFilePath());
+}
+
+std::string Crawl::DungeonEditor::GetDungeonFilePath()
+{
+	std::string filename;
+	filename += subfolder;
+	filename += dungeonFileNameSaveAs;
+	filename += extension;
+	return filename;
 }

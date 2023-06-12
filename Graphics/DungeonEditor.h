@@ -11,14 +11,23 @@ namespace Crawl
 
 		void DrawGUI();
 		void Update();
+	protected:
 		void UpdateMousePosOnGrid();
 		void UpdateSurroundingTiles(int column, int row);
+
+		// Save the dungeon to file.
+		void Save();
+
+		std::string GetDungeonFilePath();
 
 		Dungeon* dungeon = nullptr;
 		glm::ivec2 gridSelected = { 0, 0 };
 
-		std::string dungeonFileName = "crawl/dungeons/test.dungeon";
-		std::string dungeonFileNameSaveAs = "crawl/dungeons/test.dungeon";
+		std::string subfolder = "crawl/dungeons/";
+		std::string extension = ".dungeon";
+		std::string dungeonFileName = "new_dungeon";
+		std::string dungeonFileNameSaveAs = "";
+		std::string dungeonFilePath = "";
 
 		// GUI helpers
 		bool saveAsPrompt = false;
