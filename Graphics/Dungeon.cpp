@@ -87,6 +87,11 @@ bool Crawl::Dungeon::IsOpenHall(int column, int row)
 	return true;
 }
 
+bool Crawl::Dungeon::CanMove(int fromColumn, int fromRow, int toColumn, int toRow)
+{
+	return IsOpenHall(fromColumn, fromRow) && IsOpenHall(toColumn, toRow);
+}
+
 void Crawl::Dungeon::Save(std::string filename)
 {
 	std::ofstream outFile(filename, std::ios_base::trunc);

@@ -70,13 +70,17 @@ void Scene::Init()
 {
 	s_instance = new Scene();
 	Scene::SetClearColour({ 0.25f, 0.25, 0.25 });
+
+	s_instance->dungeon = new Crawl::Dungeon();
+	s_instance->dungeonEditor.SetDungeon(s_instance->dungeon);
+	s_instance->dungeonPlayer.SetDungeon(s_instance->dungeon);
 }
 
 void Scene::Update(float deltaTime)
 {
 	UpdateInputs();
 
-	// Updatee all Objects
+	// Update all Objects
 	for (auto o : objects)
 		o->Update(deltaTime);
 
@@ -86,6 +90,9 @@ void Scene::Update(float deltaTime)
 		m_pointLightColours[i] = m_pointLights[i].colour * m_pointLights[i].intensity;
 		m_pointLightPositions[i] = m_pointLights[i].position;
 	}
+
+	if(isDungeonGaming)
+		dungeonPlayer.Update();
 }
 void Scene::UpdateInputs()
 {
@@ -102,6 +109,16 @@ void Scene::UpdateInputs()
 	// Dungeon Editing
 	if (Input::Keyboard(GLFW_KEY_1).Down())
 		dungeonEditingEnabled = !dungeonEditingEnabled;
+
+	if (Input::Keyboard(GLFW_KEY_2).Down())
+	{
+		isDungeonGaming = !isDungeonGaming;
+		if (isDungeonGaming)
+			cameraIndex = 1;
+		else
+			cameraIndex = 0;
+		outputCameraFrameBuffer = cameras[cameraIndex];
+	}
 
 	if (dungeonEditingEnabled)
 		dungeonEditor.Update();

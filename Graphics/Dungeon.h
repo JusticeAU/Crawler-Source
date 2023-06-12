@@ -23,13 +23,6 @@ namespace Crawl
 		int column = 0;
 		int row = 0;
 	};
-	enum DIRECTION
-	{
-		NORTH,
-		EAST,
-		SOUTH,
-		WEST
-	};
 	class Dungeon
 	{
 	public:

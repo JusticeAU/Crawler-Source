@@ -5,6 +5,7 @@
 #include <string>
 
 #include "DungeonEditor.h"
+#include "DungeonPlayer.h"
 
 using std::vector;
 using std::to_string;
@@ -80,13 +81,13 @@ protected:
 	void RenderEditorCamera();
 
 	// Dungeon Level Editing Stuff. To be moved in to own class possibly. *******
-	//void UpdateMousePosOnGrid();
-	//const int GRID_SCALE = 5;
-	//glm::ivec2 gridSelected;
+	Crawl::Dungeon* dungeon;
 	Crawl::DungeonEditor dungeonEditor;
+	Crawl::DungeonPlayer dungeonPlayer;
 
 public:
 	bool dungeonEditingEnabled = false;
+	bool isDungeonGaming = false;
 
 protected:
 	string sceneSubfolder = "scenes/";

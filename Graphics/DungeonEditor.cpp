@@ -10,7 +10,7 @@ namespace fs = std::filesystem;
 
 Crawl::DungeonEditor::DungeonEditor()
 {
-	dungeon = new Dungeon();
+	
 }
 
 void Crawl::DungeonEditor::DrawGUI()

@@ -9,6 +9,7 @@ namespace Crawl
 	public:
 		DungeonEditor();
 
+		void SetDungeon(Dungeon* dungeonPtr) { dungeon = dungeonPtr; }
 		void DrawGUI();
 		void Update();
 	protected:
