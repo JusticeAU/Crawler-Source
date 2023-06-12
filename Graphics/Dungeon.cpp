@@ -164,8 +164,8 @@ void Crawl::Dungeon::InitialiseTileMap()
 	tilemap[0]->components.push_back(model);
 	renderer = (ComponentRenderer*)ComponentFactory::NewComponent(tilemap[0], Component_Renderer);
 	renderer->shader = ShaderManager::GetShaderProgram("shaders/lambertLitSingleLight");
-	renderer->texture = TextureManager::GetTexture("models/crawl/blockout/Mage_Room.png");
-	renderer->textureName = "models/crawl/blockout/Mage_Room.png";
+	renderer->texture = TextureManager::GetTexture("models/crawl/blockout/Mage_Room32.png");
+	renderer->textureName = "models/crawl/blockout/Mage_Room32.png";
 	tilemap[0]->components.push_back(renderer);
 
 	// U Bends
@@ -246,10 +246,6 @@ void Crawl::Dungeon::InitialiseTileMap()
 	model->model = ModelManager::GetModel("models/crawl/blockout/hallOpen.fbx");
 	model->modelName = "models/crawl/blockout/hallOpen.fbx";
 	tilemap[15]->components.push_back(model);
-	renderer = (ComponentRenderer*)ComponentFactory::NewComponent(tilemap[15], Component_Renderer);
-	renderer->shader = ShaderManager::GetShaderProgram("shaders/lambertLitSingleLight");
-	renderer->texture = TextureManager::GetTexture("models/crawl/blockout/Mage_Room.png");
-	renderer->textureName = "models/crawl/blockout/Mage_Room.png";
 	tilemap[15]->components.push_back(renderer);
 
 }

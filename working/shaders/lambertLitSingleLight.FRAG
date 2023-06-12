@@ -17,5 +17,5 @@ void main()
 	float lightValue = clamp(dot(-sunLightDirection, _Normal), 0.0, 1.0);
 	lightValue += 0.3f;
 	vec3 texColour = texture(diffuseTex, _TexCoords).rgb;
-	FragColour = vec4(texColour* lightValue, 1);
+	FragColour = vec4(texColour * lightValue, 1);
 }
