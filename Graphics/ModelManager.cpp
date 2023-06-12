@@ -104,7 +104,8 @@ void ModelManager::LoadFromFile(const char* filename)
 	const aiScene* scene = importer.ReadFile(filename,
 		aiProcess_CalcTangentSpace	|
 		aiProcess_FlipWindingOrder	|
-		aiProcess_LimitBoneWeights);
+		aiProcess_LimitBoneWeights	|
+		aiProcess_Triangulate);
 
 	// Create a new model to start pushing our data in to.
 	Model* model = new Model();

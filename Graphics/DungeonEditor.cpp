@@ -6,6 +6,8 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
+#include "LogUtils.h"
+
 Crawl::DungeonEditor::DungeonEditor()
 {
 	dungeon = new Dungeon();
@@ -94,8 +96,6 @@ void Crawl::DungeonEditor::DrawGUI()
 				{
 					dungeonFileName = foundScenePath;
 					dungeon->Load(dungeonFileName);
-					// now need to process the dungeon and attach assets to each Hall
-					BuildSceneFromDungeonLayout();
 				}
 			}
 		}
@@ -107,21 +107,18 @@ void Crawl::DungeonEditor::DrawGUI()
 void Crawl::DungeonEditor::Update()
 {
 	UpdateMousePosOnGrid();
-	if (Input::Mouse(0).Down())
+
+	if (Input::Mouse(0).Pressed())
 	{
 		Crawl::Hall* hall = dungeon->AddHall(gridSelected.x, gridSelected.y);
 		if (hall != nullptr)
-		{
-			Object* obj = Scene::s_instance->DuplicateObject(Scene::s_instance->objects[1]);
-			obj->localTransform[3][0] = gridSelected.x * GRID_SCALE;
-			obj->localTransform[3][2] = gridSelected.y * GRID_SCALE;
-
-			hall->object = obj;
-		}
+			UpdateSurroundingTiles(hall->column, hall->row);
 	}
-	if (Input::Mouse(2).Down())
+
+	if (Input::Mouse(2).Pressed())
 	{
-		dungeon->DeleteHall(gridSelected.x, gridSelected.y);
+		if(dungeon->DeleteHall(gridSelected.x, gridSelected.y))
+			UpdateSurroundingTiles(gridSelected.x, gridSelected.y);
 	}
 }
 
@@ -137,35 +134,30 @@ void Crawl::DungeonEditor::UpdateMousePosOnGrid()
 
 	float scale = rayStart.y / rayDir.y;
 	vec3 groundPos = rayStart - (rayDir * scale);
-	gridSelected.x = glm::round(groundPos.x / GRID_SCALE);
-	gridSelected.y = glm::round(groundPos.z / GRID_SCALE);
+	gridSelected.x = glm::round(groundPos.x / DUNGEON_GRID_SCALE);
+	gridSelected.y = glm::round(groundPos.z / DUNGEON_GRID_SCALE);
 
-	Scene::s_instance->objects[0]->localTransform[3][0] = gridSelected.x * GRID_SCALE;
+	Scene::s_instance->objects[0]->localTransform[3][0] = gridSelected.x * DUNGEON_GRID_SCALE;
 	Scene::s_instance->objects[0]->localTransform[3][1] = 0;
-	Scene::s_instance->objects[0]->localTransform[3][2] = gridSelected.y * GRID_SCALE;
+	Scene::s_instance->objects[0]->localTransform[3][2] = gridSelected.y * DUNGEON_GRID_SCALE;
 	Scene::s_instance->objects[0]->dirtyTransform = true;
 }
 
-/// <summary>
-/// After loading a dungeon, this will build it in the scene graph based on object templates.
-/// This logic should probably move somewhere else. We'll also need to use this when just loading the game - so it's not a DungeonEditor specific function.
-/// </summary>
-void Crawl::DungeonEditor::BuildSceneFromDungeonLayout()
+void Crawl::DungeonEditor::UpdateSurroundingTiles(int column, int row)
 {
-	while (Scene::s_instance->objects.size() > 2) // this is shit
-		Scene::s_instance->objects.erase(Scene::s_instance->objects.end()-1);
-
-
-	for (auto& column : dungeon->halls)
+	for (int co = column - 1; co <= column + 1; co++)
 	{
-		for (auto& row : column.second.row)
+		for (int ro = row - 1; ro <= row + 1; ro++)
 		{
-			Crawl::Hall* hall = &row.second;
-			Object* obj = Scene::s_instance->DuplicateObject(Scene::s_instance->objects[1]);
-			obj->localTransform[3][0] = hall->column * GRID_SCALE;
-			obj->localTransform[3][2] = hall->row * GRID_SCALE;
+			Hall* hall = dungeon->GetHall(co, ro);
 
-			hall->object = obj;
+			if(hall != nullptr)
+			{
+				if(hall->object != nullptr)
+					hall->object->markedForDeletion = true;
+
+				dungeon->CreateTileObject(hall);
+			}
 		}
 	}
 }

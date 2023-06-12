@@ -408,6 +408,7 @@ Object* Scene::DuplicateObject(Object* object)
 	}
 
 	o->localTransform = object->localTransform;
+	o->eulerRotation = object->eulerRotation;
 	o->dirtyTransform = true;
 	o->RefreshComponents();
 	//SetSelectedObject(o->id);
