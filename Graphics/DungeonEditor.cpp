@@ -147,14 +147,14 @@ void Crawl::DungeonEditor::UpdateMousePosOnGrid()
 	vec3 rayStart = Camera::s_instance->position;
 	vec3 rayDir = Camera::s_instance->GetRayFromNDC(NDC);
 
-	float scale = rayStart.y / rayDir.y;
+	float scale = rayStart.z / rayDir.z;
 	vec3 groundPos = rayStart - (rayDir * scale);
 	gridSelected.x = glm::round(groundPos.x / DUNGEON_GRID_SCALE);
-	gridSelected.y = glm::round(groundPos.z / DUNGEON_GRID_SCALE);
+	gridSelected.y = glm::round(groundPos.y / DUNGEON_GRID_SCALE);
 
 	Scene::s_instance->objects[0]->localTransform[3][0] = gridSelected.x * DUNGEON_GRID_SCALE;
-	Scene::s_instance->objects[0]->localTransform[3][1] = 0;
-	Scene::s_instance->objects[0]->localTransform[3][2] = gridSelected.y * DUNGEON_GRID_SCALE;
+	Scene::s_instance->objects[0]->localTransform[3][1] = gridSelected.y * DUNGEON_GRID_SCALE;
+	Scene::s_instance->objects[0]->localTransform[3][2] = 0;
 	Scene::s_instance->objects[0]->dirtyTransform = true;
 }
 

@@ -44,9 +44,9 @@ namespace Crawl
 
 		// this is indexed in to by GetMoveCoordinate;
 		glm::ivec2 directions[4] = {
-			{0, -1},
+			{0, 1},
 			{1, 0},
-			{0,1},
+			{0,-1},
 			{-1,0}
 		};
 	};

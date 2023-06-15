@@ -68,7 +68,7 @@ void Crawl::Dungeon::CreateTileObject(Hall* hall)
 
 	Object* obj = Scene::s_instance->DuplicateObject(GetTileTemplate(mask));
 	obj->localTransform[3][0] = hall->column * DUNGEON_GRID_SCALE;
-	obj->localTransform[3][2] = hall->row * DUNGEON_GRID_SCALE;
+	obj->localTransform[3][1] = hall->row * DUNGEON_GRID_SCALE;
 	obj->dirtyTransform = true;
 
 	hall->object = obj;
@@ -170,74 +170,75 @@ void Crawl::Dungeon::InitialiseTileMap()
 
 	// U Bends
 	tilemap[1] = new Object(0, "Open North");
-	tilemap[1]->eulerRotation.y = -90.0f;
+
 	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[1], Component_Model);
 	model->model = ModelManager::GetModel("models/crawl/blockout/hallU.fbx");
 	model->modelName = "models/crawl/blockout/hallU.fbx";
 	tilemap[1]->components.push_back(model);
 	tilemap[1]->components.push_back(renderer);
 	tilemap[2] = new Object(0, "Open West");
-	tilemap[2]->eulerRotation.y = 180.0f;
+	tilemap[2]->eulerRotation.z = 90.0f;
 	tilemap[2]->components.push_back(model);
 	tilemap[2]->components.push_back(renderer);
 	tilemap[4] = new Object(0, "Open East");
+	tilemap[4]->eulerRotation.z = -90.0f;
 	tilemap[4]->components.push_back(model);
 	tilemap[4]->components.push_back(renderer);
 	tilemap[8] = new Object(0, "Open South");
-	tilemap[8]->eulerRotation.y = 90.0f;
+	tilemap[8]->eulerRotation.z = 180.0f;
 	tilemap[8]->components.push_back(model);
 	tilemap[8]->components.push_back(renderer);
 
 	// Corners
 	tilemap[3] = new Object(0, "Open North West");
-	tilemap[3]->eulerRotation.y = -90.0f;
+	tilemap[3]->eulerRotation.z = -90.0f;
 	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[3], Component_Model);
 	model->model = ModelManager::GetModel("models/crawl/blockout/hallCorner.fbx");
 	model->modelName = "models/crawl/blockout/hallhallCorner.fbx";
 	tilemap[3]->components.push_back(model);
 	tilemap[3]->components.push_back(renderer);
 	tilemap[5] = new Object(0, "Open North East");
+	tilemap[5]->eulerRotation.z = 180.0f;
 	tilemap[5]->components.push_back(model);
 	tilemap[5]->components.push_back(renderer);
 	tilemap[10] = new Object(0, "Open West South");
-	tilemap[10]->eulerRotation.y = 180.0f;
 	tilemap[10]->components.push_back(model);
 	tilemap[10]->components.push_back(renderer);
 	tilemap[12] = new Object(0, "Open East South");
-	tilemap[12]->eulerRotation.y = 90.0f;
+	tilemap[12]->eulerRotation.z = 90.0f;
 	tilemap[12]->components.push_back(model);
 	tilemap[12]->components.push_back(renderer);
 
 
 	// tunnels
 	tilemap[6] = new Object(0, "Open West East");
+	tilemap[6]->eulerRotation.z = 90.0f;
 	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[3], Component_Model);
 	model->model = ModelManager::GetModel("models/crawl/blockout/hallSides.fbx");
 	model->modelName = "models/crawl/blockout/hallSides.fbx";
 	tilemap[6]->components.push_back(model);
 	tilemap[6]->components.push_back(renderer);
 	tilemap[9] = new Object(0, "Open North South");
-	tilemap[9]->eulerRotation.y = 90.0f;
 	tilemap[9]->components.push_back(model);
 	tilemap[9]->components.push_back(renderer);
 
 	// walls
 	tilemap[7] = new Object(0, "Open North West East");
-	tilemap[7]->eulerRotation.y = -90.0f;
+	tilemap[7]->eulerRotation.z = 90.0f;
 	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[7], Component_Model);
 	model->model = ModelManager::GetModel("models/crawl/blockout/hallWall.fbx");
 	model->modelName = "models/crawl/blockout/hallWall.fbx";
 	tilemap[7]->components.push_back(model);
 	tilemap[7]->components.push_back(renderer);
 	tilemap[11] = new Object(0, "Open North West South");
-	tilemap[11]->eulerRotation.y = 180.0f;
+	tilemap[11]->eulerRotation.z = 180.0f;
 	tilemap[11]->components.push_back(model);
 	tilemap[11]->components.push_back(renderer);
 	tilemap[13] = new Object(0, "Open North East South");
 	tilemap[13]->components.push_back(model);
 	tilemap[13]->components.push_back(renderer);
 	tilemap[14] = new Object(0, "Open West East South");
-	tilemap[14]->eulerRotation.y = 90.0f;
+	tilemap[14]->eulerRotation.z = -90.0f;
 	tilemap[14]->components.push_back(model);
 	tilemap[14]->components.push_back(renderer);
 

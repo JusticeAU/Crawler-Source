@@ -6,8 +6,8 @@
 Camera::Camera(float aspect, string name)
 {
 	position = { -6.25, 6.5, 16.38 };
-	m_horizontal = -71.4f;
-	m_vertical = -3.9f;
+	m_horizontal = 0;
+	m_vertical = 0;
 
 	this->aspect = aspect;
 
@@ -39,15 +39,15 @@ void Camera::Update(float delta)
 	{
 		// Update camera rotation
 		vec2 mouseDelta = Input::GetMouseDelta();
-		m_horizontal += lookSpeed * mouseDelta.x;
+		m_horizontal -= lookSpeed * mouseDelta.x;
 		m_vertical -= lookSpeed * mouseDelta.y;
 		// clamp to avoid gimbal lock
 		m_vertical = glm::clamp(m_vertical, -89.9f, 89.9f);
 
 		if (Input::Keyboard(GLFW_KEY_A).Pressed() || Input::Keyboard(GLFW_KEY_LEFT).Pressed())
-			Move(-right * moveSpeed * delta);
-		if (Input::Keyboard(GLFW_KEY_D).Pressed() || Input::Keyboard(GLFW_KEY_RIGHT).Pressed())
 			Move(right * moveSpeed * delta);
+		if (Input::Keyboard(GLFW_KEY_D).Pressed() || Input::Keyboard(GLFW_KEY_RIGHT).Pressed())
+			Move(-right * moveSpeed * delta);
 
 		if (Input::Keyboard(GLFW_KEY_W).Pressed() || Input::Keyboard(GLFW_KEY_UP).Pressed())
 			Move(forward * moveSpeed * delta);
@@ -128,11 +128,11 @@ void Camera::UpdateMatrix()
 	float phiR = glm::radians(m_vertical);
 
 	//calculate the forward, right and up axis for the camera
-	forward = { cos(phiR) * cos(thetaR), sin(phiR), cos(phiR) * sin(thetaR) };
-	right = { -sin(thetaR), 0, cos(thetaR) };
-	up = { cos(thetaR) * -sin(phiR) , cos(phiR), -sin(phiR) * sin(thetaR)};
+	forward = { cos(phiR) * cos(thetaR), cos(phiR) * sin(thetaR), sin(phiR) };
+	right = { -sin(thetaR), cos(thetaR), 0 };
+	up = { cos(thetaR) * -sin(phiR), -sin(phiR) * sin(thetaR), cos(phiR) };
 
-	view = glm::lookAt(position, position + forward, glm::vec3(0, 1, 0));
+	view = glm::lookAt(position, position + forward, glm::vec3(0, 0, 1));
 	projection = glm::perspective((float)3.14159 / 4, aspect, nearClip, farClip);
 	matrix = projection * view;
 }

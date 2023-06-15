@@ -33,7 +33,7 @@ void Crawl::DungeonPlayer::Update()
 		if (faceInt == 4)
 			faceInt = 0;
 		facing = (FACING)faceInt;
-		object->eulerRotation.y -= 90;
+		object->eulerRotation.z -= 90;
 		object->dirtyTransform = true;
 	}
 	if (Input::Keyboard(GLFW_KEY_Q).Down())
@@ -43,7 +43,7 @@ void Crawl::DungeonPlayer::Update()
 		if (faceInt == -1)
 			faceInt = 3;
 		facing = (FACING)faceInt;
-		object->eulerRotation.y += 90;
+		object->eulerRotation.z += 90;
 		object->dirtyTransform = true;
 	}
 
@@ -60,7 +60,7 @@ void Crawl::DungeonPlayer::Update()
 	if (didMove)
 	{
 		object->localTransform[3][0] = position.column * Crawl::DUNGEON_GRID_SCALE;
-		object->localTransform[3][2] = position.row * Crawl::DUNGEON_GRID_SCALE;
+		object->localTransform[3][1] = position.row * Crawl::DUNGEON_GRID_SCALE;
 		object->dirtyTransform = true;
 		didMove = false;
 	}
