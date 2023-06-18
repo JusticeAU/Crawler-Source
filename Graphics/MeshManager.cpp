@@ -369,6 +369,7 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 	int numFaces = mesh->mNumFaces;
 	vector<unsigned int> indices;
 
+
 	for (int i = 0; i < numFaces; i++)
 	{
 		indices.push_back(mesh->mFaces[i].mIndices[0]);
@@ -387,17 +388,19 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 	// Extract vertex data
 	int numV = mesh->mNumVertices;
 	Mesh::Vertex* vertices = new Mesh::Vertex[numV];
+
+	// Base implementation of rotation on import
+	mat4 rotation = mat4(1);
+	//rotation = glm::rotate(mat4(1), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)); // Y up to Z up.
 	for (int i = 0; i < numV; i++)
 	{
-		vertices[i].position = vec3(
-			mesh->mVertices[i].x,
-			mesh->mVertices[i].y,
-			mesh->mVertices[i].z);
+		vec4 position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, 1 };
+		position = rotation * position;
+		vertices[i].position = (vec3)position;
 
-		vertices[i].normal = vec3(
-			mesh->mNormals[i].x,
-			mesh->mNormals[i].y,
-			mesh->mNormals[i].z);
+		vec4 normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z, 0 };
+		normal = rotation * normal;
+		vertices[i].normal = (vec3)normal;
 
 		if (mesh->mTextureCoords[0])
 		{
@@ -418,9 +421,7 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 	}
 
 	if (mesh->HasTangentsAndBitangents() == false)
-	{
 		Mesh::CalculateTangents(vertices, numV, indices);
-	}
 
 	// Begin creating mesh
 	Mesh* loadedMesh = new Mesh();
@@ -449,6 +450,7 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 
 		// Store the offset.
 		boneStructure->boneOffsets[boneIndex] = mat4_cast(mesh->mBones[i]->mOffsetMatrix);
+		//boneStructure->boneOffsets[boneIndex] = rotation * boneStructure->boneOffsets[boneIndex];
 
 		// process all weights associated with the bone
 		for (unsigned int boneWeightIndex = 0; boneWeightIndex < mesh->mBones[i]->mNumWeights; boneWeightIndex++)
