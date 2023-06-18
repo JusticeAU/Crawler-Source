@@ -257,9 +257,6 @@
     <ClCompile Include="AudioManager.cpp">
       <Filter>Source Files\Application\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="ComponentAudioSource.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DungeonPlayer.cpp">
       <Filter>Source Files\Application\Crawl</Filter>
     </ClCompile>
@@ -268,6 +265,9 @@
     </ClCompile>
     <ClCompile Include="DungeonEditor.cpp">
       <Filter>Source Files\Application\Crawl</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentAudioSource.cpp">
+      <Filter>Source Files\Application\Scene\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -439,7 +439,6 @@
     <ClInclude Include="AudioListener.h">
       <Filter>Source Files\Application\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="ComponentAudioSource.h" />
     <ClInclude Include="DungeonPlayer.h">
       <Filter>Source Files\Application\Crawl</Filter>
     </ClInclude>
@@ -448,6 +447,9 @@
     </ClInclude>
     <ClInclude Include="DungeonEditor.h">
       <Filter>Source Files\Application\Crawl</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentAudioSource.h">
+      <Filter>Source Files\Application\Scene\Components</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
