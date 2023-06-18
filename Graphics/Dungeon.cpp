@@ -21,38 +21,48 @@ Crawl::Dungeon::Dungeon()
 /// <param name="column"></param>
 /// <param name="row"></param>
 /// <returns>A reference to the newly added hall. If a hall already existing, then a nullptr is returned.</returns>
-Crawl::Hall* Crawl::Dungeon::AddHall(int column, int row)
+Crawl::Hall* Crawl::Dungeon::AddHall(int x, int y)
 {
-	Column& col = halls[column];
+	Column& col = halls[x];
 
-	auto existingHall = col.row.find(row);
+	auto existingHall = col.row.find(y);
 	if (existingHall != col.row.end())
 		return nullptr; // hall existed already, no duplicating or overwriting please!
 
 	Hall newHall;
-	newHall.column = column;
-	newHall.row = row;
-	return &col.row.emplace(row, newHall).first->second;
+	newHall.xPos = x;
+	newHall.yPos = y;
+	return &col.row.emplace(y, newHall).first->second;
 }
 
-Crawl::Hall* Crawl::Dungeon::GetHall(int column, int row)
+bool Crawl::Dungeon::SetHallMask(int x, int y, int mask)
 {
-	Column& col = halls[column];
+	Hall* hall = GetHall(x, y);
+	if (!hall)
+		return false;
 
-	auto existingHall = col.row.find(row);
+	hall->mask = mask;
+	return true;
+}
+
+Crawl::Hall* Crawl::Dungeon::GetHall(int x, int y)
+{
+	Column& col = halls[x];
+
+	auto existingHall = col.row.find(y);
 	if (existingHall == col.row.end())
 		return nullptr;
 
 	return &existingHall->second;
 }
 
-bool Crawl::Dungeon::DeleteHall(int column, int row)
+bool Crawl::Dungeon::DeleteHall(int x, int y)
 {
-	auto col = halls.find(column);
+	auto col = halls.find(x);
 	if (col == halls.end())
 		return false;
 
-	auto hall = col->second.row.find(row);
+	auto hall = col->second.row.find(y);
 	if (hall == col->second.row.end())
 		return false;
 
@@ -64,32 +74,30 @@ bool Crawl::Dungeon::DeleteHall(int column, int row)
 
 void Crawl::Dungeon::CreateTileObject(Hall* hall)
 {
-	unsigned int mask = GetTileMask(hall->column, hall->row);
-
-	Object* obj = Scene::s_instance->DuplicateObject(GetTileTemplate(mask));
-	obj->localTransform[3][0] = hall->column * DUNGEON_GRID_SCALE;
-	obj->localTransform[3][1] = hall->row * DUNGEON_GRID_SCALE;
+	Object* obj = Scene::s_instance->DuplicateObject(GetTileTemplate(hall->mask));
+	obj->localTransform[3][0] = hall->xPos * DUNGEON_GRID_SCALE;
+	obj->localTransform[3][1] = hall->yPos * DUNGEON_GRID_SCALE;
 	obj->dirtyTransform = true;
 
 	hall->object = obj;
 }
 
-bool Crawl::Dungeon::IsOpenHall(int column, int row)
+bool Crawl::Dungeon::IsOpenHall(int x, int y)
 {
-	auto col = halls.find(column);
+	auto col = halls.find(x);
 	if (col == halls.end())
 		return false;
 
-	auto hall = col->second.row.find(row);
+	auto hall = col->second.row.find(y);
 	if (hall == col->second.row.end())
 		return false;
 
 	return true;
 }
 
-bool Crawl::Dungeon::CanMove(int fromColumn, int fromRow, int toColumn, int toRow)
+bool Crawl::Dungeon::CanMove(int xFrom, int yFrom, int xTo, int yTo)
 {
-	return IsOpenHall(fromColumn, fromRow) && IsOpenHall(toColumn, toRow);
+	return IsOpenHall(xFrom, yFrom) && IsOpenHall(xTo, yTo);
 }
 
 void Crawl::Dungeon::Save(std::string filename)
@@ -103,13 +111,15 @@ void Crawl::Dungeon::Save(std::string filename)
 		FileUtils::StrWriteInt(outFile, 1);
 
 		// save hall coordinates
-		for (auto& column : halls)
+		for (auto& x : halls)
 		{
-			for (auto& row : column.second.row)
+			for (auto& y : x.second.row)
 			{
 				FileUtils::StrWriteLine(outFile, "hall");
-				FileUtils::StrWriteInt(outFile, row.second.column);
-				FileUtils::StrWriteInt(outFile, row.second.row);
+				FileUtils::StrWriteInt(outFile, y.second.xPos);
+				FileUtils::StrWriteInt(outFile, y.second.yPos);
+				FileUtils::StrWriteInt(outFile, y.second.mask);
+
 			}
 		}
 	}
@@ -135,14 +145,17 @@ void Crawl::Dungeon::Load(std::string filename)
 			}
 			else if (line == "hall")
 			{
-				int column, row;
+				int x, y, mask;
 
 				std::getline(inFile, line);
-				column = atoi(line.c_str());
+				x = atoi(line.c_str());
 
 				std::getline(inFile, line);
-				row = atoi(line.c_str());
-				AddHall(column, row);
+				y = atoi(line.c_str());
+				Hall* hall = AddHall(x, y);
+
+				std::getline(inFile, line);
+				hall->mask = atoi(line.c_str());
 			}
 		}
 
@@ -253,11 +266,11 @@ void Crawl::Dungeon::InitialiseTileMap()
 
 void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 {
-	for (auto& column : halls)
+	for (auto& x : halls)
 	{
-		for (auto& row : column.second.row)
+		for (auto& y : x.second.row)
 		{
-			Crawl::Hall* hall = &row.second;
+			Crawl::Hall* hall = &y.second;
 			hall->object->markedForDeletion = true;
 		}
 	}
@@ -268,33 +281,21 @@ Object* Crawl::Dungeon::GetTileTemplate(int mask)
 	return tilemap[mask];
 }
 
-int Crawl::Dungeon::GetTileMask(int col, int row)
+int Crawl::Dungeon::GetAutoTileMask(int x, int y)
 {
 	unsigned int tile = 0;
 	// test north
-	if (IsOpenHall(col, row + 1))
-	{
+	if (IsOpenHall(x, y + 1))
 		tile += 1;
-		LogUtils::Log("There is a tile 'north' of us");
-	}
 	// test west
-	if (IsOpenHall(col - 1, row))
-	{
+	if (IsOpenHall(x - 1, y))
 		tile += 2;
-		LogUtils::Log("There is a tile 'west' of us");
-	}
 	// test east
-	if (IsOpenHall(col + 1, row))
-	{
+	if (IsOpenHall(x + 1, y))
 		tile += 4;
-		LogUtils::Log("There is a tile 'east' of us");
-	}
 	// test south
-	if (IsOpenHall(col, row - 1))
-	{
+	if (IsOpenHall(x, y - 1))
 		tile += 8;
-		LogUtils::Log("There is a tile 'south' of us");
-	}
 	return tile;
 }
 

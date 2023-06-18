@@ -10,7 +10,8 @@ namespace Crawl
 
 	struct Hall
 	{
-		int column, row;
+		int xPos, yPos;
+		int mask = 0;
 		bool occupied = false;
 		Object* object = nullptr;
 	};
@@ -28,20 +29,27 @@ namespace Crawl
 	public:
 		Dungeon();
 		// Room/Hall manipulation
-		Hall* AddHall(int column, int row);
-		Hall* GetHall(int column, int row);
+		Hall* AddHall(int x, int y);
+		bool SetHallMask(int x, int y, int mask);
+		Hall* GetHall(int x, int y);
 		// Deletes a hall from the grid. returns true if a deletion happened.
-		bool DeleteHall(int column, int row);
+		bool DeleteHall(int x, int y);
 
 		// Ensures the hall node has a visual representation in the Scene Graph.
 		void CreateTileObject(Hall* hall);
 
-		bool IsOpenHall(int column, int row);
-		bool CanMove(int fromColumn, int fromRow, int toColumn, int toRow);
+
+		bool IsOpenHall(int x, int y);
+		bool CanMove(int xFrom, int yFrom, int xTo, int yTo);
 	
 		void Save(std::string filename);
 		void Load(std::string filename);
 	
+		// Calculates the tile mask based on adjacent tiles
+		int GetAutoTileMask(int x, int y);
+		// returns pointer to the template tile for the Scene to duplicate.
+		Object* GetTileTemplate(int mask);
+
 	protected:
 		void InitialiseTileMap();
 
@@ -49,11 +57,6 @@ namespace Crawl
 		void DestroySceneFromDungeonLayout();
 		// After loading a dungeon, this will build it in the Scene graph based on tile adjacency. used on editor and playmode dungeon loading.
 		void BuildSceneFromDungeonLayout();
-		// Calculates the tile mask based on adjacent tiles
-		int GetTileMask(int col, int row);
-		// returns pointer to the template tile for the Scene to duplicate.
-		Object* GetTileTemplate(int mask);
-
 
 		const int version = 1; // increment this when the .dungeon file schema changes and ensure backwards compatibility.
 		std::map<int, Column> halls;
