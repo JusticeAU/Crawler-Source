@@ -295,7 +295,7 @@ void ComponentRenderer::ApplyMaterials()
 
 void ComponentRenderer::DrawModel()
 {
-	model->Draw();
+	model->DrawAllSubMeshes();
 }
 
 Component* ComponentRenderer::Clone(Object* parent)

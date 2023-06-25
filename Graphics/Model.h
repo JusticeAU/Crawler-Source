@@ -31,6 +31,9 @@ public:
 	Object* childNodes = nullptr;
 	BoneStructure* boneStructure = nullptr;
 
-	void Draw();
+	void DrawAllSubMeshes();
+	void DrawSubMesh(int index);
+
+	int GetMeshCount() { return meshes.size(); }
 };
 
