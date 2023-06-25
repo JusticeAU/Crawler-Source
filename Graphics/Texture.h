@@ -16,6 +16,7 @@ public:
 	void LoadFromFile(string filename);
 	void Bind(unsigned int slot);
 public:
+	string name;
 	GLuint texID;
 };
 

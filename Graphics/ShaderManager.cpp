@@ -51,6 +51,7 @@ void ShaderManager::LoadFromFile(string filename)
 	// right now shaderes are hardcoded to be a vertex and fragment shader, with assumed matching names.
 	ShaderProgram* SHAD = new ShaderProgram();
 	SHAD->LoadFromFiles(filename + ".VERT", filename + ".FRAG");
+	SHAD->name = filename;
 	shaderPrograms.emplace(filename, SHAD);
 
 }

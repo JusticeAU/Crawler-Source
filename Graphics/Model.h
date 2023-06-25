@@ -35,5 +35,6 @@ public:
 	void DrawSubMesh(int index);
 
 	int GetMeshCount() { return meshes.size(); }
+	Mesh* GetMesh(int index) { return meshes[index]; }
 };
 

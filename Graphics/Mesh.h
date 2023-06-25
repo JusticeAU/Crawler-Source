@@ -32,6 +32,7 @@ public:
 	void Initialise(unsigned int vertCount, const Vertex* vertices, unsigned int indexCount = 0, unsigned int* indices = nullptr);
 	static void CalculateTangents(Vertex* vertices, unsigned int vertexCount, const std::vector<unsigned int>& indices);
 public:
+	std::string name = "";
 	unsigned int tris;
 	unsigned int vao, vbo, ibo;
 	bool initialised = false;

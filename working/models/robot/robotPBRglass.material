@@ -1,0 +1,12 @@
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Ns 20
+map_Kd 
+map_Ks 
+bump 
+albedoMap colour_blue.bmp
+normalMap colour_blue.bmp
+metallicMap colour_blue.bmp
+roughnessMap colour_blue.bmp
+aoMap colour_blue.bmp

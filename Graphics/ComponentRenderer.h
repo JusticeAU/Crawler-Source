@@ -2,6 +2,7 @@
 #include "Component.h"
 
 #include <string>
+#include <vector>
 
 class Camera;
 class Model;
@@ -11,6 +12,7 @@ class Material;
 class FrameBuffer;
 
 using std::string;
+using std::vector;
 
 class ComponentRenderer : public Component
 {
@@ -29,7 +31,6 @@ public:
 	void BindShader();
 	void BindMatricies(mat4 pv, vec3 position);
 	void SetUniforms();
-	void ApplyTexture();
 	void ApplyMaterials();
 	void DrawModel();
 
@@ -37,14 +38,8 @@ public:
 public:
 	Model* model = nullptr;
 	
-	ShaderProgram* shader = nullptr;
-	string shaderName = "";
-	
-	Texture* texture = nullptr;
-	string textureName = "";
-	
+	vector<Material*> materialArray;
 	Material* material = nullptr;
-	string materialName = "";
 
 	FrameBuffer* frameBuffer = nullptr;
 	string frameBufferName = "";

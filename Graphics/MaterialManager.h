@@ -26,6 +26,7 @@ protected:
 	void LoadFromFile(const char* filename);
 	void LoadAllFiles();
 
-	string newFileName = "models/model/modelname.mtl";
+	string fileExtension = ".material";
+	string newFileName = "models/model/modelname";
 };
 

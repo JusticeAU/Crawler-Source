@@ -18,37 +18,60 @@ using std::string;
 
 ComponentRenderer::ComponentRenderer(Object* parent, std::istream& istream) : ComponentRenderer(parent)
 {
-	FileUtils::ReadString(istream, textureName);
-	texture = TextureManager::GetTexture(textureName);
-	FileUtils::ReadString(istream, shaderName);
-	shader = ShaderManager::GetShaderProgram(shaderName);
-	FileUtils::ReadString(istream, materialName);
-	material = MaterialManager::GetMaterial(materialName);
+	string line;
+	
+	// load in the quantity of materials saved for this renderer
+	int meshQty = FileUtils::ReadInt(istream, meshQty);
+	materialArray.resize(meshQty);
+
+	// load in each material name.
+	for (int i = 0; i < meshQty; i++)
+	{
+		FileUtils::ReadString(istream, line);
+		materialArray[i] = MaterialManager::GetMaterial(line);
+	}
 }
 
 void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 {
-	if (model != nullptr && shader != nullptr) // At minimum we need a model and a shader to draw something.
+	if (model != nullptr && materialArray[0] != nullptr) // At minimum we need a model and a shader to draw something.
 	{
 		switch (mode)
 		{
 			case DrawMode::Standard:
 			{
-				BindShader();
-				BindMatricies(pv, position);
+				for (int i = 0; i < model->GetMeshCount(); i++)
+				{
+					if (materialArray[i] != nullptr)
+						material = materialArray[i];
+					else
+						continue;
+					
+					if (material->shader == nullptr)
+						continue;
+
+					BindShader();
+					ApplyMaterials();
+					BindMatricies(pv, position);
+					SetUniforms();
+					model->DrawSubMesh(i);
+				}
 				break;
 			}
 			case DrawMode::ObjectPicking:
 			{
-				ShaderProgram* shad = ShaderManager::GetShaderProgram("shaders/picking");
-				shad->Bind();
-				shad->SetUIntUniform("objectID", componentParent->id);
+				ShaderProgram* shader = ShaderManager::GetShaderProgram("shaders/picking");
+				shader->Bind();
+				shader->SetUIntUniform("objectID", componentParent->id);
 				glm::mat4 pvm = pv * componentParent->transform;
 
 				// Positions and Rotations
-				shad->SetMatrixUniform("pvmMatrix", pvm);
-				shad->SetMatrixUniform("mMatrix", componentParent->transform);
-				shad->SetVectorUniform("cameraPosition", position);
+				shader->SetMatrixUniform("pvmMatrix", pvm);
+				shader->SetMatrixUniform("mMatrix", componentParent->transform);
+				shader->SetVectorUniform("cameraPosition", position);
+				
+				shader->SetIntUniform("objectID", componentParent->id);
+				DrawModel();
 				break;
 			}
 			case DrawMode::ShadowMapping:
@@ -56,94 +79,59 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				if (!castsShadows)
 					return;
 
-				ShaderProgram* shad = ShaderManager::GetShaderProgram("shaders/simpleDepthShader");
-				shad->Bind();
+				ShaderProgram* shader = ShaderManager::GetShaderProgram("shaders/simpleDepthShader");
+				shader->Bind();
 				glm::mat4 pvm = pv * componentParent->transform;
 
 				// Positions and Rotations
-				shad->SetMatrixUniform("pvmMatrix", pvm);
-				shad->SetMatrixUniform("mMatrix", componentParent->transform);
-				shad->SetVectorUniform("cameraPosition", position);
+				shader->SetMatrixUniform("pvmMatrix", pvm);
+				shader->SetMatrixUniform("mMatrix", componentParent->transform);
+				shader->SetVectorUniform("cameraPosition", position);
+				DrawModel();
 				break;
 			}
 		}
 
-		SetUniforms();
-		ApplyTexture();
-		ApplyMaterials();
-		DrawModel();
+
 	}
 }
 
 void ComponentRenderer::DrawGUI()
 {
+	// material settings per submesh
+	for (int i = 0; i < model->GetMeshCount(); i++)
+	{
+		ImGui::PushID(i);
+		// Mesh Name
+		ImGui::Text(model->GetMesh(i)->name.c_str());
+
+		// Material
+		string materialStr = "Mesh Material";
+		if (ImGui::BeginCombo(materialStr.c_str(), materialArray[i] != nullptr ? materialArray[i]->name.c_str() : "NULL"))
+		{
+			for (auto m : *MaterialManager::Materials())
+			{
+				const bool is_selected = (m.second == materialArray[i]);
+				if (ImGui::Selectable(m.first.c_str(), is_selected))
+					materialArray[i] = MaterialManager::GetMaterial(m.first);
+
+				// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+
+		if (materialArray[i])
+		{
+			if (ImGui::CollapsingHeader("Material"))
+				materialArray[i]->DrawGUI();
+		}
+
+		ImGui::PopID();
+	}
+
 	ImGui::Checkbox("Casts Shadows", &castsShadows);
-	string textureStr = "Texture##" + to_string(componentParent->id);
-	if (ImGui::BeginCombo(textureStr.c_str(), textureName.c_str()))
-	{
-		for (auto t : *TextureManager::Textures())
-		{
-			const bool is_selected = (t.second == texture);
-			if (ImGui::Selectable(t.first.c_str(), is_selected))
-			{
-				texture = TextureManager::GetTexture(t.first);
-				textureName = t.first;
-			}
-
-			// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-			if (is_selected)
-				ImGui::SetItemDefaultFocus();
-		}
-		ImGui::EndCombo();
-	}
-
-	string shaderStr = "Shader##" + to_string(componentParent->id);
-	if (ImGui::BeginCombo(shaderStr.c_str(), shaderName.c_str()))
-	{
-		for (auto s : *ShaderManager::ShaderPrograms())
-		{
-			const bool is_selected = (s.second == shader);
-			if (ImGui::Selectable(s.first.c_str(), is_selected))
-			{
-				shader = ShaderManager::GetShaderProgram(s.first);
-				shaderName = s.first;
-			}
-
-			// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-			if (is_selected)
-				ImGui::SetItemDefaultFocus();
-		}
-		ImGui::EndCombo();
-	}
-
-	string materialStr = "Material##" + to_string(componentParent->id);
-	if (ImGui::BeginCombo(materialStr.c_str(), materialName.c_str()))
-	{
-		for (auto m : *MaterialManager::Materials())
-		{
-			const bool is_selected = (m.second == material);
-			if (ImGui::Selectable(m.first.c_str(), is_selected))
-			{
-				material = MaterialManager::GetMaterial(m.first);
-				materialName = m.first;
-			}
-
-			// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-			if (is_selected)
-				ImGui::SetItemDefaultFocus();
-		}
-		ImGui::EndCombo();
-	}
-
-	if (material)
-	{
-		ImGui::Indent();
-		if (ImGui::CollapsingHeader("Material"))
-		{
-			material->DrawGUI();
-		}
-		ImGui::Unindent();
-	}
 
 	string targetStr = "Target##" + to_string(componentParent->id);
 	if (ImGui::BeginCombo(targetStr.c_str(), frameBufferName.c_str()))
@@ -167,9 +155,16 @@ void ComponentRenderer::DrawGUI()
 
 void ComponentRenderer::Write(std::ostream& ostream)
 {
-	FileUtils::WriteString(ostream, textureName);
-	FileUtils::WriteString(ostream, shaderName);
-	FileUtils::WriteString(ostream, materialName);
+	// write the quantity of materials
+	FileUtils::WriteInt(ostream, (int)materialArray.size());
+	// write each material if its valid.
+	for (int i = 0; i < materialArray.size(); i++)
+	{
+		if (materialArray[i] != nullptr)
+			FileUtils::WriteString(ostream, materialArray[i]->name);
+		else
+			FileUtils::WriteString(ostream, "NULL");
+	}
 }
 
 void ComponentRenderer::OnParentChange()
@@ -178,14 +173,14 @@ void ComponentRenderer::OnParentChange()
 	if (component)
 	{
 		model = static_cast<ComponentModel*>(component)->model;
+		if (model != nullptr)
+			materialArray.resize(model->GetMeshCount());
 	}
-
-	texture = TextureManager::GetTexture(textureName);
 }
 
 void ComponentRenderer::BindShader()
 {
-	shader->Bind();
+	material->shader->Bind();
 }
 
 void ComponentRenderer::BindMatricies(mat4 pv, vec3 position)
@@ -194,10 +189,10 @@ void ComponentRenderer::BindMatricies(mat4 pv, vec3 position)
 	glm::mat4 pvm = pv * componentParent->transform;
 
 	// Positions and Rotations
-	shader->SetMatrixUniform("pvmMatrix", pvm);
-	shader->SetMatrixUniform("mMatrix", componentParent->transform);
-	shader->SetVectorUniform("cameraPosition", position);
-	shader->SetMatrixUniform("lightSpaceMatrix", Scene::GetLightSpaceMatrix());
+	material->shader->SetMatrixUniform("pvmMatrix", pvm);
+	material->shader->SetMatrixUniform("mMatrix", componentParent->transform);
+	material->shader->SetVectorUniform("cameraPosition", position);
+	material->shader->SetMatrixUniform("lightSpaceMatrix", Scene::GetLightSpaceMatrix());
 }
 
 void ComponentRenderer::SetUniforms()
@@ -207,34 +202,19 @@ void ComponentRenderer::SetUniforms()
 	// Likely part of a material system.
 
 	// Lighting
-	shader->SetVectorUniform("ambientLightColour", Scene::GetAmbientLightColour());
-	shader->SetVectorUniform("sunLightDirection", glm::normalize(Scene::GetSunDirection()));
-	shader->SetVectorUniform("sunLightColour", Scene::GetSunColour());
+	material->shader->SetVectorUniform("ambientLightColour", Scene::GetAmbientLightColour());
+	material->shader->SetVectorUniform("sunLightDirection", glm::normalize(Scene::GetSunDirection()));
+	material->shader->SetVectorUniform("sunLightColour", Scene::GetSunColour());
 	// Point Lights
 	int numLights = Scene::GetNumPointLights();
-	shader->SetIntUniform("numLights", numLights);
-	shader->SetFloat3ArrayUniform("PointLightPositions", numLights, Scene::GetPointLightPositions());
-	shader->SetFloat3ArrayUniform("PointLightColours", numLights, Scene::GetPointLightColours());
-
-	shader->SetIntUniform("objectID", componentParent->id);
+	material->shader->SetIntUniform("numLights", numLights);
+	material->shader->SetFloat3ArrayUniform("PointLightPositions", numLights, Scene::GetPointLightPositions());
+	material->shader->SetFloat3ArrayUniform("PointLightColours", numLights, Scene::GetPointLightColours());
 
 	if (receivesShadows)
 	{
-		shader->SetFloatUniform("shadowBias", shadowBias);
+		material->shader->SetFloatUniform("shadowBias", shadowBias);
 	}
-}
-
-void ComponentRenderer::ApplyTexture()
-{
-	// Texture Uniforms
-	if (texture)
-	{
-		texture->Bind(1);
-		shader->SetIntUniform("diffuseTex", 1);
-	}
-
-	// bind shadow map
-	shader->SetIntUniform("shadowMap", 5);
 }
 
 void ComponentRenderer::ApplyMaterials()
@@ -242,52 +222,52 @@ void ComponentRenderer::ApplyMaterials()
 	// Material Uniforms
 	if (material)
 	{
-		shader->SetVectorUniform("Ka", material->Ka);
-		shader->SetVectorUniform("Kd", material->Kd);
-		shader->SetVectorUniform("Ks", material->Ks);
-		shader->SetFloatUniform("specularPower", material->specularPower);
+		material->shader->SetVectorUniform("Ka", material->Ka);
+		material->shader->SetVectorUniform("Kd", material->Kd);
+		material->shader->SetVectorUniform("Ks", material->Ks);
+		material->shader->SetFloatUniform("specularPower", material->specularPower);
 
 		if (material->mapKd)
 		{
 			material->mapKd->Bind(1);
-			shader->SetIntUniform("diffuseTex", 1);
+			material->shader->SetIntUniform("diffuseTex", 1);
 		}
 		if (material->mapKs)
 		{
 			material->mapKs->Bind(2);
-			shader->SetIntUniform("specularTex", 2);
+			material->shader->SetIntUniform("specularTex", 2);
 		}
 		if (material->mapBump)
 		{
 			material->mapBump->Bind(3);
-			shader->SetIntUniform("normalTex", 3);
+			material->shader->SetIntUniform("normalTex", 3);
 		}
 
 		// PBR
 		if (material->albedoMap)
 		{
 			material->albedoMap->Bind(4);
-			shader->SetIntUniform("albedoMap", 4);
+			material->shader->SetIntUniform("albedoMap", 4);
 		}
 		if (material->normalMap)
 		{
 			material->normalMap->Bind(5);
-			shader->SetIntUniform("normalMap", 5);
+			material->shader->SetIntUniform("normalMap", 5);
 		}
 		if (material->metallicMap)
 		{
 			material->metallicMap->Bind(6);
-			shader->SetIntUniform("metallicMap", 6);
+			material->shader->SetIntUniform("metallicMap", 6);
 		}
 		if (material->roughnessMap)
 		{
 			material->roughnessMap->Bind(7);
-			shader->SetIntUniform("roughnessMap", 7);
+			material->shader->SetIntUniform("roughnessMap", 7);
 		}
 		if (material->aoMap)
 		{
 			material->aoMap->Bind(8);
-			shader->SetIntUniform("aoMap", 8);
+			material->shader->SetIntUniform("aoMap", 8);
 		}
 
 	}
@@ -303,13 +283,14 @@ Component* ComponentRenderer::Clone(Object* parent)
 	ComponentRenderer* copy = new ComponentRenderer(parent);
 	copy->castsShadows = castsShadows;
 	copy->material = material;
-	copy->materialName = materialName;
 	copy->model = model;
 	copy->receivesShadows = receivesShadows;
-	copy->shader = shader;
-	copy->shaderName = shaderName;
 	copy->shadowBias = shadowBias;
-	copy->texture = texture;
-	copy->textureName = textureName;
+
+	copy->materialArray.resize(materialArray.size());
+	for (int i = 0; i < materialArray.size(); i++)
+	{
+		copy->materialArray[i] = materialArray[i];
+	}
 	return copy;
 }

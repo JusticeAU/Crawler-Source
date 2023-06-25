@@ -7,6 +7,8 @@
 namespace fs = std::filesystem;
 
 #include "ComponentModel.h";
+#include "ComponentRenderer.h";
+
 
 Crawl::DungeonEditor::DungeonEditor()
 {
@@ -257,8 +259,9 @@ void Crawl::DungeonEditor::UpdateMousePosOnGrid()
 	ComponentModel* templateModel = (ComponentModel*)tileTemplate->GetComponent(Component_Model);
 	ComponentModel* cursorModel = (ComponentModel*)Scene::s_instance->objects[0]->GetComponent(Component_Model);
 	cursorModel->model = templateModel->model;
+	ComponentRenderer* cursorRenderer = (ComponentRenderer*)Scene::s_instance->objects[0]->GetComponent(Component_Renderer);
+	cursorRenderer->model = templateModel->model;
 	Scene::s_instance->objects[0]->eulerRotation.z = tileTemplate->eulerRotation.z;
-	cursorModel->AnnounceChange();
 	Scene::s_instance->objects[0]->localTransform[3][0] = gridSelected.x * DUNGEON_GRID_SCALE;
 	Scene::s_instance->objects[0]->localTransform[3][1] = gridSelected.y * DUNGEON_GRID_SCALE;
 	Scene::s_instance->objects[0]->localTransform[3][2] = 0;

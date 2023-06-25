@@ -1,8 +1,10 @@
 #include "ComponentSkinnedRenderer.h"
 #include "ShaderManager.h"
+#include "MaterialManager.h"
 #include "ComponentAnimator.h"
 #include "ComponentAnimationBlender.h"
 #include "UniformBuffer.h"
+#include "Model.h"
 
 ComponentSkinnedRenderer::ComponentSkinnedRenderer(Object* parent) : ComponentRenderer(parent)
 {
@@ -18,51 +20,62 @@ ComponentSkinnedRenderer::ComponentSkinnedRenderer(Object* parent, std::istream&
 
 void ComponentSkinnedRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 {
-	if (model != nullptr && shader != nullptr) // At minimum we need a model and a shader to draw something.
+	if (model != nullptr && materialArray[0] != nullptr) // At minimum we need a model and a shader to draw something.
 	{
 		switch (mode)
 		{
 			case DrawMode::Standard:
 			{
-				BindShader();
-				BindMatricies(pv, position);
+				for (int i = 0; i < model->GetMeshCount(); i++)
+				{
+					if (materialArray[i] != nullptr)
+						material = materialArray[i];
+					else
+						continue;
+
+					if (material->shader == nullptr)
+						continue;
+
+					BindShader();
+					ApplyMaterials();
+					BindMatricies(pv, position);
+					SetUniforms();
+					BindBoneTransform();
+					model->DrawSubMesh(i);
+				}
 				break;
 			}
 			case DrawMode::ObjectPicking:
 			{
-				ShaderProgram* shad = ShaderManager::GetShaderProgram("shaders/skinnedPicking");
-				shad->Bind();
-				shad->SetUIntUniform("objectID", componentParent->id);
-				shad->SetUniformBlockIndex("boneTransformBuffer", 0);
+				ShaderProgram* shader = ShaderManager::GetShaderProgram("shaders/skinnedPicking");
+				shader->Bind();
+				shader->SetUIntUniform("objectID", componentParent->id);
+				shader->SetUniformBlockIndex("boneTransformBuffer", 0);
 				glm::mat4 pvm = pv * componentParent->transform;
 
 				// Positions and Rotations
-				shad->SetMatrixUniform("pvmMatrix", pvm);
-				shad->SetMatrixUniform("mMatrix", componentParent->transform);
-				shad->SetVectorUniform("cameraPosition", position);
+				shader->SetMatrixUniform("pvmMatrix", pvm);
+				shader->SetMatrixUniform("mMatrix", componentParent->transform);
+				shader->SetVectorUniform("cameraPosition", position);
+				BindBoneTransform();
+				DrawModel();
 				break;
 			}
 			case DrawMode::ShadowMapping:
 			{
-				ShaderProgram* shad = ShaderManager::GetShaderProgram("shaders/simpleDepthShaderSkinned");
-				shad->Bind();
+				ShaderProgram* shader = ShaderManager::GetShaderProgram("shaders/simpleDepthShaderSkinned");
+				shader->Bind();
 				glm::mat4 pvm = pv * componentParent->transform;
 
 				// Positions and Rotations
-				shad->SetMatrixUniform("pvmMatrix", pvm);
-				shad->SetMatrixUniform("mMatrix", componentParent->transform);
-				shad->SetVectorUniform("cameraPosition", position);
-				// shadow mapping shader config here
+				shader->SetMatrixUniform("pvmMatrix", pvm);
+				shader->SetMatrixUniform("mMatrix", componentParent->transform);
+				shader->SetVectorUniform("cameraPosition", position);
+				BindBoneTransform();
+				DrawModel();
 				break;
 			}
 		}
-		
-		SetUniforms();
-		ApplyTexture();
-		ApplyMaterials();
-		
-		BindBoneTransform(); // This is one is added on top of ComponentRenderer.
-		DrawModel();
 	}
 }
 
@@ -87,12 +100,15 @@ void ComponentSkinnedRenderer::OnParentChange()
 
 void ComponentSkinnedRenderer::BindBoneTransform()
 {
+	if (material == nullptr || material->shader == nullptr)
+		return;
+
 	// skinned mesh rendering
 	//shader->SetIntUniform("selectedBone", animator->selectedBone); // dev testing really, used by boneWeights shader
 	if (animator != nullptr && animator->boneTransfomBuffer != nullptr)
 	{
 		// get the shader uniform block index and set binding point - we'll just hardcode 0 for this.
-		shader->SetUniformBlockIndex("boneTransformBuffer", 0);
+		material->shader->SetUniformBlockIndex("boneTransformBuffer", 0);
 		// TODO - this could be done in shader initialisation if it detected that that shader had this uniform buffer
 		// It only needs to be done once per shader too, assuming im not reusing the index anywhere else (which im not)
 
@@ -107,7 +123,7 @@ void ComponentSkinnedRenderer::BindBoneTransform()
 
 	if (animationBlender != nullptr && animationBlender->boneTransfomBuffer != nullptr)
 	{
-		shader->SetUniformBlockIndex("boneTransformBuffer", 0);
+		material->shader->SetUniformBlockIndex("boneTransformBuffer", 0);
 		animationBlender->boneTransfomBuffer->Bind(0);
 		animationBlender->boneTransfomBuffer->SendData(animationBlender->boneTransforms);
 	}
@@ -118,13 +134,8 @@ Component* ComponentSkinnedRenderer::Clone(Object* parent)
 	ComponentSkinnedRenderer* copy = new ComponentSkinnedRenderer(parent);
 	copy->castsShadows = castsShadows;
 	copy->material = material;
-	copy->materialName = materialName;
 	copy->model = model;
 	copy->receivesShadows = receivesShadows;
-	copy->shader = shader;
-	copy->shaderName = shaderName;
 	copy->shadowBias = shadowBias;
-	copy->texture = texture;
-	copy->textureName = textureName;
 	return copy;
 }

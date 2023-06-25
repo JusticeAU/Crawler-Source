@@ -6,6 +6,7 @@ using glm::vec3;
 using std::string;
 
 class Texture;
+class ShaderProgram;
 
 class Material
 {
@@ -13,6 +14,7 @@ public:
 	void DrawGUI();
 	void SaveToFile();
 
+	string name;
 	string filePath;
 
 	vec3 Ka = { 0.0f, 0.0f, 0.0f }; // ambient colour of the surface
@@ -26,6 +28,9 @@ public:
 	string mapKsName = "";
 	Texture* mapBump = nullptr; // normal map
 	string mapBumpName = "";
+
+	ShaderProgram* shader	= nullptr;
+	string shaderName		= "";
 
 	// PBR
 	Texture* albedoMap		= nullptr;

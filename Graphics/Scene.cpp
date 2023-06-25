@@ -6,6 +6,7 @@
 #include "ComponentRenderer.h"
 #include "ComponentCamera.h"
 #include "ShaderManager.h"
+#include "MaterialManager.h"
 #include "AudioManager.h"
 
 #include "FrameBuffer.h"
@@ -35,9 +36,10 @@ Scene::Scene()
 	lightGizmo->components.push_back(lightGizmoModelComponent);
 	ComponentRenderer* lightGizmoRenderer = new ComponentRenderer(lightGizmo);
 	gizmoShader = ShaderManager::GetShaderProgram("shaders/gizmoShader");
-	lightGizmoRenderer->shader = gizmoShader;
+	lightGizmoRenderer->model = lightGizmoModelComponent->model;
+	lightGizmoRenderer->materialArray.resize(1);
+	lightGizmoRenderer->materialArray[0] = MaterialManager::GetMaterial("models/materials/Gizmos.material");
 	lightGizmo->components.push_back(lightGizmoRenderer);
-	lightGizmoRenderer->OnParentChange();
 
 	// Set up our framebuffer to render our chosen cameras framebuffer to.
 	TextureManager::s_instance->AddFrameBuffer(Camera::s_instance->name.c_str(), Camera::s_instance->GetFrameBuffer());

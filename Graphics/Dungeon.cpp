@@ -7,8 +7,7 @@
 #include "Scene.h"
 #include "ComponentFactory.h"
 #include "ModelManager.h"
-#include "ShaderManager.h"
-#include "TextureManager.h"
+#include "MaterialManager.h"
 
 Crawl::Dungeon::Dungeon()
 {
@@ -176,9 +175,11 @@ void Crawl::Dungeon::InitialiseTileMap()
 	model->modelName = "models/crawl/blockout/hallClosed.fbx";
 	tilemap[0]->components.push_back(model);
 	renderer = (ComponentRenderer*)ComponentFactory::NewComponent(tilemap[0], Component_Renderer);
-	renderer->shader = ShaderManager::GetShaderProgram("shaders/lambertLitSingleLight");
-	renderer->texture = TextureManager::GetTexture("models/crawl/blockout/Mage_Room32.png");
-	renderer->textureName = "models/crawl/blockout/Mage_Room32.png";
+	renderer->materialArray.resize(5);
+	for(int i = 0; i < 5; i++)
+	{
+		renderer->materialArray[i] = MaterialManager::GetMaterial("models/crawl/blockout/hall.material");
+	}
 	tilemap[0]->components.push_back(renderer);
 
 	// U Bends

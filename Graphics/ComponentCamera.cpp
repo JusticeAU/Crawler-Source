@@ -2,6 +2,7 @@
 #include "Graphics.h"
 #include "FrameBuffer.h"
 #include "TextureManager.h"
+#include "MaterialManager.h"
 #include "Scene.h"
 #include "Window.h"
 #include "ModelManager.h"
@@ -37,10 +38,12 @@ ComponentCamera::ComponentCamera(Object* parent) : Component("Camera", Component
 
 	ComponentRenderer* componentRenderer = new ComponentRenderer(parent);
 	componentRenderer->model = ModelManager::GetModel("models/Gizmos/camera.fbx");
-	componentRenderer->texture = TextureManager::GetTexture("models/colour_blue.bmp");
-	componentRenderer->shader = ShaderManager::GetShaderProgram("shaders/gizmoShader");
+	componentRenderer->materialArray.resize(1);
+	componentRenderer->materialArray[0] = MaterialManager::GetMaterial("models/materials/Gizmos.material");
+
+
 	cameraGizmo->components.push_back(componentRenderer);
-	
+
 	Scene::s_instance->gizmos.push_back(cameraGizmo); // the scene gizmo renderer needs to be aware of this component.
 	Scene::s_instance->componentCameras.push_back(this); // Must be added here so the scene can render all in-scene cameras before rendering itself.
 }

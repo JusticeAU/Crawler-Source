@@ -30,6 +30,7 @@ void Texture::LoadFromFile(string filename)
 	// clean up
 	glBindTexture(GL_TEXTURE_2D, 0);
 	stbi_image_free(data);
+	name = filename;
 }
 
 void Texture::Bind(unsigned int slot)

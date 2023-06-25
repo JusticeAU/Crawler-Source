@@ -536,6 +536,9 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 	// Initialise mesh in OGL
 	loadedMesh->Initialise(numV, vertices, (int)indices.size(), indices.data());
 	delete[] vertices;
+	
+	// Set up meta data and add to list.
+	loadedMesh->name = name;
 	s_instance->meshes.emplace(name, loadedMesh);
 	return loadedMesh;
 }

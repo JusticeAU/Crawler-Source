@@ -22,6 +22,8 @@ public:
 	void SetUIntUniform(std::string variableName, unsigned int value);
 
 	void SetUniformBlockIndex(string uniformBlockName, const unsigned int index);
+	
+	string name = "";
 protected:
 	GLuint vertexShaderID = 0;
 	GLuint fragmentShaderID = 0;

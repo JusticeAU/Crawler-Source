@@ -1,9 +1,27 @@
 #include "Material.h"
 #include "TextureManager.h"
+#include "ShaderManager.h"
 #include <fstream>
 
 void Material::DrawGUI()
 {
+	// Shader
+	string shaderStr = "Shader";
+	if (ImGui::BeginCombo(shaderStr.c_str(), shader != nullptr ? shader->name.c_str() : "NULL"))
+	{
+		for (auto s : *ShaderManager::ShaderPrograms())
+		{
+			const bool is_selected = (s.second == shader);
+			if (ImGui::Selectable(s.first.c_str(), is_selected))
+				shader = ShaderManager::GetShaderProgram(s.first);
+
+			// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+			if (is_selected)
+				ImGui::SetItemDefaultFocus();
+		}
+		ImGui::EndCombo();
+	}
+
 	// Ka
 	float KaGUI[3] = { Ka.r, Ka.g, Ka.b, };
 	if (ImGui::ColorEdit3("Ambient Colour", KaGUI))
@@ -187,42 +205,24 @@ void Material::DrawGUI()
 void Material::SaveToFile()
 {
 	std::fstream file(filePath, std::ios::out);
+	string shaderName = shader ? shader->name : "NULL";
+	file << "shader " << shaderName << std::endl;
+
 	file << "Ka " << Ka.x << " " << Ka.z << " " << Ka.z << std::endl;
 	file << "Kd " << Kd.x << " " << Kd.z << " " << Kd.z << std::endl;
 	file << "Ks " << Ks.x << " " << Ks.z << " " << Ks.z << std::endl;
 	file << "Ns " << specularPower << std::endl;
 
-	// need to clean filepaths out of filenames here.
-	// Currently .mtl files save the filenames as relative paths to themselves
-	int from = (int)mapKdName.find_last_of('/')+1;
-	string filename = mapKdName.substr(from, mapKdName.length() - from);
-	file << "map_Kd " << filename << std::endl;
-
-	from = (int)mapKsName.find_last_of('/') + 1;
-	filename = mapKsName.substr(from, mapKsName.length() - from);
-	file << "map_Ks " << filename << std::endl;
-
-	from = (int)mapBumpName.find_last_of('/') + 1;
-	filename = mapBumpName.substr(from, mapBumpName.length() - from);
-	file << "bump " << filename << std::endl;
+	file << "map_Kd " << mapKdName << std::endl;
+	file << "map_Ks " << mapKsName << std::endl;
+	file << "bump " << mapBumpName << std::endl;
 	
 	// PBR
-	from = (int)albedoMapName.find_last_of('/') + 1;
-	filename = albedoMapName.substr(from, albedoMapName.length() - from);
-	file << "albedoMap " << filename << std::endl;
-	from = (int)normalMapName.find_last_of('/') + 1;
-	filename = normalMapName.substr(from, normalMapName.length() - from);
-	file << "normalMap " << filename << std::endl;
-	from = (int)metallicMapName.find_last_of('/') + 1;
-	filename = metallicMapName.substr(from, metallicMapName.length() - from);
-	file << "metallicMap " << filename << std::endl;
-	from = (int)roughnessMapName.find_last_of('/') + 1;
-	filename = roughnessMapName.substr(from, roughnessMapName.length() - from);
-	file << "roughnessMap " << filename << std::endl;
-	from = (int)aoMapName.find_last_of('/') + 1;
-	filename = aoMapName.substr(from, aoMapName.length() - from);
-	file << "aoMap " << filename << std::endl;
+	file << "albedoMap " << albedoMapName << std::endl;
+	file << "normalMap " << normalMapName << std::endl;
+	file << "metallicMap " << metallicMapName << std::endl;
+	file << "roughnessMap " << roughnessMapName << std::endl;
+	file << "aoMap " << aoMapName << std::endl;
 
-	
 	file.close();
 }

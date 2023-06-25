@@ -1,5 +1,6 @@
 #include "MaterialManager.h"
 #include "TextureManager.h"
+#include "ShaderManager.h"
 #include "LogUtils.h"
 #include <filesystem>
 #include <fstream>
@@ -41,12 +42,12 @@ void MaterialManager::DrawGUI()
 		// Write a mtl file to disk and then load it
 		Material* material = new Material();
 		s_instance->materials.emplace(s_instance->newFileName, material);
-		material->filePath = s_instance->newFileName;
+		material->filePath = s_instance->newFileName + s_instance->fileExtension;
 		material->SaveToFile();
 	}
-
+	ImGui::SameLine();
 	string newName = s_instance->newFileName;
-	if (ImGui::InputText("Filename", &newName))
+	if (ImGui::InputText(s_instance->fileExtension.c_str(), &newName))
 	{
 		s_instance->newFileName = newName;
 	}
@@ -72,6 +73,7 @@ MaterialManager::MaterialManager()
 void MaterialManager::LoadFromFile(const char* filename)
 {
 	Material* material = new Material();
+	material->name = filename;
 	material->filePath = filename;
 	
 	std::fstream file(filename, std::ios::in);
@@ -103,57 +105,64 @@ void MaterialManager::LoadFromFile(const char* filename)
 		{
 			std::string mapFileName;
 			ss >> header >> mapFileName;
-			material->mapKd = TextureManager::GetTexture(directory + mapFileName);
-			material->mapKdName = directory + mapFileName;
+			material->mapKd = TextureManager::GetTexture(mapFileName);
+			material->mapKdName = mapFileName;
 		}
 		else if (line.find("map_Ks") == 0)
 		{
 			std::string mapFileName;
 			ss >> header >> mapFileName;
-			material->mapKs = TextureManager::GetTexture(directory + mapFileName);
-			material->mapKsName = directory + mapFileName;
+			material->mapKs = TextureManager::GetTexture(mapFileName);
+			material->mapKsName = mapFileName;
 		}
 		else if (line.find("bump") == 0)
 		{
 			std::string mapFileName;
 			ss >> header >> mapFileName;
-			material->mapBump = TextureManager::GetTexture(directory + mapFileName);
-			material->mapBumpName = directory + mapFileName;
+			material->mapBump = TextureManager::GetTexture(mapFileName);
+			material->mapBumpName = mapFileName;
 		} // PBR
 		else if (line.find("albedoMap") == 0)
 		{
 			std::string mapFileName;
 			ss >> header >> mapFileName;
-			material->albedoMap = TextureManager::GetTexture(directory + mapFileName);
-			material->albedoMapName = directory + mapFileName;
+			material->albedoMap = TextureManager::GetTexture(mapFileName);
+			material->albedoMapName = mapFileName;
 		}
 		else if (line.find("normalMap") == 0)
 		{
 			std::string mapFileName;
 			ss >> header >> mapFileName;
-			material->normalMap = TextureManager::GetTexture(directory + mapFileName);
-			material->normalMapName = directory + mapFileName;
+			material->normalMap = TextureManager::GetTexture(mapFileName);
+			material->normalMapName = mapFileName;
 		}
 		else if (line.find("metallicMap") == 0)
 		{
 			std::string mapFileName;
 			ss >> header >> mapFileName;
-			material->metallicMap = TextureManager::GetTexture(directory + mapFileName);
-			material->metallicMapName = directory + mapFileName;
+			material->metallicMap = TextureManager::GetTexture(mapFileName);
+			material->metallicMapName = mapFileName;
 		}
 		else if (line.find("roughnessMap") == 0)
 		{
 			std::string mapFileName;
 			ss >> header >> mapFileName;
-			material->roughnessMap = TextureManager::GetTexture(directory + mapFileName);
-			material->roughnessMapName = directory + mapFileName;
+			material->roughnessMap = TextureManager::GetTexture(mapFileName);
+			material->roughnessMapName = mapFileName;
 		}
 		else if (line.find("aoMap") == 0)
 		{
 			std::string mapFileName;
 			ss >> header >> mapFileName;
-			material->aoMap = TextureManager::GetTexture(directory + mapFileName);
-			material->aoMapName = directory + mapFileName;
+			material->aoMap = TextureManager::GetTexture(mapFileName);
+			material->aoMapName = mapFileName;
+		}
+		else if (line.find("shader") == 0)
+		{
+			std::string shaderName;
+			ss >> header >> shaderName;
+			material->shader = ShaderManager::GetShaderProgram(shaderName);
+			material->shaderName = shaderName;
 		}
 	}
 	materials.emplace(filename, material);
@@ -164,7 +173,7 @@ void MaterialManager::LoadAllFiles()
 	LogUtils::Log("Loading Materials");
 	for (auto d : fs::recursive_directory_iterator("models"))
 	{
-		if (d.path().extension() == ".mtl")
+		if (d.path().extension() == ".material")
 		{
 			string output = "Loading: " + d.path().generic_string();
 			LogUtils::Log(output.c_str());

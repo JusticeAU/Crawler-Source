@@ -1,0 +1,13 @@
+shader shaders/phong
+Ka 0 0 0
+Kd 0.8 0.8 0.8
+Ks 0.5 0.5 0.5
+Ns 20
+map_Kd soulspear_diffuse.tga
+map_Ks soulspear_specular.tga
+bump soulspear_normal.tga
+albedoMap 
+normalMap 
+metallicMap 
+roughnessMap 
+aoMap 
