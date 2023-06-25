@@ -2,6 +2,7 @@
 #include "Mesh.h"
 #include <map>
 #include <vector>
+#include <string>
 
 class Mesh;
 class Animation;
@@ -9,6 +10,7 @@ class ShaderProgram;
 
 class Object;
 
+using std::string;
 using std::vector;
 using std::map;
 
@@ -24,6 +26,8 @@ public:
 		map<string, int> boneMapping;	// boneName and index pair. The index is useed to address in to boneOffset array and assign transformations in to the buffer for the vertex shader.
 		vector<glm::mat4> boneOffsets;	// contains the offset for the bone.
 	};
+
+	string name;
 
 	vector<Mesh*> meshes;
 	vector<Animation*> animations;

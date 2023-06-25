@@ -195,6 +195,7 @@
     <ClCompile Include="..\soloud\src\core\soloud_queue.cpp" />
     <ClCompile Include="..\soloud\src\core\soloud_thread.cpp" />
     <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="ArtTester.cpp" />
     <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Component.cpp" />
@@ -249,6 +250,7 @@
     <ClInclude Include="..\soloud\src\audiosource\wav\stb_vorbis.h" />
     <ClInclude Include="ai2glm.h" />
     <ClInclude Include="Animation.h" />
+    <ClInclude Include="ArtTester.h" />
     <ClInclude Include="AudioListener.h" />
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="Camera.h" />

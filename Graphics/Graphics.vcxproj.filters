@@ -269,6 +269,9 @@
     <ClCompile Include="ComponentAudioSource.cpp">
       <Filter>Source Files\Application\Scene\Components</Filter>
     </ClCompile>
+    <ClCompile Include="ArtTester.cpp">
+      <Filter>Source Files\Application\Crawl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -450,6 +453,9 @@
     </ClInclude>
     <ClInclude Include="ComponentAudioSource.h">
       <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ArtTester.h">
+      <Filter>Source Files\Application\Crawl</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

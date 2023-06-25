@@ -2,6 +2,7 @@
 
 #include "Object.h"
 #include "ModelManager.h"
+#include "Model.h"
 
 using std::to_string;
 
@@ -14,7 +15,7 @@ ComponentModel::ComponentModel(Object* parent, std::istream& istream) : Componen
 void ComponentModel::DrawGUI()
 {
 	string ModelStr = "Model##" + to_string(componentParent->id);
-	if (ImGui::BeginCombo(ModelStr.c_str(), modelName.c_str()))
+	if (ImGui::BeginCombo(ModelStr.c_str(), model->name.c_str()))
 	{
 		for (auto m : *ModelManager::Resources())
 		{
@@ -22,7 +23,7 @@ void ComponentModel::DrawGUI()
 			if (ImGui::Selectable(m.first.c_str(), is_selected))
 			{
 				model = ModelManager::GetModel(m.first);
-				modelName = m.first;
+				//modelName = m.first;
 				AnnounceChange();
 			}
 

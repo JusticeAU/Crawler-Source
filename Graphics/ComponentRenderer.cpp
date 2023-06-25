@@ -40,7 +40,7 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 		{
 			case DrawMode::Standard:
 			{
-				for (int i = 0; i < model->GetMeshCount(); i++)
+				for (int i = 0; i < materialArray.size(); i++)
 				{
 					if (materialArray[i] != nullptr)
 						material = materialArray[i];
@@ -99,7 +99,7 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 void ComponentRenderer::DrawGUI()
 {
 	// material settings per submesh
-	for (int i = 0; i < model->GetMeshCount(); i++)
+	for (int i = 0; i < materialArray.size(); i++)
 	{
 		ImGui::PushID(i);
 		// Mesh Name

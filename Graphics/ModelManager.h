@@ -22,12 +22,12 @@ public:
 	static const map<string, Model*>* Resources() { return &s_instance->resources; }
 	static const map<string, Animation*>* Animations() { return &s_instance->animations; }
 
+	void LoadFromFile(const char* filename);
 protected:
 	ModelManager();
 	map<string, Model*> resources;
 	map<string, Animation*> animations;
 
-	void LoadFromFile(const char* filename);
 	void LoadAllFiles();
 };
 

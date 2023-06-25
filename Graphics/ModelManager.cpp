@@ -109,7 +109,7 @@ void ModelManager::LoadFromFile(const char* filename)
 
 	// Create a new model to start pushing our data in to.
 	Model* model = new Model();
-
+	model->name = filename;
 	char* error = (char*)importer.GetErrorString();
 
 	for (unsigned int i = 0; i < scene->mNumMeshes; i++)

@@ -113,9 +113,18 @@ void Application::LaunchArgument(char* arg)
 {
 	std::string argument = arg;
 	if (argument == "dungeon")
+	{
 		Scene::s_instance->dungeonEditingEnabled = true;
+		Scene::s_instance->sceneFilename = "CrawlTest.scene";
+		Scene::s_instance->Load();
+	}
 	else if (argument == "model")
-		LogUtils::Log("Model mode was request - Not yet implemented");
+	{
+		Scene::s_instance->isArtTesting = true;
+		Scene::s_instance->artTester.Activate();
+		Scene::s_instance->sceneFilename = "CrawlArtTest.scene";
+		Scene::s_instance->Load();
+	}
 	else if (argument == "dev")
 		LogUtils::Log("dev mode was request - this is currently the default mode for now");
 }

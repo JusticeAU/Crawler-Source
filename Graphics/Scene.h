@@ -6,6 +6,7 @@
 
 #include "DungeonEditor.h"
 #include "DungeonPlayer.h"
+#include "ArtTester.h"
 
 using std::vector;
 using std::to_string;
@@ -79,19 +80,23 @@ protected:
 	void RenderSceneCameras();
 	void RenderObjectPicking();
 	void RenderEditorCamera();
-
+public:
 	// Dungeon Level Editing Stuff. To be moved in to own class possibly. *******
 	Crawl::Dungeon* dungeon;
 	Crawl::DungeonEditor dungeonEditor;
 	Crawl::DungeonPlayer dungeonPlayer;
 
+	// Scene Previewing test stuff
+	Crawl::ArtTester artTester;
+
 public:
 	bool dungeonEditingEnabled = false;
 	bool isDungeonGaming = false;
+	bool isArtTesting = false;
 
+	string sceneFilename = "CrawlTest.scene";
 protected:
 	string sceneSubfolder = "scenes/";
-	string sceneFilename = "CrawlTest.scene";
 
 	vec3 clearColour;
 	int objectCount = 0;

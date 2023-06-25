@@ -122,6 +122,19 @@ void Scene::UpdateInputs()
 		outputCameraFrameBuffer = cameras[cameraIndex];
 	}
 
+	if (Input::Keyboard(GLFW_KEY_3).Down())
+	{
+		isDungeonGaming = false;
+		dungeonEditingEnabled = false;
+
+		if (isDungeonGaming)
+			cameraIndex = 1;
+		else
+			cameraIndex = 0;
+		outputCameraFrameBuffer = cameras[cameraIndex];
+	}
+
+
 	if (dungeonEditingEnabled)
 		dungeonEditor.Update();
 }

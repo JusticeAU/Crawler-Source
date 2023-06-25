@@ -8,6 +8,6 @@ map_Ks _null
 bump _null
 albedoMap models/robot/robot_steampunk_color.tga.png
 normalMap models/robot/robot_steampunk_nmap.tga.png
-metallicMap models/buck/Buck_metallic.tga
+metallicMap models/robot/robot_steampunk_metalness.tga.png
 roughnessMap models/robot/robot_steampunk_rough.tga.png
 aoMap models/robot/robot_steampunk_ao.tga.png
