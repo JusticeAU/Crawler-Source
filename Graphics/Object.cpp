@@ -235,11 +235,11 @@ void Object::DrawGUI()
 // Used to display the bone hierarchy (which is made up of objects repurposed) without dispalying a bunch of other noisy data that's not used in this context.
 void Object::DrawGUISimple()
 {
-	string idStr = to_string(id);
-	string objectStr = objectName + "##" + idStr;
+	ImGui::PushID(id);
+	string objectStr = objectName;
 	if (ImGui::TreeNode(objectStr.c_str()))
 	{
-		if (ImGui::CollapsingHeader("Transform"))
+		/*if (ImGui::CollapsingHeader("Transform"))
 		{
 			vec3 localPosition, localRotation, localScale;
 			ImGuizmo::DecomposeMatrixToComponents((float*)&localTransform, (float*)&localPosition, (float*)&localRotation, (float*)&localScale);
@@ -254,17 +254,23 @@ void Object::DrawGUISimple()
 
 			if (dirtyTransform)
 				ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&eulerRotation, (float*)&localScale, (float*)&localTransform);
-		}
+		}*/
+		//ImGui::Indent();
+		/*ImGui::BeginDisabled();
+		ImGui::DragFloat4("", &parent->transform[0][0]);
+		ImGui::DragFloat4("", &parent->transform[1][0]);
+		ImGui::DragFloat4("", &parent->transform[2][0]);
+		ImGui::DragFloat4("", &parent->transform[3][0]);
+		ImGui::EndDisabled();*/
 
-		int childCount = (int)children.size();
-		string childrenString = "Children (" + to_string(childCount) + ")##" + to_string(id);
-		if (ImGui::CollapsingHeader(childrenString.c_str(), ImGuiTreeNodeFlags_AllowItemOverlap))
-		{
-			for (auto c : children)
-				c->DrawGUISimple();
-		}
+		for (auto c : children)
+			c->DrawGUISimple();
+
+		//ImGui::Unindent();
+
 		ImGui::TreePop();
 	}
+	ImGui::PopID();
 }
 
 void Object::AddChild(Object* child)

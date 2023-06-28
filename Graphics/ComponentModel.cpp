@@ -15,7 +15,7 @@ ComponentModel::ComponentModel(Object* parent, std::istream& istream) : Componen
 void ComponentModel::DrawGUI()
 {
 	string ModelStr = "Model##" + to_string(componentParent->id);
-	if (ImGui::BeginCombo(ModelStr.c_str(), model->name.c_str()))
+	if (ImGui::BeginCombo(ModelStr.c_str(), model == nullptr? "NULL" : model->name.c_str()))
 	{
 		for (auto m : *ModelManager::Resources())
 		{
@@ -33,6 +33,9 @@ void ComponentModel::DrawGUI()
 		}
 		ImGui::EndCombo();
 	}
+
+	if(model != nullptr)
+		model->childNodes->DrawGUISimple();
 }
 
 void ComponentModel::Write(std::ostream& ostream)
