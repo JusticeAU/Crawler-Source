@@ -2,6 +2,7 @@
 #include "TextureManager.h"
 #include "ShaderManager.h"
 #include <fstream>
+#include "serialisation.h"
 
 void Material::DrawGUI()
 {
@@ -204,25 +205,22 @@ void Material::DrawGUI()
 
 void Material::SaveToFile()
 {
-	std::fstream file(filePath, std::ios::out);
-	string shaderName = shader ? shader->name : "NULL";
-	file << "shader " << shaderName << std::endl;
-
-	file << "Ka " << Ka.x << " " << Ka.z << " " << Ka.z << std::endl;
-	file << "Kd " << Kd.x << " " << Kd.z << " " << Kd.z << std::endl;
-	file << "Ks " << Ks.x << " " << Ks.z << " " << Ks.z << std::endl;
-	file << "Ns " << specularPower << std::endl;
-
-	file << "map_Kd " << mapKdName << std::endl;
-	file << "map_Ks " << mapKsName << std::endl;
-	file << "bump " << mapBumpName << std::endl;
+	nlohmann::ordered_json output;
+	output["shader"] = shader ? shader->name : "NULL";
 	
-	// PBR
-	file << "albedoMap " << albedoMapName << std::endl;
-	file << "normalMap " << normalMapName << std::endl;
-	file << "metallicMap " << metallicMapName << std::endl;
-	file << "roughnessMap " << roughnessMapName << std::endl;
-	file << "aoMap " << aoMapName << std::endl;
+	output["Ka"] = Ka;
+	output["Kd"] = Kd;
+	output["Ks"] = Ks;
+	output["Ns"] = specularPower;
+	output["map_Kd"] = mapKdName;
+	output["map_Ks"] = mapKsName;
+	output["bump"] = mapBumpName;
 
-	file.close();
+	output["albedoMap"] = albedoMapName;
+	output["normalMap"] = normalMapName;
+	output["metallicMap"] = metallicMapName;
+	output["roughnessMap"] = roughnessMapName;
+	output["aoMap"] = aoMapName;
+	
+	WriteJSONToDisk(filePath, output);
 }

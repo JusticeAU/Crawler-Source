@@ -457,5 +457,8 @@
     <ClInclude Include="ArtTester.h">
       <Filter>Source Files\Application\Crawl</Filter>
     </ClInclude>
+    <ClInclude Include="serialisation.h">
+      <Filter>Source Files\StaticUtility</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

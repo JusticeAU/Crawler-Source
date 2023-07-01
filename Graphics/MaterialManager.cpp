@@ -5,6 +5,7 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include "serialisation.h"
 
 using std::vector;
 namespace fs = std::filesystem;
@@ -41,7 +42,7 @@ void MaterialManager::DrawGUI()
 	{
 		// Write a mtl file to disk and then load it
 		Material* material = new Material();
-		s_instance->materials.emplace(s_instance->newFileName, material);
+		s_instance->materials.emplace(s_instance->newFileName + s_instance->fileExtension, material);
 		material->filePath = s_instance->newFileName + s_instance->fileExtension;
 		material->SaveToFile();
 	}
@@ -76,95 +77,35 @@ void MaterialManager::LoadFromFile(const char* filename)
 	material->name = filename;
 	material->filePath = filename;
 	
-	std::fstream file(filename, std::ios::in);
-	std::string line;
-	std::string header;
-	char buffer[256];
 
-	// get the path part of the fileName for use with relative paths for maps later
-	std::string directory(filename);
-	int index = (int)directory.rfind('/');
-	if (index != -1)
-		directory = directory.substr(0, index + 1);
+	auto input = ReadJSONFromDisk(filename);
+	std::cout << input.size();
+	input.at("shader").get_to(material->shaderName);
+	material->shader = ShaderManager::GetShaderProgram(material->shaderName);
+	
+	input.at("Ka").get_to(material->Ka);
+	input.at("Kd").get_to(material->Kd);
+	input.at("Ks").get_to(material->Ks);
+	input.at("Ns").get_to(material->specularPower);
 
-	while (!file.eof())
-	{
-		file.getline(buffer, 256);
-		line = buffer;
-		std::stringstream ss(line,
-			std::stringstream::in | std::stringstream::out);
-		if (line.find("Ka") == 0)
-			ss >> header >> material->Ka.x >> material->Ka.y >> material->Ka.z;
-		else if (line.find("Ks") == 0)
-			ss >> header >> material->Ks.x >> material->Ks.y >> material->Ks.z;
-		else if (line.find("Kd") == 0)
-			ss >> header >> material->Kd.x >> material->Kd.y >> material->Kd.z;
-		else if (line.find("Ns") == 0)
-			ss >> header >> material->specularPower;
-		else if (line.find("map_Kd") == 0)
-		{
-			std::string mapFileName;
-			ss >> header >> mapFileName;
-			material->mapKd = TextureManager::GetTexture(mapFileName);
-			material->mapKdName = mapFileName;
-		}
-		else if (line.find("map_Ks") == 0)
-		{
-			std::string mapFileName;
-			ss >> header >> mapFileName;
-			material->mapKs = TextureManager::GetTexture(mapFileName);
-			material->mapKsName = mapFileName;
-		}
-		else if (line.find("bump") == 0)
-		{
-			std::string mapFileName;
-			ss >> header >> mapFileName;
-			material->mapBump = TextureManager::GetTexture(mapFileName);
-			material->mapBumpName = mapFileName;
-		} // PBR
-		else if (line.find("albedoMap") == 0)
-		{
-			std::string mapFileName;
-			ss >> header >> mapFileName;
-			material->albedoMap = TextureManager::GetTexture(mapFileName);
-			material->albedoMapName = mapFileName;
-		}
-		else if (line.find("normalMap") == 0)
-		{
-			std::string mapFileName;
-			ss >> header >> mapFileName;
-			material->normalMap = TextureManager::GetTexture(mapFileName);
-			material->normalMapName = mapFileName;
-		}
-		else if (line.find("metallicMap") == 0)
-		{
-			std::string mapFileName;
-			ss >> header >> mapFileName;
-			material->metallicMap = TextureManager::GetTexture(mapFileName);
-			material->metallicMapName = mapFileName;
-		}
-		else if (line.find("roughnessMap") == 0)
-		{
-			std::string mapFileName;
-			ss >> header >> mapFileName;
-			material->roughnessMap = TextureManager::GetTexture(mapFileName);
-			material->roughnessMapName = mapFileName;
-		}
-		else if (line.find("aoMap") == 0)
-		{
-			std::string mapFileName;
-			ss >> header >> mapFileName;
-			material->aoMap = TextureManager::GetTexture(mapFileName);
-			material->aoMapName = mapFileName;
-		}
-		else if (line.find("shader") == 0)
-		{
-			std::string shaderName;
-			ss >> header >> shaderName;
-			material->shader = ShaderManager::GetShaderProgram(shaderName);
-			material->shaderName = shaderName;
-		}
-	}
+	input.at("map_Kd").get_to(material->mapKdName);
+	material->mapKd = TextureManager::GetTexture(material->mapKdName);
+	input.at("map_Ks").get_to(material->mapKsName);
+	material->mapKs = TextureManager::GetTexture(material->mapKsName);
+	input.at("bump").get_to(material->mapBumpName);
+	material->mapBump = TextureManager::GetTexture(material->mapBumpName);
+	
+	input.at("albedoMap").get_to(material->albedoMapName);
+	material->albedoMap = TextureManager::GetTexture(material->albedoMapName);
+	input.at("normalMap").get_to(material->normalMapName);
+	material->normalMap = TextureManager::GetTexture(material->normalMapName);
+	input.at("metallicMap").get_to(material->metallicMapName);
+	material->metallicMap = TextureManager::GetTexture(material->metallicMapName);
+	input.at("roughnessMap").get_to(material->roughnessMapName);
+	material->roughnessMap = TextureManager::GetTexture(material->roughnessMapName);
+	input.at("aoMap").get_to(material->aoMapName);
+	material->aoMap = TextureManager::GetTexture(material->aoMapName);
+
 	materials.emplace(filename, material);
 }
 

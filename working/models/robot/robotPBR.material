@@ -1,13 +1,27 @@
-shader shaders/PBR
-Ka 0 0 0
-Kd 1 1 1
-Ks 1 1 1
-Ns 39
-map_Kd _null
-map_Ks _null
-bump _null
-albedoMap models/robot/robot_steampunk_color.tga.png
-normalMap models/robot/robot_steampunk_nmap.tga.png
-metallicMap models/robot/robot_steampunk_metalness.tga.png
-roughnessMap models/robot/robot_steampunk_rough.tga.png
-aoMap models/robot/robot_steampunk_ao.tga.png
+{
+  "shader": "shaders/PBR",
+  "Ka": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+  },
+  "Kd": {
+    "x": 1.0,
+    "y": 1.0,
+    "z": 1.0
+  },
+  "Ks": {
+    "x": 1.0,
+    "y": 1.0,
+    "z": 1.0
+  },
+  "Ns": 39.0,
+  "map_Kd": "_null",
+  "map_Ks": "_null",
+  "bump": "_null",
+  "albedoMap": "models/robot/robot_steampunk_color.tga.png",
+  "normalMap": "models/robot/robot_steampunk_nmap.tga.png",
+  "metallicMap": "models/robot/robot_steampunk_metalness.tga.png",
+  "roughnessMap": "models/robot/robot_steampunk_rough.tga.png",
+  "aoMap": "models/robot/robot_steampunk_ao.tga.png"
+}

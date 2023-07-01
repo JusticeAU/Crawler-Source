@@ -295,7 +295,6 @@ void Crawl::DungeonEditor::UpdateSurroundingTiles(int x, int y)
 
 void Crawl::DungeonEditor::Save()
 {
-	
 	dungeon->Save(GetDungeonFilePath());
 }
 

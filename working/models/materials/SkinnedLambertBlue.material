@@ -1,13 +1,27 @@
-shader shaders/skinnedMeshLambert
-Ka 0 0 0
-Kd 1 1 1
-Ks 1 1 1
-Ns 20
-map_Kd models/colour_blue.bmp
-map_Ks 
-bump 
-albedoMap 
-normalMap 
-metallicMap 
-roughnessMap 
-aoMap 
+{
+  "shader": "shaders/skinnedMeshLambert",
+  "Ka": {
+    "x": 1.0,
+    "y": 1.0,
+    "z": 1.0
+  },
+  "Kd": {
+    "x": 1.0,
+    "y": 1.0,
+    "z": 1.0
+  },
+  "Ks": {
+    "x": 1.0,
+    "y": 1.0,
+    "z": 1.0
+  },
+  "Ns": 20.0,
+  "map_Kd": "models/colour_blue.bmp",
+  "map_Ks": "",
+  "bump": "",
+  "albedoMap": "_null",
+  "normalMap": "",
+  "metallicMap": "",
+  "roughnessMap": "",
+  "aoMap": ""
+}

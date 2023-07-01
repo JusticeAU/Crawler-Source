@@ -1,13 +1,27 @@
-shader shaders/skinnedMeshPBR
-Ka 1 1 1
-Kd 1 1 1
-Ks 1 1 1
-Ns 64
-map_Kd _null
-map_Ks _null
-bump _null
-albedoMap models/land-dragon/source/lambert1_albedo.jpg
-normalMap models/land-dragon/source/lambert1_normal.jpg
-metallicMap models/land-dragon/source/lambert1_metallic.jpg
-roughnessMap models/land-dragon/source/lambert1_roughness.jpg
-aoMap _null
+{
+  "shader": "shaders/skinnedMeshPBR",
+  "Ka": {
+    "x": 1.0,
+    "y": 1.0,
+    "z": 1.0
+  },
+  "Kd": {
+    "x": 1.0,
+    "y": 1.0,
+    "z": 1.0
+  },
+  "Ks": {
+    "x": 1.0,
+    "y": 1.0,
+    "z": 1.0
+  },
+  "Ns": 64.0,
+  "map_Kd": "_null",
+  "map_Ks": "_null",
+  "bump": "_null",
+  "albedoMap": "models/land-dragon/source/lambert1_albedo.jpg",
+  "normalMap": "models/land-dragon/source/lambert1_normal.jpg",
+  "metallicMap": "models/land-dragon/source/lambert1_metallic.jpg",
+  "roughnessMap": "models/land-dragon/source/lambert1_roughness.jpg",
+  "aoMap": "_null"
+}

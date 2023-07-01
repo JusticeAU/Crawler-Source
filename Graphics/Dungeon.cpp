@@ -8,6 +8,7 @@
 #include "ComponentFactory.h"
 #include "ModelManager.h"
 #include "MaterialManager.h"
+#include "serialisation.h"
 
 Crawl::Dungeon::Dungeon()
 {
@@ -32,6 +33,17 @@ Crawl::Hall* Crawl::Dungeon::AddHall(int x, int y)
 	newHall.xPos = x;
 	newHall.yPos = y;
 	return &col.row.emplace(y, newHall).first->second;
+}
+
+void Crawl::Dungeon::AddHall(Hall& hall)
+{
+	Column& col = halls[hall.xPos];
+
+	auto existingHall = col.row.find(hall.yPos);
+	if (existingHall != col.row.end())
+		return; // hall existed already, no duplicating or overwriting please!
+
+	col.row.emplace(hall.yPos, hall).first->second;
 }
 
 bool Crawl::Dungeon::SetHallMask(int x, int y, int mask)
@@ -101,67 +113,38 @@ bool Crawl::Dungeon::CanMove(int xFrom, int yFrom, int xTo, int yTo)
 
 void Crawl::Dungeon::Save(std::string filename)
 {
-	std::ofstream outFile(filename, std::ios_base::trunc);
+	ordered_json output;
+	ordered_json halls_json;
 
-	if (outFile.is_open())
+	output["version"] = 1;
+
+	for (auto& x : halls)
 	{
-		// Save version
-		FileUtils::StrWriteLine(outFile, "version");
-		FileUtils::StrWriteInt(outFile, 1);
-
-		// save hall coordinates
-		for (auto& x : halls)
+		for (auto& y : x.second.row)
 		{
-			for (auto& y : x.second.row)
-			{
-				FileUtils::StrWriteLine(outFile, "hall");
-				FileUtils::StrWriteInt(outFile, y.second.xPos);
-				FileUtils::StrWriteInt(outFile, y.second.yPos);
-				FileUtils::StrWriteInt(outFile, y.second.mask);
-
-			}
+			halls_json.push_back(y.second);
 		}
 	}
+	output["halls"] = halls_json;
 
+	WriteJSONToDisk(filename, output);
 }
 
 void Crawl::Dungeon::Load(std::string filename)
 {
-	std::ifstream inFile(filename);
-	std::string line;
-	if (inFile.is_open())
+	auto input = ReadJSONFromDisk(filename);
+
+	DestroySceneFromDungeonLayout();
+	halls.clear();
+
+	auto& hallsJSON = input["halls"];
+	for (auto it = hallsJSON.begin(); it != hallsJSON.end(); it++)
 	{
-		DestroySceneFromDungeonLayout();
-		halls.clear();
-
-		int version = 0;
-		while (std::getline(inFile, line))
-		{
-			if (line == "version")
-			{
-				std::getline(inFile, line);
-				version = atoi(line.c_str());
-			}
-			else if (line == "hall")
-			{
-				int x, y, mask;
-
-				std::getline(inFile, line);
-				x = atoi(line.c_str());
-
-				std::getline(inFile, line);
-				y = atoi(line.c_str());
-				Hall* hall = AddHall(x, y);
-
-				std::getline(inFile, line);
-				hall->mask = atoi(line.c_str());
-			}
-		}
-
-		BuildSceneFromDungeonLayout();
+		Hall hall = it.value().get<Crawl::Hall>();
+		AddHall(hall);
 	}
-	else
-		LogUtils::Log("Failed to load");
+
+	BuildSceneFromDungeonLayout();
 }
 
 void Crawl::Dungeon::InitialiseTileMap()

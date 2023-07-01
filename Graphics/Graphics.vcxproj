@@ -90,7 +90,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)soloud\include;$(SolutionDir)assimp\out\build\x64-$(Configuration)\include;$(SolutionDir)assimp;$(SolutionDir)imgui;$(SolutionDir)GLFW;$(SolutionDir)glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)nlohmann;$(SolutionDir)soloud\include;$(SolutionDir)assimp\out\build\x64-$(Configuration)\include;$(SolutionDir)assimp;$(SolutionDir)imgui;$(SolutionDir)GLFW;$(SolutionDir)glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
@@ -108,7 +108,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)soloud\include;$(SolutionDir)assimp\out\build\x64-$(Configuration)\include;$(SolutionDir)assimp;$(SolutionDir)imgui;$(SolutionDir)GLFW;$(SolutionDir)glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)nlohmann;$(SolutionDir)soloud\include;$(SolutionDir)assimp\out\build\x64-$(Configuration)\include;$(SolutionDir)assimp;$(SolutionDir)imgui;$(SolutionDir)GLFW;$(SolutionDir)glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
@@ -126,7 +126,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WITH_WINMM;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)soloud\include;$(SolutionDir)assimp\out\build\x64-$(Configuration)\include;$(SolutionDir)assimp;$(SolutionDir)imguizmo;$(SolutionDir)imgui;$(SolutionDir)GLFW;$(SolutionDir)glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)nlohmann;$(SolutionDir)soloud\include;$(SolutionDir)assimp\out\build\x64-$(Configuration)\include;$(SolutionDir)assimp;$(SolutionDir)imguizmo;$(SolutionDir)imgui;$(SolutionDir)GLFW;$(SolutionDir)glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
@@ -146,7 +146,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WITH_WINMM;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)soloud\include;$(SolutionDir)assimp\out\build\x64-$(Configuration)\include;$(SolutionDir)assimp;$(SolutionDir)imguizmo;$(SolutionDir)imgui;$(SolutionDir)GLFW;$(SolutionDir)glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)nlohmann;$(SolutionDir)soloud\include;$(SolutionDir)assimp\out\build\x64-$(Configuration)\include;$(SolutionDir)assimp;$(SolutionDir)imguizmo;$(SolutionDir)imgui;$(SolutionDir)GLFW;$(SolutionDir)glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
@@ -272,6 +272,7 @@
     <ClInclude Include="glad.h" />
     <ClInclude Include="glfwCallbacks.h" />
     <ClInclude Include="PostProcess.h" />
+    <ClInclude Include="serialisation.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Input.h" />

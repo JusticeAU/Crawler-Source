@@ -30,6 +30,7 @@ namespace Crawl
 		Dungeon();
 		// Room/Hall manipulation
 		Hall* AddHall(int x, int y);
+		void AddHall(Hall& hall);
 		bool SetHallMask(int x, int y, int mask);
 		Hall* GetHall(int x, int y);
 		// Deletes a hall from the grid. returns true if a deletion happened.
