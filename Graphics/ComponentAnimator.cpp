@@ -152,6 +152,11 @@ Component* ComponentAnimator::Clone(Object* parent)
 // This proceses the Animation data to build a new boneTransform array to send to the GPU.
 void ComponentAnimator::UpdateBoneMatrixBuffer()
 {
+	if (model == nullptr)
+		return;
+	if (model->boneStructure == nullptr)
+		return;
+
 	ProcessNode(model->childNodes, mat4(1));
 }
 

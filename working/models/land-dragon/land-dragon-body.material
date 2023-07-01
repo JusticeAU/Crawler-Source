@@ -1,0 +1,13 @@
+shader shaders/skinnedMeshPBR
+Ka 1 1 1
+Kd 1 1 1
+Ks 1 1 1
+Ns 64
+map_Kd _null
+map_Ks _null
+bump _null
+albedoMap models/land-dragon/source/lambert1_albedo.jpg
+normalMap models/land-dragon/source/lambert1_normal.jpg
+metallicMap models/land-dragon/source/lambert1_metallic.jpg
+roughnessMap models/land-dragon/source/lambert1_roughness.jpg
+aoMap _null
