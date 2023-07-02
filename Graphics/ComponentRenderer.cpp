@@ -32,6 +32,22 @@ ComponentRenderer::ComponentRenderer(Object* parent, std::istream& istream) : Co
 	}
 }
 
+ComponentRenderer::ComponentRenderer(Object* parent, nlohmann::ordered_json j) : ComponentRenderer(parent)
+{
+	auto matsJSON = j.at("materials");
+	if (j.at("materials").is_null() != true)
+	{
+		for (auto it = matsJSON.begin(); it != matsJSON.end(); it++)
+			materialArray.push_back(MaterialManager::GetMaterial(it.value()));
+	}
+	
+	j.at("frameBuffer").get_to(frameBufferName);
+	frameBuffer = TextureManager::GetFrameBuffer(frameBufferName);
+	j.at("receivesShadows").get_to(receivesShadows);
+	j.at("castsShadows").get_to(castsShadows);
+
+}
+
 void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 {
 	if (model != nullptr && materialArray[0] != nullptr) // At minimum we need a model and a shader to draw something.

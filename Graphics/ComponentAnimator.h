@@ -17,6 +17,7 @@ class ComponentAnimator : public Component
 public:
 	ComponentAnimator(Object* parent);
 	ComponentAnimator(Object* parent, std::istream& istream);
+	ComponentAnimator(Object* parent, ordered_json j);
 	
 	~ComponentAnimator();
 	ComponentAnimator(ComponentAnimator& other) = delete;

@@ -12,6 +12,15 @@ ComponentModel::ComponentModel(Object* parent, std::istream& istream) : Componen
 	model = ModelManager::GetModel(modelName);
 }
 
+ComponentModel::ComponentModel(Object* parent, nlohmann::ordered_json j) : ComponentModel(parent)
+{
+	if (j.contains("model"))
+	{
+		j.at("model").get_to(modelName);
+		model = ModelManager::GetModel(modelName);
+	}
+}
+
 void ComponentModel::DrawGUI()
 {
 	string ModelStr = "Model##" + to_string(componentParent->id);
@@ -34,7 +43,7 @@ void ComponentModel::DrawGUI()
 		ImGui::EndCombo();
 	}
 
-	if(model != nullptr)
+	if(model != nullptr && model->childNodes != nullptr)
 		model->childNodes->DrawGUISimple();
 }
 

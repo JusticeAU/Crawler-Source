@@ -69,8 +69,36 @@ ComponentCamera::ComponentCamera(Object* parent, std::istream& istream) : Compon
 		pp->SetShaderName(ppShaderName);
 
 		m_postProcessStack.push_back(pp);
-
 	}
+}
+
+ComponentCamera::ComponentCamera(Object* parent, ordered_json j) : ComponentCamera(parent)
+{
+	if(j.contains("nearClip"))
+		j.at("nearClip").get_to(nearClip);
+	if (j.contains("farClip"))
+		j.at("farClip").get_to(farClip);
+	if (j.contains("fieldOfView"))
+		j.at("fieldOfView").get_to(fieldOfView);
+	if (j.contains("aspect"))
+		j.at("aspect").get_to(aspect);
+	dirtyConfig = true;
+
+	if (j.contains("postProcess"))
+	{
+		auto ppJSON = j.at("postProcess");
+		if (ppJSON.is_null() != true)
+		{
+			for (auto it = ppJSON.begin(); it != ppJSON.end(); it++)
+			{
+				PostProcess* pp = new PostProcess(componentParent->objectName + "_PP_" + (string)it.value());
+				pp->SetShader(ShaderManager::GetShaderProgram(it.value()));
+				pp->SetShaderName(it.value());
+				m_postProcessStack.push_back(pp);
+			}
+		}
+	}
+
 }
 
 ComponentCamera::~ComponentCamera()

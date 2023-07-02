@@ -18,6 +18,12 @@ ComponentSkinnedRenderer::ComponentSkinnedRenderer(Object* parent, std::istream&
 	componentType = Component_SkinnedRenderer;
 }
 
+ComponentSkinnedRenderer::ComponentSkinnedRenderer(Object* parent, ordered_json j) : ComponentRenderer(parent, j)
+{
+	componentName = "Skinned Renderer";
+	componentType = Component_SkinnedRenderer;
+}
+
 void ComponentSkinnedRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 {
 	if (model != nullptr && materialArray[0] != nullptr) // At minimum we need a model and a shader to draw something.

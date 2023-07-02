@@ -206,6 +206,9 @@ void Material::DrawGUI()
 void Material::SaveToFile()
 {
 	nlohmann::ordered_json output;
+	output["type"] = "material";
+	output["version"] = 1;
+	
 	output["shader"] = shader ? shader->name : "NULL";
 	
 	output["Ka"] = Ka;

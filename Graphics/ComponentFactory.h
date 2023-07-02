@@ -7,6 +7,8 @@
 #include "ComponentFPSTest.h"
 #include "ComponentAnimationBlender.h"
 #include "ComponentAudioSource.h"
+#include "PostProcess.h"
+#include "serialisation.h"
 
 #include <vector>
 #include <string>
@@ -23,6 +25,7 @@ public:
 
 	static Component* NewComponent(Object* parent, int i);
 	static Component* ReadComponent(Object* parent, std::istream& istream, ComponentType type);
+	static Component* ReadComponentJSON(Object* parent, nlohmann::ordered_json j);
 protected:
 	static vector<string> components;
 };

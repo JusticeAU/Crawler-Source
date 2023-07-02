@@ -116,6 +116,7 @@ void Crawl::Dungeon::Save(std::string filename)
 	ordered_json output;
 	ordered_json halls_json;
 
+	output["type"] = "dungeon";
 	output["version"] = 1;
 
 	for (auto& x : halls)

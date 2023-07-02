@@ -19,6 +19,8 @@
 #include "LogUtils.h"
 #include "PostProcess.h"
 
+#include "serialisation.h"
+
 #include <fstream>
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -272,13 +274,10 @@ void Scene::DrawGUI()
 		ImGui::SetNextWindowSize({ 400, 900 }, ImGuiCond_FirstUseEver);
 		ImGui::Begin("Scene", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 		if (ImGui::Button("Save"))
-			Save();
+			SaveJSON();
 		ImGui::SameLine();
 		if (ImGui::Button("Load"))
-		{
 			ImGui::OpenPopup("popup_load_scene");
-			//Load();
-		}
 
 		// Draw scene file list if requested
 		if (ImGui::BeginPopup("popup_load_scene"))
@@ -294,7 +293,7 @@ void Scene::DrawGUI()
 					if (ImGui::Selectable(foundScenePath.c_str()))
 					{
 						sceneFilename = foundSceneName;
-						Load(); // TODO - sanitize these paths properly 
+						LoadJSON(); // TODO - sanitize these paths properly 
 					}
 				}
 			}
@@ -537,6 +536,48 @@ void Scene::Save()
 	out.close();
 }
 
+void Scene::SaveJSON()
+{
+	// Create the JSON structures
+	ordered_json output;
+	ordered_json scene_lighting;
+	ordered_json scene_lighting_pointLights;
+	ordered_json objectsJSON;
+
+
+
+	// meta data
+	output["type"] = "scene";
+	output["version"] = 1;
+
+	// add lighting
+	scene_lighting["clearColour"] = clearColour;
+	scene_lighting["ambientColour"] = m_ambientColour;
+	scene_lighting["sunColour"] = m_sunColour;
+	scene_lighting["sunDirection"] = m_sunDirection;
+
+	// Point lights
+	int numPointLights = (int)m_pointLights.size();
+	for (int i = 0; i < numPointLights; i++)
+		scene_lighting_pointLights.push_back(m_pointLights[i]);
+
+	scene_lighting["pointLights"] = scene_lighting_pointLights;
+	output["lighting"] = scene_lighting;
+
+
+	// Populate objects
+		// transform
+		// components
+		// children
+	for (int i = 0; i < objects.size(); i++)
+		objectsJSON.push_back(*objects[i]);
+
+	output["objects"] = objectsJSON;
+
+	// write to disk
+	WriteJSONToDisk(sceneSubfolder + sceneFilename + ".json", output);
+}
+
 void Scene::Load()
 {
 
@@ -590,6 +631,55 @@ void Scene::Load()
 	}
 }
 
+void Scene::LoadJSON()
+{
+
+	// Load the JSON object
+	ordered_json input = ReadJSONFromDisk(sceneSubfolder + sceneFilename + ".json");
+	
+	// check version lol
+	// load the lighitng data
+
+	ordered_json lighting = input.at("lighting");
+	SetClearColour((vec3)lighting["clearColour"]);
+	m_ambientColour = lighting.at("ambientColour");
+	m_sunColour = lighting.at("sunColour");
+	m_sunDirection = lighting.at("sunDirection");
+
+	// point lights
+	ordered_json pointLights = lighting.at("pointLights");
+	m_pointLights.clear();
+	if (pointLights.is_null() == false)
+	{
+		//m_pointLights.resize(pointLights.size());
+		for (auto it = pointLights.begin(); it != pointLights.end(); it++)
+		{
+			Light light = it.value();
+			m_pointLights.push_back(light);
+		}
+	}
+
+	// clear current objects
+	for (auto object = objects.begin(); object != objects.end(); object++)
+	{
+		auto obj = *object;
+		delete obj;
+	}
+	objects.clear();
+	gizmos.clear();
+
+	// read in objects - oooohhh boy here we go.
+	ordered_json objectsJSON = input["objects"];
+
+	if (objectsJSON.is_null() == false)
+	{
+		for (auto it = objectsJSON.begin(); it != objectsJSON.end(); it++)
+		{
+			auto o = Scene::CreateObject();
+			o->LoadFromJSON(it.value());
+		}
+	}
+}
 mat4 Scene::GetLightSpaceMatrix()
 {
 	return s_instance->lightSpaceMatrix;

@@ -71,4 +71,31 @@ Component* ComponentFactory::ReadComponent(Object* parent, std::istream& istream
     return nullptr; // shouldn't get here
 }
 
+Component* ComponentFactory::ReadComponentJSON(Object* parent, nlohmann::ordered_json j)
+{
+    string type = j["type"];
+    if (type == "Model")
+    {
+        return new ComponentModel(parent, j);
+    }
+    else if (type == "Renderer")
+    {
+        return new ComponentRenderer(parent, j);
+    }
+    else if (type == "SkinnedRenderer")
+    {
+        return new ComponentSkinnedRenderer(parent, j);
+    }
+    else if (type == "Animator")
+    {
+        return new ComponentAnimator(parent, j);
+    }
+    else if (type == "Camera")
+    {
+        return new ComponentCamera(parent, j);
+    }
+
+    return nullptr; // shouldn't get here
+}
+
 vector<string> ComponentFactory::components;

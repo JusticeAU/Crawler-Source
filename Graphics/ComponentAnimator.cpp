@@ -27,6 +27,20 @@ ComponentAnimator::ComponentAnimator(Object* parent, std::istream& istream) : Co
 	current->animationSpeedScale = animationSpeed;
 }
 
+ComponentAnimator::ComponentAnimator(Object* parent, ordered_json j) : ComponentAnimator(parent)
+{
+	
+	if (j.contains("name"))
+	{
+		string animationName;
+		j.at("name").get_to(animationName);
+		StartAnimation(animationName, true);
+	}
+	if (j.contains("speed"))
+		j.at("speed").get_to(current->animationSpeedScale);
+	
+}
+
 ComponentAnimator::~ComponentAnimator()
 {
 	delete boneTransforms;

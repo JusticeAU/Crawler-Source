@@ -1,5 +1,6 @@
 #pragma once
 #include "Graphics.h"
+#include "serialisation.h"
 #include <string>
 
 class FrameBuffer;
@@ -28,8 +29,8 @@ public:
 	string GetName() { return m_name; }
 
 	static void PassThrough(ShaderProgram* shader = nullptr);
-protected:
 	string m_name;
+protected:
 	string m_shaderName;
 	ShaderProgram* m_shader = nullptr;
 	FrameBuffer* m_frameBuffer = nullptr;

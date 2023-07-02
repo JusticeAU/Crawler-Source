@@ -1,6 +1,7 @@
 #pragma once
 #include "Graphics.h"
 #include "Component.h"
+#include "serialisation.h"
 
 #include <vector>
 #include <string>
@@ -19,12 +20,13 @@ class UniformBuffer;
 
 // Primary container for objects in the application. Contains all model, texture, shader, material and animation information.
 // Ideally this should all be split out in to a component system, similar to Unity where this only holds Transform information.
+
 class Object
 {
 public:
 	Object(int objectID, string name = "New Object");
 	~Object();
-	unsigned int id;
+	unsigned int id = 0;
 	
 	Object* parent = nullptr;
 	vector<Object*> children;
@@ -58,6 +60,7 @@ public:
 
 	void Write(std::ostream& out);
 	void Read(std::istream& in);
+	void LoadFromJSON(nlohmann::ordered_json j);
 
 	Component* GetComponent(ComponentType type);
 
@@ -66,3 +69,5 @@ public:
 
 	Object* FindObjectWithID(unsigned int id);
 };
+
+extern void to_json(nlohmann::ordered_json& j, const Object& object);

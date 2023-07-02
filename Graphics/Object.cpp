@@ -19,6 +19,8 @@
 
 #include "Window.h"
 
+#include "serialisation.h"
+
 using std::to_string;
 
 Object::Object(int objectID, string name)
@@ -369,6 +371,43 @@ void Object::Read(std::istream& in)
 	}
 }
 
+void Object::LoadFromJSON(nlohmann::ordered_json j)
+{
+	j.at("name").get_to(objectName);
+
+	// Process Transform
+	glm::vec3 localPosition, localRotation, localScale;
+	j.at("transform").at("position").get_to(localPosition);
+	j.at("transform").at("rotation").get_to(localRotation);
+	j.at("transform").at("scale").get_to(localScale);
+	ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&localRotation, (float*)&localScale, (float*)&localTransform);
+	eulerRotation = localRotation;
+
+
+	// Process Components
+	ordered_json componentsJSON = j["components"];
+	if (componentsJSON.is_null() == false)
+	{
+		for (auto it = componentsJSON.begin(); it != componentsJSON.end(); it++)
+			components.push_back(ComponentFactory::ReadComponentJSON(this, it.value()));
+	}
+
+	// Have all components run their OnChange function to init/refresh data
+	for (auto component : components)
+		component->OnParentChange();
+
+	// Process Children
+	ordered_json childrenJSON = j["children"];
+	if (childrenJSON.is_null() == false)
+	{
+		for (auto it = childrenJSON.begin(); it != childrenJSON.end(); it++)
+		{
+			auto o = Scene::CreateObject(this);
+			o->LoadFromJSON(it.value());
+		}
+	}
+}
+
 Component* Object::GetComponent(ComponentType type)
 {
 	for (auto component : components)
@@ -420,3 +459,115 @@ Object* Object::FindObjectWithID(unsigned int id)
 
 	return nullptr;
 }
+
+void to_json(nlohmann::ordered_json& j, const Object& object)
+{
+	j["name"] = object.objectName;
+
+	// Process Transform
+	ordered_json transformJSON;
+	glm::vec3 localPosition, localRotation, localScale;
+	ImGuizmo::DecomposeMatrixToComponents((float*)&object.localTransform, (float*)&localPosition, (float*)&localRotation, (float*)&localScale);
+	transformJSON["position"] = localPosition;
+	transformJSON["rotation"] = object.eulerRotation;
+	transformJSON["scale"] = localScale;
+	j["transform"] = transformJSON;
+
+	// Process Components
+	ordered_json componentsJSON;
+	for (int i = 0; i < object.components.size(); i++)
+	{
+		ordered_json c;
+		switch (object.components[i]->GetType())
+		{
+		case ComponentType::Component_Model:
+		{
+			c["type"] = "Model";
+			ComponentModel* cm = (ComponentModel*)object.components[i];
+			c["model"] = cm->modelName;
+			break;
+		}
+		case ComponentType::Component_Renderer:
+		{
+			c["type"] = "Renderer";
+			ComponentRenderer* cr = (ComponentRenderer*)object.components[i];
+			ordered_json matsJSON;
+			for (int m = 0; m < cr->materialArray.size(); m++)
+			{
+				if (cr->materialArray[m])
+					matsJSON.push_back(cr->materialArray[m]->name);
+				else
+					matsJSON.push_back("NULL");
+			}
+			c["materials"] = matsJSON;
+			c["frameBuffer"] = cr->frameBufferName;
+			c["receivesShadows"] = cr->receivesShadows;
+			c["castsShadows"] = cr->castsShadows;
+			break;
+		}
+		case ComponentType::Component_SkinnedRenderer:
+		{
+			c["type"] = "SkinnedRenderer";
+			c["type"] = "Renderer";
+			ComponentRenderer* cr = (ComponentRenderer*)object.components[i];
+			ordered_json matsJSON;
+			for (int m = 0; m < cr->materialArray.size(); m++)
+			{
+				if (cr->materialArray[m])
+					matsJSON.push_back(cr->materialArray[m]->name);
+				else
+					matsJSON.push_back("NULL");
+			}
+			c["materials"] = matsJSON;
+			c["frameBuffer"] = cr->frameBufferName;
+			c["receivesShadows"] = cr->receivesShadows;
+			c["castsShadows"] = cr->castsShadows;
+			break;
+		}
+		case ComponentType::Component_Animator:
+		{
+			c["type"] = "Animator";
+			ComponentAnimator* ca = (ComponentAnimator*)object.components[i];
+			c["animationName"] = "Not currently storing!";
+			c["loop"] = ca->loopAnimation;
+			break;
+		}
+
+		case ComponentType::Component_AudioSource:
+		{
+			c["type"] = "AudioSource";
+			// TO DO
+			break;
+		}
+
+		case ComponentType::Component_Camera:
+		{
+			c["type"] = "Camera";
+			ComponentCamera* cc = (ComponentCamera*)object.components[i];
+			c["nearClip"] = cc->nearClip;
+			c["farClip"] = cc->farClip;
+			c["fieldOfView"] = cc->fieldOfView;
+			c["aspect"] = cc->aspect;
+
+			ordered_json ppJSON;
+			for (int pp = 0; pp < cc->m_postProcessStack.size(); pp++)
+			{
+				PostProcess* post = cc->m_postProcessStack[pp];
+				ppJSON.push_back(post->GetShaderName());
+			}
+
+			c["postProcess"] = ppJSON;
+			break;
+		}
+		}
+
+		componentsJSON.push_back(c);
+	}
+	j["components"] = componentsJSON;
+
+	// Process Children
+	ordered_json childrenJSON;
+	for (int i = 0; i < object.children.size(); i++)
+		childrenJSON.push_back(*object.children[i]);
+	j["children"] = childrenJSON;
+};

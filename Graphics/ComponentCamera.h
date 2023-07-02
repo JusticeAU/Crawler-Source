@@ -18,6 +18,7 @@ class ComponentCamera : public Component
 public:
 	ComponentCamera(Object* parent);
 	ComponentCamera(Object* parent, std::istream& istream);
+	ComponentCamera(Object* parent, ordered_json j);
 
 	~ComponentCamera();
 	ComponentCamera(ComponentCamera& other) = delete;
@@ -40,12 +41,12 @@ public:
 	// Runs the post processing stack. This is also required to run to transfer the frame from the Raw to Processed Framebuffer, regardless of if there is a stack or not.
 	void RunPostProcess();
 
-protected:
 	float nearClip = 0.1f;
 	float farClip = 2000.0f;
 
 	float fieldOfView = 45;
 	float aspect = 16/(float)9;
+protected:
 
 	glm::mat4 view;
 	glm::mat4 projection;
@@ -65,5 +66,6 @@ protected:
 	Object* cameraGizmo;
 
 	// Stores our postprocess containers. These camera renders its scene to the Raw framebuffer, then iterates over this list of post processing effects. Then renders to processed.
+public:
 	vector<PostProcess*> m_postProcessStack;
 };

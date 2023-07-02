@@ -69,7 +69,9 @@ public:
 	void CleanUp();
 
 	void Save();
+	void SaveJSON();
 	void Load();
+	void LoadJSON();
 	vector<FrameBuffer*> cameras;
 protected:
 	Scene();

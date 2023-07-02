@@ -93,9 +93,9 @@ Application::Application()
 	
 
 	// Create a default object
-	Scene::CreateObject("Default Object");
+	//Scene::CreateObject("Default Object");
 
-	Scene::s_instance->Load();
+	Scene::s_instance->LoadJSON();
 }
 
 Application::~Application()
@@ -116,14 +116,14 @@ void Application::LaunchArgument(char* arg)
 	{
 		Scene::s_instance->dungeonEditingEnabled = true;
 		Scene::s_instance->sceneFilename = "CrawlTest.scene";
-		Scene::s_instance->Load();
+		Scene::s_instance->LoadJSON();
 	}
 	else if (argument == "model")
 	{
 		Scene::s_instance->isArtTesting = true;
 		Scene::s_instance->artTester.Activate();
 		Scene::s_instance->sceneFilename = "CrawlArtTest.scene";
-		Scene::s_instance->Load();
+		Scene::s_instance->LoadJSON();
 	}
 	else if (argument == "dev")
 		LogUtils::Log("dev mode was request - this is currently the default mode for now");
