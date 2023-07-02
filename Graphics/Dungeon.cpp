@@ -21,7 +21,7 @@ Crawl::Dungeon::Dungeon()
 /// <param name="column"></param>
 /// <param name="row"></param>
 /// <returns>A reference to the newly added hall. If a hall already existing, then a nullptr is returned.</returns>
-Crawl::Hall* Crawl::Dungeon::AddHall(int x, int y)
+Crawl::DungeonTile* Crawl::Dungeon::AddHall(int x, int y)
 {
 	Column& col = halls[x];
 
@@ -29,13 +29,13 @@ Crawl::Hall* Crawl::Dungeon::AddHall(int x, int y)
 	if (existingHall != col.row.end())
 		return nullptr; // hall existed already, no duplicating or overwriting please!
 
-	Hall newHall;
+	DungeonTile newHall;
 	newHall.xPos = x;
 	newHall.yPos = y;
 	return &col.row.emplace(y, newHall).first->second;
 }
 
-void Crawl::Dungeon::AddHall(Hall& hall)
+void Crawl::Dungeon::AddHall(DungeonTile& hall)
 {
 	Column& col = halls[hall.xPos];
 
@@ -48,7 +48,7 @@ void Crawl::Dungeon::AddHall(Hall& hall)
 
 bool Crawl::Dungeon::SetHallMask(int x, int y, int mask)
 {
-	Hall* hall = GetHall(x, y);
+	DungeonTile* hall = GetHall(x, y);
 	if (!hall)
 		return false;
 
@@ -56,7 +56,7 @@ bool Crawl::Dungeon::SetHallMask(int x, int y, int mask)
 	return true;
 }
 
-Crawl::Hall* Crawl::Dungeon::GetHall(int x, int y)
+Crawl::DungeonTile* Crawl::Dungeon::GetHall(int x, int y)
 {
 	Column& col = halls[x];
 
@@ -83,7 +83,7 @@ bool Crawl::Dungeon::DeleteHall(int x, int y)
 	return true;
 }
 
-void Crawl::Dungeon::CreateTileObject(Hall* hall)
+void Crawl::Dungeon::CreateTileObject(DungeonTile* hall)
 {
 	Object* obj = Scene::s_instance->DuplicateObject(GetTileTemplate(hall->mask));
 	obj->localTransform[3][0] = hall->xPos * DUNGEON_GRID_SCALE;
@@ -140,7 +140,7 @@ void Crawl::Dungeon::Load(std::string filename)
 	auto& hallsJSON = input["halls"];
 	for (auto it = hallsJSON.begin(); it != hallsJSON.end(); it++)
 	{
-		Hall hall = it.value().get<Crawl::Hall>();
+		DungeonTile hall = it.value().get<Crawl::DungeonTile>();
 		AddHall(hall);
 	}
 
@@ -254,7 +254,7 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 	{
 		for (auto& y : x.second.row)
 		{
-			Crawl::Hall* hall = &y.second;
+			Crawl::DungeonTile* hall = &y.second;
 			hall->object->markedForDeletion = true;
 		}
 	}
@@ -290,7 +290,7 @@ void Crawl::Dungeon::BuildSceneFromDungeonLayout()
 	{
 		for (auto& row : column.second.row)
 		{
-			Crawl::Hall* hall = &row.second;
+			Crawl::DungeonTile* hall = &row.second;
 			CreateTileObject(hall);
 		}
 	}

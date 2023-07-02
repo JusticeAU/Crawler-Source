@@ -184,7 +184,7 @@ void Crawl::DungeonEditor::Update()
 
 	if (Input::Mouse(0).Pressed())
 	{
-		Crawl::Hall* hall = dungeon->AddHall(gridSelected.x, gridSelected.y);
+		Crawl::DungeonTile* hall = dungeon->AddHall(gridSelected.x, gridSelected.y);
 		if (hall != nullptr)
 		{
 			dungeon->SetHallMask(gridSelected.x, gridSelected.y, brush_tileMask);
@@ -270,7 +270,7 @@ void Crawl::DungeonEditor::UpdateMousePosOnGrid()
 
 void Crawl::DungeonEditor::UpdateTile(int x, int y)
 {
-	Hall* hall = dungeon->GetHall(x, y);
+	DungeonTile* hall = dungeon->GetHall(x, y);
 
 	if (hall != nullptr)
 	{

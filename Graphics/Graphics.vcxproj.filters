@@ -272,6 +272,9 @@
     <ClCompile Include="ArtTester.cpp">
       <Filter>Source Files\Application\Crawl</Filter>
     </ClCompile>
+    <ClCompile Include="DungeonTile.cpp">
+      <Filter>Source Files\Application\Crawl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -459,6 +462,12 @@
     </ClInclude>
     <ClInclude Include="serialisation.h">
       <Filter>Source Files\StaticUtility</Filter>
+    </ClInclude>
+    <ClInclude Include="glm2json.h">
+      <Filter>Source Files\StaticUtility</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonTile.h">
+      <Filter>Source Files\Application\Crawl</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

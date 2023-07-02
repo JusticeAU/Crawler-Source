@@ -1,23 +1,16 @@
 #pragma once
+
+#include "DungeonTile.h"
 #include <string>
 #include <map>
-
-class Object;
 
 namespace Crawl
 {
 	const int DUNGEON_GRID_SCALE = 5;
 
-	struct Hall
-	{
-		int xPos, yPos;
-		int mask = 0;
-		bool occupied = false;
-		Object* object = nullptr;
-	};
 	struct Column
 	{
-		std::map<int, Hall> row;
+		std::map<int, DungeonTile> row;
 	};
 	struct Position
 	{
@@ -29,15 +22,15 @@ namespace Crawl
 	public:
 		Dungeon();
 		// Room/Hall manipulation
-		Hall* AddHall(int x, int y);
-		void AddHall(Hall& hall);
+		DungeonTile* AddHall(int x, int y);
+		void AddHall(DungeonTile& hall);
 		bool SetHallMask(int x, int y, int mask);
-		Hall* GetHall(int x, int y);
+		DungeonTile* GetHall(int x, int y);
 		// Deletes a hall from the grid. returns true if a deletion happened.
 		bool DeleteHall(int x, int y);
 
 		// Ensures the hall node has a visual representation in the Scene Graph.
-		void CreateTileObject(Hall* hall);
+		void CreateTileObject(DungeonTile* hall);
 
 
 		bool IsOpenHall(int x, int y);
@@ -61,7 +54,6 @@ namespace Crawl
 
 		const int version = 1; // increment this when the .dungeon file schema changes and ensure backwards compatibility.
 		std::map<int, Column> halls;
-		Position spawn;
 		Object* tilemap[16];
 	};
 }
