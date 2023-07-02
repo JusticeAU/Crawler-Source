@@ -508,7 +508,6 @@ void Scene::SaveJSON()
 	ordered_json scene_lighting_pointLights;
 	ordered_json objectsJSON;
 
-
 	// meta data
 	output["type"] = "scene";
 	output["version"] = 1;
@@ -529,9 +528,6 @@ void Scene::SaveJSON()
 
 
 	// Populate objects
-		// transform
-		// components
-		// children
 	for (int i = 0; i < objects.size(); i++)
 		objectsJSON.push_back(*objects[i]);
 

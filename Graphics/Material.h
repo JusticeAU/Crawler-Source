@@ -1,5 +1,6 @@
 #pragma once
 #include "Graphics.h"
+#include "serialisation.h"
 #include <string>
 
 using glm::vec3;
@@ -45,3 +46,6 @@ public:
 	string aoMapName		= "";
 
 };
+
+extern void to_json(nlohmann::ordered_json& j, const Material& mat);
+extern void from_json(const nlohmann::ordered_json& j, Material& mat);

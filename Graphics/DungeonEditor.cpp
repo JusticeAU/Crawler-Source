@@ -274,7 +274,7 @@ void Crawl::DungeonEditor::UpdateTile(int x, int y)
 		if (hall->object != nullptr)
 			hall->object->markedForDeletion = true;
 
-		hall->mask = dungeon->GetAutoTileMask(hall->xPos, hall->yPos);
+		hall->mask = dungeon->GetAutoTileMask(hall->position.x, hall->position.y);
 		dungeon->CreateTileObject(hall);
 	}
 }

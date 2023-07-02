@@ -211,7 +211,6 @@
     <ClCompile Include="Dungeon.cpp" />
     <ClCompile Include="DungeonEditor.cpp" />
     <ClCompile Include="DungeonPlayer.cpp" />
-    <ClCompile Include="DungeonTile.cpp" />
     <ClCompile Include="FrameBuffer.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Input.cpp" />

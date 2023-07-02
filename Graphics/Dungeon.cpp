@@ -30,20 +30,20 @@ Crawl::DungeonTile* Crawl::Dungeon::AddHall(int x, int y)
 		return nullptr; // hall existed already, no duplicating or overwriting please!
 
 	DungeonTile newHall;
-	newHall.xPos = x;
-	newHall.yPos = y;
+	newHall.position.x = x;
+	newHall.position.y = y;
 	return &col.row.emplace(y, newHall).first->second;
 }
 
 void Crawl::Dungeon::AddHall(DungeonTile& hall)
 {
-	Column& col = halls[hall.xPos];
+	Column& col = halls[hall.position.x];
 
-	auto existingHall = col.row.find(hall.yPos);
+	auto existingHall = col.row.find(hall.position.y);
 	if (existingHall != col.row.end())
 		return; // hall existed already, no duplicating or overwriting please!
 
-	col.row.emplace(hall.yPos, hall).first->second;
+	col.row.emplace(hall.position.y, hall).first->second;
 }
 
 bool Crawl::Dungeon::SetHallMask(int x, int y, int mask)
@@ -87,7 +87,7 @@ void Crawl::Dungeon::CreateTileObject(DungeonTile* hall)
 {
 	Scene::s_instance->dungeon->SetParentTileObject(Scene::s_instance->objects[2]);
 	Object* obj = Scene::s_instance->DuplicateObject(GetTileTemplate(hall->mask));
-	obj->SetLocalPosition({ hall->xPos * DUNGEON_GRID_SCALE, hall->yPos * DUNGEON_GRID_SCALE , 0 });
+	obj->SetLocalPosition({ hall->position.x * DUNGEON_GRID_SCALE, hall->position.y * DUNGEON_GRID_SCALE , 0 });
 
 	hall->object = obj;
 }

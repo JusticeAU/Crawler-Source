@@ -2,7 +2,6 @@
 #include "TextureManager.h"
 #include "ShaderManager.h"
 #include <fstream>
-#include "serialisation.h"
 
 void Material::DrawGUI()
 {
@@ -205,25 +204,93 @@ void Material::DrawGUI()
 
 void Material::SaveToFile()
 {
-	nlohmann::ordered_json output;
-	output["type"] = "material";
-	output["version"] = 1;
-	
-	output["shader"] = shader ? shader->name : "NULL";
-	
-	output["Ka"] = Ka;
-	output["Kd"] = Kd;
-	output["Ks"] = Ks;
-	output["Ns"] = specularPower;
-	output["map_Kd"] = mapKdName;
-	output["map_Ks"] = mapKsName;
-	output["bump"] = mapBumpName;
-
-	output["albedoMap"] = albedoMapName;
-	output["normalMap"] = normalMapName;
-	output["metallicMap"] = metallicMapName;
-	output["roughnessMap"] = roughnessMapName;
-	output["aoMap"] = aoMapName;
-	
+	ordered_json output = *this;
 	WriteJSONToDisk(filePath, output);
+}
+
+void to_json(nlohmann::ordered_json& j, const Material& mat)
+{
+	j["type"] = "material";
+	j["version"] = 1;
+	
+	j["shader"] = mat.shader ? mat.shader->name : "NULL";
+	
+	j["Ka"] = mat.Ka;
+	j["Kd"] = mat.Kd;
+	j["Ks"] = mat.Ks;
+	j["Ns"] = mat.specularPower;
+	j["map_Kd"] = mat.mapKdName;
+	j["map_Ks"] = mat.mapKsName;
+	j["bump"] = mat.mapBumpName;
+	
+	j["albedoMap"] = mat.albedoMapName;
+	j["normalMap"] = mat.normalMapName;
+	j["metallicMap"] = mat.metallicMapName;
+	j["roughnessMap"] = mat.roughnessMapName;
+	j["aoMap"] = mat.aoMapName;
+}
+void from_json(const nlohmann::ordered_json& j, Material& mat)
+{
+	if (j.contains("shader"))
+	{
+		j.at("shader").get_to(mat.shaderName);
+		mat.shader = ShaderManager::GetShaderProgram(mat.shaderName);
+	}
+
+	if(j.contains("Ka"))
+		j.at("Ka").get_to(mat.Ka);
+	if (j.contains("Kd"))
+		j.at("Kd").get_to(mat.Kd);
+	if (j.contains("Ks"))
+		j.at("Ks").get_to(mat.Ks);
+	if (j.contains("Ns"))
+		j.at("Ns").get_to(mat.specularPower);
+
+	if (j.contains("map_Kd"))
+	{
+		j.at("map_Kd").get_to(mat.mapKdName);
+		mat.mapKd = TextureManager::GetTexture(mat.mapKdName);
+	}
+
+	if (j.contains("map_Ks"))
+	{
+		j.at("map_Ks").get_to(mat.mapKsName);
+		mat.mapKs = TextureManager::GetTexture(mat.mapKsName);
+	}
+
+	if (j.contains("bump"))
+	{
+		j.at("bump").get_to(mat.mapBumpName);
+		mat.mapBump = TextureManager::GetTexture(mat.mapBumpName);
+	}
+
+	if (j.contains("albedoMap"))
+	{
+		j.at("albedoMap").get_to(mat.albedoMapName);
+		mat.albedoMap = TextureManager::GetTexture(mat.albedoMapName);
+	}
+
+	if (j.contains("normalMap"))
+	{
+		j.at("normalMap").get_to(mat.normalMapName);
+		mat.normalMap = TextureManager::GetTexture(mat.normalMapName);
+	}
+
+	if (j.contains("metallicMap"))
+	{
+		j.at("metallicMap").get_to(mat.metallicMapName);
+		mat.metallicMap = TextureManager::GetTexture(mat.metallicMapName);
+	}
+
+	if (j.contains("roughnessMap"))
+	{
+		j.at("roughnessMap").get_to(mat.roughnessMapName);
+		mat.roughnessMap = TextureManager::GetTexture(mat.roughnessMapName);
+	}
+
+	if (j.contains("aoMap"))
+	{
+		j.at("aoMap").get_to(mat.aoMapName);
+		mat.aoMap = TextureManager::GetTexture(mat.aoMapName);
+	}
 }

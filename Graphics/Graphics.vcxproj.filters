@@ -272,9 +272,6 @@
     <ClCompile Include="ArtTester.cpp">
       <Filter>Source Files\Application\Crawl</Filter>
     </ClCompile>
-    <ClCompile Include="DungeonTile.cpp">
-      <Filter>Source Files\Application\Crawl</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">

@@ -77,34 +77,8 @@ void MaterialManager::LoadFromFile(const char* filename)
 	material->name = filename;
 	material->filePath = filename;
 	
-
 	auto input = ReadJSONFromDisk(filename);
-	std::cout << input.size();
-	input.at("shader").get_to(material->shaderName);
-	material->shader = ShaderManager::GetShaderProgram(material->shaderName);
-	
-	input.at("Ka").get_to(material->Ka);
-	input.at("Kd").get_to(material->Kd);
-	input.at("Ks").get_to(material->Ks);
-	input.at("Ns").get_to(material->specularPower);
-
-	input.at("map_Kd").get_to(material->mapKdName);
-	material->mapKd = TextureManager::GetTexture(material->mapKdName);
-	input.at("map_Ks").get_to(material->mapKsName);
-	material->mapKs = TextureManager::GetTexture(material->mapKsName);
-	input.at("bump").get_to(material->mapBumpName);
-	material->mapBump = TextureManager::GetTexture(material->mapBumpName);
-	
-	input.at("albedoMap").get_to(material->albedoMapName);
-	material->albedoMap = TextureManager::GetTexture(material->albedoMapName);
-	input.at("normalMap").get_to(material->normalMapName);
-	material->normalMap = TextureManager::GetTexture(material->normalMapName);
-	input.at("metallicMap").get_to(material->metallicMapName);
-	material->metallicMap = TextureManager::GetTexture(material->metallicMapName);
-	input.at("roughnessMap").get_to(material->roughnessMapName);
-	material->roughnessMap = TextureManager::GetTexture(material->roughnessMapName);
-	input.at("aoMap").get_to(material->aoMapName);
-	material->aoMap = TextureManager::GetTexture(material->aoMapName);
+	input.get_to<Material>(*material);
 
 	materials.emplace(filename, material);
 }

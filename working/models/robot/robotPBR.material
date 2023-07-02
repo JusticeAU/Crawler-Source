@@ -1,4 +1,6 @@
 {
+  "type": "material",
+  "version": 1,
   "shader": "shaders/PBR",
   "Ka": {
     "x": 0.0,
