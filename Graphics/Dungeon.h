@@ -43,6 +43,7 @@ namespace Crawl
 		int GetAutoTileMask(int x, int y);
 		// returns pointer to the template tile for the Scene to duplicate.
 		Object* GetTileTemplate(int mask);
+		void SetParentTileObject(Object* object);
 
 	protected:
 		void InitialiseTileMap();
@@ -55,6 +56,7 @@ namespace Crawl
 		const int version = 1; // increment this when the .dungeon file schema changes and ensure backwards compatibility.
 		std::map<int, Column> halls;
 		Object* tilemap[16];
+		Object* tilesParentObject = nullptr;
 	};
 }
 

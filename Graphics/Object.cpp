@@ -26,9 +26,13 @@ using std::to_string;
 Object::Object(int objectID, string name)
 {
 	id = objectID;
-	eulerRotation = { 0,0,0 };
-	transform = mat4(1);
+
+	localPosition = { 0,0,0 };
+	localRotation = { 0,0,0 };
+	localScale = { 1,1,1 };
+
 	localTransform = mat4(1);
+	transform = mat4(1);
 
 	objectName = name;
 }
@@ -55,14 +59,6 @@ void Object::Update(float delta)
 	for (auto component : components)
 		component->Update(delta);
 
-	if (spin) // just some debug spinning for testing lighting.
-	{
-		eulerRotation.y += delta * spinSpeed;
-		if (eulerRotation.y > 180) eulerRotation.y -= 360;
-		else if (eulerRotation.y < -180) eulerRotation.y += 360;
-		dirtyTransform = true;
-	}
-
 	if (dirtyTransform) // Our transform has changed. Update it and our childrens transforms.
 	{
 		RecalculateTransforms();
@@ -85,6 +81,43 @@ void Object::Draw(mat4 pv, vec3 position, Component::DrawMode mode)
 		c->Draw(pv, position, mode);
 }
 
+void Object::SetLocalPosition(vec3 pos)
+{
+	localPosition = pos;
+	dirtyTransform = true;
+}
+
+void Object::SetLocalRotation(vec3 euler)
+{
+	localRotation = euler;
+	dirtyTransform = true;
+}
+
+void Object::SetLocalScale(vec3 scale)
+{
+	localScale = scale;
+	dirtyTransform = true;
+}
+
+void Object::AddLocalPosition(vec3 pos)
+{
+	localPosition += pos;
+	dirtyTransform = true;
+}
+
+void Object::AddLocalRotation(vec3 euler)
+{
+	localRotation += euler;
+	dirtyTransform = true;
+}
+
+void Object::AddLocalScale(vec3 scale)
+{
+	localScale += scale;
+	dirtyTransform = true;
+}
+
+
 // Draws all Imgui data for an object in the scene window.
 void Object::DrawGUI()
 {
@@ -106,26 +139,14 @@ void Object::DrawGUI()
 		if (ImGui::CollapsingHeader("Transform"))
 		{
 			ImGui::Indent();
-			vec3 localPosition, localRotation, localScale;
-			ImGuizmo::DecomposeMatrixToComponents((float*)&localTransform, (float*)&localPosition, (float*)&localRotation, (float*)&localScale);
 			if (ImGui::DragFloat3("Position", &localPosition[0]))
 				dirtyTransform = true;
 
-			if(ImGui::SliderFloat3("Rotation", &eulerRotation[0], -180, 180))
+			if(ImGui::SliderFloat3("Rotation", &localRotation[0], -180, 180))
 				dirtyTransform = true;
 
 			if(ImGui::DragFloat3("Scale", &localScale[0]))
 				dirtyTransform = true;
-
-			if(dirtyTransform)
-				ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&eulerRotation, (float*)&localScale, (float*)&localTransform);
-
-			ImGui::Checkbox("Rotate", &spin);
-			ImGui::SameLine();
-			ImGui::PushItemWidth(50);
-			ImGui::DragFloat("Speed", &spinSpeed, 1.0f, -50, 50, "%0.1f");
-			ImGui::PopItemWidth();
-			ImGui::Unindent();
 		}
 
 		// Draw Components.
@@ -309,13 +330,10 @@ void Object::LoadFromJSON(nlohmann::ordered_json j)
 	j.at("name").get_to(objectName);
 
 	// Process Transform
-	glm::vec3 localPosition, localRotation, localScale;
 	j.at("transform").at("position").get_to(localPosition);
 	j.at("transform").at("rotation").get_to(localRotation);
 	j.at("transform").at("scale").get_to(localScale);
 	ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&localRotation, (float*)&localScale, (float*)&localTransform);
-	eulerRotation = localRotation;
-
 
 	// Process Components
 	ordered_json componentsJSON = j["components"];
@@ -363,13 +381,7 @@ void Object::RefreshComponents()
 
 void Object::RecalculateTransforms()
 {
-	vec3 localPosition, localRotation, localScale;
-	ImGuizmo::DecomposeMatrixToComponents((float*)&localTransform, (float*)&localPosition, (float*)&localRotation, (float*)&localScale);
-
-	if (eulerRotation.y > 180) eulerRotation.y -= 360;
-	else if (eulerRotation.y < -180) eulerRotation.y += 360;
-
-	ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&eulerRotation, (float*)&localScale, (float*)&localTransform);
+	ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&localRotation, (float*)&localScale, (float*)&localTransform);
 
 	// Update world transform based on our parent.
 	if (parent)
@@ -399,11 +411,9 @@ void to_json(nlohmann::ordered_json& j, const Object& object)
 
 	// Process Transform
 	ordered_json transformJSON;
-	glm::vec3 localPosition, localRotation, localScale;
-	ImGuizmo::DecomposeMatrixToComponents((float*)&object.localTransform, (float*)&localPosition, (float*)&localRotation, (float*)&localScale);
-	transformJSON["position"] = localPosition;
-	transformJSON["rotation"] = object.eulerRotation;
-	transformJSON["scale"] = localScale;
+	transformJSON["position"] = object.localPosition;
+	transformJSON["rotation"] = object.localRotation;
+	transformJSON["scale"] = object.localScale;
 	j["transform"] = transformJSON;
 
 	// Process Components

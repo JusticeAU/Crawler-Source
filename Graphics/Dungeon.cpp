@@ -85,10 +85,9 @@ bool Crawl::Dungeon::DeleteHall(int x, int y)
 
 void Crawl::Dungeon::CreateTileObject(DungeonTile* hall)
 {
+	Scene::s_instance->dungeon->SetParentTileObject(Scene::s_instance->objects[2]);
 	Object* obj = Scene::s_instance->DuplicateObject(GetTileTemplate(hall->mask));
-	obj->localTransform[3][0] = hall->xPos * DUNGEON_GRID_SCALE;
-	obj->localTransform[3][1] = hall->yPos * DUNGEON_GRID_SCALE;
-	obj->dirtyTransform = true;
+	obj->SetLocalPosition({ hall->xPos * DUNGEON_GRID_SCALE, hall->yPos * DUNGEON_GRID_SCALE , 0 });
 
 	hall->object = obj;
 }
@@ -175,42 +174,43 @@ void Crawl::Dungeon::InitialiseTileMap()
 	tilemap[1]->components.push_back(model);
 	tilemap[1]->components.push_back(renderer);
 	tilemap[2] = new Object(0, "Open West");
-	tilemap[2]->eulerRotation.z = 90.0f;
+	tilemap[2]->SetLocalRotation({ 0,0,90 });
 	tilemap[2]->components.push_back(model);
 	tilemap[2]->components.push_back(renderer);
 	tilemap[4] = new Object(0, "Open East");
-	tilemap[4]->eulerRotation.z = -90.0f;
+	tilemap[4]->SetLocalRotation({ 0,0,-90 });
 	tilemap[4]->components.push_back(model);
 	tilemap[4]->components.push_back(renderer);
 	tilemap[8] = new Object(0, "Open South");
-	tilemap[8]->eulerRotation.z = 180.0f;
+	tilemap[8]->SetLocalRotation({ 0,0,180 });
+	tilemap[8]->localRotation.z = 180.0f;
 	tilemap[8]->components.push_back(model);
 	tilemap[8]->components.push_back(renderer);
 
 	// Corners
 	tilemap[3] = new Object(0, "Open North West");
-	tilemap[3]->eulerRotation.z = -90.0f;
+	tilemap[3]->SetLocalRotation({ 0,0,-90 });
 	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[3], Component_Model);
 	model->model = ModelManager::GetModel("models/crawl/blockout/hallCorner.fbx");
 	model->modelName = "models/crawl/blockout/hallhallCorner.fbx";
 	tilemap[3]->components.push_back(model);
 	tilemap[3]->components.push_back(renderer);
 	tilemap[5] = new Object(0, "Open North East");
-	tilemap[5]->eulerRotation.z = 180.0f;
+	tilemap[5]->SetLocalRotation({ 0,0,180 });
 	tilemap[5]->components.push_back(model);
 	tilemap[5]->components.push_back(renderer);
 	tilemap[10] = new Object(0, "Open West South");
 	tilemap[10]->components.push_back(model);
 	tilemap[10]->components.push_back(renderer);
 	tilemap[12] = new Object(0, "Open East South");
-	tilemap[12]->eulerRotation.z = 90.0f;
+	tilemap[12]->SetLocalRotation({ 0,0,90 });
 	tilemap[12]->components.push_back(model);
 	tilemap[12]->components.push_back(renderer);
 
 
 	// tunnels
 	tilemap[6] = new Object(0, "Open West East");
-	tilemap[6]->eulerRotation.z = 90.0f;
+	tilemap[6]->SetLocalRotation({ 0,0,90 });
 	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[3], Component_Model);
 	model->model = ModelManager::GetModel("models/crawl/blockout/hallSides.fbx");
 	model->modelName = "models/crawl/blockout/hallSides.fbx";
@@ -222,21 +222,21 @@ void Crawl::Dungeon::InitialiseTileMap()
 
 	// walls
 	tilemap[7] = new Object(0, "Open North West East");
-	tilemap[7]->eulerRotation.z = 90.0f;
+	tilemap[7]->SetLocalRotation({ 0,0,90 });
 	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[7], Component_Model);
 	model->model = ModelManager::GetModel("models/crawl/blockout/hallWall.fbx");
 	model->modelName = "models/crawl/blockout/hallWall.fbx";
 	tilemap[7]->components.push_back(model);
 	tilemap[7]->components.push_back(renderer);
 	tilemap[11] = new Object(0, "Open North West South");
-	tilemap[11]->eulerRotation.z = 180.0f;
+	tilemap[11]->SetLocalRotation({ 0,0,180 });
 	tilemap[11]->components.push_back(model);
 	tilemap[11]->components.push_back(renderer);
 	tilemap[13] = new Object(0, "Open North East South");
 	tilemap[13]->components.push_back(model);
 	tilemap[13]->components.push_back(renderer);
 	tilemap[14] = new Object(0, "Open West East South");
-	tilemap[14]->eulerRotation.z = -90.0f;
+	tilemap[14]->SetLocalRotation({ 0,0,-90 });
 	tilemap[14]->components.push_back(model);
 	tilemap[14]->components.push_back(renderer);
 
@@ -264,6 +264,12 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 Object* Crawl::Dungeon::GetTileTemplate(int mask)
 {
 	return tilemap[mask];
+}
+
+void Crawl::Dungeon::SetParentTileObject(Object* object)
+{
+	for (int i = 0; i < 16; i++)
+		tilemap[i]->parent = object;
 }
 
 int Crawl::Dungeon::GetAutoTileMask(int x, int y)

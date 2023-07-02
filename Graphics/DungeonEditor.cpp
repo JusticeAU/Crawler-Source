@@ -261,11 +261,8 @@ void Crawl::DungeonEditor::UpdateMousePosOnGrid()
 	cursorModel->model = templateModel->model;
 	ComponentRenderer* cursorRenderer = (ComponentRenderer*)Scene::s_instance->objects[0]->GetComponent(Component_Renderer);
 	cursorRenderer->model = templateModel->model;
-	Scene::s_instance->objects[0]->eulerRotation.z = tileTemplate->eulerRotation.z;
-	Scene::s_instance->objects[0]->localTransform[3][0] = gridSelected.x * DUNGEON_GRID_SCALE;
-	Scene::s_instance->objects[0]->localTransform[3][1] = gridSelected.y * DUNGEON_GRID_SCALE;
-	Scene::s_instance->objects[0]->localTransform[3][2] = 0;
-	Scene::s_instance->objects[0]->dirtyTransform = true;
+	Scene::s_instance->objects[0]->SetLocalPosition({ gridSelected.x * DUNGEON_GRID_SCALE, gridSelected.y * DUNGEON_GRID_SCALE, 0 });
+	Scene::s_instance->objects[0]->SetLocalRotation(tileTemplate->localRotation);
 }
 
 void Crawl::DungeonEditor::UpdateTile(int x, int y)
@@ -287,9 +284,7 @@ void Crawl::DungeonEditor::UpdateSurroundingTiles(int x, int y)
 	for (int xDelta = x - 1; xDelta <= x + 1; xDelta++)
 	{
 		for (int yDelta = y - 1; yDelta <= y + 1; yDelta++)
-		{
 			UpdateTile(xDelta, yDelta);
-		}
 	}
 }
 

@@ -31,11 +31,12 @@ public:
 	Object* parent = nullptr;
 	vector<Object*> children;
 	
-	vec3 eulerRotation; // Keep this around to avoid Imguizmo decomposing it and potentially flipping what is 'up'
-
 	bool dirtyTransform = true;
-	mat4 transform;
+	vec3 localPosition;
+	vec3 localRotation;
+	vec3 localScale;
 	mat4 localTransform;
+	mat4 transform;
 	
 	bool markedForDeletion = false;
 
@@ -43,12 +44,16 @@ public:
 
 	vector<Component*> components;
 
-	// Debug helpers
-	bool spin = false;
-	float spinSpeed = 10.0f;
-
 	void Update(float delta);
 	void Draw(mat4 pv, vec3 position, Component::DrawMode mode);
+
+	void SetLocalPosition(vec3 localPos);
+	void SetLocalRotation(vec3 euler);
+	void SetLocalScale(vec3 localScale);
+	void AddLocalPosition(vec3 localPos);
+	void AddLocalRotation(vec3 euler);
+	void AddLocalScale(vec3 localScale);
+
 	void DrawGUI();
 	void DrawGUISimple();
 	

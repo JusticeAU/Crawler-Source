@@ -59,7 +59,7 @@ void ComponentFPSTest::Update(float delta)
 	glm::vec2 mouseDelta = Input::GetMouseDelta();
 	rotationX -= mouseDelta.y * 0.1f;
 	rotationY -= mouseDelta.x * 0.1f;
-	mainObject->eulerRotation = { rotationX, rotationY, 0 };
+	mainObject->localRotation = { rotationX, rotationY, 0 };
 	mainObject->RecalculateTransforms();
 }
 

@@ -33,8 +33,7 @@ void Crawl::DungeonPlayer::Update()
 		if (faceInt == 4)
 			faceInt = 0;
 		facing = (FACING)faceInt;
-		object->eulerRotation.z -= 90;
-		object->dirtyTransform = true;
+		object->AddLocalRotation({ 0,0,-90 });
 	}
 	if (Input::Keyboard(GLFW_KEY_Q).Down())
 	{
@@ -43,8 +42,7 @@ void Crawl::DungeonPlayer::Update()
 		if (faceInt == -1)
 			faceInt = 3;
 		facing = (FACING)faceInt;
-		object->eulerRotation.z += 90;
-		object->dirtyTransform = true;
+		object->AddLocalRotation({ 0,0,90 });
 	}
 
 	if (coordinate != coordinateUnchanged)
@@ -59,9 +57,7 @@ void Crawl::DungeonPlayer::Update()
 
 	if (didMove)
 	{
-		object->localTransform[3][0] = position.column * Crawl::DUNGEON_GRID_SCALE;
-		object->localTransform[3][1] = position.row * Crawl::DUNGEON_GRID_SCALE;
-		object->dirtyTransform = true;
+		object->SetLocalPosition({ position.column * Crawl::DUNGEON_GRID_SCALE, position.row * Crawl::DUNGEON_GRID_SCALE , 0 });
 		didMove = false;
 	}
 }
