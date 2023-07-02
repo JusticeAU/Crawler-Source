@@ -5,11 +5,6 @@
 #include "Input.h"
 #include "LogUtils.h"
 
-ComponentFPSTest::ComponentFPSTest(Object* parent, std::istream& istream) : ComponentFPSTest(parent)
-{
-
-}
-
 void ComponentFPSTest::Update(float delta)
 {
 	// Testing what can be done with existing configuration

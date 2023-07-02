@@ -15,7 +15,6 @@ class ComponentAnimationBlender : public Component
 {
 public:
 	ComponentAnimationBlender(Object* parent) : Component("AnimationBlender", Component_AnimationBlender, parent) {};
-	ComponentAnimationBlender(Object* parent, std::istream& istream);
 
 	~ComponentAnimationBlender();
 	ComponentAnimationBlender(ComponentAnimationBlender& other) = delete;

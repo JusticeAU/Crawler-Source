@@ -43,8 +43,6 @@ public:
 	ComponentType GetType() { return componentType; };
 	virtual void DrawGUI() {};
 
-	virtual void Write(std::ostream& ostream) {};
-
 	void AnnounceChange();
 	virtual void OnParentChange() {};
 

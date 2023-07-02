@@ -8,10 +8,6 @@ ComponentAudioSource::ComponentAudioSource(Object* parent) : Component("Audio So
 {
 }
 
-ComponentAudioSource::ComponentAudioSource(Object* parent, std::istream& istream) : Component("Audio Source", Component_AudioSource, parent)
-{
-}
-
 ComponentAudioSource::~ComponentAudioSource()
 {
 }
@@ -65,10 +61,6 @@ void ComponentAudioSource::DrawGUI()
 		}
 		ImGui::EndCombo();
 	}
-}
-
-void ComponentAudioSource::Write(std::ostream& ostream)
-{
 }
 
 void ComponentAudioSource::OnParentChange()

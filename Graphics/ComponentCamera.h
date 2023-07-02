@@ -17,7 +17,6 @@ class ComponentCamera : public Component
 {
 public:
 	ComponentCamera(Object* parent);
-	ComponentCamera(Object* parent, std::istream& istream);
 	ComponentCamera(Object* parent, ordered_json j);
 
 	~ComponentCamera();
@@ -27,8 +26,6 @@ public:
 	void Update(float deltatime) override;
 
 	void DrawGUI() override;
-
-	void Write(std::ostream& ostream) override;
 
 	void UpdateViewProjectionMatrix();
 

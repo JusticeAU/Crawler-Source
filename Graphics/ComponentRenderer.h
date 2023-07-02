@@ -18,14 +18,11 @@ class ComponentRenderer : public Component
 {
 public:
 	ComponentRenderer(Object* parent) : Component("Renderer", Component_Renderer, parent) {};
-	ComponentRenderer(Object* parent, std::istream& istream);
 	ComponentRenderer(Object* parent, nlohmann::ordered_json);
 
 	void Draw(mat4 pv, vec3 position, DrawMode mode) override;
 
 	void DrawGUI() override;
-
-	void Write(std::ostream& ostream) override;
 
 	virtual void OnParentChange() override;
 

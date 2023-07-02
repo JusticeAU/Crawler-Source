@@ -490,7 +490,6 @@ void Scene::SetSelectedObject(unsigned int selected)
 	s_instance->selectedObjectID = selected;
 	s_instance->selectedObject = Scene::FindObjectWithID(selected);
 }
-
 Object* Scene::FindObjectWithID(unsigned int id)
 {
 	for (auto o : s_instance->objects)
@@ -501,41 +500,6 @@ Object* Scene::FindObjectWithID(unsigned int id)
 	return nullptr;
 }
 
-void Scene::Save()
-{
-	// Create/Open file for writing
-	std::ofstream out((sceneSubfolder+sceneFilename).c_str(), std::ofstream::binary);
-
-	// Serialize Scene Configuration
-	
-	// Clear Colour
-	FileUtils::WriteVec(out, clearColour);
-	FileUtils::WriteVec(out, m_ambientColour);
-	
-	// Scene Light Configuration
-	FileUtils::WriteVec(out, m_sunColour);
-	FileUtils::WriteVec(out, m_sunDirection);
-	
-	// Point Lights
-	int numPointLights = (int)m_pointLights.size();
-	FileUtils::WriteInt(out, numPointLights);
-	for (int i = 0; i < numPointLights; i++)
-	{
-		FileUtils::WriteVec(out, m_pointLights[i].position);
-		FileUtils::WriteVec(out, m_pointLights[i].colour);
-		FileUtils::WriteFloat(out, m_pointLights[i].intensity);
-	}
-	
-	// Serialize Objects and Child Objects recursively
-	int numObjects = (int)objects.size();
-	FileUtils::WriteInt(out, numObjects);
-	for (int i = 0; i < numObjects; i++)
-		objects[i]->Write(out);
-
-	out.flush();
-	out.close();
-}
-
 void Scene::SaveJSON()
 {
 	// Create the JSON structures
@@ -543,7 +507,6 @@ void Scene::SaveJSON()
 	ordered_json scene_lighting;
 	ordered_json scene_lighting_pointLights;
 	ordered_json objectsJSON;
-
 
 
 	// meta data
@@ -575,67 +538,12 @@ void Scene::SaveJSON()
 	output["objects"] = objectsJSON;
 
 	// write to disk
-	WriteJSONToDisk(sceneSubfolder + sceneFilename + ".json", output);
+	WriteJSONToDisk(sceneSubfolder + sceneFilename, output);
 }
-
-void Scene::Load()
-{
-
-	// Create/Open file for writing
-	std::ifstream in((sceneSubfolder+sceneFilename).c_str(), std::ifstream::binary);
-
-	// Serialize Scene Configuration
-	
-	// Clear Colour
-	FileUtils::ReadVec(in, clearColour);
-	SetClearColour(clearColour);
-	FileUtils::ReadVec(in, m_ambientColour);
-	
-	// Scene Light Configuration
-	FileUtils::ReadVec(in, m_sunColour);
-	FileUtils::ReadVec(in, m_sunDirection);
-	
-	// Point Lights
-	int numPointLights;
-	FileUtils::ReadInt(in, numPointLights);
-	m_pointLights.resize(numPointLights);
-	for (int i = 0; i < numPointLights; i++)
-	{
-		FileUtils::ReadVec(in, m_pointLights[i].position);
-		FileUtils::ReadVec(in, m_pointLights[i].colour);
-		FileUtils::ReadFloat(in, m_pointLights[i].intensity);
-	}
-	
-	// Clear current objects
-	for (auto object = objects.begin(); object != objects.end(); object++)
-	{
-		auto obj = *object;
-		delete obj;
-	}
-	objects.clear();
-	gizmos.clear();
-
-	//  Objects and Child Objects
-	int numObjects;
-	FileUtils::ReadInt(in, numObjects);
-	for(int i = 0; i < numObjects; i++)
-	{
-		auto o = Scene::CreateObject();
-		o->Read(in);
-	}
-	in.close();
-
-	for (auto o : objects)
-	{
-		o->RefreshComponents();
-	}
-}
-
 void Scene::LoadJSON()
 {
-
 	// Load the JSON object
-	ordered_json input = ReadJSONFromDisk(sceneSubfolder + sceneFilename + ".json");
+	ordered_json input = ReadJSONFromDisk(sceneSubfolder + sceneFilename);
 	
 	// check version lol
 	// load the lighitng data
@@ -680,6 +588,7 @@ void Scene::LoadJSON()
 		}
 	}
 }
+
 mat4 Scene::GetLightSpaceMatrix()
 {
 	return s_instance->lightSpaceMatrix;

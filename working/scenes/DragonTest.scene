@@ -1,0 +1,136 @@
+{
+  "type": "scene",
+  "version": 1,
+  "lighting": {
+    "clearColour": {
+      "x": 0.25,
+      "y": 0.25,
+      "z": 0.25
+    },
+    "ambientColour": {
+      "x": 0.25,
+      "y": 0.25,
+      "z": 0.25
+    },
+    "sunColour": {
+      "x": 1.0,
+      "y": 1.0,
+      "z": 1.0
+    },
+    "sunDirection": {
+      "x": 0.0,
+      "y": -0.765999972820282,
+      "z": -0.7070000171661377
+    },
+    "pointLights": [
+      {
+        "position": {
+          "x": 1.3899999856948853,
+          "y": 1.7599999904632568,
+          "z": 4.25
+        },
+        "colour": {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        },
+        "intensity": 10.0
+      },
+      {
+        "position": {
+          "x": -1.4900000095367432,
+          "y": 5.800000190734863,
+          "z": -4.260000228881836
+        },
+        "colour": {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        },
+        "intensity": 10.0
+      }
+    ]
+  },
+  "objects": [
+    {
+      "name": "Hall",
+      "transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "scale": {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        }
+      },
+      "components": [
+        {
+          "type": "Model",
+          "model": "models/crawl/blockout/hallU.fbx"
+        },
+        {
+          "type": "Renderer",
+          "materials": [
+            "models/crawl/blockout/hall.material",
+            "models/crawl/blockout/hall.material",
+            "models/crawl/blockout/hall.material",
+            "models/crawl/blockout/hall.material"
+          ],
+          "frameBuffer": "",
+          "receivesShadows": true,
+          "castsShadows": true
+        }
+      ],
+      "children": null
+    },
+    {
+      "name": "Test Model",
+      "transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "rotation": {
+          "x": 90.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "scale": {
+          "x": 0.9999996423721313,
+          "y": 1.0,
+          "z": 1.0
+        }
+      },
+      "components": [
+        {
+          "type": "Model",
+          "model": "models/ModelTest.fbx"
+        },
+        {
+          "type": "Renderer",
+          "materials": [
+            "models/land-dragon/land-dragon-body.material"
+          ],
+          "frameBuffer": "",
+          "receivesShadows": true,
+          "castsShadows": true
+        },
+        {
+          "type": "Animator",
+          "animationName": "Not currently storing!",
+          "loop": true
+        }
+      ],
+      "children": null
+    }
+  ]
+}

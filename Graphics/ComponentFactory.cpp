@@ -44,33 +44,6 @@ Component* ComponentFactory::NewComponent(Object* parent, int componentIndex)
     return nullptr; // shouldn't get here
 }
 
-Component* ComponentFactory::ReadComponent(Object* parent, std::istream& istream, ComponentType type)
-{
-    switch (type)
-    {
-    case Component_Model:
-        return new ComponentModel(parent, istream);
-    case Component_Animator:
-        return new ComponentAnimator(parent, istream);
-    case Component_Renderer:
-        return new ComponentRenderer(parent, istream);
-    case Component_SkinnedRenderer:
-        return new ComponentSkinnedRenderer(parent, istream);
-    case Component_Material:
-        return nullptr;
-    case Component_Light:
-        return nullptr;
-    case Component_Camera:
-        return new ComponentCamera(parent, istream);
-    case Component_FPSTest:
-        return new ComponentFPSTest(parent, istream);
-    default:
-        return nullptr;
-    }
-
-    return nullptr; // shouldn't get here
-}
-
 Component* ComponentFactory::ReadComponentJSON(Object* parent, nlohmann::ordered_json j)
 {
     string type = j["type"];

@@ -6,12 +6,6 @@
 
 using std::to_string;
 
-ComponentModel::ComponentModel(Object* parent, std::istream& istream) : ComponentModel(parent)
-{
-	FileUtils::ReadString(istream, modelName);
-	model = ModelManager::GetModel(modelName);
-}
-
 ComponentModel::ComponentModel(Object* parent, nlohmann::ordered_json j) : ComponentModel(parent)
 {
 	if (j.contains("model"))
@@ -45,11 +39,6 @@ void ComponentModel::DrawGUI()
 
 	if(model != nullptr && model->childNodes != nullptr)
 		model->childNodes->DrawGUISimple();
-}
-
-void ComponentModel::Write(std::ostream& ostream)
-{
-	FileUtils::WriteString(ostream, modelName);
 }
 
 Component* ComponentModel::Clone(Object* parent)

@@ -90,12 +90,6 @@ Application::Application()
 	
 	// Create input system.
 	Input::Init(window->GetGLFWwindow());
-	
-
-	// Create a default object
-	//Scene::CreateObject("Default Object");
-
-	Scene::s_instance->LoadJSON();
 }
 
 Application::~Application()

@@ -48,30 +48,6 @@ ComponentCamera::ComponentCamera(Object* parent) : Component("Camera", Component
 	Scene::s_instance->componentCameras.push_back(this); // Must be added here so the scene can render all in-scene cameras before rendering itself.
 }
 
-ComponentCamera::ComponentCamera(Object* parent, std::istream& istream) : ComponentCamera(parent)
-{
-	FileUtils::ReadFloat(istream, nearClip);
-	FileUtils::ReadFloat(istream, farClip);
-
-	FileUtils::ReadFloat(istream, fieldOfView);
-	FileUtils::ReadFloat(istream, aspect);
-	dirtyConfig = true;
-
-	// see if there were any post process effects applied and create them.
-	int postProcessCount;
-	FileUtils::ReadInt(istream, postProcessCount);
-	for (int i = 0; i < postProcessCount; i++)
-	{
-		string ppShaderName;
-		FileUtils::ReadString(istream, ppShaderName);
-		PostProcess* pp = new PostProcess(componentParent->objectName + "_PP_" + ppShaderName);
-		pp->SetShader(ShaderManager::GetShaderProgram(ppShaderName));
-		pp->SetShaderName(ppShaderName);
-
-		m_postProcessStack.push_back(pp);
-	}
-}
-
 ComponentCamera::ComponentCamera(Object* parent, ordered_json j) : ComponentCamera(parent)
 {
 	if(j.contains("nearClip"))
@@ -210,20 +186,6 @@ void ComponentCamera::DrawGUI()
 			ImGui::Text(m_postProcessStack[i]->GetName().c_str());
 		}
 	}
-}
-
-void ComponentCamera::Write(std::ostream& ostream)
-{
-	FileUtils::WriteFloat(ostream, nearClip);
-	FileUtils::WriteFloat(ostream, farClip );
-
-	FileUtils::WriteFloat(ostream, fieldOfView);
-	FileUtils::WriteFloat(ostream, aspect);
-
-	// Write post process stack
-	FileUtils::WriteInt(ostream, m_postProcessStack.size());
-	for (auto pp : m_postProcessStack)
-		FileUtils::WriteString(ostream, pp->GetShaderName()); // All thats needed at this point in time.
 }
 
 void ComponentCamera::UpdateViewProjectionMatrix()

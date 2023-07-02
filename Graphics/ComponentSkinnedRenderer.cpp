@@ -12,12 +12,6 @@ ComponentSkinnedRenderer::ComponentSkinnedRenderer(Object* parent) : ComponentRe
 	componentType = Component_SkinnedRenderer;
 }
 
-ComponentSkinnedRenderer::ComponentSkinnedRenderer(Object* parent, std::istream& istream) : ComponentRenderer(parent, istream)
-{
-	componentName = "Skinned Renderer";
-	componentType = Component_SkinnedRenderer;
-}
-
 ComponentSkinnedRenderer::ComponentSkinnedRenderer(Object* parent, ordered_json j) : ComponentRenderer(parent, j)
 {
 	componentName = "Skinned Renderer";

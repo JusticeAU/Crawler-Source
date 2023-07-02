@@ -13,7 +13,6 @@ class ComponentSkinnedRenderer : public ComponentRenderer
 {
 public:
 	ComponentSkinnedRenderer(Object* parent);
-	ComponentSkinnedRenderer(Object* parent, std::istream& istream);
 	ComponentSkinnedRenderer(Object* parent, ordered_json j);
 	void Draw(mat4 pv, vec3 position, DrawMode mode) override;
 

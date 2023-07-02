@@ -8,7 +8,6 @@ class ComponentAudioSource : public Component
 {
 public:
 	ComponentAudioSource(Object* parent);
-	ComponentAudioSource(Object* parent, std::istream& istream);
 
 	~ComponentAudioSource();
 	ComponentAudioSource(ComponentAudioSource& other) = delete;
@@ -16,8 +15,6 @@ public:
 
 	void Update(float deltatime) override;
 	void DrawGUI() override;
-
-	void Write(std::ostream& ostream) override;
 
 	void OnParentChange() override;
 

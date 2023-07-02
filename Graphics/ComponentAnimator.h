@@ -16,7 +16,6 @@ class ComponentAnimator : public Component
 {
 public:
 	ComponentAnimator(Object* parent);
-	ComponentAnimator(Object* parent, std::istream& istream);
 	ComponentAnimator(Object* parent, ordered_json j);
 	
 	~ComponentAnimator();
@@ -26,8 +25,6 @@ public:
 	
 	void Update(float deltatime) override;
 	void DrawGUI() override;
-
-	void Write(std::ostream& ostream) override;
 
 	void OnParentChange() override;
 

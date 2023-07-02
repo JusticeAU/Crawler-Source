@@ -24,7 +24,6 @@ public:
 	static string GetComponentName(unsigned int i) { return components[i]; };
 
 	static Component* NewComponent(Object* parent, int i);
-	static Component* ReadComponent(Object* parent, std::istream& istream, ComponentType type);
 	static Component* ReadComponentJSON(Object* parent, nlohmann::ordered_json j);
 protected:
 	static vector<string> components;

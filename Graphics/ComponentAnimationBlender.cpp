@@ -7,10 +7,6 @@
 
 using std::to_string;
 
-ComponentAnimationBlender::ComponentAnimationBlender(Object* parent, std::istream& istream) : ComponentAnimationBlender(parent)
-{
-}
-
 ComponentAnimationBlender::~ComponentAnimationBlender()
 {
 	delete boneTransforms;

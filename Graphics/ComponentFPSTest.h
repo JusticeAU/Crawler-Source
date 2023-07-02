@@ -8,7 +8,6 @@ class ComponentFPSTest : public Component
 {
 public:
 	ComponentFPSTest(Object* parent) : Component("FPSTest", Component_FPSTest, parent) {};
-	ComponentFPSTest(Object* parent, std::istream& istream);
 
 	void Update(float delta) override;
 

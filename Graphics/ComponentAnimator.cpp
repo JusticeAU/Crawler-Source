@@ -17,16 +17,6 @@ ComponentAnimator::ComponentAnimator(Object* parent) : Component("Animator", Com
 	boneTransfomBuffer = new UniformBuffer(sizeof(mat4) * MAX_BONES);
 }
 
-ComponentAnimator::ComponentAnimator(Object* parent, std::istream& istream) : ComponentAnimator(parent)
-{
-	string animationName;
-	float animationSpeed;
-	FileUtils::ReadString(istream, animationName);
-	FileUtils::ReadFloat(istream, animationSpeed);
-	StartAnimation(animationName, true);
-	current->animationSpeedScale = animationSpeed;
-}
-
 ComponentAnimator::ComponentAnimator(Object* parent, ordered_json j) : ComponentAnimator(parent)
 {
 	
@@ -136,12 +126,6 @@ void ComponentAnimator::DrawGUI()
 			}
 		}
 	}
-}
-
-void ComponentAnimator::Write(std::ostream& ostream)
-{
-	FileUtils::WriteString(ostream, current->animation->name);
-	FileUtils::WriteFloat(ostream, current->animationSpeedScale);
 }
 
 void ComponentAnimator::OnParentChange()

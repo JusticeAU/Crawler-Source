@@ -16,22 +16,6 @@
 #include "LogUtils.h"
 using std::string;
 
-ComponentRenderer::ComponentRenderer(Object* parent, std::istream& istream) : ComponentRenderer(parent)
-{
-	string line;
-	
-	// load in the quantity of materials saved for this renderer
-	int meshQty = FileUtils::ReadInt(istream, meshQty);
-	materialArray.resize(meshQty);
-
-	// load in each material name.
-	for (int i = 0; i < meshQty; i++)
-	{
-		FileUtils::ReadString(istream, line);
-		materialArray[i] = MaterialManager::GetMaterial(line);
-	}
-}
-
 ComponentRenderer::ComponentRenderer(Object* parent, nlohmann::ordered_json j) : ComponentRenderer(parent)
 {
 	auto matsJSON = j.at("materials");
@@ -166,20 +150,6 @@ void ComponentRenderer::DrawGUI()
 				ImGui::SetItemDefaultFocus();
 		}
 		ImGui::EndCombo();
-	}
-}
-
-void ComponentRenderer::Write(std::ostream& ostream)
-{
-	// write the quantity of materials
-	FileUtils::WriteInt(ostream, (int)materialArray.size());
-	// write each material if its valid.
-	for (int i = 0; i < materialArray.size(); i++)
-	{
-		if (materialArray[i] != nullptr)
-			FileUtils::WriteString(ostream, materialArray[i]->name);
-		else
-			FileUtils::WriteString(ostream, "NULL");
 	}
 }
 

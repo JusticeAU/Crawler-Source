@@ -58,8 +58,6 @@ public:
 
 	vec3 GetWorldSpacePosition() { return { transform[3][0], transform[3][1], transform[3][2] }; } // Column-Major
 
-	void Write(std::ostream& out);
-	void Read(std::istream& in);
 	void LoadFromJSON(nlohmann::ordered_json j);
 
 	Component* GetComponent(ComponentType type);
