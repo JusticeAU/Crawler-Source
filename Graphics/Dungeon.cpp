@@ -85,7 +85,7 @@ bool Crawl::Dungeon::DeleteHall(int x, int y)
 
 void Crawl::Dungeon::CreateTileObject(DungeonTile* hall)
 {
-	Scene::s_instance->dungeon->SetParentTileObject(Scene::s_instance->objects[2]);
+	SetParentTileObject(Scene::s_instance->objects[2]);
 	Object* obj = Scene::s_instance->DuplicateObject(GetTileTemplate(hall->mask));
 	obj->SetLocalPosition({ hall->position.x * DUNGEON_GRID_SCALE, hall->position.y * DUNGEON_GRID_SCALE , 0 });
 

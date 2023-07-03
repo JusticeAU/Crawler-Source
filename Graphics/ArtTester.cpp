@@ -1,9 +1,10 @@
 #include "ArtTester.h"
-#include "Window.h"
-#include <string>
-#include "ModelManager.h"
+#include "Dungeon.h"
 #include "Scene.h"
+#include "Window.h"
+#include "ModelManager.h"
 #include "ComponentModel.h"
+#include <string>
 
 using std::string;
 
@@ -14,6 +15,7 @@ Crawl::ArtTester::ArtTester()
 void Crawl::ArtTester::Activate()
 {
 	glfwSetDropCallback(Window::GetWindow()->GetGLFWwindow(), &ModelDropCallback);
+	Scene::ChangeScene("CrawlArtTest");
 	Scene::SetCameraIndex(1);
 }
 

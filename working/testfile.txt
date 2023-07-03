@@ -1,9 +1,0 @@
-abc
-123
-third line
-fourth line
-some garbage
-boiiiiii
-
-we skipped a line
-ending on a blank line

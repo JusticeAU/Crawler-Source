@@ -15,6 +15,17 @@ Crawl::DungeonEditor::DungeonEditor()
 	
 }
 
+void Crawl::DungeonEditor::Activate()
+{
+	Scene::ChangeScene("Dungeon");
+	Scene::SetCameraIndex(0);
+}
+
+void Crawl::DungeonEditor::Deactivate()
+{
+
+}
+
 void Crawl::DungeonEditor::DrawGUI()
 {
 	ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_Always);

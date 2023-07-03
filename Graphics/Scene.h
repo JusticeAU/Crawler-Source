@@ -2,13 +2,11 @@
 #include "Object.h"
 #include "Light.h"
 #include <vector>
+#include <unordered_map>
 #include <string>
 
-#include "DungeonEditor.h"
-#include "DungeonPlayer.h"
-#include "ArtTester.h"
-
 using std::vector;
+using std::unordered_map;
 using std::to_string;
 
 class Model;
@@ -25,6 +23,9 @@ class Scene
 public:
 	~Scene();
 	static void Init();
+
+	static Scene* NewScene(string name);
+	static void ChangeScene(string name) { s_instance = s_instances[name]; }
 
 	static Object* CreateObject(Object* parent = nullptr);
 	static Object* CreateObject(string name, Object * parent = nullptr);
@@ -52,11 +53,12 @@ public:
 
 	static Object* FindObjectWithID(unsigned int id);
 
-	static bool IsDungeonEditing() { return s_instance->dungeonEditingEnabled; }
+	//static bool IsDungeonEditing() { return s_instance->dungeonEditingEnabled; }
 
 	bool drawn3DGizmo = false;;
 
 	static Scene* s_instance;
+	static unordered_map<string, Scene*> s_instances;
 	
 	vector<Object*> objects;
 	vector<Object*> gizmos;
@@ -70,6 +72,7 @@ public:
 	void CleanUp();
 
 	void SaveJSON();
+	void LoadJSON(string sceneName);
 	void LoadJSON();
 	vector<FrameBuffer*> cameras;
 protected:
@@ -81,19 +84,6 @@ protected:
 	void RenderSceneCameras();
 	void RenderObjectPicking();
 	void RenderEditorCamera();
-public:
-	// Dungeon Level Editing Stuff. To be moved in to own class possibly. *******
-	Crawl::Dungeon* dungeon;
-	Crawl::DungeonEditor dungeonEditor;
-	Crawl::DungeonPlayer dungeonPlayer;
-
-	// Scene Previewing test stuff
-	Crawl::ArtTester artTester;
-
-public:
-	bool dungeonEditingEnabled = false;
-	bool isDungeonGaming = false;
-	bool isArtTesting = false;
 
 	string sceneFilename = "CrawlTest.scene";
 protected:

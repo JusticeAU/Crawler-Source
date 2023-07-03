@@ -72,12 +72,15 @@ Scene::~Scene()
 
 void Scene::Init()
 {
-	s_instance = new Scene();
-	Scene::SetClearColour({ 0.25f, 0.25, 0.25 });
+	/*s_instance = new Scene();
+	s_instances.emplace("default", s_instance);*/
+}
 
-	s_instance->dungeon = new Crawl::Dungeon();
-	s_instance->dungeonEditor.SetDungeon(s_instance->dungeon);
-	s_instance->dungeonPlayer.SetDungeon(s_instance->dungeon);
+Scene* Scene::NewScene(string name)
+{
+	Scene* scene = new Scene();
+	s_instances.emplace(name, scene);
+	return scene;
 }
 
 void Scene::Update(float deltaTime)
@@ -95,13 +98,11 @@ void Scene::Update(float deltaTime)
 		m_pointLightPositions[i] = m_pointLights[i].position;
 	}
 
-	if(isDungeonGaming)
-		dungeonPlayer.Update();
 }
 void Scene::UpdateInputs()
 {
-	if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_D).Down())
-		DuplicateObject(selectedObject);
+	/*if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_D).Down())
+		DuplicateObject(selectedObject);*/
 
 	// Disable Image render based object picking for now.
 	/*if (Input::Mouse(0).Down() && !ImGuizmo::IsOver())
@@ -110,46 +111,6 @@ void Scene::UpdateInputs()
 		requestedSelectionPosition = Input::GetMousePosPixel();
 	}*/
 	
-	// Dungeon Editing
-	if (Input::Keyboard(GLFW_KEY_1).Down())
-		dungeonEditingEnabled = !dungeonEditingEnabled;
-
-	if (Input::Keyboard(GLFW_KEY_2).Down())
-	{
-		isArtTesting = !isArtTesting;
-		if (isArtTesting)
-			artTester.Activate();
-		else
-			artTester.Deactivate();
-	}
-
-	if (Input::Keyboard(GLFW_KEY_3).Down())
-	{
-		isDungeonGaming = !isDungeonGaming;
-		if (isDungeonGaming)
-			cameraIndex = 1;
-		else
-			cameraIndex = 0;
-		outputCameraFrameBuffer = cameras[cameraIndex];
-	}
-
-
-
-	if (Input::Keyboard(GLFW_KEY_4).Down())
-	{
-		isDungeonGaming = false;
-		dungeonEditingEnabled = false;
-
-		if (isDungeonGaming)
-			cameraIndex = 1;
-		else
-			cameraIndex = 0;
-		outputCameraFrameBuffer = cameras[cameraIndex];
-	}
-
-
-	if (dungeonEditingEnabled)
-		dungeonEditor.Update();
 }
 
 void Scene::Render()
@@ -259,11 +220,11 @@ void Scene::DrawCameraToBackBuffer()
 }
 void Scene::DrawGUI()
 {	
-	if (dungeonEditingEnabled)
+	/*if (dungeonEditingEnabled)
 		dungeonEditor.DrawGUI();
 	else if (isArtTesting)
-		artTester.DrawGUI();
-	else
+		artTester.DrawGUI();*/
+	//else
 	{
 		ImGui::Begin("Shadow Map Dev");
 		ImGui::PushID(6969);
@@ -553,6 +514,13 @@ void Scene::SaveJSON()
 	// write to disk
 	WriteJSONToDisk(sceneSubfolder + sceneFilename, output);
 }
+
+void Scene::LoadJSON(string sceneName)
+{
+	sceneFilename = sceneName;
+	LoadJSON();
+}
+
 void Scene::LoadJSON()
 {
 	// Load the JSON object
@@ -608,3 +576,4 @@ mat4 Scene::GetLightSpaceMatrix()
 }
 
 Scene* Scene::s_instance = nullptr;
+unordered_map<string, Scene*> Scene::s_instances;

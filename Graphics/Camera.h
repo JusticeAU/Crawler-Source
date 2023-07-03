@@ -29,8 +29,8 @@ public:
 
 	static Camera* s_instance;
 
-	float m_horizontal = -90.0f;
-	float m_vertical = 0.0f;
+	float m_horizontal = -39.0f;
+	float m_vertical = -30.0f;
 	float moveSpeed = 20.0f;
 	float lookSpeed = .3f;
 	float nearClip = 0.1f;
@@ -38,7 +38,7 @@ public:
 
 	string name = "";
 
-	glm::vec3 position;
+	glm::vec3 position = {-20, 17, 16 };
 	glm::vec3 forward;
 	glm::vec3 right;
 	glm::vec3 up;

@@ -9,6 +9,9 @@ namespace Crawl
 	public:
 		DungeonEditor();
 
+		void Activate();
+		void Deactivate();
+
 		void SetDungeon(Dungeon* dungeonPtr) { dungeon = dungeonPtr; }
 		void DrawGUI();
 		void DrawGUIFileOperations();

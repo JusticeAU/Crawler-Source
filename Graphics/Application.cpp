@@ -16,6 +16,10 @@
 #include "LogUtils.h"
 #include "Window.h"
 
+#include "DungeonEditor.h"
+#include "DungeonPlayer.h"
+#include "ArtTester.h"
+
 #include "ComponentFactory.h"
 
 Application::Application()
@@ -90,6 +94,16 @@ Application::Application()
 	
 	// Create input system.
 	Input::Init(window->GetGLFWwindow());
+
+	// Load Crawl Game Dependencies
+	Scene* scene = Scene::NewScene("Dungeon");
+	Scene::s_instance = scene;
+	scene->LoadJSON("CrawlTest.scene");
+
+	dungeon = new Crawl::Dungeon();
+	dungeonPlayer = new Crawl::DungeonPlayer();
+	dungeonPlayer->SetDungeon(dungeon);
+	
 }
 
 Application::~Application()
@@ -106,21 +120,38 @@ Application::~Application()
 void Application::LaunchArgument(char* arg)
 {
 	std::string argument = arg;
-	if (argument == "dungeon")
+	if (argument == "design" || argument == "art")
 	{
-		Scene::s_instance->dungeonEditingEnabled = true;
-		Scene::s_instance->sceneFilename = "CrawlTest.scene";
-		Scene::s_instance->LoadJSON();
+		developerMode = true;
+
+		dungeonEditor = new Crawl::DungeonEditor();
+		dungeonEditor->SetDungeon(dungeon);
+
+		artTester = new Crawl::ArtTester();
+		Scene* art = Scene::NewScene("CrawlArtTest");
+		Scene::s_instance = art;
+		art->LoadJSON("CrawlArtTest.scene");
+		
+		if (argument == "design")
+		{
+			s_mode = Mode::Design;
+			Scene::ChangeScene("Dungeon");
+			dungeonEditor->SetDungeon(dungeon);
+			dungeonEditor->Activate();
+		}
+		else if (argument == "art")
+		{
+			s_mode = Mode::Art;
+			artTester->Activate();
+		}
 	}
-	else if (argument == "model")
-	{
-		Scene::s_instance->isArtTesting = true;
-		Scene::s_instance->artTester.Activate();
-		Scene::s_instance->sceneFilename = "CrawlArtTest.scene";
-		Scene::s_instance->LoadJSON();
-	}
-	else if (argument == "dev")
-		LogUtils::Log("dev mode was request - this is currently the default mode for now");
+
+}
+
+void Application::InitGame()
+{
+	dungeon->Load("crawl/dungeons/test level.dungeon");
+	Scene::SetCameraIndex(1);
 }
 
 void Application::Run()
@@ -162,28 +193,75 @@ void Application::Run()
 
 void Application::Update(float delta)
 {
-	// All of these managers can probably be just one single asset manager.
-	if (!Scene::IsDungeonEditing())
+	switch (s_mode)
 	{
+	case Mode::Game:
+	{
+		dungeonPlayer->Update();
+		break;
+	}
+	case Mode::Design:
+	{
+		camera->DrawGUI();
+		camera->Update(delta);
+		dungeonEditor->Update();
+		dungeonEditor->DrawGUI();
+		break;
+	}
+	case Mode::Art:
+	{
+		artTester->DrawGUI();
+		break;
+	}
+	case Mode::Programming:
+	{
+		camera->DrawGUI();
+		camera->Update(delta);
 		MeshManager::DrawGUI();
 		TextureManager::DrawGUI();
 		ShaderManager::DrawGUI();
 		MaterialManager::DrawGUI();
 		ModelManager::DrawGUI();
 		AudioManager::DrawGUI();
+		Scene::s_instance->DrawGUI();
+		break;
 	}
-	
-	camera->DrawGUI();
+
+	}
 
 	Input::Update();
-	camera->Update(delta);
-	
+
+	if (developerMode)
+	{
+		if (Input::Keyboard(GLFW_KEY_1).Down())
+		{
+			s_mode = Mode::Game;
+			Scene::ChangeScene("Dungeon");
+			Scene::SetCameraIndex(1);
+
+		}
+		if (Input::Keyboard(GLFW_KEY_2).Down())
+		{
+			s_mode = Mode::Design;
+			dungeonEditor->Activate();
+		}
+		if (Input::Keyboard(GLFW_KEY_3).Down())
+		{
+			artTester->Activate();
+			s_mode = Mode::Art;
+		}
+		if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_F12).Down())
+			s_mode = Mode::Programming;
+	}
+
+
 	AudioManager::s_instance->Update();
+
 	Scene::s_instance->Update(delta);
 	Scene::s_instance->Render();
 	Scene::s_instance->DrawGizmos();
 	Scene::s_instance->DrawCameraToBackBuffer();
-
-	Scene::s_instance->DrawGUI();
 	Scene::s_instance->CleanUp();
 }
+
+Application::Mode Application::s_mode = Mode::Game;

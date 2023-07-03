@@ -5,10 +5,6 @@
 
 Camera::Camera(float aspect, string name)
 {
-	position = { -6.25, 6.5, 16.38 };
-	m_horizontal = 0;
-	m_vertical = 0;
-
 	this->aspect = aspect;
 
 	if(s_instance == nullptr)
