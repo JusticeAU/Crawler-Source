@@ -4,6 +4,7 @@
 #include "Window.h"
 #include "ModelManager.h"
 #include "ComponentModel.h"
+#include "ComponentRenderer.h"
 #include <string>
 
 using std::string;
@@ -17,6 +18,7 @@ void Crawl::ArtTester::Activate()
 	glfwSetDropCallback(Window::GetWindow()->GetGLFWwindow(), &ModelDropCallback);
 	Scene::ChangeScene("CrawlArtTest");
 	Scene::SetCameraIndex(1);
+	renderer = (ComponentRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_Renderer);
 }
 
 void Crawl::ArtTester::Deactivate()
@@ -26,8 +28,7 @@ void Crawl::ArtTester::Deactivate()
 
 void Crawl::ArtTester::DrawGUI()
 {
-	ImGui::SetNextWindowSize({ 300,300 });
-	ImGui::Begin("Crawl Art Test", 0, ImGuiWindowFlags_NoResize);
+	ImGui::Begin("Crawl Art Test");
 	if (ImGui::Button(scaleIndex == 0 ? "Scale (PASS)" : "Scale (FAIL)"))
 	{
 		scaleIndex += 1;
@@ -65,6 +66,11 @@ void Crawl::ArtTester::DrawGUI()
 		Scene::s_instance->objects[2]->SetLocalPosition({ 0, -playerViewDistance * DUNGEON_GRID_SCALE, 0 });
 	}
 
+
+	ImGui::Text("Loaded Model");
+
+	renderer->DrawGUI();
+
 	ImGui::End();
 }
 
@@ -75,9 +81,9 @@ void Crawl::ModelDropCallback(GLFWwindow* window, int count, const char** paths)
 		std::cout << paths[i] << std::endl;
 		string filepath = paths[i];
 		string extension = filepath.substr(filepath.length() - 4, 4);
-		if (extension == ".fbx")
+		if (extension == ".fbx" || extension == ".obj")
 		{
-			std::cout << "dropped an fbx" << std::endl;
+			std::cout << "dropped an model" << std::endl;
 			ModelManager::s_instance->LoadFromFile(filepath.c_str());
 			ComponentModel* model = (ComponentModel*)Scene::s_instance->objects[1]->GetComponent(Component_Model);
 			model->model = ModelManager::GetModel(filepath);

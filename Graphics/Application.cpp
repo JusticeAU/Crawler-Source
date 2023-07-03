@@ -247,8 +247,8 @@ void Application::Update(float delta)
 		}
 		if (Input::Keyboard(GLFW_KEY_3).Down())
 		{
-			artTester->Activate();
 			s_mode = Mode::Art;
+			artTester->Activate();
 		}
 		if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_F12).Down())
 			s_mode = Mode::Programming;

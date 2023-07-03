@@ -2,6 +2,7 @@
 #include <iostream>
 
 class GLFWwindow;
+class ComponentRenderer;
 
 namespace Crawl
 {
@@ -31,6 +32,8 @@ namespace Crawl
 
 		static const int MAX_VIEW_DISTANCE = 10;
 		int playerViewDistance = 1;
+
+		ComponentRenderer* renderer = nullptr;
 	};
 
 	void ModelDropCallback(GLFWwindow* window, int count, const char** paths);

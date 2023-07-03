@@ -21,6 +21,7 @@ public:
 		Art,
 		Programming
 	};
+
 	Application();
 	~Application();
 	void LaunchArgument(char* arg);
@@ -30,8 +31,6 @@ public:
 protected:
 	Window* window;
 	Camera* camera;
-	
-	Scene* scene;
 
 public:
 	bool developerMode = false;
@@ -39,12 +38,8 @@ public:
 	static Mode s_mode;
 	Crawl::Dungeon* dungeon = nullptr;
 	Crawl::DungeonPlayer* dungeonPlayer = nullptr;
-	bool isDungeonGaming = false;
 	
 	// Dev stuff
 	Crawl::DungeonEditor* dungeonEditor = nullptr;
-	bool dungeonEditingEnabled = false;
-	
 	Crawl::ArtTester* artTester = nullptr;
-	bool isArtTesting = false;
 };
