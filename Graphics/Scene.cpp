@@ -116,6 +116,15 @@ void Scene::UpdateInputs()
 
 	if (Input::Keyboard(GLFW_KEY_2).Down())
 	{
+		isArtTesting = !isArtTesting;
+		if (isArtTesting)
+			artTester.Activate();
+		else
+			artTester.Deactivate();
+	}
+
+	if (Input::Keyboard(GLFW_KEY_3).Down())
+	{
 		isDungeonGaming = !isDungeonGaming;
 		if (isDungeonGaming)
 			cameraIndex = 1;
@@ -124,7 +133,9 @@ void Scene::UpdateInputs()
 		outputCameraFrameBuffer = cameras[cameraIndex];
 	}
 
-	if (Input::Keyboard(GLFW_KEY_3).Down())
+
+
+	if (Input::Keyboard(GLFW_KEY_4).Down())
 	{
 		isDungeonGaming = false;
 		dungeonEditingEnabled = false;
@@ -250,6 +261,8 @@ void Scene::DrawGUI()
 {	
 	if (dungeonEditingEnabled)
 		dungeonEditor.DrawGUI();
+	else if (isArtTesting)
+		artTester.DrawGUI();
 	else
 	{
 		ImGui::Begin("Shadow Map Dev");
@@ -309,19 +322,7 @@ void Scene::DrawGUI()
 		ImGui::EndDisabled();
 
 		if (ImGui::InputInt("Camera Number", &cameraIndex, 1))
-		{
-			if (cameraIndex > cameras.size() - 1)
-				cameraIndex = cameras.size() - 1;
-			outputCameraFrameBuffer = cameras[cameraIndex];
-
-
-			// This is fairly hacky. maybe the cameras should handle setting the audio listener themselves.
-			// Perhaps scenee camera and editor camera can become same thing and then audio manager can just look at camera::main or something
-			if (cameraIndex == 0)
-				AudioManager::SetAudioListener(Camera::s_instance->GetAudioListener());
-			else
-				AudioManager::SetAudioListener(componentCameras[cameraIndex - 1]->GetAudioListener());
-		}
+			SetCameraIndex(cameraIndex);
 
 		float clearCol[3] = { clearColour.r, clearColour.g, clearColour.b, };
 		if (ImGui::ColorEdit3("Clear Colour", clearCol))
@@ -483,6 +484,22 @@ void Scene::SetAmbientLightColour(vec3 ambientColour)
 int Scene::GetNumPointLights()
 {
 	return (int)s_instance->m_pointLights.size();
+}
+
+void Scene::SetCameraIndex(int index)
+{
+	s_instance->cameraIndex = index;
+	if (s_instance->cameraIndex > s_instance->cameras.size() - 1)
+		s_instance->cameraIndex = s_instance->cameras.size() - 1;
+	s_instance->outputCameraFrameBuffer = s_instance->cameras[s_instance->cameraIndex];
+
+
+	// This is fairly hacky. maybe the cameras should handle setting the audio listener themselves.
+	// Perhaps scenee camera and editor camera can become same thing and then audio manager can just look at camera::main or something
+	if (s_instance->cameraIndex == 0)
+		AudioManager::SetAudioListener(Camera::s_instance->GetAudioListener());
+	else
+		AudioManager::SetAudioListener(s_instance->componentCameras[s_instance->cameraIndex - 1]->GetAudioListener());
 }
 
 void Scene::SetSelectedObject(unsigned int selected)

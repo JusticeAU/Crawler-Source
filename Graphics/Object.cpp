@@ -93,9 +93,33 @@ void Object::SetLocalRotation(vec3 euler)
 	dirtyTransform = true;
 }
 
+void Object::SetLocalRotationX(float x)
+{
+	localRotation.x = x;
+	dirtyTransform = true;
+}
+
+void Object::SetLocalRotationY(float y)
+{
+	localRotation.y = y;
+	dirtyTransform = true;
+}
+
+void Object::SetLocalRotationZ(float z)
+{
+	localRotation.z = z;
+	dirtyTransform = true;
+}
+
 void Object::SetLocalScale(vec3 scale)
 {
 	localScale = scale;
+	dirtyTransform = true;
+}
+
+void Object::SetLocalScale(float uniformScale)
+{
+	localScale = vec3(uniformScale);
 	dirtyTransform = true;
 }
 

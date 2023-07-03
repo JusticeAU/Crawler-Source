@@ -46,6 +46,7 @@ public:
 	static glm::vec3* GetPointLightColours() { return &s_instance->m_pointLightColours[0]; }
 
 	static int GetCameraIndex() { return s_instance->cameraIndex; }
+	static void SetCameraIndex(int index);
 	static unsigned int GetSelectedObject() { return s_instance->selectedObjectID; }
 	static void SetSelectedObject(unsigned int selected);
 

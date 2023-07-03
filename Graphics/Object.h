@@ -49,7 +49,11 @@ public:
 
 	void SetLocalPosition(vec3 localPos);
 	void SetLocalRotation(vec3 euler);
+	void SetLocalRotationX(float x);
+	void SetLocalRotationY(float y);
+	void SetLocalRotationZ(float z);
 	void SetLocalScale(vec3 localScale);
+	void SetLocalScale(float localUniformScale); // GOAT
 	void AddLocalPosition(vec3 localPos);
 	void AddLocalRotation(vec3 euler);
 	void AddLocalScale(vec3 localScale);
