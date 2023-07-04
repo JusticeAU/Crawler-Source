@@ -122,12 +122,6 @@ void ComponentRenderer::DrawGUI()
 			ImGui::EndCombo();
 		}
 
-		if (materialArray[i])
-		{
-			if (ImGui::CollapsingHeader("Material"))
-				materialArray[i]->DrawGUI();
-		}
-
 		ImGui::PopID();
 	}
 

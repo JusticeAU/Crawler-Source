@@ -3,6 +3,7 @@
 
 class GLFWwindow;
 class ComponentRenderer;
+class Material;
 
 namespace Crawl
 {
@@ -15,8 +16,6 @@ namespace Crawl
 		void Deactivate();
 
 		void DrawGUI();
-
-		bool isActive = false;
 
 		static const int QTY_SCALES = 3;
 		float scales[QTY_SCALES] = { 1, 0.1f, 0.01f };
@@ -34,6 +33,7 @@ namespace Crawl
 		int playerViewDistance = 1;
 
 		ComponentRenderer* renderer = nullptr;
+		Material* editingMaterial = nullptr;
 	};
 
 	void ModelDropCallback(GLFWwindow* window, int count, const char** paths);

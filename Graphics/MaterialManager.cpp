@@ -57,11 +57,20 @@ void MaterialManager::DrawGUI()
 	ImGui::BeginDisabled();
 	int materialCount = (int)s_instance->materials.size();
 	ImGui::DragInt("Material Count", &materialCount);
+	ImGui::EndDisabled();
 	for (auto m : s_instance->materials)
 	{
-		ImGui::Text(m.first.c_str());
+		if (ImGui::Selectable(m.first.c_str()))
+			editingMaterial = m.second;
 	}
-	ImGui::EndDisabled();
+	
+	if (editingMaterial)
+	{
+		ImGui::Begin("Material");
+		editingMaterial->DrawGUI();
+		ImGui::End();
+	}
+
 	ImGui::End();
 }
 
@@ -99,3 +108,4 @@ void MaterialManager::LoadAllFiles()
 }
 
 MaterialManager* MaterialManager::s_instance = nullptr;
+Material* MaterialManager::editingMaterial = nullptr;

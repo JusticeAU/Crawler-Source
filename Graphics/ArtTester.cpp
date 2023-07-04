@@ -5,6 +5,7 @@
 #include "ModelManager.h"
 #include "ComponentModel.h"
 #include "ComponentRenderer.h"
+#include "MaterialManager.h"
 #include <string>
 
 using std::string;
@@ -28,6 +29,8 @@ void Crawl::ArtTester::Deactivate()
 
 void Crawl::ArtTester::DrawGUI()
 {
+	MaterialManager::DrawGUI();
+	
 	ImGui::Begin("Crawl Art Test");
 	if (ImGui::Button(scaleIndex == 0 ? "Scale (PASS)" : "Scale (FAIL)"))
 	{
@@ -68,8 +71,8 @@ void Crawl::ArtTester::DrawGUI()
 
 
 	ImGui::Text("Loaded Model");
-
-	renderer->DrawGUI();
+	if(renderer)
+		renderer->DrawGUI();
 
 	ImGui::End();
 }

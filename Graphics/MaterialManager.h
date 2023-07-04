@@ -28,5 +28,6 @@ protected:
 
 	string fileExtension = ".material";
 	string newFileName = "models/model/modelname";
+	static Material* editingMaterial;
 };
 
