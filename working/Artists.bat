@@ -1,1 +1,1 @@
-..\x64\Release\Graphics.exe art
+Graphics.exe art

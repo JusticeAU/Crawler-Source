@@ -35,7 +35,7 @@ Application::Application()
 		LogUtils::Log("Sucessfully initialised GLFW.");
 
 	// Create GLFWwindow Wrapper (class Window).
-	window = new Window(1600, 900, "Graffix", nullptr);
+	window = new Window(1600, 900, "Crawler", nullptr);
 	if (!window->GetGLFWwindow())
 	{
 		LogUtils::Log("Failed to create GLFW Window. Exiting.");
