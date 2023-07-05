@@ -24,12 +24,18 @@ namespace Crawl
 			BACK,
 			LEFT
 		};
+
+		enum STATE {
+			IDLE,
+			MOVING,
+			TURNING
+		};
 		DungeonPlayer();
 
 		void SetDungeon(Dungeon* dungeonPtr) { this->dungeon = dungeonPtr; }
 		void SetPlayerObject(Object* objectPtr) { this->object = objectPtr; }
 
-		void Update();
+		void Update(float deltaTime);
 
 		// combines our requested direction with our facing direction to return a x/y co-ordinate to move on.
 		glm::ivec2 GetMoveCoordinate(DIRECTION dir);
@@ -37,6 +43,15 @@ namespace Crawl
 	private:
 		Position position;
 		FACING facing = EAST;
+		STATE state = IDLE;
+		float moveSpeed = 0.25f;
+		float moveCurrent = 0.0f;
+		glm::vec3 oldPosition;
+		glm::vec3 targetPosition;
+		float turnSpeed = 0.15f;
+		float turnCurrent = 0.0f;
+		float oldTurn;
+		float targetTurn;
 		Dungeon* dungeon;
 		Object* object;
 

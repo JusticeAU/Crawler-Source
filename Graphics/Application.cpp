@@ -197,7 +197,7 @@ void Application::Update(float delta)
 	{
 	case Mode::Game:
 	{
-		dungeonPlayer->Update();
+		dungeonPlayer->Update(delta);
 		break;
 	}
 	case Mode::Design:
