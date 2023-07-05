@@ -3,6 +3,8 @@
 
 class GLFWwindow;
 class ComponentRenderer;
+class ComponentSkinnedRenderer;
+class ComponentAnimator;
 class Material;
 
 namespace Crawl
@@ -32,8 +34,14 @@ namespace Crawl
 		static const int MAX_VIEW_DISTANCE = 10;
 		int playerViewDistance = 1;
 
+		bool hasAnimations = true;
 		ComponentRenderer* renderer = nullptr;
+		ComponentSkinnedRenderer* rendererSkinned = nullptr;
+		ComponentAnimator* animator = nullptr;
 		Material* editingMaterial = nullptr;
+
+		static ArtTester* s_instance;
+		static void Refresh();
 	};
 
 	void ModelDropCallback(GLFWwindow* window, int count, const char** paths);

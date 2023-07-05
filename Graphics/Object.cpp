@@ -326,10 +326,23 @@ void Object::AddChild(Object* child)
 	children.push_back(child);
 }
 
+void Object::CleanUpComponents()
+{
+	for (int i = 0; i < components.size(); i++)
+	{
+		if (components[i]->markedForDeletion)
+		{
+			components.erase(components.begin() + i);
+			i--;
+		}
+	}
+}
+
 void Object::CleanUpChildren()
 {
 	for (int i = 0; i < children.size(); i++)
 	{
+		children[i]->CleanUpComponents();
 		if (children[i]->markedForDeletion)
 		{
 			children[i]->DeleteAllChildren();
@@ -496,7 +509,6 @@ void to_json(nlohmann::ordered_json& j, const Object& object)
 			c["type"] = "Animator";
 			ComponentAnimator* ca = (ComponentAnimator*)object.components[i];
 			c["animationName"] = "Not currently storing!";
-			c["loop"] = ca->loopAnimation;
 			break;
 		}
 

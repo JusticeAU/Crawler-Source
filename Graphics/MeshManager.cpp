@@ -538,7 +538,7 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 	delete[] vertices;
 	
 	// Set up meta data and add to list.
-	loadedMesh->name = name;
+	loadedMesh->name = mesh->mName.C_Str();
 	s_instance->meshes.emplace(name, loadedMesh);
 	return loadedMesh;
 }

@@ -46,22 +46,25 @@ void ComponentAnimator::Update(float delta)
 	if (current->animation == nullptr && model->animations.size() > 0) // pick first animation if we dont have one.
 		current->animation = model->animations[0];
 	
-	if(current->animation)
-		current->Update(delta);
-	
-	if (next) // if we have an animation to transition to
+	if (isPlaying)
 	{
-		next->Update(delta);
-		transitionProgress += delta;
+		if (current->animation)
+			current->Update(delta);
 
-		if (transitionProgress >= transitionTime)
+		if (next) // if we have an animation to transition to
 		{
-			current = next;
-			next = nullptr; // TO DO animation manager? ahahahaha more managers.
-			transitionProgress = 0.0f;
-		}
+			next->Update(delta);
+			transitionProgress += delta;
 
-		transitionWeight = transitionProgress / transitionTime;
+			if (transitionProgress >= transitionTime)
+			{
+				current = next;
+				next = nullptr; // TO DO animation manager? ahahahaha more managers.
+				transitionProgress = 0.0f;
+			}
+
+			transitionWeight = transitionProgress / transitionTime;
+		}
 	}
 
 	// Update animation state, if we have an animation
@@ -78,9 +81,6 @@ void ComponentAnimator::DrawGUI()
 	// Animation information.
 	if (model != nullptr && model->boneStructure != nullptr)
 	{
-		string boneStr = "Selected Bone##" + to_string(componentParent->id);
-		ImGui::DragInt(boneStr.c_str(), &selectedBone, 0.1, 0, model->boneStructure->numBones);
-
 		if (model->animations.size() > 0)
 		{
 			string animationNameStr = "Animation##" + to_string(componentParent->id);
@@ -109,8 +109,8 @@ void ComponentAnimator::DrawGUI()
 			string AnimLoopStr = "Loop##" + to_string(componentParent->id);
 			ImGui::Checkbox(AnimLoopStr.c_str(), &current->looping);
 			ImGui::SameLine();
-			string AnimPlayStr = playAnimation ? "Pause##" + to_string(componentParent->id) : "Play##" + to_string(componentParent->id);
-			if (ImGui::Button(AnimPlayStr.c_str())) playAnimation = !playAnimation;
+			string AnimPlayStr = isPlaying ? "Pause##" + to_string(componentParent->id) : "Play##" + to_string(componentParent->id);
+			if (ImGui::Button(AnimPlayStr.c_str())) isPlaying = !isPlaying;
 
 			string animTimeStr = "Animation Time##" + to_string(componentParent->id);
 			ImGui::SliderFloat(animTimeStr.c_str(), &current->position, 0, current->animation->duration);

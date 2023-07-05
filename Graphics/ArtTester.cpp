@@ -3,15 +3,18 @@
 #include "Scene.h"
 #include "Window.h"
 #include "ModelManager.h"
-#include "ComponentModel.h"
-#include "ComponentRenderer.h"
+#include "Model.h"
+#include "Animation.h"
+#include "ComponentFactory.h"
 #include "MaterialManager.h"
+#include "LogUtils.h"
 #include <string>
 
 using std::string;
 
 Crawl::ArtTester::ArtTester()
 {
+	s_instance = this;
 }
 
 void Crawl::ArtTester::Activate()
@@ -19,7 +22,8 @@ void Crawl::ArtTester::Activate()
 	glfwSetDropCallback(Window::GetWindow()->GetGLFWwindow(), &ModelDropCallback);
 	Scene::ChangeScene("CrawlArtTest");
 	Scene::SetCameraIndex(1);
-	renderer = (ComponentRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_Renderer);
+	Refresh();
+
 }
 
 void Crawl::ArtTester::Deactivate()
@@ -69,30 +73,103 @@ void Crawl::ArtTester::DrawGUI()
 		Scene::s_instance->objects[2]->SetLocalPosition({ 0, -playerViewDistance * DUNGEON_GRID_SCALE, 0 });
 	}
 
-
-	ImGui::Text("Loaded Model");
-	if(renderer)
+	ImGui::Text("Rendering");
+	if (renderer)
 		renderer->DrawGUI();
+	else if (rendererSkinned)
+	{
+		rendererSkinned->DrawGUI();
+		ImGui::Text("Animations");
+		animator->DrawGUI();
+	}
 
 	ImGui::End();
+}
+
+void Crawl::ArtTester::Refresh()
+{
+	s_instance->renderer = (ComponentRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_Renderer);
+	if (s_instance->renderer->markedForDeletion)
+		s_instance->renderer == nullptr;
+	s_instance->rendererSkinned = (ComponentSkinnedRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_SkinnedRenderer);
+	if (s_instance->rendererSkinned->markedForDeletion)
+		s_instance->rendererSkinned == nullptr;
+	s_instance->animator = (ComponentAnimator*)Scene::s_instance->objects[1]->GetComponent(Component_Animator);
+	if (s_instance->animator->markedForDeletion)
+		s_instance->animator == nullptr;
+
 }
 
 void Crawl::ModelDropCallback(GLFWwindow* window, int count, const char** paths)
 {
 	for (int i = 0; i < count; i++)
 	{
-		std::cout << paths[i] << std::endl;
 		string filepath = paths[i];
 		string extension = filepath.substr(filepath.length() - 4, 4);
-		if (extension == ".fbx" || extension == ".obj")
+		if (extension == ".fbx" || extension == ".FBX")
 		{
-			std::cout << "dropped an model" << std::endl;
+			LogUtils::Log("Dropped a FBX file");
 			ModelManager::s_instance->LoadFromFile(filepath.c_str());
 			ComponentModel* model = (ComponentModel*)Scene::s_instance->objects[1]->GetComponent(Component_Model);
+			ComponentRenderer* renderer = (ComponentRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_Renderer);
+			ComponentSkinnedRenderer* rendererSkinned = (ComponentSkinnedRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_SkinnedRenderer);
+			ComponentAnimator* animator = (ComponentAnimator*)Scene::s_instance->objects[1]->GetComponent(Component_Animator);
 			model->model = ModelManager::GetModel(filepath);
-			ComponentModel* renderer = (ComponentModel*)Scene::s_instance->objects[1]->GetComponent(Component_Renderer);
-			renderer->model = model->model;
-			renderer->OnParentChange();
+			if (model->model->animations.size() > 0) // has animations, should use skinned renderer
+			{
+				// Configure animated stuff
+				ArtTester::s_instance->hasAnimations = true;
+				if (rendererSkinned == nullptr)
+				{
+					rendererSkinned = (ComponentSkinnedRenderer*)ComponentFactory::NewComponent(Scene::s_instance->objects[1], Component_SkinnedRenderer);
+					Scene::s_instance->objects[1]->components.push_back(rendererSkinned);
+				}
+
+				if (animator == nullptr)
+				{
+					animator = (ComponentAnimator*)ComponentFactory::NewComponent(Scene::s_instance->objects[1], Component_Animator);
+					Scene::s_instance->objects[1]->components.push_back(animator);
+				}
+				animator->model = model->model;
+				animator->StartAnimation(model->model->animations[0]->name, true);
+				animator->OnParentChange();
+				rendererSkinned->model = model->model;
+				rendererSkinned->OnParentChange();
+				for (int i = 0; i < rendererSkinned->materialArray.size(); i++)
+				{
+					rendererSkinned->materialArray[i] = MaterialManager::GetMaterial("models/materials/SkinnedLambertBlue.material");
+				}
+
+				// Clear off maybe unneeded stuff
+				if (renderer != nullptr)
+					renderer->markedForDeletion = true;
+
+			}
+			else
+			{
+				ArtTester::s_instance->hasAnimations = false;
+				
+				if (renderer == nullptr)
+				{
+					renderer = (ComponentRenderer*)ComponentFactory::NewComponent(Scene::s_instance->objects[1], Component_Renderer);
+					Scene::s_instance->objects[1]->components.push_back(renderer);
+				}
+
+				// Clear off animator component
+				if (animator != nullptr)
+					animator->markedForDeletion = true;
+				if (rendererSkinned != nullptr)
+					rendererSkinned->markedForDeletion = true;
+
+				renderer->model = model->model;
+				renderer->OnParentChange();
+			}
+
+			ArtTester::Refresh();
 		}
+		else
+			LogUtils::Log("File dropped was not a FBX - get out of here!");
 	}
 }
+
+Crawl::ArtTester* Crawl::ArtTester::s_instance = nullptr;

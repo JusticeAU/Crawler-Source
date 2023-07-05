@@ -360,6 +360,7 @@ void Scene::CleanUp()
 {
 	for (int i = 0; i < objects.size(); i++)
 	{
+		objects[i]->CleanUpComponents();
 		objects[i]->CleanUpChildren();
 		if (objects[i]->markedForDeletion)
 		{

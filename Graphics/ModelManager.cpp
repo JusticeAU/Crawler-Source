@@ -120,7 +120,7 @@ void ModelManager::LoadFromFile(const char* filename)
 			if (model->boneStructure == nullptr) model->boneStructure = new Model::BoneStructure();
 		}
 		string name = filename;
-		string subname = name + "_" + scene->mMeshes[i]->mName.C_Str();
+		string subname = name + ":" + scene->mMeshes[i]->mName.C_Str();
 		Mesh* loadedMesh = MeshManager::LoadFromAiMesh(inMesh, model->boneStructure, subname.c_str());
 		model->meshes.push_back(loadedMesh);
 	}

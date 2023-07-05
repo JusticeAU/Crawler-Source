@@ -46,15 +46,10 @@ public:
 		void Update(float delta);
 	};
 
+	bool isPlaying = true;
+
 	// dependencies
 	Model* model = nullptr;
-
-	// Animation state
-	int selectedBone = 0;
-	int selectedAnimation = 0;
-	bool loopAnimation = true;
-	bool playAnimation = true;
-	float animationTime = 0.0f;
 
 	mat4* boneTransforms = nullptr;
 	UniformBuffer* boneTransfomBuffer = nullptr;

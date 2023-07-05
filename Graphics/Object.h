@@ -62,6 +62,7 @@ public:
 	void DrawGUISimple();
 	
 	void AddChild(Object* child);
+	void CleanUpComponents();
 	void CleanUpChildren();
 	void DeleteAllChildren();
 
