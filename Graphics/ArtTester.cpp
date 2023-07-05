@@ -84,6 +84,59 @@ void Crawl::ArtTester::DrawGUI()
 	}
 
 	ImGui::End();
+
+	DrawGUIStaging();
+}
+
+void Crawl::ArtTester::DrawGUIStaging()
+{
+	ImGui::Begin("Staging (Mock up, not functional)");
+	
+	// configure
+	if (ImGui::BeginCombo("Asset Type", stagedType.c_str()))
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			const bool is_selected = (stagedType == types[i]);
+			if (ImGui::Selectable(types[i].c_str(), is_selected))
+				stagedType = types[i];
+
+			// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+			if (is_selected)
+				ImGui::SetItemDefaultFocus();
+		}
+		ImGui::EndCombo();
+	}
+
+	// preview
+	ImGui::Text("Output");
+	ImGui::BeginDisabled();
+	ImGui::Text("Model");
+	ImGui::Indent();
+	ImGui::Selectable("assets/monsters/red_guy/red_guy.fbx");
+	ImGui::Unindent();
+	ImGui::Text("Textures");
+	ImGui::Indent();
+	ImGui::Selectable("assets/monsters/red_guy/red_guy_body_ao.png");
+	ImGui::Selectable("assets/monsters/red_guy/red_guy_body_albedo.png");
+	ImGui::Selectable("assets/monsters/red_guy/red_guy_body_metallic.png");
+	ImGui::Selectable("assets/monsters/red_guy/red_guy_body_normal.png");
+	ImGui::Selectable("assets/monsters/red_guy/red_guy_body_roughness.png");
+	ImGui::Unindent();
+	ImGui::Text("Materials");
+	ImGui::Indent();
+	ImGui::Selectable("assets/monsters/red_guy/red_guy_body.material");
+	ImGui::Unindent();
+	ImGui::Text("Object");
+	ImGui::Indent();
+	ImGui::Selectable("assets/monsters/red_guy/red_guy.object");
+	ImGui::Unindent();
+
+	ImGui::EndDisabled();
+
+	// Save
+	ImGui::Button("Export");
+	ImGui::End();
 }
 
 void Crawl::ArtTester::Refresh()
