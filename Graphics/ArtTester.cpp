@@ -214,8 +214,12 @@ void Crawl::ModelDropCallback(GLFWwindow* window, int count, const char** paths)
 				if (rendererSkinned != nullptr)
 					rendererSkinned->markedForDeletion = true;
 
+
 				renderer->model = model->model;
 				renderer->OnParentChange();
+
+				for (int i = 0; i < renderer->materialArray.size(); i++)
+					renderer->materialArray[i] = MaterialManager::GetMaterial("models/materials/LambertBlue.material");
 			}
 
 			ArtTester::Refresh();
