@@ -91,7 +91,6 @@ void MaterialManager::LoadFromFile(const char* filename)
 
 	materials.emplace(filename, material);
 }
-
 void MaterialManager::LoadAllFiles()
 {
 	LogUtils::Log("Loading Materials");

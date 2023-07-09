@@ -19,6 +19,7 @@ public:
 	static void DrawGUI();
 	static MaterialManager* s_instance;
 	static const map<string, Material*>* Materials() { return &s_instance->materials; }
+	static void PushMaterial(string name, Material* material) { s_instance->materials.emplace(name, material); }
 protected:
 	MaterialManager();
 	map<string, Material*> materials;

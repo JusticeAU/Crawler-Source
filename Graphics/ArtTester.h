@@ -1,17 +1,29 @@
 #pragma once
 #include <iostream>
+#include <vector>
 #include <string>
 
 class GLFWwindow;
+class ComponentModel;
 class ComponentRenderer;
 class ComponentSkinnedRenderer;
 class ComponentAnimator;
+
 class Material;
+class Texture;
 
 using std::string;
+using std::vector;
 
 namespace Crawl
 {
+	enum class FileType
+	{
+		Model,
+		Texture,
+		Other
+	};
+
 	class ArtTester
 	{
 	public:
@@ -22,6 +34,12 @@ namespace Crawl
 
 		void DrawGUI();
 		void DrawGUIStaging();
+		void ExportStaging(bool preview);
+		void UpdateStagingFolders();
+
+		void ModelDropCallBack(int count, const char** paths);
+
+		static FileType GetFileType(string filename);
 
 		static const int QTY_SCALES = 3;
 		float scales[QTY_SCALES] = { 1, 0.1f, 0.01f };
@@ -39,6 +57,8 @@ namespace Crawl
 		int playerViewDistance = 1;
 
 		bool hasAnimations = true;
+
+		ComponentModel* model = nullptr;
 		ComponentRenderer* renderer = nullptr;
 		ComponentSkinnedRenderer* rendererSkinned = nullptr;
 		ComponentAnimator* animator = nullptr;
@@ -47,11 +67,24 @@ namespace Crawl
 		static ArtTester* s_instance;
 		static void Refresh();
 
-		// Test Staging config
-		string types [3] = { "Monster", "Tile", "Interactble" };
+		// Staging Configuration
+		int type = 0;
+		string types [4] = { "Monster", "Tile", "Interactble", "Decoration"};
+		string typesFolders[4]{ "monster_", "tile_", "interactable_", "decoration_"};
 		string stagedType = "Monster";
+
+		// Staging names and paths
+		string stagedName = "name";	// Managed by ImGui and UpdateStagingFolders function
+		string stagingFolder = "";	// staging/model/monster_name/
+		string stagingPath = "";	// staging/model/monster_name/monster_
+		string assetPath = "";		// crawler/model/monster_name/monster_
+
+		vector<string> stagingModels;
+		vector<string> stagingMaterials;
+		vector<string> stagingTextures;
 	};
 
 	void ModelDropCallback(GLFWwindow* window, int count, const char** paths);
+
 }
 
