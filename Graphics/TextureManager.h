@@ -22,6 +22,7 @@ public:
 	static const map<string, Texture*>* Textures() { return &s_instance->textures; }
 	static const map<string, FrameBuffer*>* FrameBuffers() { return &s_instance->frameBuffers; }
 
+	static void LoadAllFiles(string folder);
 	void LoadFromFile(const char* filename);
 	
 	void AddFrameBuffer(const char* name, FrameBuffer* fb);
@@ -31,6 +32,5 @@ protected:
 	map<string, Texture*> textures;
 	map<string, FrameBuffer*> frameBuffers;
 
-	void LoadAllFiles();
 };
 

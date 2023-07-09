@@ -1,5 +1,5 @@
 {
-  "shader": "shaders/lambertLitSingleLight",
+  "shader": "engine/shader/gizmoShader",
   "Ka": {
     "x": 0.0,
     "y": 0.0,
@@ -16,7 +16,7 @@
     "z": 1.0
   },
   "Ns": 20.0,
-  "map_Kd": "models/crawl/blockout/Mage_Room32.png",
+  "map_Kd": "engine/model/colour_blue.bmp",
   "map_Ks": "_null",
   "bump": "_null",
   "albedoMap": "_null",

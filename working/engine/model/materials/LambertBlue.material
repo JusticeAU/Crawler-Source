@@ -1,7 +1,7 @@
 {
   "type": "material",
   "version": 1,
-  "shader": "shaders/lambertLitSingleLight",
+  "shader": "engine/shader/lambertLitSingleLight",
   "Ka": {
     "x": 1.0,
     "y": 1.0,
@@ -18,7 +18,7 @@
     "z": 1.0
   },
   "Ns": 20.0,
-  "map_Kd": "models/colour_blue.bmp",
+  "map_Kd": "engine/model/colour_blue.bmp",
   "map_Ks": "_null",
   "bump": "_null",
   "albedoMap": "_null",

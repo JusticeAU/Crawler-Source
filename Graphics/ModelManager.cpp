@@ -89,8 +89,6 @@ ModelManager::ModelManager()
 	primitive = new Model();
 	primitive->meshes.push_back(MeshManager::GetMesh("_fsQuad"));
 	resources.emplace("_fsQuad", primitive);
-
-	LoadAllFiles();
 }
 
 void ModelManager::LoadFromFile(const char* filename)
@@ -166,16 +164,16 @@ void ModelManager::LoadFromFile(const char* filename)
 	resources.emplace(filename, model);
 }
 
-void ModelManager::LoadAllFiles()
+void ModelManager::LoadAllFiles(string folder)
 {
 	LogUtils::Log("Loading models");
-	for (auto d : fs::recursive_directory_iterator("models"))
+	for (auto d : fs::recursive_directory_iterator(folder))
 	{
 		if (d.path().extension() == ".obj" || d.path().extension() == ".fbx" || d.path().extension() == ".gltf")
 		{
 			string output = "Loading: " + d.path().generic_string();
 			LogUtils::Log(output.c_str());
-			LoadFromFile(d.path().generic_string().c_str());
+			s_instance->LoadFromFile(d.path().generic_string().c_str());
 		}
 	}
 }

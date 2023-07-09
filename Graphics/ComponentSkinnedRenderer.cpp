@@ -47,7 +47,7 @@ void ComponentSkinnedRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 			}
 			case DrawMode::ObjectPicking:
 			{
-				ShaderProgram* shader = ShaderManager::GetShaderProgram("shaders/skinnedPicking");
+				ShaderProgram* shader = ShaderManager::GetShaderProgram("engine/shader/skinnedPicking");
 				shader->Bind();
 				shader->SetUIntUniform("objectID", componentParent->id);
 				shader->SetUniformBlockIndex("boneTransformBuffer", 0);
@@ -63,7 +63,7 @@ void ComponentSkinnedRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 			}
 			case DrawMode::ShadowMapping:
 			{
-				ShaderProgram* shader = ShaderManager::GetShaderProgram("shaders/simpleDepthShaderSkinned");
+				ShaderProgram* shader = ShaderManager::GetShaderProgram("engine/shader/simpleDepthShaderSkinned");
 				shader->Bind();
 				glm::mat4 pvm = pv * componentParent->transform;
 

@@ -61,14 +61,14 @@
       "components": [
         {
           "type": "Model",
-          "model": "models/robot/robot.obj"
+          "model": "engine/model/robot/robot.obj"
         },
         {
           "type": "Renderer",
           "materials": [
-            "models/robot/robotPBR.material",
-            "models/robot/robotPBR.material",
-            "models/robot/robotPBR.material"
+            "engine/model/robot/robotPBR.material",
+            "engine/model/robot/robotPBR.material",
+            "engine/model/robot/robotPBR.material"
           ],
           "frameBuffer": "",
           "receivesShadows": true,

@@ -12,6 +12,7 @@ class ModelManager
 {
 public:
 	static void Init();
+	static void LoadAllFiles(string folder);
 
 	static Model* GetModel(string name);
 	static Animation* GetAnimation(string name);
@@ -28,6 +29,5 @@ protected:
 	map<string, Model*> resources;
 	map<string, Animation*> animations;
 
-	void LoadAllFiles();
 };
 

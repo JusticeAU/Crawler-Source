@@ -34,13 +34,13 @@ Scene::Scene()
 	// Create our Light Gizmo for rendering - this will move to a ComponentLight and be handled there.
 	lightGizmo = new Object(-1, "Light Gizmo");
 	ComponentModel* lightGizmoModelComponent = new ComponentModel(lightGizmo);
-	lightGizmoModelComponent->model = ModelManager::GetModel("models/Gizmos/bulb.fbx");
+	lightGizmoModelComponent->model = ModelManager::GetModel("engine/models/Gizmos/bulb.fbx");
 	lightGizmo->components.push_back(lightGizmoModelComponent);
 	ComponentRenderer* lightGizmoRenderer = new ComponentRenderer(lightGizmo);
-	gizmoShader = ShaderManager::GetShaderProgram("shaders/gizmoShader");
+	gizmoShader = ShaderManager::GetShaderProgram("engine/shader/gizmoShader");
 	lightGizmoRenderer->model = lightGizmoModelComponent->model;
 	lightGizmoRenderer->materialArray.resize(1);
-	lightGizmoRenderer->materialArray[0] = MaterialManager::GetMaterial("models/materials/Gizmos.material");
+	lightGizmoRenderer->materialArray[0] = MaterialManager::GetMaterial("engine/models/materials/Gizmos.material");
 	lightGizmo->components.push_back(lightGizmoRenderer);
 
 	// Set up our framebuffer to render our chosen cameras framebuffer to.
@@ -57,7 +57,7 @@ Scene::Scene()
 	// Shadow Mapping dev - This will get refactored in to something more robust once I've set up PBR.
 	shadowMap = new FrameBuffer(FrameBuffer::Type::ShadowMap);
 	shadowMapDevOutput = new FrameBuffer(FrameBuffer::Type::PostProcess);
-	depthMapOutputShader = ShaderManager::GetShaderProgram("shaders/zzShadowMapDev");
+	depthMapOutputShader = ShaderManager::GetShaderProgram("engine/shader/zzShadowMapDev");
 }
 Scene::~Scene()
 {
@@ -525,7 +525,7 @@ void Scene::LoadJSON(string sceneName)
 void Scene::LoadJSON()
 {
 	// Load the JSON object
-	ordered_json input = ReadJSONFromDisk(sceneSubfolder + sceneFilename);
+	ordered_json input = ReadJSONFromDisk(sceneFilename);
 	
 	// check version lol
 	// load the lighitng data

@@ -59,7 +59,7 @@
     <Filter Include="Source Files\Application\Audio">
       <UniqueIdentifier>{800c4311-ed0d-4827-b2a4-3c4eff7b86ec}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Application\Crawl">
+    <Filter Include="Source Files\Application\Crawler">
       <UniqueIdentifier>{e59a8875-a180-4083-99f7-968dc4fabf36}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -258,19 +258,19 @@
       <Filter>Source Files\Application\Audio</Filter>
     </ClCompile>
     <ClCompile Include="DungeonPlayer.cpp">
-      <Filter>Source Files\Application\Crawl</Filter>
+      <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
     <ClCompile Include="Dungeon.cpp">
-      <Filter>Source Files\Application\Crawl</Filter>
+      <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
     <ClCompile Include="DungeonEditor.cpp">
-      <Filter>Source Files\Application\Crawl</Filter>
+      <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
     <ClCompile Include="ComponentAudioSource.cpp">
       <Filter>Source Files\Application\Scene\Components</Filter>
     </ClCompile>
     <ClCompile Include="ArtTester.cpp">
-      <Filter>Source Files\Application\Crawl</Filter>
+      <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -443,19 +443,19 @@
       <Filter>Source Files\Application\Audio</Filter>
     </ClInclude>
     <ClInclude Include="DungeonPlayer.h">
-      <Filter>Source Files\Application\Crawl</Filter>
+      <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
     <ClInclude Include="Dungeon.h">
-      <Filter>Source Files\Application\Crawl</Filter>
+      <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
     <ClInclude Include="DungeonEditor.h">
-      <Filter>Source Files\Application\Crawl</Filter>
+      <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
     <ClInclude Include="ComponentAudioSource.h">
       <Filter>Source Files\Application\Scene\Components</Filter>
     </ClInclude>
     <ClInclude Include="ArtTester.h">
-      <Filter>Source Files\Application\Crawl</Filter>
+      <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
     <ClInclude Include="serialisation.h">
       <Filter>Source Files\StaticUtility</Filter>
@@ -464,7 +464,7 @@
       <Filter>Source Files\StaticUtility</Filter>
     </ClInclude>
     <ClInclude Include="DungeonTile.h">
-      <Filter>Source Files\Application\Crawl</Filter>
+      <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -33,7 +33,7 @@ namespace Crawl
 		glm::ivec2 gridSelected = { 0, 0 };
 
 		// File Operations
-		std::string subfolder = "crawl/dungeons/";
+		std::string subfolder = "crawler/dungeon/";
 		std::string extension = ".dungeon";
 		std::string dungeonFileName = "new_dungeon";
 		std::string dungeonFileNameSaveAs = "";

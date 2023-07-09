@@ -11,7 +11,6 @@ TextureManager::TextureManager()
 {
 	textures.emplace("_null", nullptr);
 	frameBuffers.emplace("_null", nullptr);
-	LoadAllFiles();
 }
 
 void TextureManager::Init()
@@ -108,16 +107,16 @@ void TextureManager::RemoveFrameBuffer(const char* name)
 	}
 }
 
-void TextureManager::LoadAllFiles()
+void TextureManager::LoadAllFiles(string folder)
 {
 	LogUtils::Log("Loading Textures");
-	for (auto d : fs::recursive_directory_iterator("models"))
+	for (auto d : fs::recursive_directory_iterator(folder))
 	{
 		if (d.path().extension() == ".tga" || d.path().extension() == ".png" || d.path().extension() == ".jpg" || d.path().extension() == ".jpeg" || d.path().extension() == ".bmp")
 		{
 			string output = "Loading: " + d.path().generic_string();
 			LogUtils::Log(output.c_str());
-			LoadFromFile(d.path().generic_string().c_str());
+			s_instance->LoadFromFile(d.path().generic_string().c_str());
 		}
 
 	}

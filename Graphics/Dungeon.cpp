@@ -154,14 +154,14 @@ void Crawl::Dungeon::InitialiseTileMap()
 
 	tilemap[0] = new Object(0, "Enclosed");
 	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[0], Component_Model);
-	model->model = ModelManager::GetModel("models/crawl/blockout/hallClosed.fbx");
-	model->modelName = "models/crawl/blockout/hallClosed.fbx";
+	model->model = ModelManager::GetModel("crawler/model/blockout/hallClosed.fbx");
+	model->modelName = "crawler/model/blockout/hallClosed.fbx";
 	tilemap[0]->components.push_back(model);
 	renderer = (ComponentRenderer*)ComponentFactory::NewComponent(tilemap[0], Component_Renderer);
 	renderer->materialArray.resize(5);
 	for(int i = 0; i < 5; i++)
 	{
-		renderer->materialArray[i] = MaterialManager::GetMaterial("models/crawl/blockout/hall.material");
+		renderer->materialArray[i] = MaterialManager::GetMaterial("crawler/model/blockout/hall.material");
 	}
 	tilemap[0]->components.push_back(renderer);
 
@@ -169,8 +169,8 @@ void Crawl::Dungeon::InitialiseTileMap()
 	tilemap[1] = new Object(0, "Open North");
 
 	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[1], Component_Model);
-	model->model = ModelManager::GetModel("models/crawl/blockout/hallU.fbx");
-	model->modelName = "models/crawl/blockout/hallU.fbx";
+	model->model = ModelManager::GetModel("crawler/model/blockout/hallU.fbx");
+	model->modelName = "crawler/model/blockout/hallU.fbx";
 	tilemap[1]->components.push_back(model);
 	tilemap[1]->components.push_back(renderer);
 	tilemap[2] = new Object(0, "Open West");
@@ -191,8 +191,8 @@ void Crawl::Dungeon::InitialiseTileMap()
 	tilemap[3] = new Object(0, "Open North West");
 	tilemap[3]->SetLocalRotation({ 0,0,-90 });
 	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[3], Component_Model);
-	model->model = ModelManager::GetModel("models/crawl/blockout/hallCorner.fbx");
-	model->modelName = "models/crawl/blockout/hallhallCorner.fbx";
+	model->model = ModelManager::GetModel("crawler/model/blockout/hallCorner.fbx");
+	model->modelName = "crawler/model/blockout/hallhallCorner.fbx";
 	tilemap[3]->components.push_back(model);
 	tilemap[3]->components.push_back(renderer);
 	tilemap[5] = new Object(0, "Open North East");
@@ -212,8 +212,8 @@ void Crawl::Dungeon::InitialiseTileMap()
 	tilemap[6] = new Object(0, "Open West East");
 	tilemap[6]->SetLocalRotation({ 0,0,90 });
 	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[3], Component_Model);
-	model->model = ModelManager::GetModel("models/crawl/blockout/hallSides.fbx");
-	model->modelName = "models/crawl/blockout/hallSides.fbx";
+	model->model = ModelManager::GetModel("crawler/model/blockout/hallSides.fbx");
+	model->modelName = "crawler/model/blockout/hallSides.fbx";
 	tilemap[6]->components.push_back(model);
 	tilemap[6]->components.push_back(renderer);
 	tilemap[9] = new Object(0, "Open North South");
@@ -224,8 +224,8 @@ void Crawl::Dungeon::InitialiseTileMap()
 	tilemap[7] = new Object(0, "Open North West East");
 	tilemap[7]->SetLocalRotation({ 0,0,90 });
 	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[7], Component_Model);
-	model->model = ModelManager::GetModel("models/crawl/blockout/hallWall.fbx");
-	model->modelName = "models/crawl/blockout/hallWall.fbx";
+	model->model = ModelManager::GetModel("crawler/model/blockout/hallWall.fbx");
+	model->modelName = "crawler/model/blockout/hallWall.fbx";
 	tilemap[7]->components.push_back(model);
 	tilemap[7]->components.push_back(renderer);
 	tilemap[11] = new Object(0, "Open North West South");
@@ -242,8 +242,8 @@ void Crawl::Dungeon::InitialiseTileMap()
 
 	tilemap[15] = new Object(0, "Open");
 	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[15], Component_Model);
-	model->model = ModelManager::GetModel("models/crawl/blockout/hallOpen.fbx");
-	model->modelName = "models/crawl/blockout/hallOpen.fbx";
+	model->model = ModelManager::GetModel("crawler/model/blockout/hallOpen.fbx");
+	model->modelName = "crawler/model/blockout/hallOpen.fbx";
 	tilemap[15]->components.push_back(model);
 	tilemap[15]->components.push_back(renderer);
 

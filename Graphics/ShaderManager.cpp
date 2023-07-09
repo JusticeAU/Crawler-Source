@@ -60,7 +60,7 @@ void ShaderManager::LoadAllFiles()
 {
 	LogUtils::Log("Loading Shaders");
 	string postProcessFolder = "postProcess";
-	for (auto d : fs::recursive_directory_iterator("shaders"))
+	for (auto d : fs::recursive_directory_iterator("engine/shader"))
 	{
 		if (d.path().extension() == ".SHAD")
 		{

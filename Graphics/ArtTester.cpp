@@ -168,7 +168,7 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 
 	// copy model if needed
 	string modelName = objectJSON["components"][0]["model"];
-	if (modelName.substr(0, 1) != "_" && modelName.substr(0, 7) != "crawler" && modelName.substr(0, 6) != "models")
+	if (modelName.substr(0, 1) != "_" && modelName.substr(0, 7) != "crawler" && modelName.substr(0, 6) != "engine")
 	{
 		if (preview)
 			stagingModels.push_back(assetPath + stagedName + ".fbx");
@@ -183,79 +183,79 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 	for (int i = 0; i < objectJSON["components"][1]["materials"].size(); i++)
 	{
 		string materialName = objectJSON["components"][1]["materials"][i];
-		if (materialName.substr(0, 7) != "crawler" && materialName.substr(0, 6) != "models")
+		if (materialName.substr(0, 7) != "crawler" && materialName.substr(0, 6) != "engine")
 		{
 
 			// Staged material, need to copy
 			Material savedMaterial = *MaterialManager::GetMaterial(materialName);
-			string materialName = stagedName + "_" + savedMaterial.name;
+			string newMaterialName = stagedName + "_" + savedMaterial.name;
 
 			// updates names of each texture as required
-			if (savedMaterial.albedoMap != nullptr && savedMaterial.albedoMapName.substr(0, 7) != "crawler" && savedMaterial.albedoMapName.substr(0, 6) != "models")
+			if (savedMaterial.albedoMap != nullptr && savedMaterial.albedoMapName.substr(0, 7) != "crawler" && savedMaterial.albedoMapName.substr(0, 6) != "engine")
 			{
 				if (preview)
-					stagingTextures.push_back(assetPath + materialName + "_albedo.png");
+					stagingTextures.push_back(assetPath + newMaterialName + "_albedo.png");
 				else
 				{
 					fs::copy_file(savedMaterial.albedoMapName, stagingPath + stagedName + "_" + savedMaterial.name + "_albedo.png", fs::copy_options::overwrite_existing);
-					savedMaterial.albedoMapName = assetPath + materialName + "_albedo.png";
+					savedMaterial.albedoMapName = assetPath + newMaterialName + "_albedo.png";
 				}
 			}
 
-			if (savedMaterial.normalMap != nullptr && savedMaterial.normalMapName.substr(0, 7) != "crawler" && savedMaterial.normalMapName.substr(0, 6) != "models")
+			if (savedMaterial.normalMap != nullptr && savedMaterial.normalMapName.substr(0, 7) != "crawler" && savedMaterial.normalMapName.substr(0, 6) != "engine")
 			{
 				if (preview)
-					stagingTextures.push_back(assetPath + materialName + "_normal.png");
+					stagingTextures.push_back(assetPath + newMaterialName + "_normal.png");
 				else
 				{
 					fs::copy_file(savedMaterial.normalMapName, stagingPath + stagedName + "_" + savedMaterial.name + "_normal.png", fs::copy_options::overwrite_existing);
-					savedMaterial.normalMapName = assetPath + materialName + "_normal.png";
+					savedMaterial.normalMapName = assetPath + newMaterialName + "_normal.png";
 				}
 			}
 
-			if (savedMaterial.metallicMap != nullptr && savedMaterial.metallicMapName.substr(0, 7) != "crawler" && savedMaterial.metallicMapName.substr(0, 6) != "models")
+			if (savedMaterial.metallicMap != nullptr && savedMaterial.metallicMapName.substr(0, 7) != "crawler" && savedMaterial.metallicMapName.substr(0, 6) != "engine")
 			{
 				if (preview)
-					stagingTextures.push_back(assetPath + materialName + "_metallic.png");
+					stagingTextures.push_back(assetPath + newMaterialName + "_metallic.png");
 				else
 				{
 					fs::copy_file(savedMaterial.metallicMapName, stagingPath + stagedName + "_" + savedMaterial.name + "_metallic.png", fs::copy_options::overwrite_existing);
-					savedMaterial.metallicMapName = assetPath + materialName + "_metallic.png";
+					savedMaterial.metallicMapName = assetPath + newMaterialName + "_metallic.png";
 				}
 			}
 
-			if (savedMaterial.roughnessMap != nullptr && savedMaterial.roughnessMapName.substr(0, 7) != "crawler" && savedMaterial.roughnessMapName.substr(0, 6) != "models")
+			if (savedMaterial.roughnessMap != nullptr && savedMaterial.roughnessMapName.substr(0, 7) != "crawler" && savedMaterial.roughnessMapName.substr(0, 6) != "engine")
 			{
 				if (preview)
-					stagingTextures.push_back(assetPath + materialName + "_roughness.png");
+					stagingTextures.push_back(assetPath + newMaterialName + "_roughness.png");
 				else
 				{
 					fs::copy_file(savedMaterial.roughnessMapName, stagingPath + stagedName + "_" + savedMaterial.name + "_roughness.png", fs::copy_options::overwrite_existing);
-					savedMaterial.roughnessMapName = assetPath + materialName + "_roughness.png";
+					savedMaterial.roughnessMapName = assetPath + newMaterialName + "_roughness.png";
 				}
 			}
 
-			if (savedMaterial.aoMap != nullptr && savedMaterial.aoMapName.substr(0, 7) != "crawler" && savedMaterial.aoMapName.substr(0, 6) != "models")
+			if (savedMaterial.aoMap != nullptr && savedMaterial.aoMapName.substr(0, 7) != "crawler" && savedMaterial.aoMapName.substr(0, 6) != "engine")
 			{
 				if (preview)
-					stagingTextures.push_back(assetPath + materialName + "_ao.png");
+					stagingTextures.push_back(assetPath + newMaterialName + "_ao.png");
 				else
 				{
 					fs::copy_file(savedMaterial.aoMapName, stagingPath + stagedName + "_" + savedMaterial.name + "_ao.png", fs::copy_options::overwrite_existing);
-					savedMaterial.aoMapName = assetPath + materialName + "_ao.png";
+					savedMaterial.aoMapName = assetPath + newMaterialName + "_ao.png";
 				}
 			}
 
 			if (preview)
-				stagingMaterials.push_back(assetPath + materialName + ".material");
+				stagingMaterials.push_back(assetPath + newMaterialName + ".material");
 			else
 			{
 				// save the new material to disk
-				savedMaterial.filePath = stagingPath + materialName + ".material";
+				savedMaterial.filePath = stagingPath + newMaterialName + ".material";
 				savedMaterial.SaveToFile();
 
 				// update reference to the  material in the JSON
-				objectJSON["components"][1]["materials"][i] = assetPath + materialName + ".material";
+				objectJSON["components"][1]["materials"][i] = assetPath + newMaterialName + ".material";
 			}
 		}
 	}
@@ -324,7 +324,7 @@ void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)
 				rendererSkinned->OnParentChange();
 				for (int i = 0; i < rendererSkinned->materialArray.size(); i++)
 				{
-					rendererSkinned->materialArray[i] = MaterialManager::GetMaterial("models/materials/SkinnedLambertBlue.material");
+					rendererSkinned->materialArray[i] = MaterialManager::GetMaterial("engine/model/materials/SkinnedLambertBlue.material");
 				}
 
 				// Clear off maybe unneeded stuff
@@ -353,7 +353,7 @@ void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)
 				renderer->OnParentChange();
 
 				for (int i = 0; i < renderer->materialArray.size(); i++)
-					renderer->materialArray[i] = MaterialManager::GetMaterial("models/materials/LambertBlue.material");
+					renderer->materialArray[i] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
 			}
 
 			Refresh();

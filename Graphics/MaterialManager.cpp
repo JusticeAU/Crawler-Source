@@ -77,7 +77,6 @@ void MaterialManager::DrawGUI()
 MaterialManager::MaterialManager()
 {
 	materials.emplace("_null", nullptr);
-	LoadAllFiles();
 }
 
 void MaterialManager::LoadFromFile(const char* filename)
@@ -91,16 +90,16 @@ void MaterialManager::LoadFromFile(const char* filename)
 
 	materials.emplace(filename, material);
 }
-void MaterialManager::LoadAllFiles()
+void MaterialManager::LoadAllFiles(string folder)
 {
 	LogUtils::Log("Loading Materials");
-	for (auto d : fs::recursive_directory_iterator("models"))
+	for (auto d : fs::recursive_directory_iterator(folder))
 	{
 		if (d.path().extension() == ".material")
 		{
 			string output = "Loading: " + d.path().generic_string();
 			LogUtils::Log(output.c_str());
-			LoadFromFile(d.path().generic_string().c_str());
+			s_instance->LoadFromFile(d.path().generic_string().c_str());
 		}
 
 	}

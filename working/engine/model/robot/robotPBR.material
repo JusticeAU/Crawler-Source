@@ -1,0 +1,29 @@
+{
+  "type": "material",
+  "version": 1,
+  "shader": "engine/shader/PBR",
+  "Ka": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+  },
+  "Kd": {
+    "x": 1.0,
+    "y": 1.0,
+    "z": 1.0
+  },
+  "Ks": {
+    "x": 1.0,
+    "y": 1.0,
+    "z": 1.0
+  },
+  "Ns": 39.0,
+  "map_Kd": "_null",
+  "map_Ks": "_null",
+  "bump": "_null",
+  "albedoMap": "engine/model/robot/robot_steampunk_color.tga.png",
+  "normalMap": "engine/model/robot/robot_steampunk_nmap.tga.png",
+  "metallicMap": "engine/model/robot/robot_steampunk_metalness.tga.png",
+  "roughnessMap": "engine/model/robot/robot_steampunk_rough.tga.png",
+  "aoMap": "engine/model/robot/robot_steampunk_ao.tga.png"
+}

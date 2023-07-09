@@ -84,7 +84,7 @@ void PostProcess::PassThrough(ShaderProgram* shader)
 void PostProcess::Init()
 {
 	s_frame = MeshManager::GetMesh("_fsQuad");
-	s_passthroughShader = ShaderManager::GetShaderProgram("shaders/postProcess/passThrough");
+	s_passthroughShader = ShaderManager::GetShaderProgram("engine/shader/postProcess/passThrough");
 }
 
 Mesh* PostProcess::s_frame = nullptr;

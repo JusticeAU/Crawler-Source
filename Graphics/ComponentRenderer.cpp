@@ -60,7 +60,7 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 			}
 			case DrawMode::ObjectPicking:
 			{
-				ShaderProgram* shader = ShaderManager::GetShaderProgram("shaders/picking");
+				ShaderProgram* shader = ShaderManager::GetShaderProgram("engine/shader/picking");
 				shader->Bind();
 				shader->SetUIntUniform("objectID", componentParent->id);
 				glm::mat4 pvm = pv * componentParent->transform;
@@ -79,7 +79,7 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				if (!castsShadows)
 					return;
 
-				ShaderProgram* shader = ShaderManager::GetShaderProgram("shaders/simpleDepthShader");
+				ShaderProgram* shader = ShaderManager::GetShaderProgram("engine/shader/simpleDepthShader");
 				shader->Bind();
 				glm::mat4 pvm = pv * componentParent->transform;
 

@@ -186,7 +186,7 @@ void AudioManager::StreamFromFile(const char* filename)
 void AudioManager::LoadAllFiles()
 {
 	LogUtils::Log("Loading Audio Files");
-	for (auto d : fs::recursive_directory_iterator("audio/load"))
+	for (auto d : fs::recursive_directory_iterator("engine/sound/load"))
 	{
 		if (d.path().extension() == ".wav")
 		{
@@ -196,7 +196,7 @@ void AudioManager::LoadAllFiles()
 		}
 	}
 
-	for (auto d : fs::recursive_directory_iterator("audio/stream"))
+	for (auto d : fs::recursive_directory_iterator("engine/sound/stream"))
 	{
 		if (d.path().extension() == ".wav" || d.path().extension() == ".mp3")
 		{

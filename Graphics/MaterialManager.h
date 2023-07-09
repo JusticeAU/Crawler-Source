@@ -14,6 +14,7 @@ public:
 	MaterialManager& operator=(const MaterialManager& other) = delete;
 
 	static void Init();
+	static void LoadAllFiles(string folder);
 
 	static Material* GetMaterial(string name);
 	static void DrawGUI();
@@ -25,7 +26,6 @@ protected:
 	map<string, Material*> materials;
 
 	void LoadFromFile(const char* filename);
-	void LoadAllFiles();
 
 	string fileExtension = ".material";
 	string newFileName = "models/model/modelname";

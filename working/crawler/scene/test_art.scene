@@ -22,15 +22,81 @@
       "y": -0.765999972820282,
       "z": -0.7070000171661377
     },
-    "pointLights": null
+    "pointLights": [
+      {
+        "position": {
+          "x": 1.3899999856948853,
+          "y": 0.5299999713897705,
+          "z": 4.25
+        },
+        "colour": {
+          "x": 1.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "intensity": 10.0
+      },
+      {
+        "position": {
+          "x": -1.4900000095367432,
+          "y": -2.4800000190734863,
+          "z": 4.150000095367432
+        },
+        "colour": {
+          "x": 0.9117647409439087,
+          "y": 1.0,
+          "z": 0.0
+        },
+        "intensity": 10.0
+      }
+    ]
   },
   "objects": [
     {
-      "name": "Selection Cube",
+      "name": "Hall",
       "transform": {
         "position": {
-          "x": -45.0,
-          "y": -15.0,
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 180.0
+        },
+        "scale": {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        }
+      },
+      "components": [
+        {
+          "type": "Model",
+          "model": "crawler/model/blockout/hallU.fbx"
+        },
+        {
+          "type": "Renderer",
+          "materials": [
+            "crawler/model/blockout/hall.material",
+            "crawler/model/blockout/hall.material",
+            "crawler/model/blockout/hall.material",
+            "crawler/model/blockout/hall.material"
+          ],
+          "frameBuffer": "",
+          "receivesShadows": true,
+          "castsShadows": true
+        }
+      ],
+      "children": null
+    },
+    {
+      "name": "Test Model",
+      "transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0,
           "z": 0.0
         },
         "rotation": {
@@ -47,62 +113,48 @@
       "components": [
         {
           "type": "Model",
-          "model": "models/crawl/blockout/hallOpen.fbx"
+          "model": "engine/model/ModelTest.fbx"
         },
         {
           "type": "Renderer",
           "materials": [
-            "models/materials/LambertBlue.material"
-          ],
-          "frameBuffer": "",
-          "receivesShadows": true,
-          "castsShadows": false
-        }
-      ],
-      "children": null
-    },
-    {
-      "name": "Player",
-      "transform": {
-        "position": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": -90.0
-        },
-        "scale": {
-          "x": 0.9999980926513672,
-          "y": 0.9999973177909851,
-          "z": 0.9999932646751404
-        }
-      },
-      "components": [
-        {
-          "type": "Model",
-          "model": "_cube"
-        },
-        {
-          "type": "Renderer",
-          "materials": [
-            "models/materials/LambertBlue.material"
+            "engine/model/robot/robotPBR.material"
           ],
           "frameBuffer": "",
           "receivesShadows": true,
           "castsShadows": true
         }
       ],
+      "children": null
+    },
+    {
+      "name": "PlayerPosition",
+      "transform": {
+        "position": {
+          "x": 0.0,
+          "y": -5.0,
+          "z": 0.0
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "scale": {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        }
+      },
+      "components": null,
       "children": [
         {
           "name": "Camera Offset",
           "transform": {
             "position": {
               "x": 0.0,
-              "y": -0.5099999904632568,
-              "z": 2.7799999713897705
+              "y": -4.0,
+              "z": 2.799999952316284
             },
             "rotation": {
               "x": 90.0,
@@ -128,28 +180,6 @@
           "children": null
         }
       ]
-    },
-    {
-      "name": "Tiles",
-      "transform": {
-        "position": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "rotation": {
-          "x": 0.0,
-          "y": 0.0,
-          "z": 0.0
-        },
-        "scale": {
-          "x": 1.0,
-          "y": 1.0,
-          "z": 1.0
-        }
-      },
-      "components": null,
-      "children": null
     }
   ]
 }

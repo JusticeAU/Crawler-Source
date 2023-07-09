@@ -1,5 +1,5 @@
 {
-  "shader": "shaders/skinnedMeshLambert",
+  "shader": "engine/shader/skinnedMeshLambert",
   "Ka": {
     "x": 1.0,
     "y": 1.0,
@@ -16,7 +16,7 @@
     "z": 1.0
   },
   "Ns": 20.0,
-  "map_Kd": "models/colour_blue.bmp",
+  "map_Kd": "engine/model/colour_blue.bmp",
   "map_Ks": "",
   "bump": "",
   "albedoMap": "_null",

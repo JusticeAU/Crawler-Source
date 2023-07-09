@@ -82,12 +82,20 @@ Application::Application()
 	camera = new Camera(aspect, "Main Camera");
 
 	// Load Assets
+	string engineFolder = "engine";
+	string gameFolder = "crawler";
 	MeshManager::Init();
 	TextureManager::Init();
+	TextureManager::LoadAllFiles(engineFolder);
+	TextureManager::LoadAllFiles(gameFolder);
 	ShaderManager::Init();
 	MaterialManager::Init(); // Must be initialised AFTER Texture Manager
+	MaterialManager::LoadAllFiles(engineFolder);
+	MaterialManager::LoadAllFiles(gameFolder);
 	ModelManager::Init(); // Must be initialised after mesh manager
-	Scene::Init();
+	ModelManager::LoadAllFiles(engineFolder);
+	ModelManager::LoadAllFiles(gameFolder);
+	//Scene::Init();
 	ComponentFactory::Init();
 	AudioManager::Init();
 	AudioManager::SetAudioListener(camera->GetAudioListener());
@@ -98,7 +106,7 @@ Application::Application()
 	// Load Crawl Game Dependencies
 	Scene* scene = Scene::NewScene("Dungeon");
 	Scene::s_instance = scene;
-	scene->LoadJSON("CrawlTest.scene");
+	scene->LoadJSON("crawler/scene/dungeon.scene");
 
 	dungeon = new Crawl::Dungeon();
 	dungeonPlayer = new Crawl::DungeonPlayer();
@@ -130,7 +138,7 @@ void Application::LaunchArgument(char* arg)
 		artTester = new Crawl::ArtTester();
 		Scene* art = Scene::NewScene("CrawlArtTest");
 		Scene::s_instance = art;
-		art->LoadJSON("CrawlArtTest.scene");
+		art->LoadJSON("crawler/scene/test_art.scene");
 		
 		if (argument == "design")
 		{
@@ -150,7 +158,7 @@ void Application::LaunchArgument(char* arg)
 
 void Application::InitGame()
 {
-	dungeon->Load("crawl/dungeons/test level.dungeon");
+	dungeon->Load("crawler/dungeon/test level.dungeon");
 	Scene::SetCameraIndex(1);
 }
 
