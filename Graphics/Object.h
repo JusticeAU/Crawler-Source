@@ -76,6 +76,8 @@ public:
 	void RecalculateTransforms();
 
 	Object* FindObjectWithID(unsigned int id);
+
+	void SaveObjectToJSON();
 };
 
 extern void to_json(nlohmann::ordered_json& j, const Object& object);

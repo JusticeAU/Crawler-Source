@@ -55,9 +55,6 @@ Object::~Object()
 
 void Object::Update(float delta)
 {
-	// Update all components
-	for (auto component : components)
-		component->Update(delta);
 
 	if (dirtyTransform) // Our transform has changed. Update it and our childrens transforms.
 	{
@@ -65,11 +62,13 @@ void Object::Update(float delta)
 		dirtyTransform = false; // clear our dirty flag
 	}
 
+	// Update all components
+	for (auto component : components)
+		component->Update(delta);
+
 	// Update all children recursively.
 	for (auto c : children)
 		c->Update(delta);
-
-	
 }
 
 void Object::Draw(mat4 pv, vec3 position, Component::DrawMode mode)
@@ -152,6 +151,11 @@ void Object::DrawGUI()
 		ImGui::SameLine();
 		if (ImGui::Button("Delete"))
 			markedForDeletion = true;
+		
+		ImGui::SameLine();
+		if (ImGui::Button("SaveJSON"))
+			SaveObjectToJSON();
+
 
 		ImGui::Indent();
 		string newName = objectName;
@@ -267,9 +271,7 @@ void Object::DrawGUI()
 	{
 		ImGui::SameLine();
 		if (ImGui::Button("Duplicate"))
-		{
-			Scene::DuplicateObject(this);
-		}
+			Scene::DuplicateObject(this, parent);
 		ImGui::SameLine();
 		if (ImGui::Button("Delete"))
 			markedForDeletion = true;
@@ -440,6 +442,14 @@ Object* Object::FindObjectWithID(unsigned int id)
 	}
 
 	return nullptr;
+}
+
+// Just for dumping to disk for easy templating
+void Object::SaveObjectToJSON()
+{
+	string filename = "something.object";
+	ordered_json object = *this;
+	WriteJSONToDisk(filename, object);
 }
 
 void to_json(nlohmann::ordered_json& j, const Object& object)

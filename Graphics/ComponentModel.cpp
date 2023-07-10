@@ -26,7 +26,7 @@ void ComponentModel::DrawGUI()
 			if (ImGui::Selectable(m.first.c_str(), is_selected))
 			{
 				model = ModelManager::GetModel(m.first);
-				//modelName = m.first;
+				modelName = m.first;
 				AnnounceChange();
 			}
 
