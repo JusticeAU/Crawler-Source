@@ -1,4 +1,6 @@
 {
+  "type": "material",
+  "version": 1,
   "shader": "engine/shader/lambertLitSingleLight",
   "Ka": {
     "x": 0.0,
@@ -16,12 +18,12 @@
     "z": 1.0
   },
   "Ns": 20.0,
-  "map_Kd": "crawler/model/blockout/Mage_Room32.png",
-  "map_Ks": "_null",
-  "bump": "_null",
-  "albedoMap": "_null",
-  "normalMap": "_null",
-  "metallicMap": "_null",
-  "roughnessMap": "_null",
-  "aoMap": "_null"
+  "map_Kd": "crawler/texture/tile_blockout/tile_blockout.png",
+  "map_Ks": "",
+  "bump": "",
+  "albedoMap": "",
+  "normalMap": "",
+  "metallicMap": "",
+  "roughnessMap": "",
+  "aoMap": ""
 }

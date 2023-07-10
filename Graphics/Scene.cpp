@@ -391,22 +391,24 @@ Object* Scene::CreateObject(string name, Object* parent)
 	o->objectName = name;
 	return o;
 }
-Object* Scene::DuplicateObject(Object* object)
+Object* Scene::DuplicateObject(Object* object, Object* newParent)
 {
-	Object* o = CreateObject(object->parent);
+	// Copy object properties
+	Object* o = CreateObject(newParent);
 	o->objectName = object->objectName;
+	o->SetLocalPosition(object->localPosition);
+	o->SetLocalRotation(object->localRotation);
+	o->SetLocalScale(object->localScale);
 
-	for (auto component : object->components)
-	{
+	// Copy object components and children
+	for (auto& component : object->components)
 		o->components.push_back(component->Clone(o));
-	}
 
-	o->localTransform = object->localTransform;
-	o->localRotation = object->localRotation;
-	o->localScale = object->localScale;
-	o->dirtyTransform = true;
+	for (auto& child : object->children)
+		Object* c = DuplicateObject(child, o);
+
+	// Refresh
 	o->RefreshComponents();
-
 	return o;
 }
 
@@ -513,7 +515,7 @@ void Scene::SaveJSON()
 	output["objects"] = objectsJSON;
 
 	// write to disk
-	WriteJSONToDisk(sceneSubfolder + sceneFilename, output);
+	WriteJSONToDisk(sceneFilename, output);
 }
 
 void Scene::LoadJSON(string sceneName)

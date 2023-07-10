@@ -85,8 +85,7 @@ bool Crawl::Dungeon::DeleteHall(int x, int y)
 
 void Crawl::Dungeon::CreateTileObject(DungeonTile* hall)
 {
-	SetParentTileObject(Scene::s_instance->objects[2]);
-	Object* obj = Scene::s_instance->DuplicateObject(GetTileTemplate(hall->mask));
+	Object* obj = Scene::s_instance->DuplicateObject(GetTileTemplate(hall->mask), Scene::s_instance->objects[2]);
 	obj->SetLocalPosition({ hall->position.x * DUNGEON_GRID_SCALE, hall->position.y * DUNGEON_GRID_SCALE , 0 });
 
 	hall->object = obj;
@@ -149,104 +148,143 @@ void Crawl::Dungeon::Load(std::string filename)
 
 void Crawl::Dungeon::InitialiseTileMap()
 {
-	ComponentModel* model;
-	ComponentRenderer* renderer;
+	// Load the JSON template
+	ordered_json tile_layout = ReadJSONFromDisk("crawler/object/tile_layout.object");
+	ordered_json tile_ground1 = ReadJSONFromDisk("crawler/model/tile_ground1_blockout/tile_ground1_blockout.object");
+	ordered_json tile_wall1 = ReadJSONFromDisk("crawler/model/tile_wall1_blockout/tile_wall1_blockout.object");
 
 	tilemap[0] = new Object(0, "Enclosed");
-	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[0], Component_Model);
-	model->model = ModelManager::GetModel("crawler/model/blockout/hallClosed.fbx");
-	model->modelName = "crawler/model/blockout/hallClosed.fbx";
-	tilemap[0]->components.push_back(model);
-	renderer = (ComponentRenderer*)ComponentFactory::NewComponent(tilemap[0], Component_Renderer);
-	renderer->materialArray.resize(5);
-	for(int i = 0; i < 5; i++)
-	{
-		renderer->materialArray[i] = MaterialManager::GetMaterial("crawler/model/blockout/hall.material");
-	}
-	tilemap[0]->components.push_back(renderer);
+	tilemap[0]->LoadFromJSON(tile_layout);
+	tilemap[0]->children[0]->children[0]->LoadFromJSON(tile_ground1);
+	tilemap[0]->children[1]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[0]->children[2]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[0]->children[3]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[0]->children[4]->children[0]->LoadFromJSON(tile_wall1);
 
 	// U Bends
 	tilemap[1] = new Object(0, "Open North");
+	tilemap[1]->LoadFromJSON(tile_layout);
+	tilemap[1]->children[0]->children[0]->LoadFromJSON(tile_ground1);
+	//tilemap[1]->children[1]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[1]->children[2]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[1]->children[3]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[1]->children[4]->children[0]->LoadFromJSON(tile_wall1);
 
-	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[1], Component_Model);
-	model->model = ModelManager::GetModel("crawler/model/blockout/hallU.fbx");
-	model->modelName = "crawler/model/blockout/hallU.fbx";
-	tilemap[1]->components.push_back(model);
-	tilemap[1]->components.push_back(renderer);
 	tilemap[2] = new Object(0, "Open West");
-	tilemap[2]->SetLocalRotation({ 0,0,90 });
-	tilemap[2]->components.push_back(model);
-	tilemap[2]->components.push_back(renderer);
+	tilemap[2]->LoadFromJSON(tile_layout);
+	tilemap[2]->children[0]->children[0]->LoadFromJSON(tile_ground1);
+	tilemap[2]->children[1]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[2]->children[2]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[2]->children[3]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[2]->children[4]->children[0]->LoadFromJSON(tile_wall1);
+
 	tilemap[4] = new Object(0, "Open East");
-	tilemap[4]->SetLocalRotation({ 0,0,-90 });
-	tilemap[4]->components.push_back(model);
-	tilemap[4]->components.push_back(renderer);
+	tilemap[4]->LoadFromJSON(tile_layout);
+	tilemap[4]->children[0]->children[0]->LoadFromJSON(tile_ground1);
+	tilemap[4]->children[1]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[4]->children[2]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[4]->children[3]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[4]->children[4]->children[0]->LoadFromJSON(tile_wall1);
+
 	tilemap[8] = new Object(0, "Open South");
-	tilemap[8]->SetLocalRotation({ 0,0,180 });
-	tilemap[8]->localRotation.z = 180.0f;
-	tilemap[8]->components.push_back(model);
-	tilemap[8]->components.push_back(renderer);
+	tilemap[8]->LoadFromJSON(tile_layout);
+	tilemap[8]->children[0]->children[0]->LoadFromJSON(tile_ground1);
+	tilemap[8]->children[1]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[8]->children[2]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[8]->children[3]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[8]->children[4]->children[0]->LoadFromJSON(tile_wall1);
 
 	// Corners
 	tilemap[3] = new Object(0, "Open North West");
-	tilemap[3]->SetLocalRotation({ 0,0,-90 });
-	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[3], Component_Model);
-	model->model = ModelManager::GetModel("crawler/model/blockout/hallCorner.fbx");
-	model->modelName = "crawler/model/blockout/hallhallCorner.fbx";
-	tilemap[3]->components.push_back(model);
-	tilemap[3]->components.push_back(renderer);
+	tilemap[3]->LoadFromJSON(tile_layout);
+	tilemap[3]->children[0]->children[0]->LoadFromJSON(tile_ground1);
+	//tilemap[3]->children[1]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[3]->children[2]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[3]->children[3]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[3]->children[4]->children[0]->LoadFromJSON(tile_wall1);
+
 	tilemap[5] = new Object(0, "Open North East");
-	tilemap[5]->SetLocalRotation({ 0,0,180 });
-	tilemap[5]->components.push_back(model);
-	tilemap[5]->components.push_back(renderer);
+	tilemap[5]->LoadFromJSON(tile_layout);
+	tilemap[5]->children[0]->children[0]->LoadFromJSON(tile_ground1);
+	//tilemap[5]->children[1]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[5]->children[2]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[5]->children[3]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[5]->children[4]->children[0]->LoadFromJSON(tile_wall1);
+
 	tilemap[10] = new Object(0, "Open West South");
-	tilemap[10]->components.push_back(model);
-	tilemap[10]->components.push_back(renderer);
+	tilemap[10]->LoadFromJSON(tile_layout);
+	tilemap[10]->children[0]->children[0]->LoadFromJSON(tile_ground1);
+	tilemap[10]->children[1]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[10]->children[2]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[10]->children[3]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[10]->children[4]->children[0]->LoadFromJSON(tile_wall1);
+
 	tilemap[12] = new Object(0, "Open East South");
-	tilemap[12]->SetLocalRotation({ 0,0,90 });
-	tilemap[12]->components.push_back(model);
-	tilemap[12]->components.push_back(renderer);
+	tilemap[12]->LoadFromJSON(tile_layout);
+	tilemap[12]->children[0]->children[0]->LoadFromJSON(tile_ground1);
+	tilemap[12]->children[1]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[12]->children[2]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[12]->children[3]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[12]->children[4]->children[0]->LoadFromJSON(tile_wall1);
 
 
 	// tunnels
 	tilemap[6] = new Object(0, "Open West East");
-	tilemap[6]->SetLocalRotation({ 0,0,90 });
-	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[3], Component_Model);
-	model->model = ModelManager::GetModel("crawler/model/blockout/hallSides.fbx");
-	model->modelName = "crawler/model/blockout/hallSides.fbx";
-	tilemap[6]->components.push_back(model);
-	tilemap[6]->components.push_back(renderer);
+	tilemap[6]->LoadFromJSON(tile_layout);
+	tilemap[6]->children[0]->children[0]->LoadFromJSON(tile_ground1);
+	tilemap[6]->children[1]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[6]->children[2]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[6]->children[3]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[6]->children[4]->children[0]->LoadFromJSON(tile_wall1);
+
 	tilemap[9] = new Object(0, "Open North South");
-	tilemap[9]->components.push_back(model);
-	tilemap[9]->components.push_back(renderer);
+	tilemap[9]->LoadFromJSON(tile_layout);
+	tilemap[9]->children[0]->children[0]->LoadFromJSON(tile_ground1);
+	//tilemap[9]->children[1]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[9]->children[2]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[9]->children[3]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[9]->children[4]->children[0]->LoadFromJSON(tile_wall1);
 
 	// walls
 	tilemap[7] = new Object(0, "Open North West East");
-	tilemap[7]->SetLocalRotation({ 0,0,90 });
-	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[7], Component_Model);
-	model->model = ModelManager::GetModel("crawler/model/blockout/hallWall.fbx");
-	model->modelName = "crawler/model/blockout/hallWall.fbx";
-	tilemap[7]->components.push_back(model);
-	tilemap[7]->components.push_back(renderer);
+	tilemap[7]->LoadFromJSON(tile_layout);
+	tilemap[7]->children[0]->children[0]->LoadFromJSON(tile_ground1);
+	//tilemap[7]->children[1]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[7]->children[2]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[7]->children[3]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[7]->children[4]->children[0]->LoadFromJSON(tile_wall1);
+
 	tilemap[11] = new Object(0, "Open North West South");
-	tilemap[11]->SetLocalRotation({ 0,0,180 });
-	tilemap[11]->components.push_back(model);
-	tilemap[11]->components.push_back(renderer);
+	tilemap[11]->LoadFromJSON(tile_layout);
+	tilemap[11]->children[0]->children[0]->LoadFromJSON(tile_ground1);
+	//tilemap[11]->children[1]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[11]->children[2]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[11]->children[3]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[11]->children[4]->children[0]->LoadFromJSON(tile_wall1);
+
 	tilemap[13] = new Object(0, "Open North East South");
-	tilemap[13]->components.push_back(model);
-	tilemap[13]->components.push_back(renderer);
+	tilemap[13]->LoadFromJSON(tile_layout);
+	tilemap[13]->children[0]->children[0]->LoadFromJSON(tile_ground1);
+	//tilemap[13]->children[1]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[13]->children[2]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[13]->children[3]->children[0]->LoadFromJSON(tile_wall1);
+	tilemap[13]->children[4]->children[0]->LoadFromJSON(tile_wall1);
+
 	tilemap[14] = new Object(0, "Open West East South");
-	tilemap[14]->SetLocalRotation({ 0,0,-90 });
-	tilemap[14]->components.push_back(model);
-	tilemap[14]->components.push_back(renderer);
+	tilemap[14]->LoadFromJSON(tile_layout);
+	tilemap[14]->children[0]->children[0]->LoadFromJSON(tile_ground1);
+	tilemap[14]->children[1]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[14]->children[2]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[14]->children[3]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[14]->children[4]->children[0]->LoadFromJSON(tile_wall1);
 
 	tilemap[15] = new Object(0, "Open");
-	model = (ComponentModel*)ComponentFactory::NewComponent(tilemap[15], Component_Model);
-	model->model = ModelManager::GetModel("crawler/model/blockout/hallOpen.fbx");
-	model->modelName = "crawler/model/blockout/hallOpen.fbx";
-	tilemap[15]->components.push_back(model);
-	tilemap[15]->components.push_back(renderer);
-
+	tilemap[15]->LoadFromJSON(tile_layout);
+	tilemap[15]->children[0]->children[0]->LoadFromJSON(tile_ground1);
+	//tilemap[15]->children[1]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[15]->children[2]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[15]->children[3]->children[0]->LoadFromJSON(tile_wall1);
+	//tilemap[15]->children[4]->children[0]->LoadFromJSON(tile_wall1);
 }
 
 void Crawl::Dungeon::DestroySceneFromDungeonLayout()

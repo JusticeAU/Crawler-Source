@@ -63,7 +63,7 @@
         "rotation": {
           "x": 0.0,
           "y": 0.0,
-          "z": 180.0
+          "z": 0.0
         },
         "scale": {
           "x": 1.0,
@@ -74,22 +74,128 @@
       "components": [
         {
           "type": "Model",
-          "model": "crawler/model/blockout/hallU.fbx"
+          "model": "crawler/model/tile_ground1_blockout/tile_ground1_blockout.fbx"
         },
         {
           "type": "Renderer",
           "materials": [
-            "crawler/model/blockout/hall.material",
-            "crawler/model/blockout/hall.material",
-            "crawler/model/blockout/hall.material",
-            "crawler/model/blockout/hall.material"
+            "crawler/texture/tile_blockout/tile_blockout.material"
           ],
           "frameBuffer": "",
           "receivesShadows": true,
           "castsShadows": true
         }
       ],
-      "children": null
+      "children": [
+        {
+          "name": "WallNorth",
+          "transform": {
+            "position": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "scale": {
+              "x": 1.0,
+              "y": 1.0,
+              "z": 1.0
+            }
+          },
+          "components": [
+            {
+              "type": "Model",
+              "model": "crawler/model/tile_wall1_blockout/tile_wall1_blockout.fbx"
+            },
+            {
+              "type": "Renderer",
+              "materials": [
+                "crawler/texture/tile_blockout/tile_blockout.material"
+              ],
+              "frameBuffer": "",
+              "receivesShadows": true,
+              "castsShadows": true
+            }
+          ],
+          "children": null
+        },
+        {
+          "name": "WallEast",
+          "transform": {
+            "position": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": -90.0
+            },
+            "scale": {
+              "x": 1.0,
+              "y": 1.0,
+              "z": 1.0
+            }
+          },
+          "components": [
+            {
+              "type": "Model",
+              "model": "crawler/model/tile_wall1_blockout/tile_wall1_blockout.fbx"
+            },
+            {
+              "type": "Renderer",
+              "materials": [
+                "crawler/texture/tile_blockout/tile_blockout.material"
+              ],
+              "frameBuffer": "",
+              "receivesShadows": true,
+              "castsShadows": true
+            }
+          ],
+          "children": null
+        },
+        {
+          "name": "WallWest",
+          "transform": {
+            "position": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 90.0
+            },
+            "scale": {
+              "x": 1.0,
+              "y": 1.0,
+              "z": 1.0
+            }
+          },
+          "components": [
+            {
+              "type": "Model",
+              "model": "crawler/model/tile_wall1_blockout/tile_wall1_blockout.fbx"
+            },
+            {
+              "type": "Renderer",
+              "materials": [
+                "crawler/texture/tile_blockout/tile_blockout.material"
+              ],
+              "frameBuffer": "",
+              "receivesShadows": true,
+              "castsShadows": true
+            }
+          ],
+          "children": null
+        }
+      ]
     },
     {
       "name": "Test Model",

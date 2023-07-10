@@ -29,7 +29,7 @@ public:
 
 	static Object* CreateObject(Object* parent = nullptr);
 	static Object* CreateObject(string name, Object * parent = nullptr);
-	static Object* DuplicateObject(Object* object);
+	static Object* DuplicateObject(Object* object, Object* newParent);
 	
 	static void SetClearColour(vec3 clearColour);
 	

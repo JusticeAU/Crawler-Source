@@ -31,7 +31,7 @@ void Crawl::DungeonEditor::DrawGUI()
 	ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_Always);
 	ImGui::Begin("Dungeon Edit", 0, ImGuiWindowFlags_NoMove);
 	DrawGUIFileOperations();
-	//DrawGUICursorInformation();
+	DrawGUICursorInformation();
 	DrawGUIMode();
 	DrawGUIModeTileBrush();
 	ImGui::End();
@@ -267,13 +267,10 @@ void Crawl::DungeonEditor::UpdateMousePosOnGrid()
 	}
 
 	Object* tileTemplate = dungeon->GetTileTemplate(brush_tileMask);
-	ComponentModel* templateModel = (ComponentModel*)tileTemplate->GetComponent(Component_Model);
-	ComponentModel* cursorModel = (ComponentModel*)Scene::s_instance->objects[0]->GetComponent(Component_Model);
-	cursorModel->model = templateModel->model;
-	ComponentRenderer* cursorRenderer = (ComponentRenderer*)Scene::s_instance->objects[0]->GetComponent(Component_Renderer);
-	cursorRenderer->model = templateModel->model;
+	Scene::s_instance->objects[0] = tileTemplate;
 	Scene::s_instance->objects[0]->SetLocalPosition({ gridSelected.x * DUNGEON_GRID_SCALE, gridSelected.y * DUNGEON_GRID_SCALE, 0 });
 	Scene::s_instance->objects[0]->SetLocalRotation(tileTemplate->localRotation);
+
 }
 
 void Crawl::DungeonEditor::UpdateTile(int x, int y)
