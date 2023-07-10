@@ -7,6 +7,13 @@ namespace Crawl
 	class DungeonEditor
 	{
 	public:
+		enum class Mode
+		{
+			TileBrush,
+			TileEdit,
+			EntityEdit
+		};
+
 		DungeonEditor();
 
 		void Activate();
@@ -16,12 +23,18 @@ namespace Crawl
 		void DrawGUI();
 		void DrawGUIFileOperations();
 		void DrawGUICursorInformation();
-		void DrawGUIMode();
+		void DrawGUIModeSelect();
 		void DrawGUIModeTileBrush();
+		void DrawGUIModeTileEdit();
+
 		void Update();
+		void UpdateModeTileBrush();
+		void UpdateModeTileEdit();
 	protected:
+		glm::ivec2 GetMousePosOnGrid();
 		void UpdateMousePosOnGrid();
-		void UpdateTile(int x, int y);
+		void UpdateAutoTile(int x, int y);
+		void UpdateWallVariants(DungeonTile* tile);
 		void UpdateSurroundingTiles(int x, int y);
 
 		// Save the dungeon to file.
@@ -43,6 +56,12 @@ namespace Crawl
 		bool confirmOverwritePrompt = false;
 		bool didSaveAs = false;
 
+		// Wall Variants
+		const int WALL_VARIANT_COUNT = 3;
+
+		Mode editMode = Mode::TileBrush;
+		std::string editModeNames[2]{ "Tile Brush", "Tile Edit" };
+
 		// Brush Mode
 		int brush_tileMask = 0;
 		// Auto Tile configuration
@@ -55,9 +74,9 @@ namespace Crawl
 		bool brush_TileEast = true;
 		bool brush_TileWest = true;
 
-		// Wall Variants
-		const int WALL_VARIANT_COUNT = 3;
-
+		// Tile edit mode
+		DungeonTile* selectedTile = nullptr;
+		bool selectedTileOpenWalls[4] = { false, false, false, false };
 	};
 }
 

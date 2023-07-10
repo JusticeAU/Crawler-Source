@@ -7,462 +7,858 @@
         "x": -3,
         "y": -3
       },
-      "mask": 5
+      "mask": 5,
+      "wallVariants": [
+        0,
+        1,
+        0,
+        1
+      ]
     },
     {
       "position": {
         "x": -3,
         "y": -2
       },
-      "mask": 13
+      "mask": 13,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        1
+      ]
     },
     {
       "position": {
         "x": -3,
         "y": -1
       },
-      "mask": 13
+      "mask": 13,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        1
+      ]
     },
     {
       "position": {
         "x": -3,
         "y": 0
       },
-      "mask": 13
+      "mask": 13,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        1
+      ]
     },
     {
       "position": {
         "x": -3,
         "y": 1
       },
-      "mask": 13
+      "mask": 13,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        1
+      ]
     },
     {
       "position": {
         "x": -3,
         "y": 2
       },
-      "mask": 13
+      "mask": 13,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        1
+      ]
     },
     {
       "position": {
         "x": -3,
         "y": 3
       },
-      "mask": 13
+      "mask": 13,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        1
+      ]
     },
     {
       "position": {
         "x": -3,
         "y": 4
       },
-      "mask": 12
+      "mask": 12,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        1
+      ]
     },
     {
       "position": {
         "x": -2,
         "y": -3
       },
-      "mask": 7
+      "mask": 7,
+      "wallVariants": [
+        0,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": -2,
         "y": -2
       },
-      "mask": 15
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": -2,
         "y": -1
       },
-      "mask": 11
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        0
+      ]
     },
     {
       "position": {
         "x": -2,
         "y": 0
       },
-      "mask": 11
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        0
+      ]
     },
     {
       "position": {
         "x": -2,
         "y": 1
       },
-      "mask": 11
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        0
+      ]
     },
     {
       "position": {
         "x": -2,
         "y": 2
       },
-      "mask": 11
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        0
+      ]
     },
     {
       "position": {
         "x": -2,
         "y": 3
       },
-      "mask": 15
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": -2,
         "y": 4
       },
-      "mask": 14
+      "mask": 14,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": -1,
         "y": -3
       },
-      "mask": 7
+      "mask": 7,
+      "wallVariants": [
+        0,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": -1,
         "y": -2
       },
-      "mask": 14
+      "mask": 14,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": -1,
         "y": 3
       },
-      "mask": 7
+      "mask": 7,
+      "wallVariants": [
+        0,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": -1,
         "y": 4
       },
-      "mask": 14
+      "mask": 14,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 0,
         "y": -3
       },
-      "mask": 7
+      "mask": 7,
+      "wallVariants": [
+        0,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 0,
         "y": -2
       },
-      "mask": 14
+      "mask": 14,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 0,
         "y": 0
       },
-      "mask": 4
+      "mask": 4,
+      "wallVariants": [
+        1,
+        1,
+        0,
+        1
+      ]
     },
     {
       "position": {
         "x": 0,
         "y": 3
       },
-      "mask": 7
+      "mask": 7,
+      "wallVariants": [
+        0,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 0,
         "y": 4
       },
-      "mask": 14
+      "mask": 14,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 0,
         "y": 7
       },
-      "mask": 4
+      "mask": 4,
+      "wallVariants": [
+        1,
+        1,
+        0,
+        1
+      ]
     },
     {
       "position": {
         "x": 1,
         "y": -3
       },
-      "mask": 7
+      "mask": 7,
+      "wallVariants": [
+        0,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 1,
         "y": -2
       },
-      "mask": 14
+      "mask": 14,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 1,
         "y": 0
       },
-      "mask": 6
+      "mask": 6,
+      "wallVariants": [
+        1,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 1,
         "y": 2
       },
-      "mask": 5
+      "mask": 5,
+      "wallVariants": [
+        0,
+        1,
+        0,
+        1
+      ]
     },
     {
       "position": {
         "x": 1,
         "y": 3
       },
-      "mask": 15
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 1,
         "y": 4
       },
-      "mask": 10
+      "mask": 10,
+      "wallVariants": [
+        1,
+        0,
+        1,
+        0
+      ]
     },
     {
       "position": {
         "x": 1,
         "y": 7
       },
-      "mask": 6
+      "mask": 6,
+      "wallVariants": [
+        1,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 2,
         "y": -3
       },
-      "mask": 7
+      "mask": 7,
+      "wallVariants": [
+        0,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 2,
         "y": -2
       },
-      "mask": 14
+      "mask": 14,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 2,
         "y": 0
       },
-      "mask": 6
+      "mask": 6,
+      "wallVariants": [
+        1,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 2,
         "y": 2
       },
-      "mask": 7
+      "mask": 7,
+      "wallVariants": [
+        0,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 2,
         "y": 3
       },
-      "mask": 14
+      "mask": 14,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 2,
         "y": 7
       },
-      "mask": 6
+      "mask": 6,
+      "wallVariants": [
+        1,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 3,
         "y": -3
       },
-      "mask": 7
+      "mask": 7,
+      "wallVariants": [
+        0,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 3,
         "y": -2
       },
-      "mask": 14
+      "mask": 14,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 3,
         "y": 0
       },
-      "mask": 6
+      "mask": 6,
+      "wallVariants": [
+        1,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 3,
         "y": 2
       },
-      "mask": 7
+      "mask": 7,
+      "wallVariants": [
+        0,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 3,
         "y": 3
       },
-      "mask": 14
+      "mask": 14,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 3,
         "y": 7
       },
-      "mask": 6
+      "mask": 6,
+      "wallVariants": [
+        1,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 4,
         "y": -3
       },
-      "mask": 7
+      "mask": 7,
+      "wallVariants": [
+        0,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 4,
         "y": -2
       },
-      "mask": 14
+      "mask": 14,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 4,
         "y": 0
       },
-      "mask": 3
+      "mask": 3,
+      "wallVariants": [
+        0,
+        1,
+        1,
+        0
+      ]
     },
     {
       "position": {
         "x": 4,
         "y": 1
       },
-      "mask": 9
+      "mask": 9,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        1
+      ]
     },
     {
       "position": {
         "x": 4,
         "y": 2
       },
-      "mask": 11
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        0
+      ]
     },
     {
       "position": {
         "x": 4,
         "y": 3
       },
-      "mask": 11
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        0
+      ]
     },
     {
       "position": {
         "x": 4,
         "y": 4
       },
-      "mask": 13
+      "mask": 13,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        1
+      ]
     },
     {
       "position": {
         "x": 4,
         "y": 5
       },
-      "mask": 9
+      "mask": 9,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        1
+      ]
     },
     {
       "position": {
         "x": 4,
         "y": 6
       },
-      "mask": 9
+      "mask": 9,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        1
+      ]
     },
     {
       "position": {
         "x": 4,
         "y": 7
       },
-      "mask": 10
+      "mask": 10,
+      "wallVariants": [
+        1,
+        0,
+        1,
+        0
+      ]
     },
     {
       "position": {
         "x": 5,
         "y": -3
       },
-      "mask": 7
+      "mask": 7,
+      "wallVariants": [
+        0,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 5,
         "y": -2
       },
-      "mask": 14
+      "mask": 14,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 5,
         "y": 4
       },
-      "mask": 6
+      "mask": 6,
+      "wallVariants": [
+        1,
+        1,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 6,
         "y": -3
       },
-      "mask": 3
+      "mask": 3,
+      "wallVariants": [
+        0,
+        1,
+        1,
+        0
+      ]
     },
     {
       "position": {
         "x": 6,
         "y": -2
       },
-      "mask": 11
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        0
+      ]
     },
     {
       "position": {
         "x": 6,
         "y": -1
       },
-      "mask": 9
+      "mask": 9,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        1
+      ]
     },
     {
       "position": {
         "x": 6,
         "y": 0
       },
-      "mask": 9
+      "mask": 9,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        1
+      ]
     },
     {
       "position": {
         "x": 6,
         "y": 1
       },
-      "mask": 9
+      "mask": 9,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        1
+      ]
     },
     {
       "position": {
         "x": 6,
         "y": 2
       },
-      "mask": 9
+      "mask": 9,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        1
+      ]
     },
     {
       "position": {
         "x": 6,
         "y": 3
       },
-      "mask": 9
+      "mask": 9,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        1
+      ]
     },
     {
       "position": {
         "x": 6,
         "y": 4
       },
-      "mask": 10
+      "mask": 10,
+      "wallVariants": [
+        1,
+        0,
+        1,
+        0
+      ]
     }
   ]
 }

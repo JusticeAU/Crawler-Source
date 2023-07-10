@@ -89,6 +89,9 @@ bool Crawl::Dungeon::DeleteHall(int x, int y)
 
 void Crawl::Dungeon::CreateTileObject(DungeonTile* hall)
 {
+	if (hall->object != nullptr)
+		hall->object->markedForDeletion = true;
+
 	Object* obj = Scene::s_instance->DuplicateObject(tile_template, Scene::s_instance->objects[2]);
 	
 	// Set up wall variants
@@ -119,9 +122,28 @@ bool Crawl::Dungeon::IsOpenHall(int x, int y)
 	return true;
 }
 
-bool Crawl::Dungeon::CanMove(int xFrom, int yFrom, int xTo, int yTo)
+bool Crawl::Dungeon::CanMove(int xFrom, int yFrom, int xDir, int yDir)
 {
-	return IsOpenHall(xFrom, yFrom) && IsOpenHall(xTo, yTo);
+	bool canMove = true;
+	DungeonTile* currentTile = GetHall(xFrom, yFrom);
+	if (!currentTile) return false; // early out if we're not a tile. We goofed up design wise and cant really resolve this, and shouldn't. Fix the level.
+
+	// Check if the tile we're on allows us to move in the requested direction - Maybe I could just create some Masks for each cardinal direction and pass those around instead.
+	if (yDir == 1)
+		return (currentTile->mask & 1) == 1;
+	if (yDir == -1)
+		return (currentTile->mask & 8) == 8;
+	if (xDir == 1)
+		return (currentTile->mask & 4) == 4;
+	if (xDir == -1)
+		return (currentTile->mask & 2) == 2;
+
+	// check destination blocked
+	// TODO
+	// check for edge blocked
+	// TODO
+
+	return canMove;
 }
 
 void Crawl::Dungeon::Save(std::string filename)

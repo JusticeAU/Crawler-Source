@@ -35,7 +35,7 @@ namespace Crawl
 
 
 		bool IsOpenHall(int x, int y);
-		bool CanMove(int xFrom, int yFrom, int xTo, int yTo);
+		bool CanMove(int xFrom, int yFrom, int xDir, int yDir);
 	
 		void Save(std::string filename);
 		void Load(std::string filename);
@@ -58,7 +58,7 @@ namespace Crawl
 		std::map<int, Column> halls;
 		Object* tile_template;
 		Object* tilesParentObject = nullptr;
-
+	public:
 		std::vector<string> wallVariantPaths;
 	};
 }

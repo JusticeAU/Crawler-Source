@@ -30,7 +30,7 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 
 		if (coordinate != coordinateUnchanged)
 		{
-			if (dungeon->CanMove(position.column, position.row, position.column + coordinate.x, position.row + coordinate.y))
+			if (dungeon->CanMove(position.column, position.row, coordinate.x, coordinate.y))
 			{
 				position.column += coordinate.x;
 				position.row += coordinate.y;
