@@ -210,6 +210,14 @@ void Crawl::DungeonEditor::Update()
 			else
 			{
 				hall->mask = brush_tileMask;
+				if ((hall->mask & 1) != 1) // North Wall
+					hall->wallVariants[0] = 1;
+				if ((hall->mask & 8) != 8) // South Wall
+					hall->wallVariants[1] = 1;
+				if ((hall->mask & 4) != 4) // East Wall
+					hall->wallVariants[2] = 1;
+				if ((hall->mask & 2) != 2) // West Wall
+					hall->wallVariants[3] = 1;
 				dungeon->CreateTileObject(hall);
 			}
 		}
@@ -269,7 +277,6 @@ void Crawl::DungeonEditor::UpdateMousePosOnGrid()
 	Object* tileTemplate = dungeon->GetTileTemplate(brush_tileMask);
 	Scene::s_instance->objects[0] = tileTemplate;
 	Scene::s_instance->objects[0]->SetLocalPosition({ gridSelected.x * DUNGEON_GRID_SCALE, gridSelected.y * DUNGEON_GRID_SCALE, 0 });
-	Scene::s_instance->objects[0]->SetLocalRotation(tileTemplate->localRotation);
 
 }
 
@@ -283,6 +290,34 @@ void Crawl::DungeonEditor::UpdateTile(int x, int y)
 			hall->object->markedForDeletion = true;
 
 		hall->mask = dungeon->GetAutoTileMask(hall->position.x, hall->position.y);
+		if ((hall->mask & 1) != 1) // North Wall
+		{
+			if (hall->wallVariants[0] == 0)
+				hall->wallVariants[0] = (rand() % WALL_VARIANT_COUNT) + 1;
+		}
+		else
+			hall->wallVariants[0] = 0;
+		if ((hall->mask & 8) != 8) // South Wall
+		{
+			if (hall->wallVariants[1] == 0)
+				hall->wallVariants[1] = (rand() % WALL_VARIANT_COUNT) + 1;
+		}
+		else
+			hall->wallVariants[1] = 0;
+		if ((hall->mask & 4) != 4) // East Wall
+		{
+			if (hall->wallVariants[2] == 0)
+				hall->wallVariants[2] = (rand() % WALL_VARIANT_COUNT) + 1;
+		}
+		else
+			hall->wallVariants[2] = 0;
+		if ((hall->mask & 2) != 2) // West Wall
+		{
+			if (hall->wallVariants[3] == 0)
+				hall->wallVariants[3] = (rand() % WALL_VARIANT_COUNT) + 1;
+		}
+		else
+			hall->wallVariants[3] = 0;
 		dungeon->CreateTileObject(hall);
 	}
 }

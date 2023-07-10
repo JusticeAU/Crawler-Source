@@ -55,6 +55,9 @@ namespace Crawl
 		bool brush_TileEast = true;
 		bool brush_TileWest = true;
 
+		// Wall Variants
+		const int WALL_VARIANT_COUNT = 3;
+
 	};
 }
 

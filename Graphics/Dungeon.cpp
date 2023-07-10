@@ -12,6 +12,10 @@
 
 Crawl::Dungeon::Dungeon()
 {
+	wallVariantPaths.push_back("crawler/model/tile_wall1_blockout/tile_wall1_blockout.object");
+	wallVariantPaths.push_back("crawler/model/tile_wall2_blockout/tile_wall2_blockout.object");
+	wallVariantPaths.push_back("crawler/model/tile_wall3_blockout/tile_wall3_blockout.object");
+
 	InitialiseTileMap();
 }
 
@@ -85,7 +89,18 @@ bool Crawl::Dungeon::DeleteHall(int x, int y)
 
 void Crawl::Dungeon::CreateTileObject(DungeonTile* hall)
 {
-	Object* obj = Scene::s_instance->DuplicateObject(GetTileTemplate(hall->mask), Scene::s_instance->objects[2]);
+	Object* obj = Scene::s_instance->DuplicateObject(tile_template, Scene::s_instance->objects[2]);
+	
+	// Set up wall variants
+	for (int i = 0; i < 4; i++)
+	{
+		int variant = hall->wallVariants[i];
+		if (variant > 0)
+		{
+			ordered_json wall = ReadJSONFromDisk(wallVariantPaths[variant-1]);
+			obj->children[i + 1]->children[0]->LoadFromJSON(wall); // i+1 because this object has the floor tile in index 0;
+		}
+	}
 	obj->SetLocalPosition({ hall->position.x * DUNGEON_GRID_SCALE, hall->position.y * DUNGEON_GRID_SCALE , 0 });
 
 	hall->object = obj;
@@ -151,140 +166,10 @@ void Crawl::Dungeon::InitialiseTileMap()
 	// Load the JSON template
 	ordered_json tile_layout = ReadJSONFromDisk("crawler/object/tile_layout.object");
 	ordered_json tile_ground1 = ReadJSONFromDisk("crawler/model/tile_ground1_blockout/tile_ground1_blockout.object");
-	ordered_json tile_wall1 = ReadJSONFromDisk("crawler/model/tile_wall1_blockout/tile_wall1_blockout.object");
 
-	tilemap[0] = new Object(0, "Enclosed");
-	tilemap[0]->LoadFromJSON(tile_layout);
-	tilemap[0]->children[0]->children[0]->LoadFromJSON(tile_ground1);
-	tilemap[0]->children[1]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[0]->children[2]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[0]->children[3]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[0]->children[4]->children[0]->LoadFromJSON(tile_wall1);
-
-	// U Bends
-	tilemap[1] = new Object(0, "Open North");
-	tilemap[1]->LoadFromJSON(tile_layout);
-	tilemap[1]->children[0]->children[0]->LoadFromJSON(tile_ground1);
-	//tilemap[1]->children[1]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[1]->children[2]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[1]->children[3]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[1]->children[4]->children[0]->LoadFromJSON(tile_wall1);
-
-	tilemap[2] = new Object(0, "Open West");
-	tilemap[2]->LoadFromJSON(tile_layout);
-	tilemap[2]->children[0]->children[0]->LoadFromJSON(tile_ground1);
-	tilemap[2]->children[1]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[2]->children[2]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[2]->children[3]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[2]->children[4]->children[0]->LoadFromJSON(tile_wall1);
-
-	tilemap[4] = new Object(0, "Open East");
-	tilemap[4]->LoadFromJSON(tile_layout);
-	tilemap[4]->children[0]->children[0]->LoadFromJSON(tile_ground1);
-	tilemap[4]->children[1]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[4]->children[2]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[4]->children[3]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[4]->children[4]->children[0]->LoadFromJSON(tile_wall1);
-
-	tilemap[8] = new Object(0, "Open South");
-	tilemap[8]->LoadFromJSON(tile_layout);
-	tilemap[8]->children[0]->children[0]->LoadFromJSON(tile_ground1);
-	tilemap[8]->children[1]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[8]->children[2]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[8]->children[3]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[8]->children[4]->children[0]->LoadFromJSON(tile_wall1);
-
-	// Corners
-	tilemap[3] = new Object(0, "Open North West");
-	tilemap[3]->LoadFromJSON(tile_layout);
-	tilemap[3]->children[0]->children[0]->LoadFromJSON(tile_ground1);
-	//tilemap[3]->children[1]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[3]->children[2]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[3]->children[3]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[3]->children[4]->children[0]->LoadFromJSON(tile_wall1);
-
-	tilemap[5] = new Object(0, "Open North East");
-	tilemap[5]->LoadFromJSON(tile_layout);
-	tilemap[5]->children[0]->children[0]->LoadFromJSON(tile_ground1);
-	//tilemap[5]->children[1]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[5]->children[2]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[5]->children[3]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[5]->children[4]->children[0]->LoadFromJSON(tile_wall1);
-
-	tilemap[10] = new Object(0, "Open West South");
-	tilemap[10]->LoadFromJSON(tile_layout);
-	tilemap[10]->children[0]->children[0]->LoadFromJSON(tile_ground1);
-	tilemap[10]->children[1]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[10]->children[2]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[10]->children[3]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[10]->children[4]->children[0]->LoadFromJSON(tile_wall1);
-
-	tilemap[12] = new Object(0, "Open East South");
-	tilemap[12]->LoadFromJSON(tile_layout);
-	tilemap[12]->children[0]->children[0]->LoadFromJSON(tile_ground1);
-	tilemap[12]->children[1]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[12]->children[2]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[12]->children[3]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[12]->children[4]->children[0]->LoadFromJSON(tile_wall1);
-
-
-	// tunnels
-	tilemap[6] = new Object(0, "Open West East");
-	tilemap[6]->LoadFromJSON(tile_layout);
-	tilemap[6]->children[0]->children[0]->LoadFromJSON(tile_ground1);
-	tilemap[6]->children[1]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[6]->children[2]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[6]->children[3]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[6]->children[4]->children[0]->LoadFromJSON(tile_wall1);
-
-	tilemap[9] = new Object(0, "Open North South");
-	tilemap[9]->LoadFromJSON(tile_layout);
-	tilemap[9]->children[0]->children[0]->LoadFromJSON(tile_ground1);
-	//tilemap[9]->children[1]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[9]->children[2]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[9]->children[3]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[9]->children[4]->children[0]->LoadFromJSON(tile_wall1);
-
-	// walls
-	tilemap[7] = new Object(0, "Open North West East");
-	tilemap[7]->LoadFromJSON(tile_layout);
-	tilemap[7]->children[0]->children[0]->LoadFromJSON(tile_ground1);
-	//tilemap[7]->children[1]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[7]->children[2]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[7]->children[3]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[7]->children[4]->children[0]->LoadFromJSON(tile_wall1);
-
-	tilemap[11] = new Object(0, "Open North West South");
-	tilemap[11]->LoadFromJSON(tile_layout);
-	tilemap[11]->children[0]->children[0]->LoadFromJSON(tile_ground1);
-	//tilemap[11]->children[1]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[11]->children[2]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[11]->children[3]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[11]->children[4]->children[0]->LoadFromJSON(tile_wall1);
-
-	tilemap[13] = new Object(0, "Open North East South");
-	tilemap[13]->LoadFromJSON(tile_layout);
-	tilemap[13]->children[0]->children[0]->LoadFromJSON(tile_ground1);
-	//tilemap[13]->children[1]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[13]->children[2]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[13]->children[3]->children[0]->LoadFromJSON(tile_wall1);
-	tilemap[13]->children[4]->children[0]->LoadFromJSON(tile_wall1);
-
-	tilemap[14] = new Object(0, "Open West East South");
-	tilemap[14]->LoadFromJSON(tile_layout);
-	tilemap[14]->children[0]->children[0]->LoadFromJSON(tile_ground1);
-	tilemap[14]->children[1]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[14]->children[2]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[14]->children[3]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[14]->children[4]->children[0]->LoadFromJSON(tile_wall1);
-
-	tilemap[15] = new Object(0, "Open");
-	tilemap[15]->LoadFromJSON(tile_layout);
-	tilemap[15]->children[0]->children[0]->LoadFromJSON(tile_ground1);
-	//tilemap[15]->children[1]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[15]->children[2]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[15]->children[3]->children[0]->LoadFromJSON(tile_wall1);
-	//tilemap[15]->children[4]->children[0]->LoadFromJSON(tile_wall1);
+	tile_template = new Object(0, "Tile Template");
+	tile_template->LoadFromJSON(tile_layout);
+	tile_template->children[0]->children[0]->LoadFromJSON(tile_ground1);
 }
 
 void Crawl::Dungeon::DestroySceneFromDungeonLayout()
@@ -301,13 +186,12 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 
 Object* Crawl::Dungeon::GetTileTemplate(int mask)
 {
-	return tilemap[mask];
+	return tile_template;
 }
 
 void Crawl::Dungeon::SetParentTileObject(Object* object)
 {
-	for (int i = 0; i < 16; i++)
-		tilemap[i]->parent = object;
+	tile_template->parent = object;
 }
 
 int Crawl::Dungeon::GetAutoTileMask(int x, int y)

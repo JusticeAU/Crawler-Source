@@ -3,6 +3,7 @@
 #include "DungeonTile.h"
 #include <string>
 #include <map>
+#include <vector>
 
 namespace Crawl
 {
@@ -55,8 +56,10 @@ namespace Crawl
 
 		const int version = 1; // increment this when the .dungeon file schema changes and ensure backwards compatibility.
 		std::map<int, Column> halls;
-		Object* tilemap[16];
+		Object* tile_template;
 		Object* tilesParentObject = nullptr;
+
+		std::vector<string> wallVariantPaths;
 	};
 }
 

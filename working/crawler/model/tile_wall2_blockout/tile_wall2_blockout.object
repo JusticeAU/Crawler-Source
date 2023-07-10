@@ -1,5 +1,5 @@
 {
-  "name": "tile_wall1_blockout",
+  "name": "wall2_blockout",
   "transform": {
     "position": {
       "x": 0.0,
@@ -20,7 +20,7 @@
   "components": [
     {
       "type": "Model",
-      "model": "crawler/model/tile_wall1_blockout/tile_wall1_blockout.fbx"
+      "model": "crawler/model/tile_wall2_blockout/tile_wall2_blockout.fbx"
     },
     {
       "type": "Renderer",
