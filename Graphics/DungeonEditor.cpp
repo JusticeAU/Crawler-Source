@@ -1,4 +1,7 @@
 #include "DungeonEditor.h"
+#include "DungeonDoor.h"
+#include "DungeonInteractableLever.h"
+#include "DungeonHelpers.h"
 #include "Object.h"
 #include "Input.h"
 #include "Camera.h"
@@ -162,7 +165,7 @@ void Crawl::DungeonEditor::DrawGUIModeSelect()
 		if (ImGui::Selectable(editModeNames[0].c_str()))
 			editMode = Mode::TileBrush;
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-			ImGui::SetTooltip("Carve new hallways into the level.");
+			ImGui::SetTooltip("Carve new tiles into the level.");
 		
 		if (ImGui::Selectable(editModeNames[1].c_str()))
 			editMode = Mode::TileEdit;
@@ -207,67 +210,153 @@ void Crawl::DungeonEditor::DrawGUIModeTileBrush()
 }
 void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 {
-	if (selectedTile)
+	if (!selectedTile)
 	{
-		// selected tile coordinates
-		ImGui::Text("Selected Tile");
-		ImGui::BeginDisabled();
-		ImGui::DragInt2("Location", &selectedTile->position.x);
-		ImGui::EndDisabled();
-
-		// Cardinal traversable yes/no
-		if (ImGui::Checkbox("Open North", &selectedTileOpenWalls[0]))
-		{
-			selectedTile->mask += selectedTileOpenWalls[0] ? 1 : -1;
-			UpdateWallVariants(selectedTile);
-			dungeon->CreateTileObject(selectedTile);
-		}
-		if (ImGui::Checkbox("Open South", &selectedTileOpenWalls[1]))
-		{
-			selectedTile->mask += selectedTileOpenWalls[1] ? 8 : -8;
-			UpdateWallVariants(selectedTile);
-			dungeon->CreateTileObject(selectedTile);
-		}
-		if (ImGui::Checkbox("Open East", &selectedTileOpenWalls[2]))
-		{
-			selectedTile->mask += selectedTileOpenWalls[2] ? 4 : -4;
-			UpdateWallVariants(selectedTile);
-			dungeon->CreateTileObject(selectedTile);
-		}
-		if (ImGui::Checkbox("Open West", &selectedTileOpenWalls[3]))
-		{
-			selectedTile->mask += selectedTileOpenWalls[3] ? 2 : -2;
-			UpdateWallVariants(selectedTile);
-			dungeon->CreateTileObject(selectedTile);
-		}
-
-
-		// if yes, what wall variant
-		if (!selectedTileOpenWalls[0])
-			ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[0]-1].c_str());
-		else
-			ImGui::Text("Open");
-
-		if (!selectedTileOpenWalls[1])
-			ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[1]-1].c_str());
-		else
-			ImGui::Text("Open");
-		
-		if (!selectedTileOpenWalls[2])
-			ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[2]-1].c_str());
-		else
-			ImGui::Text("Open");
-		
-		if (!selectedTileOpenWalls[3])
-			ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[3]-1].c_str());
-		else
-			ImGui::Text("Open");
-		ImGui::EndDisabled();
-		
-		// entities
-	}
-	else
 		ImGui::Text("No Tile Selected");
+		return;
+	}
+
+
+	// selected tile coordinates
+	ImGui::Text("Selected Tile");
+	ImGui::BeginDisabled();
+	ImGui::DragInt2("Location", &selectedTile->position.x);
+	ImGui::EndDisabled();
+
+	// Cardinal traversable yes/no
+	if (ImGui::Checkbox("Open North", &selectedTileOpenWalls[0]))
+	{
+		selectedTile->mask += selectedTileOpenWalls[0] ? 1 : -1;
+		UpdateWallVariants(selectedTile);
+		dungeon->CreateTileObject(selectedTile);
+	}
+	if (ImGui::Checkbox("Open South", &selectedTileOpenWalls[1]))
+	{
+		selectedTile->mask += selectedTileOpenWalls[1] ? 8 : -8;
+		UpdateWallVariants(selectedTile);
+		dungeon->CreateTileObject(selectedTile);
+	}
+	if (ImGui::Checkbox("Open East", &selectedTileOpenWalls[2]))
+	{
+		selectedTile->mask += selectedTileOpenWalls[2] ? 4 : -4;
+		UpdateWallVariants(selectedTile);
+		dungeon->CreateTileObject(selectedTile);
+	}
+	if (ImGui::Checkbox("Open West", &selectedTileOpenWalls[3]))
+	{
+		selectedTile->mask += selectedTileOpenWalls[3] ? 2 : -2;
+		UpdateWallVariants(selectedTile);
+		dungeon->CreateTileObject(selectedTile);
+	}
+
+
+	// if yes, what wall variant
+	ImGui::BeginDisabled();
+	if (!selectedTileOpenWalls[0])
+		ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[0] - 1].c_str());
+	else
+		ImGui::Text("Open");
+
+	if (!selectedTileOpenWalls[1])
+		ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[1] - 1].c_str());
+	else
+		ImGui::Text("Open");
+
+	if (!selectedTileOpenWalls[2])
+		ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[2] - 1].c_str());
+	else
+		ImGui::Text("Open");
+
+	if (!selectedTileOpenWalls[3])
+		ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[3] - 1].c_str());
+	else
+		ImGui::Text("Open");
+
+	ImGui::EndDisabled();
+
+	// entities
+	for (auto& door : selectTileDoors)
+	{
+		string doorName = "Door ID (";
+		doorName += to_string(door->id);
+		doorName += ")";
+		if (ImGui::Selectable(doorName.c_str()))
+			selectedDoor = door;
+	}
+	if (ImGui::Button("Add Door"))
+	{
+		dungeon->CreateDoor(selectedTile->position, 0, GetNextAvailableDoorID(), false);
+		RefreshSelectedTile();
+	}
+
+	for (auto& lever : selectTileLevers)
+	{
+		string leverName = "Lever ID (";
+		leverName += to_string(lever->id);
+		leverName += ")";
+		if (ImGui::Selectable(leverName.c_str()))
+			selectedLever = lever;
+	}
+	if (ImGui::Button("Add Lever"))
+	{
+		dungeon->CreateLever(selectedTile->position, 0, GetNextAvailableLeverID(), 0, false);
+		RefreshSelectedTile();
+	}
+
+	if (selectedDoor)
+		DrawGUIModeTileEditDoor();
+	if (selectedLever)
+		DrawGUIModeTileEditLever();
+}
+
+void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
+{
+	ImGui::Begin("Edit Door");
+	ImGui::InputInt("ID", (int*)&selectedDoor->id);
+	if (ImGui::BeginCombo("Orientation", orientationNames[selectedDoor->orientation].c_str()))
+	{
+		for (int i = 0; i < 4; i++)
+			if (ImGui::Selectable(orientationNames[i].c_str()))
+			{
+				selectedDoor->orientation = i;
+				selectedDoor->object->SetLocalRotationZ(orientationEulers[i]);
+			}
+		ImGui::EndCombo();
+	}
+	ImGui::Checkbox("Starts Open", &selectedDoor->startOpen);
+	if (ImGui::Checkbox("Is Open", &selectedDoor->open))
+	{
+		selectedDoor->open = !selectedDoor->open;
+		selectedDoor->Toggle(); // this could go out of sync.
+	}
+	ImGui::End();
+}
+void Crawl::DungeonEditor::DrawGUIModeTileEditLever()
+{
+	ImGui::Begin("Edit Lever");
+	if (ImGui::InputInt("ID", (int*)&selectedLever->id))
+		selectedLever->SetID(selectedLever->id);
+
+	if (ImGui::BeginCombo("Orientation", orientationNames[selectedLever->orientation].c_str()))
+	{
+		for (int i = 0; i < 4; i++)
+			if (ImGui::Selectable(orientationNames[i].c_str()))
+			{
+				selectedLever->orientation = i;
+				selectedLever->object->SetLocalRotationZ(orientationEulers[i]);
+			}
+		ImGui::EndCombo();
+	}
+
+	ImGui::Checkbox("Starts Status", &selectedLever->startStatus);
+
+	if (ImGui::Checkbox("Status", &selectedLever->status))
+	{
+		selectedLever->status = !selectedLever->status;
+		selectedLever->Toggle(); // this could go out of sync.
+	}
+	ImGui::InputInt("Door ID", (int*)&selectedLever->doorID);
+	ImGui::End();
 }
 
 void Crawl::DungeonEditor::Update()
@@ -285,44 +374,44 @@ void Crawl::DungeonEditor::UpdateModeTileBrush()
 	UpdateMousePosOnGrid();
 	if (Input::Mouse(0).Pressed())
 	{
-		Crawl::DungeonTile* hall = dungeon->AddHall(gridSelected.x, gridSelected.y);
-		if (hall != nullptr)
+		Crawl::DungeonTile* tile = dungeon->AddTile(gridSelected);
+		if (tile != nullptr)
 		{
-			dungeon->SetHallMask(gridSelected.x, gridSelected.y, brush_tileMask);
+			dungeon->SetTileMask(gridSelected, brush_tileMask);
 
 			if (brush_AutoTileEnabled)
 			{
 				if (brush_AutoTileSurround)
-					UpdateSurroundingTiles(gridSelected.x, gridSelected.y);
+					UpdateSurroundingTiles(gridSelected);
 				else
-					UpdateAutoTile(gridSelected.x, gridSelected.y);
+					UpdateAutoTile(gridSelected);
 			}
 			else
 			{
-				hall->mask = brush_tileMask;
-				if ((hall->mask & 1) != 1) // North Wall
-					hall->wallVariants[0] = 1;
-				if ((hall->mask & 8) != 8) // South Wall
-					hall->wallVariants[1] = 1;
-				if ((hall->mask & 4) != 4) // East Wall
-					hall->wallVariants[2] = 1;
-				if ((hall->mask & 2) != 2) // West Wall
-					hall->wallVariants[3] = 1;
-				dungeon->CreateTileObject(hall);
+				tile->mask = brush_tileMask;
+				if ((tile->mask & 1) != 1) // North Wall
+					tile->wallVariants[0] = 1;
+				if ((tile->mask & 8) != 8) // South Wall
+					tile->wallVariants[1] = 1;
+				if ((tile->mask & 4) != 4) // East Wall
+					tile->wallVariants[2] = 1;
+				if ((tile->mask & 2) != 2) // West Wall
+					tile->wallVariants[3] = 1;
+				dungeon->CreateTileObject(tile);
 			}
 		}
 	}
 
 	if (Input::Mouse(2).Pressed())
 	{
-		if (dungeon->DeleteHall(gridSelected.x, gridSelected.y))
+		if (dungeon->DeleteTile(gridSelected))
 		{
 			if (brush_AutoTileEnabled)
 			{
 				if (brush_AutoTileSurround)
-					UpdateSurroundingTiles(gridSelected.x, gridSelected.y);
+					UpdateSurroundingTiles(gridSelected);
 				else
-					UpdateAutoTile(gridSelected.x, gridSelected.y);
+					UpdateAutoTile(gridSelected);
 			}
 		}
 	}
@@ -331,17 +420,79 @@ void Crawl::DungeonEditor::UpdateModeTileEdit()
 {
 	if (Input::Mouse(0).Down())
 	{
+		selectedDoor = nullptr;
+		selectedLever = nullptr;
 		glm::ivec2 selectionPos = GetMousePosOnGrid();
 
-		selectedTile = dungeon->GetHall(selectionPos.x, selectionPos.y);
-		if (selectedTile)
+		selectedTile = dungeon->GetTile(selectionPos);
+		if (!selectedTile)
+			return;
+		
+		RefreshSelectedTile();
+	}
+}
+
+void Crawl::DungeonEditor::RefreshSelectedTile()
+{
+	selectedTileOpenWalls[0] = (selectedTile->mask & 1) == 1; // North Check
+	selectedTileOpenWalls[1] = (selectedTile->mask & 8) == 8; // South Check
+	selectedTileOpenWalls[2] = (selectedTile->mask & 4) == 4; // East Check
+	selectedTileOpenWalls[3] = (selectedTile->mask & 2) == 2; // West Check
+
+	// update list of tiles doors and levers / interactabes
+	selectTileDoors.clear();
+	for (int i = 0; i < dungeon->doors.size(); i++)
+	{
+		if (dungeon->doors[i]->position == selectedTile->position)
+			selectTileDoors.push_back(dungeon->doors[i]);
+	}
+
+	selectTileLevers.clear();
+	for (int i = 0; i < dungeon->interactables.size(); i++)
+	{
+		if (dungeon->interactables[i]->position == selectedTile->position)
+			selectTileLevers.push_back(dungeon->interactables[i]);
+	}
+}
+
+int Crawl::DungeonEditor::GetNextAvailableLeverID()
+{
+	int nextAvail = 1;
+	bool unused = false;
+	while (!unused)
+	{
+		unused = true;
+		for (int i = 0; i < dungeon->interactables.size(); i++)
 		{
-			selectedTileOpenWalls[0] = (selectedTile->mask & 1) == 1; // North Check
-			selectedTileOpenWalls[1] = (selectedTile->mask & 8) == 8; // South Check
-			selectedTileOpenWalls[2] = (selectedTile->mask & 4) == 4; // East Check
-			selectedTileOpenWalls[3] = (selectedTile->mask & 2) == 2; // West Check
+			if (dungeon->interactables[i]->id == nextAvail)
+			{
+				unused = false;
+				nextAvail++;
+				break;
+			}
 		}
 	}
+	return nextAvail;
+}
+
+int Crawl::DungeonEditor::GetNextAvailableDoorID()
+{
+	int nextAvail = 1;
+	bool unused = false;
+	while (!unused)
+	{
+		unused = true;
+		for (int i = 0; i < dungeon->doors.size(); i++)
+		{
+			if (dungeon->doors[i]->id == nextAvail)
+			{
+				unused = false;
+				nextAvail++;
+				break;
+			}
+		}
+	}
+	return nextAvail;
 }
 
 glm::ivec2 Crawl::DungeonEditor::GetMousePosOnGrid()
@@ -361,28 +512,26 @@ glm::ivec2 Crawl::DungeonEditor::GetMousePosOnGrid()
 }
 void Crawl::DungeonEditor::UpdateMousePosOnGrid()
 {
-	glm::ivec2 grid = GetMousePosOnGrid();
-	gridSelected.x = grid.x;
-	gridSelected.y = grid.y;
+	gridSelected = GetMousePosOnGrid();
 
 	// Update our visual
 	// Build a temporary tile mask based on our mode
 	brush_tileMask = 0;
 	if (brush_AutoTileEnabled)
-		brush_tileMask = dungeon->GetAutoTileMask(gridSelected.x, gridSelected.y);
+		brush_tileMask = dungeon->GetAutoTileMask(gridSelected);
 	else
 	{
 		if (!brush_TileNorth)
-			brush_tileMask += 1;
+			brush_tileMask += NORTH_MASK;
 		// test west
 		if (!brush_TileWest)
-			brush_tileMask += 2;
+			brush_tileMask += WEST_MASK;
 		// test east
 		if (!brush_TileEast)
-			brush_tileMask += 4;
+			brush_tileMask += EAST_MASK;
 		// test south
 		if (!brush_TileSouth)
-			brush_tileMask += 8;
+			brush_tileMask += SOUTH_MASK;
 	}
 
 	Object* tileTemplate = dungeon->GetTileTemplate(brush_tileMask);
@@ -391,15 +540,15 @@ void Crawl::DungeonEditor::UpdateMousePosOnGrid()
 
 }
 
-void Crawl::DungeonEditor::UpdateAutoTile(int x, int y)
+void Crawl::DungeonEditor::UpdateAutoTile(ivec2 position)
 {
-	DungeonTile* hall = dungeon->GetHall(x, y);
+	DungeonTile* tile = dungeon->GetTile(position);
 
-	if (hall != nullptr)
+	if (tile != nullptr)
 	{
-		hall->mask = dungeon->GetAutoTileMask(hall->position.x, hall->position.y);
-		UpdateWallVariants(hall);
-		dungeon->CreateTileObject(hall);
+		tile->mask = dungeon->GetAutoTileMask(tile->position);
+		UpdateWallVariants(tile);
+		dungeon->CreateTileObject(tile);
 	}
 }
 
@@ -435,12 +584,13 @@ void Crawl::DungeonEditor::UpdateWallVariants(DungeonTile* tile)
 		tile->wallVariants[3] = 0;
 }
 
-void Crawl::DungeonEditor::UpdateSurroundingTiles(int x, int y)
+void Crawl::DungeonEditor::UpdateSurroundingTiles(ivec2 position)
 {
-	for (int xDelta = x - 1; xDelta <= x + 1; xDelta++)
+	ivec2 delta;
+	for (delta.x = position.x - 1; delta.x <= position.x + 1; delta.x++)
 	{
-		for (int yDelta = y - 1; yDelta <= y + 1; yDelta++)
-			UpdateAutoTile(xDelta, yDelta);
+		for (delta.y = position.y - 1; delta.y <= position.y + 1; delta.y++)
+			UpdateAutoTile(delta);
 	}
 }
 

@@ -1,0 +1,381 @@
+{
+  "type": "scene",
+  "version": 1,
+  "lighting": {
+    "clearColour": {
+      "x": 0.25,
+      "y": 0.25,
+      "z": 0.25
+    },
+    "ambientColour": {
+      "x": 0.25,
+      "y": 0.25,
+      "z": 0.25
+    },
+    "sunColour": {
+      "x": 1.0,
+      "y": 1.0,
+      "z": 1.0
+    },
+    "sunDirection": {
+      "x": 0.0,
+      "y": -0.765999972820282,
+      "z": -0.7070000171661377
+    },
+    "pointLights": null
+  },
+  "objects": [
+    {
+      "name": "Tile",
+      "transform": {
+        "position": {
+          "x": 5.0,
+          "y": 5.0,
+          "z": 0.0
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "scale": {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        }
+      },
+      "components": null,
+      "children": [
+        {
+          "name": "Ground",
+          "transform": {
+            "position": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "scale": {
+              "x": 1.0,
+              "y": 1.0,
+              "z": 1.0
+            }
+          },
+          "components": null,
+          "children": [
+            {
+              "name": "tile_ground1_blockout",
+              "transform": {
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "rotation": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "scale": {
+                  "x": 1.0,
+                  "y": 1.0,
+                  "z": 1.0
+                }
+              },
+              "components": [
+                {
+                  "type": "Model",
+                  "model": "crawler/model/tile_ground1_blockout/tile_ground1_blockout.fbx"
+                },
+                {
+                  "type": "Renderer",
+                  "materials": [
+                    "crawler/texture/tile_blockout/tile_blockout.material"
+                  ],
+                  "frameBuffer": "",
+                  "receivesShadows": true,
+                  "castsShadows": true
+                }
+              ],
+              "children": null
+            }
+          ]
+        },
+        {
+          "name": "WallNorth",
+          "transform": {
+            "position": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "scale": {
+              "x": 1.0,
+              "y": 1.0,
+              "z": 1.0
+            }
+          },
+          "components": null,
+          "children": [
+            {
+              "name": "Model",
+              "transform": {
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "rotation": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "scale": {
+                  "x": 1.0,
+                  "y": 1.0,
+                  "z": 1.0
+                }
+              },
+              "components": null,
+              "children": null
+            }
+          ]
+        },
+        {
+          "name": "WallSouth",
+          "transform": {
+            "position": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 180.0
+            },
+            "scale": {
+              "x": 1.0,
+              "y": 1.0,
+              "z": 1.0
+            }
+          },
+          "components": null,
+          "children": [
+            {
+              "name": "Model",
+              "transform": {
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "rotation": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "scale": {
+                  "x": 1.0,
+                  "y": 1.0,
+                  "z": 1.0
+                }
+              },
+              "components": null,
+              "children": null
+            }
+          ]
+        },
+        {
+          "name": "WallEast",
+          "transform": {
+            "position": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": -90.0
+            },
+            "scale": {
+              "x": 1.0,
+              "y": 1.0,
+              "z": 1.0
+            }
+          },
+          "components": null,
+          "children": [
+            {
+              "name": "Model",
+              "transform": {
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "rotation": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "scale": {
+                  "x": 1.0,
+                  "y": 1.0,
+                  "z": 1.0
+                }
+              },
+              "components": null,
+              "children": null
+            }
+          ]
+        },
+        {
+          "name": "WallWest",
+          "transform": {
+            "position": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 90.0
+            },
+            "scale": {
+              "x": 1.0,
+              "y": 1.0,
+              "z": 1.0
+            }
+          },
+          "components": null,
+          "children": [
+            {
+              "name": "Model",
+              "transform": {
+                "position": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "rotation": {
+                  "x": 0.0,
+                  "y": 0.0,
+                  "z": 0.0
+                },
+                "scale": {
+                  "x": 1.0,
+                  "y": 1.0,
+                  "z": 1.0
+                }
+              },
+              "components": null,
+              "children": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Player",
+      "transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": -90.0
+        },
+        "scale": {
+          "x": 0.9999980926513672,
+          "y": 0.9999973177909851,
+          "z": 0.9999932646751404
+        }
+      },
+      "components": [
+        {
+          "type": "Model",
+          "model": "_cube"
+        },
+        {
+          "type": "Renderer",
+          "materials": [
+            "engine/model/materials/LambertBlue.material"
+          ],
+          "frameBuffer": "",
+          "receivesShadows": true,
+          "castsShadows": true
+        }
+      ],
+      "children": [
+        {
+          "name": "Camera Offset",
+          "transform": {
+            "position": {
+              "x": 0.0,
+              "y": -0.5099999904632568,
+              "z": 2.7799999713897705
+            },
+            "rotation": {
+              "x": 90.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "scale": {
+              "x": 1.0,
+              "y": 1.0,
+              "z": 1.0
+            }
+          },
+          "components": [
+            {
+              "type": "Camera",
+              "nearClip": 0.10000000149011612,
+              "farClip": 2000.0,
+              "fieldOfView": 45.0,
+              "aspect": 1.7777777910232544,
+              "postProcess": null
+            }
+          ],
+          "children": null
+        }
+      ]
+    },
+    {
+      "name": "Tiles",
+      "transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "scale": {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        }
+      },
+      "components": null,
+      "children": null
+    }
+  ]
+}

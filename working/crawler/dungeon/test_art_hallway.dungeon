@@ -1,7 +1,7 @@
 {
   "type": "dungeon",
   "version": 1,
-  "halls": [
+  "tiles": [
     {
       "position": {
         "x": -6,

@@ -50,6 +50,7 @@ public:
 	static void SetCameraIndex(int index);
 	static unsigned int GetSelectedObject() { return s_instance->selectedObjectID; }
 	static void SetSelectedObject(unsigned int selected);
+	static void RequestObjectSelection() { s_instance->requestedObjectSelection = true; };
 
 	static Object* FindObjectWithID(unsigned int id);
 
@@ -119,7 +120,10 @@ protected:
 	FrameBuffer* objectPickBuffer = nullptr;
 	unsigned int selectedObjectID = 0;
 	Object* selectedObject = nullptr;
+public:
+	unsigned int objectPickedID = 0;
 
+protected:
 	bool requestedObjectSelection = false;
 	glm::ivec2 requestedSelectionPosition = { 0,0 };
 

@@ -60,6 +60,9 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 			}
 			case DrawMode::ObjectPicking:
 			{
+				if (componentParent->id == 0) // Don't waste ur time buddy.
+					break;
+
 				ShaderProgram* shader = ShaderManager::GetShaderProgram("engine/shader/picking");
 				shader->Bind();
 				shader->SetUIntUniform("objectID", componentParent->id);

@@ -105,11 +105,13 @@ void Scene::UpdateInputs()
 		DuplicateObject(selectedObject);*/
 
 	// Disable Image render based object picking for now.
-	/*if (Input::Mouse(0).Down() && !ImGuizmo::IsOver())
+	/*
+	if (Input::Mouse(0).Down() && !ImGuizmo::IsOver())
 	{
 		requestedObjectSelection = true;
 		requestedSelectionPosition = Input::GetMousePosPixel();
-	}*/
+	}
+	*/
 	
 }
 
@@ -166,10 +168,26 @@ void Scene::RenderObjectPicking()
 {
 	objectPickBuffer->BindTarget();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	for (auto& o : objects)
-		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), Component::DrawMode::ObjectPicking);
+	
+	glm::mat4 vpm;
+	glm::vec3 position;
+	if (cameraIndex == 0)
+	{
+		vpm = Camera::s_instance->GetMatrix();
+		position = Camera::s_instance->GetPosition();
+	}
+	else
+	{
+		vpm = componentCameras[0]->GetViewProjectionMatrix();
+		position = componentCameras[0]->GetWorldSpacePosition();
+	}
 
-	SetSelectedObject(objectPickBuffer->GetObjectID(requestedSelectionPosition.x, requestedSelectionPosition.y));
+	for (auto& o : objects)
+		o->Draw(vpm, position, Component::DrawMode::ObjectPicking);
+
+	//SetSelectedObject(objectPickBuffer->GetObjectID(requestedSelectionPosition.x, requestedSelectionPosition.y)); // old method for transform gizmo
+	requestedSelectionPosition = Input::GetMousePosPixel();
+	objectPickedID = objectPickBuffer->GetObjectID(requestedSelectionPosition.x, requestedSelectionPosition.y);
 	requestedObjectSelection = false;
 }
 void Scene::RenderEditorCamera()
@@ -374,7 +392,7 @@ void Scene::CleanUp()
 // Creates and object and adds it to the parent or scene hierarchy. If you want an object but dont want it added to the heirarchy, then call new Object.
 Object* Scene::CreateObject(Object* parent)
 {
-	Object* o = new Object(s_instance->objectCount++);
+	Object* o = new Object(s_instance->objectCount++); // NOTE This was objectCount++ in order to increment all object numbers, but honestly we just dont need IDs for everything.. yet?
 	if (parent)
 	{
 		o->parent = parent;
@@ -468,6 +486,7 @@ void Scene::SetCameraIndex(int index)
 
 void Scene::SetSelectedObject(unsigned int selected)
 {
+	std::cout << selected << std::endl;
 	s_instance->selectedObjectID = selected;
 	s_instance->selectedObject = Scene::FindObjectWithID(selected);
 }

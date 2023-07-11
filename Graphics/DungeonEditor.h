@@ -26,16 +26,24 @@ namespace Crawl
 		void DrawGUIModeSelect();
 		void DrawGUIModeTileBrush();
 		void DrawGUIModeTileEdit();
+		void DrawGUIModeTileEditDoor();
+		void DrawGUIModeTileEditLever();
+
 
 		void Update();
 		void UpdateModeTileBrush();
 		void UpdateModeTileEdit();
+
+		void RefreshSelectedTile();
+
+		int GetNextAvailableLeverID();
+		int GetNextAvailableDoorID();
 	protected:
 		glm::ivec2 GetMousePosOnGrid();
 		void UpdateMousePosOnGrid();
-		void UpdateAutoTile(int x, int y);
+		void UpdateAutoTile(ivec2 position);
 		void UpdateWallVariants(DungeonTile* tile);
-		void UpdateSurroundingTiles(int x, int y);
+		void UpdateSurroundingTiles(ivec2 position);
 
 		// Save the dungeon to file.
 		void Save();
@@ -63,7 +71,7 @@ namespace Crawl
 		std::string editModeNames[2]{ "Tile Brush", "Tile Edit" };
 
 		// Brush Mode
-		int brush_tileMask = 0;
+		unsigned int brush_tileMask = 0;
 		// Auto Tile configuration
 		bool brush_AutoTileEnabled = true;
 		bool brush_AutoTileSurround = true;
@@ -77,6 +85,11 @@ namespace Crawl
 		// Tile edit mode
 		DungeonTile* selectedTile = nullptr;
 		bool selectedTileOpenWalls[4] = { false, false, false, false };
+		std::vector<DungeonDoor*> selectTileDoors;
+		std::vector<DungeonInteractableLever*> selectTileLevers;
+		DungeonDoor* selectedDoor = nullptr;
+		DungeonInteractableLever* selectedLever = nullptr;
+
 	};
 }
 

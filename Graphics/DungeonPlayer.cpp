@@ -19,21 +19,31 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 		glm::ivec2 coordinate = { 0, 0 };
 		glm::ivec2 coordinateUnchanged = { 0, 0 }; // TO DO this sucks
 
-		if (Input::Keyboard(GLFW_KEY_W).Pressed())
-			coordinate = GetMoveCoordinate(FORWARD);
-		if (Input::Keyboard(GLFW_KEY_S).Pressed())
-			coordinate = GetMoveCoordinate(BACK);
-		if (Input::Keyboard(GLFW_KEY_A).Pressed())
-			coordinate = GetMoveCoordinate(LEFT);
-		if (Input::Keyboard(GLFW_KEY_D).Pressed())
-			coordinate = GetMoveCoordinate(RIGHT);
+		// Test Object Picking stuffo
+		if (Input::Mouse(0).Down())
+			Scene::RequestObjectSelection();
 
-		if (coordinate != coordinateUnchanged)
+		if (Scene::s_instance->objectPickedID != 0)
 		{
-			if (dungeon->CanMove(position.column, position.row, coordinate.x, coordinate.y))
+			dungeon->DoInteractable(Scene::s_instance->objectPickedID);
+			Scene::s_instance->objectPickedID = 0;
+		}
+
+		int index = -1;
+		if (Input::Keyboard(GLFW_KEY_W).Pressed())
+			index = GetMoveCardinalIndex(FORWARD_INDEX);
+		if (Input::Keyboard(GLFW_KEY_S).Pressed())
+			index = GetMoveCardinalIndex(BACK_INDEX);
+		if (Input::Keyboard(GLFW_KEY_A).Pressed())
+			index = GetMoveCardinalIndex(LEFT_INDEX);
+		if (Input::Keyboard(GLFW_KEY_D).Pressed())
+			index = GetMoveCardinalIndex(RIGHT_INDEX);
+
+		if (index != -1)
+		{
+			if (dungeon->CanMove(position, index))
 			{
-				position.column += coordinate.x;
-				position.row += coordinate.y;
+				position += directions[index];
 				didMove = true;
 			}
 		}
@@ -42,7 +52,7 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 		{
 			state = MOVING;
 			oldPosition = object->localPosition;
-			targetPosition = { position.column * Crawl::DUNGEON_GRID_SCALE, position.row * Crawl::DUNGEON_GRID_SCALE , 0 };
+			targetPosition = { position.x * Crawl::DUNGEON_GRID_SCALE, position.y * Crawl::DUNGEON_GRID_SCALE , 0 };
 			moveCurrent = 0.0f;
 			didMove = false;
 			return;
@@ -55,7 +65,7 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 			faceInt++;
 			if (faceInt == 4)
 				faceInt = 0;
-			facing = (FACING)faceInt;
+			facing = (FACING_INDEX)faceInt;
 			state = TURNING;
 			turnCurrent = 0.0f;
 			oldTurn = object->localRotation.z;
@@ -67,7 +77,7 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 			faceInt--;
 			if (faceInt == -1)
 				faceInt = 3;
-			facing = (FACING)faceInt;
+			facing = (FACING_INDEX)faceInt;
 			state = TURNING;
 			turnCurrent = 0.0f;
 			oldTurn = object->localRotation.z;
@@ -101,12 +111,12 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 }
 
 // Take the requested direction and offset by the direction we're facing, check for overflow, then index in to the directions array.
-glm::ivec2 Crawl::DungeonPlayer::GetMoveCoordinate(DIRECTION dir)
+unsigned int Crawl::DungeonPlayer::GetMoveCardinalIndex(DIRECTION_INDEX dir)
 {
-	int index = dir;
-	index += facing;
+	unsigned int index = (int)dir;
+	index += (int)facing;
 	if (index >= 4)
 		index -= 4;
 
-	return directions[index];
+	return index;
 }

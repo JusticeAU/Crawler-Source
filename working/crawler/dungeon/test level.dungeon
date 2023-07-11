@@ -1,7 +1,7 @@
 {
   "type": "dungeon",
   "version": 1,
-  "halls": [
+  "tiles": [
     {
       "position": {
         "x": -3,
@@ -618,11 +618,11 @@
         "x": 4,
         "y": 0
       },
-      "mask": 3,
+      "mask": 7,
       "wallVariants": [
         0,
         1,
-        1,
+        0,
         0
       ]
     },
@@ -746,6 +746,19 @@
     {
       "position": {
         "x": 5,
+        "y": 0
+      },
+      "mask": 6,
+      "wallVariants": [
+        3,
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 5,
         "y": 4
       },
       "mask": 6,
@@ -800,12 +813,12 @@
         "x": 6,
         "y": 0
       },
-      "mask": 9,
+      "mask": 11,
       "wallVariants": [
         0,
         0,
         1,
-        1
+        0
       ]
     },
     {
@@ -859,6 +872,29 @@
         1,
         0
       ]
+    }
+  ],
+  "levers": [
+    {
+      "position": {
+        "x": 4,
+        "y": 0
+      },
+      "id": 1,
+      "orientation": 2,
+      "status": false,
+      "doorID": 1
+    }
+  ],
+  "doors": [
+    {
+      "position": {
+        "x": 4,
+        "y": 0
+      },
+      "id": 1,
+      "orientation": 1,
+      "open": false
     }
   ]
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "Dungeon.h"
+#include "DungeonHelpers.h"
 #include "glm.hpp"
 
 class Object;
@@ -9,21 +10,6 @@ namespace Crawl
 	class DungeonPlayer
 	{
 	public:
-		enum FACING
-		{
-			NORTH,
-			EAST,
-			SOUTH,
-			WEST
-		};
-
-		enum DIRECTION
-		{
-			FORWARD,
-			RIGHT,
-			BACK,
-			LEFT
-		};
 
 		enum STATE {
 			IDLE,
@@ -37,12 +23,12 @@ namespace Crawl
 
 		void Update(float deltaTime);
 
-		// combines our requested direction with our facing direction to return a x/y co-ordinate to move on.
-		glm::ivec2 GetMoveCoordinate(DIRECTION dir);
+		// combines our requested direction with our facing direction to return the actual direction.
+		unsigned int GetMoveCardinalIndex(DIRECTION_INDEX dir);
 
 	private:
-		Position position;
-		FACING facing = EAST;
+		glm::ivec2 position;
+		FACING_INDEX facing = EAST_INDEX;
 		STATE state = IDLE;
 		float moveSpeed = 0.25f;
 		float moveCurrent = 0.0f;
@@ -56,13 +42,5 @@ namespace Crawl
 		Object* object;
 
 		bool didMove = false;
-
-		// this is indexed in to by GetMoveCoordinate;
-		glm::ivec2 directions[4] = {
-			{0, 1},	// north
-			{1, 0},	// east
-			{0,-1},	// south
-			{-1,0}	// west
-		};
 	};
 }
