@@ -69,8 +69,8 @@ namespace Crawl
 
 		// Staging Configuration
 		int type = 0;
-		string types [4] = { "Monster", "Tile", "Interactble", "Decoration"};
-		string typesFolders[4]{ "monster_", "tile_", "interactable_", "decoration_"};
+		string types[5] = { "Monster", "Tile", "Interactble", "Door", "Decoration"};
+		string typesFolders[5] = { "monster_", "tile_", "interactable_", "door_", "decoration_"};
 		string stagedType = "Monster";
 
 		// Staging names and paths

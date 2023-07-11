@@ -104,11 +104,15 @@ void Crawl::ArtTester::DrawGUIStaging()
 	ImGui::SameLine();
 	if (ImGui::BeginCombo("Asset Type", stagedType.c_str()))
 	{
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < 5; i++)
 		{
 			const bool is_selected = (stagedType == types[i]);
 			if (ImGui::Selectable(types[i].c_str(), is_selected))
+			{
+				type = i;
 				stagedType = types[i];
+				UpdateStagingFolders();
+			}
 
 			// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
 			if (is_selected)
@@ -116,6 +120,7 @@ void Crawl::ArtTester::DrawGUIStaging()
 		}
 		ImGui::EndCombo();
 	}
+	//ImGui::DragInt("uhh", &stagedType);
 
 	// preview
 	ImGui::Text("Output");
