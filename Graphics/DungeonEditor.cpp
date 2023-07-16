@@ -57,13 +57,13 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	ImGui::Text(dungeonFileName.c_str());
 	ImGui::EndDisabled();
 
-	if (dungeonFilePath == "")
+	if (dungeonFilePath == "" || !unsavedChanges)
 		ImGui::BeginDisabled();
 
 	if (ImGui::Button("Save"))
 		Save();
 
-	if (dungeonFilePath == "")
+	if (dungeonFilePath == "" || !unsavedChanges)
 		ImGui::EndDisabled();
 
 	ImGui::SameLine();
@@ -136,16 +136,43 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 		{
 			if (d.path().has_extension() && d.path().extension() == extension)
 			{
-				string foundDungeonName = d.path().stem().string();
 				string foundDungeonPath = d.path().relative_path().string();
 				if (ImGui::Selectable(foundDungeonPath.c_str()))
 				{
-					dungeonFileName = foundDungeonName;
-					dungeonFileNameSaveAs = foundDungeonName;
-					dungeonFilePath = foundDungeonPath;
-					dungeon->Load(dungeonFilePath);
+					if (unsavedChanges)
+					{
+						dungeonWantLoad = foundDungeonPath;
+						shouldConfirmSaveBeforeLoad = true;
+					}
+					else
+						Load(foundDungeonPath);
 				}
 			}
+		}
+		ImGui::EndPopup();
+	}
+	if (shouldConfirmSaveBeforeLoad)
+	{
+		ImGui::OpenPopup("Unsaved Changes");
+		shouldConfirmSaveBeforeLoad = false;
+	}
+
+	ImGui::SetNextWindowSize({ 300, 100 });
+	ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_Always);
+	if(ImGui::BeginPopupModal("Unsaved Changes"))
+	{
+		ImGui::Text("You have unsaved changes.\nAre you sure you want to load?", 0, ImGuiWindowFlags_NoCollapse & ImGuiWindowFlags_NoResize & ImGuiWindowFlags_NoMove);
+
+		if (ImGui::Button("Load Anyway"))
+		{
+			Load(dungeonWantLoad);
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel"))
+		{
+			dungeonWantLoad = "";
+			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
 	}
@@ -224,34 +251,25 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	ImGui::EndDisabled();
 
 	// Cardinal traversable yes/no
+	unsigned int oldMask = selectedTile->mask;
 	if (ImGui::Checkbox("Open North", &selectedTileOpenWalls[0]))
-	{
-		selectedTile->mask += selectedTileOpenWalls[0] ? 1 : -1;
-		UpdateWallVariants(selectedTile);
-		dungeon->CreateTileObject(selectedTile);
-	}
+		selectedTile->mask += selectedTileOpenWalls[0] ? NORTH_MASK : -NORTH_MASK;
 	if (ImGui::Checkbox("Open South", &selectedTileOpenWalls[1]))
-	{
-		selectedTile->mask += selectedTileOpenWalls[1] ? 8 : -8;
-		UpdateWallVariants(selectedTile);
-		dungeon->CreateTileObject(selectedTile);
-	}
+		selectedTile->mask += selectedTileOpenWalls[1] ? SOUTH_MASK : -SOUTH_MASK;
 	if (ImGui::Checkbox("Open East", &selectedTileOpenWalls[2]))
-	{
-		selectedTile->mask += selectedTileOpenWalls[2] ? 4 : -4;
-		UpdateWallVariants(selectedTile);
-		dungeon->CreateTileObject(selectedTile);
-	}
+		selectedTile->mask += selectedTileOpenWalls[2] ? EAST_MASK : -EAST_MASK;
 	if (ImGui::Checkbox("Open West", &selectedTileOpenWalls[3]))
+		selectedTile->mask += selectedTileOpenWalls[3] ? WEST_MASK : -WEST_MASK;
+	if (oldMask != selectedTile->mask)
 	{
-		selectedTile->mask += selectedTileOpenWalls[3] ? 2 : -2;
+		MarkUnsavedChanges();
 		UpdateWallVariants(selectedTile);
 		dungeon->CreateTileObject(selectedTile);
 	}
 
 
-	// if yes, what wall variant
-	ImGui::BeginDisabled();
+	// if yes, what wall variant - hidden for now, non-functional
+	/*ImGui::BeginDisabled();
 	if (!selectedTileOpenWalls[0])
 		ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[0] - 1].c_str());
 	else
@@ -272,7 +290,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	else
 		ImGui::Text("Open");
 
-	ImGui::EndDisabled();
+	ImGui::EndDisabled();*/
 
 	// entities
 	for (auto& door : selectTileDoors)
@@ -288,6 +306,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	}
 	if (ImGui::Button("Add Door"))
 	{
+		MarkUnsavedChanges();
 		dungeon->CreateDoor(selectedTile->position, 0, GetNextAvailableDoorID(), false);
 		RefreshSelectedTile();
 	}
@@ -302,6 +321,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	}
 	if (ImGui::Button("Add Lever"))
 	{
+		MarkUnsavedChanges();
 		dungeon->CreateLever(selectedTile->position, 0, GetNextAvailableLeverID(), 0, false);
 		RefreshSelectedTile();
 	}
@@ -315,18 +335,29 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
 {
 	ImGui::Begin("Edit Door", &selectedDoorWindowOpen);
-	ImGui::InputInt("ID", (int*)&selectedDoor->id);
+
+	if(ImGui::InputInt("ID", (int*)&selectedDoor->id))
+		MarkUnsavedChanges();
+
 	if (ImGui::BeginCombo("Orientation", orientationNames[selectedDoor->orientation].c_str()))
 	{
+		int oldOrientation = selectedDoor->orientation;
 		for (int i = 0; i < 4; i++)
 			if (ImGui::Selectable(orientationNames[i].c_str()))
 			{
 				selectedDoor->orientation = i;
-				selectedDoor->object->SetLocalRotationZ(orientationEulers[i]);
+				if (selectedDoor->orientation != oldOrientation)
+				{
+					MarkUnsavedChanges();
+					selectedDoor->object->SetLocalRotationZ(orientationEulers[i]);
+				}
 			}
 		ImGui::EndCombo();
 	}
-	ImGui::Checkbox("Starts Open", &selectedDoor->startOpen);
+
+	if(ImGui::Checkbox("Starts Open", &selectedDoor->startOpen))
+		MarkUnsavedChanges();
+
 	if (ImGui::Checkbox("Is Open", &selectedDoor->open))
 	{
 		selectedDoor->open = !selectedDoor->open;
@@ -342,6 +373,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
 		ImGui::Text("Are you sure you want to delete the door?");
 		if (ImGui::Button("Yes"))
 		{
+			MarkUnsavedChanges();
 			// remove from list
 			for (int i = 0; i < dungeon->doors.size(); i++)
 			{
@@ -370,28 +402,43 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
 void Crawl::DungeonEditor::DrawGUIModeTileEditLever()
 {
 	ImGui::Begin("Edit Lever", &selectedLeverWindowOpen);
+
 	if (ImGui::InputInt("ID", (int*)&selectedLever->id))
+	{
+		MarkUnsavedChanges();
 		selectedLever->SetID(selectedLever->id);
+	}
 
 	if (ImGui::BeginCombo("Orientation", orientationNames[selectedLever->orientation].c_str()))
 	{
+		int oldOrientation = selectedDoor->orientation;
 		for (int i = 0; i < 4; i++)
+		{
 			if (ImGui::Selectable(orientationNames[i].c_str()))
 			{
-				selectedLever->orientation = i;
-				selectedLever->object->SetLocalRotationZ(orientationEulers[i]);
+				if (selectedLever->orientation != i)
+				{
+					MarkUnsavedChanges();
+					selectedLever->orientation = i;
+					selectedLever->object->SetLocalRotationZ(orientationEulers[i]);
+				}
 			}
+		}
 		ImGui::EndCombo();
 	}
 
-	ImGui::Checkbox("Starts Status", &selectedLever->startStatus);
+	if(ImGui::Checkbox("Starts Status", &selectedLever->startStatus))
+		MarkUnsavedChanges();
 
 	if (ImGui::Checkbox("Status", &selectedLever->status))
 	{
+
 		selectedLever->status = !selectedLever->status;
 		selectedLever->Toggle(); // this could go out of sync.
 	}
-	ImGui::InputInt("Door ID", (int*)&selectedLever->doorID);
+
+	if (ImGui::InputInt("Door ID", (int*)&selectedLever->doorID))
+		MarkUnsavedChanges();
 
 	if (ImGui::Button("Delete"))
 		ImGui::OpenPopup("delete_lever_confirm");
@@ -402,6 +449,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLever()
 		ImGui::Text("Are you sure you want to delete the lever?");
 		if (ImGui::Button("Yes"))
 		{
+			MarkUnsavedChanges();
 			// remove from list
 			for (int i = 0; i < dungeon->interactables.size(); i++)
 			{
@@ -445,6 +493,7 @@ void Crawl::DungeonEditor::UpdateModeTileBrush()
 		Crawl::DungeonTile* tile = dungeon->AddTile(gridSelected);
 		if (tile != nullptr)
 		{
+			MarkUnsavedChanges();
 			dungeon->SetTileMask(gridSelected, brush_tileMask);
 
 			if (brush_AutoTileEnabled)
@@ -474,6 +523,7 @@ void Crawl::DungeonEditor::UpdateModeTileBrush()
 	{
 		if (dungeon->DeleteTile(gridSelected))
 		{
+			MarkUnsavedChanges();
 			if (brush_AutoTileEnabled)
 			{
 				if (brush_AutoTileSurround)
@@ -664,7 +714,22 @@ void Crawl::DungeonEditor::UpdateSurroundingTiles(ivec2 position)
 
 void Crawl::DungeonEditor::Save()
 {
-	dungeon->Save(GetDungeonFilePath());
+	dungeonFilePath = GetDungeonFilePath();
+	dungeon->Save(dungeonFilePath);
+	UnMarkUnsavedChangse();
+}
+
+void Crawl::DungeonEditor::Load(string path)
+{	
+	int lastSlash = path.find_last_of('/');
+	int extensionStart = path.find_last_of('.');
+	string name = path.substr(lastSlash + 1, extensionStart - (lastSlash+1));
+	dungeonFileName = name;
+	dungeonFileNameSaveAs = name;
+	dungeonFilePath = path;
+	dungeon->Load(path);
+	dungeonWantLoad = "";
+	UnMarkUnsavedChangse();
 }
 
 std::string Crawl::DungeonEditor::GetDungeonFilePath()
@@ -674,4 +739,16 @@ std::string Crawl::DungeonEditor::GetDungeonFilePath()
 	filename += dungeonFileNameSaveAs;
 	filename += extension;
 	return filename;
+}
+
+void Crawl::DungeonEditor::MarkUnsavedChanges()
+{
+	unsavedChanges = true;
+	Window::SetWindowTitle("Crawler Editor | ***(Unsaved Changes)***");
+}
+
+void Crawl::DungeonEditor::UnMarkUnsavedChangse()
+{
+	unsavedChanges = false;
+	Window::SetWindowTitle("Crawler Editor");
 }

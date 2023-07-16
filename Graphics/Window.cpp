@@ -14,6 +14,11 @@ Window::Window(int width, int height, const char* title, GLFWmonitor* monitor)
 	s_instance = this;
 }
 
+void Window::SetWindowTitle(std::string title)
+{
+	glfwSetWindowTitle(s_instance->m_window, title.c_str());
+}
+
 void Window::ToggleFullscreen()
 {
 	GLFWmonitor* mon = glfwGetPrimaryMonitor();

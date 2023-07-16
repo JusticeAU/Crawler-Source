@@ -146,6 +146,7 @@ void Application::LaunchArgument(char* arg)
 			Scene::ChangeScene("Dungeon");
 			dungeonEditor->SetDungeon(dungeon);
 			dungeonEditor->Activate();
+			Window::SetWindowTitle("Crawler Editor");
 		}
 		else if (argument == "art")
 		{

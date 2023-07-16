@@ -1,6 +1,7 @@
 #pragma once
 #include "Dungeon.h"
 #include "glm.hpp"
+#include "Window.h"
 
 namespace Crawl
 {
@@ -47,8 +48,12 @@ namespace Crawl
 
 		// Save the dungeon to file.
 		void Save();
+		void Load(string path);
 
 		std::string GetDungeonFilePath();
+
+		void MarkUnsavedChanges();
+		void UnMarkUnsavedChangse();
 
 		Dungeon* dungeon = nullptr;
 		glm::ivec2 gridSelected = { 0, 0 };
@@ -59,6 +64,7 @@ namespace Crawl
 		std::string dungeonFileName = "new_dungeon";
 		std::string dungeonFileNameSaveAs = "";
 		std::string dungeonFilePath = "";
+		std::string dungeonWantLoad = "";
 
 		bool saveAsPrompt = false;
 		bool confirmOverwritePrompt = false;
@@ -92,6 +98,8 @@ namespace Crawl
 		DungeonInteractableLever* selectedLever = nullptr;
 		bool selectedLeverWindowOpen = false;
 
+		bool unsavedChanges = false;
+		bool shouldConfirmSaveBeforeLoad = false;
 	};
 }
 
