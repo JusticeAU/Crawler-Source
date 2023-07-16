@@ -3,7 +3,6 @@
 
 int main(int argc, char * argv[])
 {
-
 	LogUtils::Log("Constructing Application.");
 	Application* app = new Application();
 	if (argc > 1)

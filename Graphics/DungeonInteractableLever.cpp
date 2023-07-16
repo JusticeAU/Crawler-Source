@@ -2,6 +2,12 @@
 #include "Dungeon.h"
 #include "Object.h"
 
+Crawl::DungeonInteractableLever::~DungeonInteractableLever()
+{
+	if (object)
+		object->markedForDeletion = true;
+}
+
 void Crawl::DungeonInteractableLever::Toggle()
 {
 	status = !status;

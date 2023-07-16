@@ -1,6 +1,12 @@
 #include "DungeonDoor.h"
 #include "Object.h"
 
+Crawl::DungeonDoor::~DungeonDoor()
+{
+	if(object)
+		object->markedForDeletion = true;
+}
+
 void Crawl::DungeonDoor::Toggle()
 {
 	open = !open;

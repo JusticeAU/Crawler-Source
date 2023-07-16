@@ -9,6 +9,7 @@ namespace Crawl
 	class DungeonDoor
 	{
 	public:
+		~DungeonDoor();
 		void Toggle();
 		glm::ivec2 position = { 0, 0 };
 		int orientation = 0; // Use DIRECTION_MASK in DungeonHelpers.h

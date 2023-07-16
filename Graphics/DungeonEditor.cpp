@@ -281,7 +281,10 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		doorName += to_string(door->id);
 		doorName += ")";
 		if (ImGui::Selectable(doorName.c_str()))
+		{
 			selectedDoor = door;
+			selectedDoorWindowOpen = true;
+		}
 	}
 	if (ImGui::Button("Add Door"))
 	{
@@ -303,7 +306,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		RefreshSelectedTile();
 	}
 
-	if (selectedDoor)
+	if (selectedDoorWindowOpen)
 		DrawGUIModeTileEditDoor();
 	if (selectedLever)
 		DrawGUIModeTileEditLever();
@@ -311,7 +314,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 
 void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
 {
-	ImGui::Begin("Edit Door");
+	ImGui::Begin("Edit Door", &selectedDoorWindowOpen);
 	ImGui::InputInt("ID", (int*)&selectedDoor->id);
 	if (ImGui::BeginCombo("Orientation", orientationNames[selectedDoor->orientation].c_str()))
 	{
@@ -329,11 +332,44 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
 		selectedDoor->open = !selectedDoor->open;
 		selectedDoor->Toggle(); // this could go out of sync.
 	}
+
+	if (ImGui::Button("Delete"))
+		ImGui::OpenPopup("delete_door_confirm");
+
+
+	if (ImGui::BeginPopupModal("delete_door_confirm"))
+	{
+		ImGui::Text("Are you sure you want to delete the door?");
+		if (ImGui::Button("Yes"))
+		{
+			// remove from list
+			for (int i = 0; i < dungeon->doors.size(); i++)
+			{
+				if (selectedDoor == dungeon->doors[i])
+				{
+					dungeon->doors.erase(dungeon->doors.begin()+i);
+					break;
+				}
+			}
+			// call delete on pointer
+			delete selectedDoor;
+			// remove from selected
+			selectedDoor = nullptr;
+			selectedDoorWindowOpen = false;
+			RefreshSelectedTile();
+		}
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
 	ImGui::End();
 }
 void Crawl::DungeonEditor::DrawGUIModeTileEditLever()
 {
-	ImGui::Begin("Edit Lever");
+	ImGui::Begin("Edit Lever", &selectedLeverWindowOpen);
 	if (ImGui::InputInt("ID", (int*)&selectedLever->id))
 		selectedLever->SetID(selectedLever->id);
 
@@ -356,6 +392,38 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLever()
 		selectedLever->Toggle(); // this could go out of sync.
 	}
 	ImGui::InputInt("Door ID", (int*)&selectedLever->doorID);
+
+	if (ImGui::Button("Delete"))
+		ImGui::OpenPopup("delete_lever_confirm");
+
+
+	if (ImGui::BeginPopupModal("delete_lever_confirm"))
+	{
+		ImGui::Text("Are you sure you want to delete the lever?");
+		if (ImGui::Button("Yes"))
+		{
+			// remove from list
+			for (int i = 0; i < dungeon->interactables.size(); i++)
+			{
+				if (selectedLever == dungeon->interactables[i])
+				{
+					dungeon->interactables.erase(dungeon->interactables.begin() + i);
+					break;
+				}
+			}
+			// call delete on pointer
+			delete selectedLever;
+			// remove from selected
+			selectedLever = nullptr;
+			selectedLeverWindowOpen = false;
+			RefreshSelectedTile();
+		}
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
 	ImGui::End();
 }
 

@@ -88,7 +88,9 @@ namespace Crawl
 		std::vector<DungeonDoor*> selectTileDoors;
 		std::vector<DungeonInteractableLever*> selectTileLevers;
 		DungeonDoor* selectedDoor = nullptr;
+		bool selectedDoorWindowOpen = false;
 		DungeonInteractableLever* selectedLever = nullptr;
+		bool selectedLeverWindowOpen = false;
 
 	};
 }

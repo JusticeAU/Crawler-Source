@@ -11,6 +11,7 @@ namespace Crawl
 	class DungeonInteractableLever : public DungeonInteractable
 	{
 	public:
+		~DungeonInteractableLever();
 		void Toggle() override;
 		void SetID(unsigned int newID);
 
