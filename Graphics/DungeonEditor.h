@@ -55,6 +55,8 @@ namespace Crawl
 		void MarkUnsavedChanges();
 		void UnMarkUnsavedChangse();
 
+		void TileEditUnselectAll();
+
 		Dungeon* dungeon = nullptr;
 		glm::ivec2 gridSelected = { 0, 0 };
 

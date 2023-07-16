@@ -190,7 +190,10 @@ void Crawl::DungeonEditor::DrawGUIModeSelect()
 	{
 		// Options here!
 		if (ImGui::Selectable(editModeNames[0].c_str()))
+		{
 			editMode = Mode::TileBrush;
+			TileEditUnselectAll();
+		}
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 			ImGui::SetTooltip("Carve new tiles into the level.");
 		
@@ -328,7 +331,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 
 	if (selectedDoorWindowOpen)
 		DrawGUIModeTileEditDoor();
-	if (selectedLever)
+	if (selectedLeverWindowOpen)
 		DrawGUIModeTileEditLever();
 }
 
@@ -538,8 +541,7 @@ void Crawl::DungeonEditor::UpdateModeTileEdit()
 {
 	if (Input::Mouse(0).Down())
 	{
-		selectedDoor = nullptr;
-		selectedLever = nullptr;
+		TileEditUnselectAll();
 		glm::ivec2 selectionPos = GetMousePosOnGrid();
 
 		selectedTile = dungeon->GetTile(selectionPos);
@@ -751,4 +753,13 @@ void Crawl::DungeonEditor::UnMarkUnsavedChangse()
 {
 	unsavedChanges = false;
 	Window::SetWindowTitle("Crawler Editor");
+}
+
+void Crawl::DungeonEditor::TileEditUnselectAll()
+{
+	selectedTile = nullptr;
+	selectedLever = nullptr;
+	selectedDoor = nullptr;
+	selectedDoorWindowOpen = false;
+	selectedLeverWindowOpen = false;
 }
