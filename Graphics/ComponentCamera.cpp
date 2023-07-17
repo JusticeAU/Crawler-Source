@@ -33,13 +33,13 @@ ComponentCamera::ComponentCamera(Object* parent) : Component("Camera", Component
 	// In Scene Editor Camera Gizmo - It'd be nice to move some of this info out of here. Perhaps a Gizmo factory or something.
 	cameraGizmo = new Object(-1, "Camera Gizmo");
 	ComponentModel* componentModel = new ComponentModel(parent);
-	componentModel->model = ModelManager::GetModel("models/Gizmos/camera.fbx");
+	componentModel->model = ModelManager::GetModel("engine/model/Gizmos/camera.fbx");
 	cameraGizmo->components.push_back(componentModel);
 
 	ComponentRenderer* componentRenderer = new ComponentRenderer(parent);
-	componentRenderer->model = ModelManager::GetModel("models/Gizmos/camera.fbx");
+	componentRenderer->model = ModelManager::GetModel("engine/model/Gizmos/camera.fbx");
 	componentRenderer->materialArray.resize(1);
-	componentRenderer->materialArray[0] = MaterialManager::GetMaterial("models/materials/Gizmos.material");
+	componentRenderer->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/Gizmos.material");
 
 
 	cameraGizmo->components.push_back(componentRenderer);
