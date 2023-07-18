@@ -18,7 +18,7 @@
 
 #include "DungeonEditor.h"
 #include "DungeonPlayer.h"
-#include "ArtTester.h"
+#include "DungeonArtTester.h"
 
 #include "ComponentFactory.h"
 

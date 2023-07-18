@@ -269,7 +269,7 @@
     <ClCompile Include="ComponentAudioSource.cpp">
       <Filter>Source Files\Application\Scene\Components</Filter>
     </ClCompile>
-    <ClCompile Include="ArtTester.cpp">
+    <ClCompile Include="DungeonArtTester.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
     <ClCompile Include="DungeonInteractableLever.cpp">
@@ -460,7 +460,7 @@
     <ClInclude Include="ComponentAudioSource.h">
       <Filter>Source Files\Application\Scene\Components</Filter>
     </ClInclude>
-    <ClInclude Include="ArtTester.h">
+    <ClInclude Include="DungeonArtTester.h">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
     <ClInclude Include="serialisation.h">
