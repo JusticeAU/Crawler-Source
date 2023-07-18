@@ -11,10 +11,16 @@ namespace Crawl
 	public:
 		~DungeonDoor();
 		void Toggle();
+		void Toggle(bool on);
+
+		void Update();
+		void UpdateTransforms();
+
 		glm::ivec2 position = { 0, 0 };
 		int orientation = 0; // Use DIRECTION_MASK in DungeonHelpers.h
 		unsigned int id = 0;
 		
+		unsigned int power = 0;
 		bool open = false;
 		bool startOpen = false;
 		

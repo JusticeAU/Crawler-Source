@@ -1,6 +1,7 @@
 #include "DungeonEditor.h"
 #include "DungeonDoor.h"
 #include "DungeonInteractableLever.h"
+#include "DungeonActivatorPlate.h"
 #include "DungeonHelpers.h"
 #include "Object.h"
 #include "Input.h"
@@ -246,7 +247,6 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		return;
 	}
 
-
 	// selected tile coordinates
 	ImGui::Text("Selected Tile");
 	ImGui::BeginDisabled();
@@ -320,7 +320,10 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		leverName += to_string(lever->id);
 		leverName += ")";
 		if (ImGui::Selectable(leverName.c_str()))
+		{
 			selectedLever = lever;
+			selectedLeverWindowOpen = true;
+		}
 	}
 	if (ImGui::Button("Add Lever"))
 	{
@@ -329,10 +332,26 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		RefreshSelectedTile();
 	}
 
+	// Activator Plates
+	if (selectedActivatorPlate)
+	{
+		if (ImGui::Selectable("Plate")) selectedActivatorPlateWindowOpen = true;
+
+	}
+	else if (ImGui::Button("Add Activator Plate"))
+	{
+		MarkUnsavedChanges();
+		dungeon->CreatePlate(selectedTile->position, 0);
+		RefreshSelectedTile();
+	}
+
 	if (selectedDoorWindowOpen)
 		DrawGUIModeTileEditDoor();
 	if (selectedLeverWindowOpen)
 		DrawGUIModeTileEditLever();
+	if (selectedActivatorPlateWindowOpen)
+		DrawGUIModeTileEditPlate();
+
 }
 
 void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
@@ -378,11 +397,11 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
 		{
 			MarkUnsavedChanges();
 			// remove from list
-			for (int i = 0; i < dungeon->doors.size(); i++)
+			for (int i = 0; i < dungeon->activatable.size(); i++)
 			{
-				if (selectedDoor == dungeon->doors[i])
+				if (selectedDoor == dungeon->activatable[i])
 				{
-					dungeon->doors.erase(dungeon->doors.begin()+i);
+					dungeon->activatable.erase(dungeon->activatable.begin()+i);
 					break;
 				}
 			}
@@ -440,7 +459,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLever()
 		selectedLever->Toggle(); // this could go out of sync.
 	}
 
-	if (ImGui::InputInt("Door ID", (int*)&selectedLever->doorID))
+	if (ImGui::InputInt("Activate ID", (int*)&selectedLever->activateID))
 		MarkUnsavedChanges();
 
 	if (ImGui::Button("Delete"))
@@ -475,6 +494,30 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLever()
 		}
 		ImGui::EndPopup();
 	}
+	ImGui::End();
+}
+
+void Crawl::DungeonEditor::DrawGUIModeTileEditPlate()
+{
+	ImGui::SetNextWindowSize({ 300, 100 });
+	ImGui::Begin("Edit Plate", &selectedActivatorPlateWindowOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+
+	ImGui::InputInt("Activate ID", (int*)&selectedActivatorPlate->activateID);
+	if (ImGui::Button("Delete"))
+	{
+		for (auto it = dungeon->activatorPlates.begin(); it != dungeon->activatorPlates.end(); it++)
+		{
+			if (selectedActivatorPlate == *it)
+			{
+				dungeon->activatorPlates.erase(it);
+				delete selectedActivatorPlate;
+				selectedActivatorPlate = nullptr;
+				selectedActivatorPlateWindowOpen = false;
+				break;
+			}
+		}
+	}
+
 	ImGui::End();
 }
 
@@ -561,10 +604,10 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 
 	// update list of tiles doors and levers / interactabes
 	selectTileDoors.clear();
-	for (int i = 0; i < dungeon->doors.size(); i++)
+	for (int i = 0; i < dungeon->activatable.size(); i++)
 	{
-		if (dungeon->doors[i]->position == selectedTile->position)
-			selectTileDoors.push_back(dungeon->doors[i]);
+		if (dungeon->activatable[i]->position == selectedTile->position)
+			selectTileDoors.push_back(dungeon->activatable[i]);
 	}
 
 	selectTileLevers.clear();
@@ -572,6 +615,12 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 	{
 		if (dungeon->interactables[i]->position == selectedTile->position)
 			selectTileLevers.push_back(dungeon->interactables[i]);
+	}
+	selectedActivatorPlate = nullptr;
+	for (int i = 0; i < dungeon->activatorPlates.size(); i++)
+	{
+		if (dungeon->activatorPlates[i]->position == selectedTile->position)
+			selectedActivatorPlate = dungeon->activatorPlates[i];
 	}
 }
 
@@ -602,9 +651,9 @@ int Crawl::DungeonEditor::GetNextAvailableDoorID()
 	while (!unused)
 	{
 		unused = true;
-		for (int i = 0; i < dungeon->doors.size(); i++)
+		for (int i = 0; i < dungeon->activatable.size(); i++)
 		{
-			if (dungeon->doors[i]->id == nextAvail)
+			if (dungeon->activatable[i]->id == nextAvail)
 			{
 				unused = false;
 				nextAvail++;
@@ -760,6 +809,8 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedTile = nullptr;
 	selectedLever = nullptr;
 	selectedDoor = nullptr;
+	selectedActivatorPlate = nullptr;
 	selectedDoorWindowOpen = false;
 	selectedLeverWindowOpen = false;
+	selectedActivatorPlateWindowOpen = false;
 }

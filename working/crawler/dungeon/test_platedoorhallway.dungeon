@@ -1,0 +1,264 @@
+{
+  "type": "dungeon",
+  "version": 1,
+  "tiles": [
+    {
+      "position": {
+        "x": -5,
+        "y": 4
+      },
+      "mask": 0,
+      "wallVariants": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "position": {
+        "x": -4,
+        "y": 2
+      },
+      "mask": 0,
+      "wallVariants": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "position": {
+        "x": -4,
+        "y": 5
+      },
+      "mask": 4,
+      "wallVariants": [
+        1,
+        1,
+        0,
+        1
+      ]
+    },
+    {
+      "position": {
+        "x": -3,
+        "y": 5
+      },
+      "mask": 6,
+      "wallVariants": [
+        1,
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": -2,
+        "y": 2
+      },
+      "mask": 0,
+      "wallVariants": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "position": {
+        "x": -2,
+        "y": 5
+      },
+      "mask": 2,
+      "wallVariants": [
+        1,
+        1,
+        1,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": -1,
+        "y": 4
+      },
+      "mask": 0,
+      "wallVariants": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "mask": 4,
+      "wallVariants": [
+        3,
+        2,
+        0,
+        1
+      ]
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": 0
+      },
+      "mask": 6,
+      "wallVariants": [
+        2,
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": 0
+      },
+      "mask": 6,
+      "wallVariants": [
+        3,
+        2,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": 0
+      },
+      "mask": 6,
+      "wallVariants": [
+        2,
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": 4
+      },
+      "mask": 0,
+      "wallVariants": [
+        3,
+        3,
+        2,
+        2
+      ]
+    },
+    {
+      "position": {
+        "x": 4,
+        "y": 0
+      },
+      "mask": 6,
+      "wallVariants": [
+        1,
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 5,
+        "y": 0
+      },
+      "mask": 2,
+      "wallVariants": [
+        3,
+        1,
+        1,
+        0
+      ]
+    }
+  ],
+  "levers": null,
+  "doors": [
+    {
+      "position": {
+        "x": 4,
+        "y": 0
+      },
+      "id": 2,
+      "orientation": 1,
+      "open": false
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": 0
+      },
+      "id": 3,
+      "orientation": 1,
+      "open": false
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": 0
+      },
+      "id": 4,
+      "orientation": 1,
+      "open": false
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": 0
+      },
+      "id": 5,
+      "orientation": 1,
+      "open": false
+    }
+  ],
+  "plates": [
+    {
+      "position": {
+        "x": 3,
+        "y": 4
+      },
+      "activateID": 0
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": 0
+      },
+      "activateID": 5
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": 0
+      },
+      "activateID": 4
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": 0
+      },
+      "activateID": 3
+    },
+    {
+      "position": {
+        "x": 4,
+        "y": 0
+      },
+      "activateID": 2
+    }
+  ]
+}

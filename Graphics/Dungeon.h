@@ -3,7 +3,6 @@
 #include "DungeonHelpers.h"
 #include "DungeonTile.h"
 
-
 #include <string>
 #include <map>
 #include <vector>
@@ -16,6 +15,7 @@ namespace Crawl
 	class DungeonInteractable;
 	class DungeonInteractableLever;
 	class DungeonDoor;
+	class DungeonActivatorPlate;
 
 	struct Column
 	{
@@ -43,8 +43,11 @@ namespace Crawl
 
 		void DoInteractable(unsigned int id);
 		DungeonInteractableLever* CreateLever(ivec2 position, unsigned int directionMask, unsigned int id, unsigned int doorID, bool startStatus);
-		void DoDoor(unsigned int id);
+		void DoActivate(unsigned int id);
+		void DoActivate(unsigned int id, bool on);
+
 		DungeonDoor* CreateDoor(ivec2 position, unsigned int directionMask, unsigned int id, bool startOpen);
+		DungeonActivatorPlate* CreatePlate(ivec2 position, unsigned int activateID);
 	
 		void Save(std::string filename);
 		void Load(std::string filename);
@@ -56,6 +59,8 @@ namespace Crawl
 		void SetParentTileObject(Object* object);
 
 		static unsigned int GetReverseDirectionMask(unsigned int direction);
+
+		void Update();
 
 	protected:
 		void InitialiseTileMap();
@@ -71,9 +76,14 @@ namespace Crawl
 		Object* tilesParentObject = nullptr;
 	public:
 		std::vector<DungeonInteractableLever*> interactables;
-		std::vector<DungeonDoor*> doors;
-	public:
+		std::vector<DungeonDoor*> activatable;
 		std::vector<string> wallVariantPaths;
+
+		// Test on movement
+		std::vector<DungeonActivatorPlate*> activatorPlates;
+		// spikes
+		// enemies
+		// kickable blocks?
 	};
 }
 

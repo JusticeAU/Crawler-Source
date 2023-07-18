@@ -42,5 +42,7 @@ namespace Crawl
 		Object* object;
 
 		bool didMove = false;
+
+		int hp = 1;
 	};
 }

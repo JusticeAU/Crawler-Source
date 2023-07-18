@@ -27,6 +27,7 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 		{
 			dungeon->DoInteractable(Scene::s_instance->objectPickedID);
 			Scene::s_instance->objectPickedID = 0;
+			dungeon->Update(); // this should move in to a big order of events process somewhere.
 		}
 
 		int index = -1;
@@ -39,17 +40,20 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 		if (Input::Keyboard(GLFW_KEY_D).Pressed())
 			index = GetMoveCardinalIndex(RIGHT_INDEX);
 
+		ivec2 oldPlayerCoordinate = position;
 		if (index != -1)
 		{
 			if (dungeon->CanMove(position, index))
 			{
 				position += directions[index];
+				dungeon->GetTile(position)->occupied = true;
 				didMove = true;
 			}
 		}
 
 		if (didMove)
 		{
+			dungeon->GetTile(oldPlayerCoordinate)->occupied = false;
 			state = MOVING;
 			oldPosition = object->localPosition;
 			targetPosition = { position.x * Crawl::DUNGEON_GRID_SCALE, position.y * Crawl::DUNGEON_GRID_SCALE , 0 };
@@ -92,6 +96,7 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 		{
 			object->SetLocalPosition(targetPosition);
 			state = IDLE;
+			dungeon->Update();  // this should move in to a big order of events process somewhere.
 		}
 		else
 			object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, t));

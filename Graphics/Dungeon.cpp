@@ -3,6 +3,7 @@
 #include "DungeonInteractableLever.h"
 #include "DungeonDoor.h"
 #include "Object.h"
+#include "DungeonActivatorPlate.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
@@ -149,11 +150,11 @@ bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 	// check for edge blocked - Doors!
 	// Check tile we're on
 	DungeonDoor* doorCheck = nullptr;
-	for (int i = 0; i < doors.size(); i++)
+	for (int i = 0; i < activatable.size(); i++)
 	{
-		if (doors[i]->position == fromPos && doors[i]->orientation == directionIndex)
+		if (activatable[i]->position == fromPos && activatable[i]->orientation == directionIndex)
 		{
-			doorCheck = doors[i];
+			doorCheck = activatable[i];
 			break;
 		}
 	}
@@ -162,11 +163,11 @@ bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 
 	// check tile we want to move to.
 	doorCheck = nullptr;
-	for (int i = 0; i < doors.size(); i++)
+	for (int i = 0; i < activatable.size(); i++)
 	{
-		if (doors[i]->position == toPos && doors[i]->orientation == reverseDirectionIndex)
+		if (activatable[i]->position == toPos && activatable[i]->orientation == reverseDirectionIndex)
 		{
-			doorCheck = doors[i];
+			doorCheck = activatable[i];
 			break;
 		}
 	}
@@ -215,17 +216,26 @@ Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, uns
 	else if (directionIndex == SOUTH_INDEX) lever_object->localRotation.z = 180.0f;
 	lever_object->children[0]->dirtyTransform = true;
 	lever->SetID(id);
-	lever->doorID = doorID;
+	lever->activateID = doorID;
 	interactables.push_back(lever);
 	return lever;
 }
 
-void Crawl::Dungeon::DoDoor(unsigned int id)
+void Crawl::Dungeon::DoActivate(unsigned int id)
 {
-	for (int i = 0; i < doors.size(); i++)
+	for (int i = 0; i < activatable.size(); i++)
 	{
-		if (doors[i]->id == id)
-			doors[i]->Toggle();
+		if (activatable[i]->id == id)
+			activatable[i]->Toggle();
+	}
+}
+
+void Crawl::Dungeon::DoActivate(unsigned int id, bool on)
+{
+	for (int i = 0; i < activatable.size(); i++)
+	{
+		if (activatable[i]->id == id)
+			activatable[i]->Toggle(on);
 	}
 }
 
@@ -250,8 +260,22 @@ Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int dire
 	else if (directionIndex == EAST_INDEX) door_object->localRotation.z = 90.0f;
 	else if (directionIndex == EAST_INDEX) door_object->localRotation.z = 180.0f;
 	door_object->children[0]->dirtyTransform = true;
-	doors.push_back(door);
+	activatable.push_back(door);
 	return door;
+}
+
+Crawl::DungeonActivatorPlate* Crawl::Dungeon::CreatePlate(ivec2 position, unsigned int activateID)
+{
+	DungeonActivatorPlate* plate = new DungeonActivatorPlate();
+	plate->position = position;
+	plate->activateID = activateID;
+	plate->dungeon = this;
+	plate->object = Scene::CreateObject();
+	plate->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/interactable_floortile.object"));
+	plate->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_floorplate/interactable_floorplate.object"));
+	plate->object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
+	activatorPlates.push_back(plate);
+	return plate;
 }
 
 void Crawl::Dungeon::Save(std::string filename)
@@ -275,11 +299,14 @@ void Crawl::Dungeon::Save(std::string filename)
 	output["levers"] = levers_json;
 
 	ordered_json doors_json;
-	for (auto& door : doors)
+	for (auto& door : activatable)
 		doors_json.push_back(*door);
 	output["doors"] = doors_json;
 
-
+	ordered_json plates_json;
+	for (auto& plate : activatorPlates)
+		plates_json.push_back(*plate);
+	output["plates"] = plates_json;
 
 	WriteJSONToDisk(filename, output);
 }
@@ -302,7 +329,7 @@ void Crawl::Dungeon::Load(std::string filename)
 	for (auto it = levers_json.begin(); it != levers_json.end(); it++)
 	{
 		DungeonInteractableLever lever = it.value().get<Crawl::DungeonInteractableLever>();
-		CreateLever(lever.position, lever.orientation, lever.id, lever.doorID, lever.startStatus);
+		CreateLever(lever.position, lever.orientation, lever.id, lever.activateID, lever.startStatus);
 	}
 
 	auto& doors_json = input["doors"];
@@ -310,6 +337,13 @@ void Crawl::Dungeon::Load(std::string filename)
 	{
 		DungeonDoor door = it.value().get<Crawl::DungeonDoor>();
 		CreateDoor(door.position, door.orientation, door.id, door.startOpen);
+	}
+
+	auto& plates_json = input["plates"];
+	for (auto it = plates_json.begin(); it != plates_json.end(); it++)
+	{
+		DungeonActivatorPlate plate = it.value().get<Crawl::DungeonActivatorPlate>();
+		CreatePlate(plate.position, plate.activateID);
 	}
 
 	BuildSceneFromDungeonLayout();
@@ -341,9 +375,13 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 		delete interactables[i];
 	interactables.clear();
 
-	for (int i = 0; i < doors.size(); i++)
-		delete doors[i];
-	doors.clear();
+	for (int i = 0; i < activatable.size(); i++)
+		delete activatable[i];
+	activatable.clear();
+
+	for (int i = 0; i < activatorPlates.size(); i++)
+		delete activatorPlates[i];
+	activatorPlates.clear();
 
 }
 
@@ -372,6 +410,18 @@ unsigned int Crawl::Dungeon::GetReverseDirectionMask(unsigned int direction)
 	default:
 		return 0; // Shouldn't get here.
 	}
+}
+
+void Crawl::Dungeon::Update()
+{
+	// test all activator plates
+	for (auto& tileTest : activatorPlates)
+		tileTest->TestPosition();
+
+	// update all doors
+	for (auto& door : activatable)
+		door->Update();
+
 }
 
 unsigned int Crawl::Dungeon::GetAutoTileMask(ivec2 position)

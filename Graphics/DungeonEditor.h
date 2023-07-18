@@ -29,6 +29,7 @@ namespace Crawl
 		void DrawGUIModeTileEdit();
 		void DrawGUIModeTileEditDoor();
 		void DrawGUIModeTileEditLever();
+		void DrawGUIModeTileEditPlate();
 
 
 		void Update();
@@ -99,6 +100,8 @@ namespace Crawl
 		bool selectedDoorWindowOpen = false;
 		DungeonInteractableLever* selectedLever = nullptr;
 		bool selectedLeverWindowOpen = false;
+		DungeonActivatorPlate* selectedActivatorPlate = nullptr;
+		bool selectedActivatorPlateWindowOpen = false;
 
 		bool unsavedChanges = false;
 		bool shouldConfirmSaveBeforeLoad = false;

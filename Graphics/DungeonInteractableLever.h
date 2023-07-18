@@ -21,12 +21,12 @@ namespace Crawl
 		Dungeon* dungeon = nullptr;
 		Object* object = nullptr;
 
-		unsigned int doorID = 0;
+		unsigned int activateID = 0;
 	};
 
 	static void to_json(ordered_json& j, const DungeonInteractableLever& lever)
 	{
-		j = { {"position", lever.position }, {"id", lever.id }, {"orientation", lever.orientation }, {"status", lever.status}, {"doorID", lever.doorID }};
+		j = { {"position", lever.position }, {"id", lever.id }, {"orientation", lever.orientation }, {"status", lever.status}, {"activateID", lever.activateID }};
 	}
 
 	static void from_json(const ordered_json& j, DungeonInteractableLever& lever)
@@ -35,6 +35,6 @@ namespace Crawl
 		j.at("id").get_to(lever.id);
 		j.at("orientation").get_to(lever.orientation);
 		j.at("status").get_to(lever.startStatus);
-		j.at("doorID").get_to(lever.doorID);
+		j.at("activateID").get_to(lever.activateID);
 	}
 }

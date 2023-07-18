@@ -10,10 +10,37 @@ Crawl::DungeonDoor::~DungeonDoor()
 void Crawl::DungeonDoor::Toggle()
 {
 	open = !open;
+	UpdateTransforms();
+}
+
+void Crawl::DungeonDoor::Toggle(bool on)
+{
+	//open = on;
+	//UpdateTransforms();
+	if (on)
+		power += 1;
+	else
+		power -= 1;
+}
+
+void Crawl::DungeonDoor::Update()
+{
+	bool oldState = open;
+	if (power > 0 && !open)
+		open = true;
+	if (power == 0 && open)
+		open = false;
+
+	if(oldState != open)
+		UpdateTransforms();
+}
+
+void Crawl::DungeonDoor::UpdateTransforms()
+{
 	if (open)
 	{
 		if (object)
-		{	
+		{
 			object->localPosition.z = 5.0f;
 			object->dirtyTransform = true;
 		}

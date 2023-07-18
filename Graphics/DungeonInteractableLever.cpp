@@ -28,8 +28,7 @@ void Crawl::DungeonInteractableLever::Toggle()
 		}
 	}
 
-	// hardcode doors
-	dungeon->DoDoor(doorID);
+	dungeon->DoActivate(activateID, status);
 }
 
 void Crawl::DungeonInteractableLever::SetID(unsigned int newID)

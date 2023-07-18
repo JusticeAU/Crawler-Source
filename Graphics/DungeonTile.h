@@ -14,6 +14,8 @@ namespace Crawl
 		int wallVariants[4] = { 0, 0, 0 ,0 }; // North, South, East, West
 
 		Object* object = nullptr;
+
+		bool occupied = false;
 	};
 
 	static void to_json(ordered_json& j, const DungeonTile& tile)
