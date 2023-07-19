@@ -2,8 +2,10 @@
 #include "DungeonHelpers.h"
 #include "DungeonInteractableLever.h"
 #include "DungeonDoor.h"
+#include "DungeonPlayer.h"
 #include "Object.h"
 #include "DungeonActivatorPlate.h"
+#include "DungeonTransporter.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
@@ -278,6 +280,25 @@ Crawl::DungeonActivatorPlate* Crawl::Dungeon::CreatePlate(ivec2 position, unsign
 	return plate;
 }
 
+Crawl::DungeonTransporter* Crawl::Dungeon::CreateTransporter(ivec2 position)
+{
+	DungeonTransporter* transporter = new DungeonTransporter();
+	transporter->position = position;
+	transporter->object = Scene::CreateObject();
+	transporter->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/exit.object"));
+	transporter->object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 1 });
+	transporterPlates.push_back(transporter);
+	return transporter;
+}
+
+Crawl::DungeonTransporter* Crawl::Dungeon::GetTransporter(string transporterName)
+{
+	for (auto& transporter : transporterPlates)
+		if (transporter->name == transporterName) return transporter;
+
+	return nullptr;
+}
+
 void Crawl::Dungeon::Save(std::string filename)
 {
 	ordered_json output;
@@ -307,6 +328,11 @@ void Crawl::Dungeon::Save(std::string filename)
 	for (auto& plate : activatorPlates)
 		plates_json.push_back(*plate);
 	output["plates"] = plates_json;
+
+	ordered_json transporters_json;
+	for (auto& plate : transporterPlates)
+		transporters_json.push_back(*plate);
+	output["transporters"] = transporters_json;
 
 	WriteJSONToDisk(filename, output);
 }
@@ -346,6 +372,17 @@ void Crawl::Dungeon::Load(std::string filename)
 		CreatePlate(plate.position, plate.activateID);
 	}
 
+	auto& transporters_json = input["transporters"];
+	for (auto it = transporters_json.begin(); it != transporters_json.end(); it++)
+	{
+		DungeonTransporter transporter = it.value().get<Crawl::DungeonTransporter>();
+		DungeonTransporter* newTransporter = CreateTransporter(transporter.position);
+		newTransporter->name = transporter.name;
+		newTransporter->toDungeon = transporter.toDungeon;
+		newTransporter->toTransporter = transporter.toTransporter;
+		newTransporter->fromOrientation = transporter.fromOrientation;
+	}
+
 	BuildSceneFromDungeonLayout();
 }
 
@@ -383,6 +420,10 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 		delete activatorPlates[i];
 	activatorPlates.clear();
 
+	for (int i = 0; i < transporterPlates.size(); i++)
+		delete transporterPlates[i];
+	transporterPlates.clear();
+
 }
 
 Object* Crawl::Dungeon::GetTileTemplate(int mask)
@@ -418,9 +459,40 @@ void Crawl::Dungeon::Update()
 	for (auto& tileTest : activatorPlates)
 		tileTest->TestPosition();
 
+
 	// update all doors
 	for (auto& door : activatable)
 		door->Update();
+
+	// test all transporters
+	DungeonTransporter* activateTransporter = nullptr;
+	for (auto& transporter : transporterPlates)
+	{
+		if (transporter->position == player->GetPosition())
+		{
+			activateTransporter = transporter;
+			break;
+		}
+	}
+	if (activateTransporter)
+	{
+		string dungeonToLoad = activateTransporter->toDungeon;
+		string TransporterToGoTo = activateTransporter->toTransporter;
+		// Load dungeonName
+		Load(dungeonToLoad + ".dungeon");
+
+		// Get Transporter By Name
+		DungeonTransporter* gotoTransporter = GetTransporter(TransporterToGoTo);
+
+		// Set player Position
+		if (gotoTransporter)
+		{
+			player->Teleport(gotoTransporter->position);
+			player->Orient((FACING_INDEX)gotoTransporter->fromOrientation);
+		}
+		else
+			LogUtils::Log("Unable to find transporter in new dungeon");
+	}
 
 }
 

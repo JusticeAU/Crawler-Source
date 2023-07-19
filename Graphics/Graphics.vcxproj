@@ -218,6 +218,7 @@
     <ClCompile Include="DungeonInteractableLever.cpp" />
     <ClCompile Include="DungeonPlayer.cpp" />
     <ClCompile Include="DungeonActivatorPlate.cpp" />
+    <ClCompile Include="DungeonTransporter.cpp" />
     <ClCompile Include="FrameBuffer.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Input.cpp" />
@@ -280,6 +281,7 @@
     <ClInclude Include="DungeonPlayer.h" />
     <ClInclude Include="DungeonTile.h" />
     <ClInclude Include="DungeonActivatorPlate.h" />
+    <ClInclude Include="DungeonTransporter.h" />
     <ClInclude Include="FileUtils.h" />
     <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="glad.h" />

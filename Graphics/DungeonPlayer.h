@@ -23,6 +23,10 @@ namespace Crawl
 
 		void Update(float deltaTime);
 
+		ivec2 GetPosition() { return position; }
+		void Teleport(ivec2 position);
+		void Orient(FACING_INDEX facing);
+
 		// combines our requested direction with our facing direction to return the actual direction.
 		unsigned int GetMoveCardinalIndex(DIRECTION_INDEX dir);
 

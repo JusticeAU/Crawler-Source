@@ -281,6 +281,9 @@
     <ClCompile Include="DungeonActivatorPlate.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
+    <ClCompile Include="DungeonTransporter.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -488,6 +491,9 @@
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
     <ClInclude Include="DungeonActivatorPlate.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonTransporter.h">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
   </ItemGroup>

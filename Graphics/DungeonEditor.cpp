@@ -2,6 +2,7 @@
 #include "DungeonDoor.h"
 #include "DungeonInteractableLever.h"
 #include "DungeonActivatorPlate.h"
+#include "DungeonTransporter.h"
 #include "DungeonHelpers.h"
 #include "Object.h"
 #include "Input.h"
@@ -332,7 +333,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		RefreshSelectedTile();
 	}
 
-	// Activator Plates
+	// Activator Plates - exclusive on a tile ( combine? )
 	if (selectedActivatorPlate)
 	{
 		if (ImGui::Selectable("Plate")) selectedActivatorPlateWindowOpen = true;
@@ -345,12 +346,29 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		RefreshSelectedTile();
 	}
 
+	// Transporters - exclusive on a tile ( combine? )
+	if (selectedTransporter)
+	{
+		if (ImGui::Selectable("transporter")) selectedTransporterWindowOpen = true;
+
+	}
+	else if (ImGui::Button("Add Transporter"))
+	{
+		MarkUnsavedChanges();
+		selectedTransporter = dungeon->CreateTransporter(selectedTile->position);
+		selectedTransporterWindowOpen = true;
+		//RefreshSelectedTile(); // shouldn't need this?
+	}
+
 	if (selectedDoorWindowOpen)
 		DrawGUIModeTileEditDoor();
 	if (selectedLeverWindowOpen)
 		DrawGUIModeTileEditLever();
 	if (selectedActivatorPlateWindowOpen)
 		DrawGUIModeTileEditPlate();
+	if (selectedTransporterWindowOpen)
+		DrawGUIModeTileEditTransporter();
+
 
 }
 
@@ -521,6 +539,51 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditPlate()
 	ImGui::End();
 }
 
+void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
+{
+	ImGui::SetNextWindowSize({ 500, 165 });
+	ImGui::Begin("Edit Transporter", &selectedTransporterWindowOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+	if (ImGui::InputText("Name", &selectedTransporter->name))
+		MarkUnsavedChanges();
+	if (ImGui::BeginCombo("Orientation", orientationNames[selectedTransporter->fromOrientation].c_str()))
+	{
+		int oldOrientation = selectedTransporter->fromOrientation;
+		for (int i = 0; i < 4; i++)
+			if (ImGui::Selectable(orientationNames[i].c_str()))
+			{
+				selectedTransporter->fromOrientation = i;
+				if (selectedTransporter->fromOrientation != oldOrientation)
+				{
+					MarkUnsavedChanges();
+					selectedTransporter->object->SetLocalRotationZ(orientationEulers[i]);
+				}
+			}
+		ImGui::EndCombo();
+	}
+	if(ImGui::InputText("To Dungeon", &selectedTransporter->toDungeon))
+		MarkUnsavedChanges();
+	if(ImGui::InputText("To Transporter", &selectedTransporter->toTransporter))
+		MarkUnsavedChanges();
+
+	if (ImGui::Button("Delete"))
+	{
+		for (auto it = dungeon->transporterPlates.begin(); it != dungeon->transporterPlates.end(); it++)
+		{
+			if (selectedTransporter == *it)
+			{
+				dungeon->transporterPlates.erase(it);
+				delete selectedTransporter;
+				selectedTransporter = nullptr;
+				selectedTransporterWindowOpen = false;
+				break;
+			}
+		}
+		MarkUnsavedChanges();
+	}
+
+	ImGui::End();
+}
+
 void Crawl::DungeonEditor::Update()
 {
 	switch (editMode)
@@ -616,11 +679,19 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 		if (dungeon->interactables[i]->position == selectedTile->position)
 			selectTileLevers.push_back(dungeon->interactables[i]);
 	}
+
 	selectedActivatorPlate = nullptr;
 	for (int i = 0; i < dungeon->activatorPlates.size(); i++)
 	{
 		if (dungeon->activatorPlates[i]->position == selectedTile->position)
 			selectedActivatorPlate = dungeon->activatorPlates[i];
+	}
+
+	selectedTransporter = nullptr;
+	for (int i = 0; i < dungeon->transporterPlates.size(); i++)
+	{
+		if (dungeon->transporterPlates[i]->position == selectedTile->position)
+			selectedTransporter = dungeon->transporterPlates[i];
 	}
 }
 
@@ -809,8 +880,10 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedTile = nullptr;
 	selectedLever = nullptr;
 	selectedDoor = nullptr;
+	selectedTransporter = nullptr;
 	selectedActivatorPlate = nullptr;
 	selectedDoorWindowOpen = false;
 	selectedLeverWindowOpen = false;
 	selectedActivatorPlateWindowOpen = false;
+	selectedTransporterWindowOpen = false;
 }

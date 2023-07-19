@@ -110,6 +110,7 @@ Application::Application()
 
 	dungeon = new Crawl::Dungeon();
 	dungeonPlayer = new Crawl::DungeonPlayer();
+	dungeon->SetPlayer(dungeonPlayer);
 	dungeonPlayer->SetDungeon(dungeon);
 	
 }

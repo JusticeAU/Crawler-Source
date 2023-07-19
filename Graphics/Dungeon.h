@@ -12,10 +12,12 @@ using glm::ivec2;
 namespace Crawl
 {
 	const int DUNGEON_GRID_SCALE = 5;
+	class DungeonPlayer;
 	class DungeonInteractable;
 	class DungeonInteractableLever;
 	class DungeonDoor;
 	class DungeonActivatorPlate;
+	class DungeonTransporter;
 
 	struct Column
 	{
@@ -41,6 +43,8 @@ namespace Crawl
 		bool IsOpenTile(ivec2 position);
 		bool CanMove(ivec2 fromPos, int directionIndex);
 
+		void SetPlayer(DungeonPlayer* player) { this->player = player; }
+
 		void DoInteractable(unsigned int id);
 		DungeonInteractableLever* CreateLever(ivec2 position, unsigned int directionMask, unsigned int id, unsigned int doorID, bool startStatus);
 		void DoActivate(unsigned int id);
@@ -48,6 +52,8 @@ namespace Crawl
 
 		DungeonDoor* CreateDoor(ivec2 position, unsigned int directionMask, unsigned int id, bool startOpen);
 		DungeonActivatorPlate* CreatePlate(ivec2 position, unsigned int activateID);
+		DungeonTransporter* CreateTransporter(ivec2 position);
+		DungeonTransporter* GetTransporter(string transporterName);
 	
 		void Save(std::string filename);
 		void Load(std::string filename);
@@ -81,6 +87,9 @@ namespace Crawl
 
 		// Test on movement
 		std::vector<DungeonActivatorPlate*> activatorPlates;
+		std::vector<DungeonTransporter*> transporterPlates;
+		DungeonPlayer* player = nullptr;
+
 		// spikes
 		// enemies
 		// kickable blocks?

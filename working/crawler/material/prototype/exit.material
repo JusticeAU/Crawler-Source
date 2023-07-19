@@ -1,0 +1,29 @@
+{
+  "type": "material",
+  "version": 1,
+  "shader": "engine/shader/lambertLitSingleLight",
+  "Ka": {
+    "x": 0.0,
+    "y": 0.0,
+    "z": 0.0
+  },
+  "Kd": {
+    "x": 1.0,
+    "y": 1.0,
+    "z": 1.0
+  },
+  "Ks": {
+    "x": 1.0,
+    "y": 1.0,
+    "z": 1.0
+  },
+  "Ns": 20.0,
+  "map_Kd": "crawler/texture/prototype/exit.png",
+  "map_Ks": "",
+  "bump": "",
+  "albedoMap": "",
+  "normalMap": "",
+  "metallicMap": "",
+  "roughnessMap": "",
+  "aoMap": ""
+}

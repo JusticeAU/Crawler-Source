@@ -1,0 +1,135 @@
+{
+  "type": "dungeon",
+  "version": 1,
+  "tiles": [
+    {
+      "position": {
+        "x": -1,
+        "y": 0
+      },
+      "mask": 4,
+      "wallVariants": [
+        3,
+        3,
+        0,
+        2
+      ]
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "mask": 6,
+      "wallVariants": [
+        3,
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": 0
+      },
+      "mask": 6,
+      "wallVariants": [
+        3,
+        2,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": -2
+      },
+      "mask": 4,
+      "wallVariants": [
+        1,
+        1,
+        0,
+        2
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": 0
+      },
+      "mask": 6,
+      "wallVariants": [
+        1,
+        2,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": -2
+      },
+      "mask": 3,
+      "wallVariants": [
+        0,
+        2,
+        3,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": -1
+      },
+      "mask": 9,
+      "wallVariants": [
+        0,
+        0,
+        3,
+        2
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": 0
+      },
+      "mask": 10,
+      "wallVariants": [
+        3,
+        0,
+        2,
+        0
+      ]
+    }
+  ],
+  "levers": null,
+  "doors": null,
+  "plates": null,
+  "transporters": [
+    {
+      "name": "Loop",
+      "position": {
+        "x": -1,
+        "y": 0
+      },
+      "fromOrientation": 1,
+      "toDungeon": "crawler/dungeon/test_transporter",
+      "toTransporter": "Loop"
+    },
+    {
+      "name": "Big Room",
+      "position": {
+        "x": 2,
+        "y": -2
+      },
+      "fromOrientation": 1,
+      "toDungeon": "crawler/dungeon/test_transporter_bigroom",
+      "toTransporter": "Hall"
+    }
+  ]
+}

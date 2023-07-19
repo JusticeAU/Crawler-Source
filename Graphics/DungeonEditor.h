@@ -30,7 +30,7 @@ namespace Crawl
 		void DrawGUIModeTileEditDoor();
 		void DrawGUIModeTileEditLever();
 		void DrawGUIModeTileEditPlate();
-
+		void DrawGUIModeTileEditTransporter();
 
 		void Update();
 		void UpdateModeTileBrush();
@@ -102,6 +102,9 @@ namespace Crawl
 		bool selectedLeverWindowOpen = false;
 		DungeonActivatorPlate* selectedActivatorPlate = nullptr;
 		bool selectedActivatorPlateWindowOpen = false;
+		DungeonTransporter* selectedTransporter = nullptr;
+		bool selectedTransporterWindowOpen = false;
+
 
 		bool unsavedChanges = false;
 		bool shouldConfirmSaveBeforeLoad = false;

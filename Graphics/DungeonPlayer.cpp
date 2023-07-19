@@ -115,6 +115,20 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 	}
 }
 
+void Crawl::DungeonPlayer::Teleport(ivec2 position)
+{
+	state = IDLE;
+	this->position = position;
+	targetPosition = { position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 };
+	object->SetLocalPosition(targetPosition);
+}
+
+void Crawl::DungeonPlayer::Orient(FACING_INDEX facing)
+{
+	this->facing = facing;
+	object->SetLocalRotationZ(orientationEulers[facing]);
+}
+
 // Take the requested direction and offset by the direction we're facing, check for overflow, then index in to the directions array.
 unsigned int Crawl::DungeonPlayer::GetMoveCardinalIndex(DIRECTION_INDEX dir)
 {
