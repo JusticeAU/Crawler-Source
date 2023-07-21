@@ -19,6 +19,7 @@ namespace Crawl
 	class DungeonActivatorPlate;
 	class DungeonTransporter;
 	class DungeonSpikes;
+	class DungeonPushableBlock;
 
 	struct Column
 	{
@@ -52,12 +53,15 @@ namespace Crawl
 		void DoActivate(unsigned int id, bool on);
 
 		void DamageAtPosition(ivec2 position);
+		void DoKick(ivec2 position, FACING_INDEX facing);
 
 		DungeonDoor* CreateDoor(ivec2 position, unsigned int directionMask, unsigned int id, bool startOpen);
 		DungeonActivatorPlate* CreatePlate(ivec2 position, unsigned int activateID);
 		DungeonTransporter* CreateTransporter(ivec2 position);
 		DungeonSpikes* CreateSpikes(ivec2 position);
 		void RemoveSpikes(ivec2 position);
+		DungeonPushableBlock* CreatePushableBlock(ivec2 position);
+		void RemovePushableBlock(ivec2 position);
 		DungeonTransporter* GetTransporter(string transporterName);
 	
 		void Save(std::string filename);
@@ -102,6 +106,8 @@ namespace Crawl
 		std::vector<DungeonActivatorPlate*> activatorPlates;
 		std::vector<DungeonTransporter*> transporterPlates;
 		std::vector<DungeonSpikes*> spikesPlates;
+		std::vector<DungeonPushableBlock*> pushableBlocks;
+		
 		DungeonPlayer* player = nullptr;
 
 		// spikes

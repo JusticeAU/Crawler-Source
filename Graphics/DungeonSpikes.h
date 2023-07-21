@@ -1,3 +1,4 @@
+#pragma once
 #include "glm.hpp"
 #include "serialisation.h"
 

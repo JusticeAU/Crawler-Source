@@ -6,6 +6,7 @@
 #include "DungeonHelpers.h"
 #include "DungeonPlayer.h"
 #include "DungeonSpikes.h"
+#include "DungeonPushableBlock.h"
 #include "Object.h"
 #include "Input.h"
 #include "Camera.h"
@@ -283,6 +284,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	ImGui::Text("Selected Tile");
 	ImGui::BeginDisabled();
 	ImGui::DragInt2("Location", &selectedTile->position.x);
+	ImGui::Checkbox("Occupied", &selectedTile->occupied);
 	ImGui::EndDisabled();
 
 	// Cardinal traversable yes/no
@@ -406,6 +408,23 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		MarkUnsavedChanges();
 		dungeon->CreateSpikes(selectedTile->position);
 		selectedHasSpikes = true;
+	}
+
+	// Pushable Blocks - similar but different to plates - they are closer to NPCs - they occupy a space.
+	if (selectedHasBlock)
+	{
+		if (ImGui::Button("Delete Block"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemovePushableBlock(selectedTile->position);
+			selectedHasBlock = false;
+		}
+	}
+	else if (ImGui::Button("Add Block"))
+	{
+		MarkUnsavedChanges();
+		dungeon->CreatePushableBlock(selectedTile->position);
+		selectedHasBlock = true;
 	}
 
 	if (selectedDoorWindowOpen)
@@ -766,6 +785,13 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 	{
 		if (dungeon->spikesPlates[i]->position == selectedTile->position)
 			selectedHasSpikes = true;
+	}
+
+	selectedHasBlock = false;
+	for (int i = 0; i < dungeon->pushableBlocks.size(); i++)
+	{
+		if (dungeon->pushableBlocks[i]->position == selectedTile->position)
+			selectedHasBlock = true;
 	}
 
 }

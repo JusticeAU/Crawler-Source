@@ -7,6 +7,7 @@
 #include "DungeonActivatorPlate.h"
 #include "DungeonTransporter.h"
 #include "DungeonSpikes.h"
+#include "DungeonPushableBlock.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
@@ -177,8 +178,37 @@ bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 	if (doorCheck && !doorCheck->open)
 		return false;
 
-	// check destination blocked
-	// TODO
+	// check destination blocked by pushable box
+	DungeonTile* toTile = GetTile(toPos);
+
+	// needs to be a 'if block can be pushed in direction check'
+	for (int i = 0; i < pushableBlocks.size(); i++)
+	{
+		if (pushableBlocks[i]->position == toPos)
+		{
+			LogUtils::Log("There is a block where we are trying to move");
+			// there is a block where we want to go to.
+			// can it be pushed?
+			DungeonTile* blockTo = GetTile(toPos + directions[directionIndex]);
+			if (blockTo)
+			{
+				LogUtils::Log("block has a tile behind it");
+				if (blockTo->occupied)
+				{
+					LogUtils::Log("the tile is occupied");
+					return false;
+				}
+				else
+				{
+					LogUtils::Log("There tile is occupied, kicking it");
+					DoKick(fromPos, (FACING_INDEX)directionIndex);
+					return true;
+				}
+			}
+		}
+	}
+
+	canMove = !toTile->occupied;
 
 	return canMove;
 }
@@ -250,6 +280,43 @@ void Crawl::Dungeon::DamageAtPosition(ivec2 position)
 		player->TakeDamage();
 }
 
+void Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
+{
+	// translate kick in direction
+	ivec2 targetPosition = fromPosition + directions[direction];
+
+	// see if theres anything kickable in that position
+	DungeonPushableBlock* pushable = nullptr;
+	for (auto& block : pushableBlocks)
+	{
+		if (block->position == targetPosition)
+		{
+			pushable = block;
+			break;
+		}
+	}
+	if (!pushable)
+		return;
+	DungeonTile* kickTile = GetTile(targetPosition);
+
+	// see if the thing can move
+	ivec2 moveToPos = targetPosition + directions[direction];
+	// is there a tile?
+	DungeonTile* toTile = GetTile(moveToPos);
+	if (!toTile)
+		return;
+	// is it occupied?
+	if (toTile->occupied)
+		return; // We coudl do damage and shit here.
+
+	// kick it in that direction
+	kickTile->occupied = false;
+	toTile->occupied = true;
+	pushable->position = moveToPos;
+	pushable->object->AddLocalPosition({ directions[direction].x * DUNGEON_GRID_SCALE, directions[direction].y * DUNGEON_GRID_SCALE, 0 });
+
+}
+
 Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int directionIndex, unsigned int id, bool startOpen)
 {
 	DungeonDoor* door = new DungeonDoor();
@@ -306,7 +373,7 @@ Crawl::DungeonSpikes* Crawl::Dungeon::CreateSpikes(ivec2 position)
 	spikes->position = position;
 	spikes->object = Scene::CreateObject();
 	spikes->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/spikes.object"));
-	spikes->object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, -0.4 });
+	spikes->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
 	spikesPlates.push_back(spikes);
 	return spikes;
 }
@@ -319,6 +386,41 @@ void Crawl::Dungeon::RemoveSpikes(ivec2 position)
 		{
 			delete spikesPlates[i];
 			spikesPlates.erase(spikesPlates.begin() + i);
+			break;
+		}
+	}
+}
+
+Crawl::DungeonPushableBlock* Crawl::Dungeon::CreatePushableBlock(ivec2 position)
+{
+	DungeonPushableBlock* pushable = new DungeonPushableBlock();
+	pushable->position = position;
+	pushable->object = Scene::CreateObject();
+	pushable->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/pushable.object"));
+	pushable->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
+	pushableBlocks.push_back(pushable);
+
+	// set tile its in to be occupied.
+	DungeonTile* tile = GetTile(position);
+	if (tile)
+		tile->occupied = true;
+	return pushable;
+}
+
+void Crawl::Dungeon::RemovePushableBlock(ivec2 position)
+{
+	for (int i = 0; i < pushableBlocks.size(); i++)
+	{
+		if (pushableBlocks[i]->position == position)
+		{
+			delete pushableBlocks[i];
+			pushableBlocks.erase(pushableBlocks.begin() + i);
+			
+			// set tile its in to be unoccupied
+			// This is super dodgy and will cause bugs probably.
+			DungeonTile* tile = GetTile(position);
+			if (tile)
+				tile->occupied = false;
 			break;
 		}
 	}
@@ -386,6 +488,11 @@ void Crawl::Dungeon::BuildSerialised()
 	for (auto& spikes : spikesPlates)
 		spikes_json.push_back(*spikes);
 	serialised["spikes"] = spikes_json;
+
+	ordered_json blocks_json;
+	for (auto& block : pushableBlocks)
+		blocks_json.push_back(*block);
+	serialised["blocks"] = blocks_json;
 }
 
 void Crawl::Dungeon::RebuildFromSerialised()
@@ -450,6 +557,13 @@ void Crawl::Dungeon::RebuildFromSerialised()
 		CreateSpikes(spikes.position);
 	}
 
+	auto& blocks_json = serialised["blocks"];
+	for (auto it = blocks_json.begin(); it != blocks_json.end(); it++)
+	{
+		DungeonPushableBlock block = it.value().get<Crawl::DungeonPushableBlock>();
+		CreatePushableBlock(block.position);
+	}
+
 	BuildSceneFromDungeonLayout();
 }
 
@@ -494,6 +608,10 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 	for (int i = 0; i < spikesPlates.size(); i++)
 		delete spikesPlates[i];
 	spikesPlates.clear();
+
+	for (int i = 0; i < pushableBlocks.size(); i++)
+		delete pushableBlocks[i];
+	pushableBlocks.clear();
 
 }
 
@@ -568,6 +686,20 @@ void Crawl::Dungeon::Update()
 	// All spikes perform damage
 	for (auto& spikes : spikesPlates)
 	{
+		// check for pushable boxes at spikes
+		for (int i = 0; i < pushableBlocks.size(); i++)
+		{
+			if (pushableBlocks[i]->position == spikes->position)
+			{
+				GetTile(pushableBlocks[i]->position)->occupied = false;
+				spikes->disabled = true;
+				((ComponentRenderer*)spikes->object->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/spikes_covered.material");
+				delete pushableBlocks[i];
+				pushableBlocks.erase(pushableBlocks.begin() + i);
+				break;
+			}
+		}
+
 		if(!spikes->disabled)
 			DamageAtPosition(spikes->position);
 	}

@@ -1,4 +1,5 @@
 #include "DungeonActivatorPlate.h"
+#include "Dungeon.h"
 #include "Object.h"
 #include "imgui.h"
 #include <iostream>

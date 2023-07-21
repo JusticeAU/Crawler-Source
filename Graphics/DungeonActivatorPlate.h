@@ -1,11 +1,13 @@
 #pragma once
-#include "Dungeon.h"
 #include "glm.hpp"
+#include "serialisation.h"
 
 class Object;
 
 namespace Crawl
 {
+	class Dungeon;
+
 	class DungeonActivatorPlate
 	{
 	public:

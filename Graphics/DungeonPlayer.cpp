@@ -13,8 +13,8 @@ Crawl::DungeonPlayer::DungeonPlayer()
 void Crawl::DungeonPlayer::Update(float deltaTime)
 {
 	// damage player for testing
-	if (Input::Keyboard(GLFW_KEY_SPACE).Down())
-		hp -= 1;
+	/*if (Input::Keyboard(GLFW_KEY_SPACE).Down())
+		hp -= 1;*/
 
 	if (state == IDLE)
 	{
@@ -28,6 +28,13 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 
 		glm::ivec2 coordinate = { 0, 0 };
 		glm::ivec2 coordinateUnchanged = { 0, 0 }; // TO DO this sucks
+
+		if (Input::Keyboard(GLFW_KEY_SPACE).Down())
+		{
+			dungeon->DoKick(position, facing);
+			dungeon->Update();
+			return;
+		}
 
 		// Test Object Picking stuffo
 		if (Input::Mouse(0).Down())
