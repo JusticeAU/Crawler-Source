@@ -108,6 +108,7 @@ namespace Crawl
 		bool selectedActivatorPlateWindowOpen = false;
 		DungeonTransporter* selectedTransporter = nullptr;
 		bool selectedTransporterWindowOpen = false;
+		bool selectedHasSpikes = false;
 
 
 		bool unsavedChanges = false;

@@ -162,6 +162,11 @@ void Crawl::DungeonPlayer::Respawn()
 	hp = maxHp;
 }
 
+void Crawl::DungeonPlayer::TakeDamage()
+{
+	hp -= 1;
+}
+
 // Take the requested direction and offset by the direction we're facing, check for overflow, then index in to the directions array.
 unsigned int Crawl::DungeonPlayer::GetMoveCardinalIndex(DIRECTION_INDEX dir)
 {

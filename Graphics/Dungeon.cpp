@@ -6,6 +6,7 @@
 #include "Object.h"
 #include "DungeonActivatorPlate.h"
 #include "DungeonTransporter.h"
+#include "DungeonSpikes.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
@@ -241,6 +242,14 @@ void Crawl::Dungeon::DoActivate(unsigned int id, bool on)
 	}
 }
 
+void Crawl::Dungeon::DamageAtPosition(ivec2 position)
+{
+	// For now it's just the player, but this might need to turn in to "damagables"
+	// For prototype, lets just go with player, and vectors of things that can take damage (enemies)
+	if (player->GetPosition() == position)
+		player->TakeDamage();
+}
+
 Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int directionIndex, unsigned int id, bool startOpen)
 {
 	DungeonDoor* door = new DungeonDoor();
@@ -289,6 +298,30 @@ Crawl::DungeonTransporter* Crawl::Dungeon::CreateTransporter(ivec2 position)
 	transporter->object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 1 });
 	transporterPlates.push_back(transporter);
 	return transporter;
+}
+
+Crawl::DungeonSpikes* Crawl::Dungeon::CreateSpikes(ivec2 position)
+{
+	DungeonSpikes* spikes = new DungeonSpikes();
+	spikes->position = position;
+	spikes->object = Scene::CreateObject();
+	spikes->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/spikes.object"));
+	spikes->object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, -0.4 });
+	spikesPlates.push_back(spikes);
+	return spikes;
+}
+
+void Crawl::Dungeon::RemoveSpikes(ivec2 position)
+{
+	for (int i = 0; i < spikesPlates.size(); i++)
+	{
+		if (spikesPlates[i]->position == position)
+		{
+			delete spikesPlates[i];
+			spikesPlates.erase(spikesPlates.begin() + i);
+			break;
+		}
+	}
 }
 
 Crawl::DungeonTransporter* Crawl::Dungeon::GetTransporter(string transporterName)
@@ -348,6 +381,11 @@ void Crawl::Dungeon::BuildSerialised()
 	for (auto& plate : transporterPlates)
 		transporters_json.push_back(*plate);
 	serialised["transporters"] = transporters_json;
+
+	ordered_json spikes_json;
+	for (auto& spikes : spikesPlates)
+		spikes_json.push_back(*spikes);
+	serialised["spikes"] = spikes_json;
 }
 
 void Crawl::Dungeon::RebuildFromSerialised()
@@ -405,6 +443,13 @@ void Crawl::Dungeon::RebuildFromSerialised()
 		newTransporter->fromOrientation = transporter.fromOrientation;
 	}
 
+	auto& spikes_json = serialised["spikes"];
+	for (auto it = spikes_json.begin(); it != spikes_json.end(); it++)
+	{
+		DungeonSpikes spikes = it.value().get<Crawl::DungeonSpikes>();
+		CreateSpikes(spikes.position);
+	}
+
 	BuildSceneFromDungeonLayout();
 }
 
@@ -445,6 +490,10 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 	for (int i = 0; i < transporterPlates.size(); i++)
 		delete transporterPlates[i];
 	transporterPlates.clear();
+
+	for (int i = 0; i < spikesPlates.size(); i++)
+		delete spikesPlates[i];
+	spikesPlates.clear();
 
 }
 
@@ -516,6 +565,12 @@ void Crawl::Dungeon::Update()
 			LogUtils::Log("Unable to find transporter in new dungeon");
 	}
 
+	// All spikes perform damage
+	for (auto& spikes : spikesPlates)
+	{
+		if(!spikes->disabled)
+			DamageAtPosition(spikes->position);
+	}
 }
 
 unsigned int Crawl::Dungeon::GetAutoTileMask(ivec2 position)

@@ -29,6 +29,8 @@ namespace Crawl
 		void SetRespawn(ivec2 position, FACING_INDEX orientation);
 		void Respawn();
 
+		void TakeDamage();
+
 		// combines our requested direction with our facing direction to return the actual direction.
 		unsigned int GetMoveCardinalIndex(DIRECTION_INDEX dir);
 

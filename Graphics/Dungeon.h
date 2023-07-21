@@ -18,6 +18,7 @@ namespace Crawl
 	class DungeonDoor;
 	class DungeonActivatorPlate;
 	class DungeonTransporter;
+	class DungeonSpikes;
 
 	struct Column
 	{
@@ -50,9 +51,13 @@ namespace Crawl
 		void DoActivate(unsigned int id);
 		void DoActivate(unsigned int id, bool on);
 
+		void DamageAtPosition(ivec2 position);
+
 		DungeonDoor* CreateDoor(ivec2 position, unsigned int directionMask, unsigned int id, bool startOpen);
 		DungeonActivatorPlate* CreatePlate(ivec2 position, unsigned int activateID);
 		DungeonTransporter* CreateTransporter(ivec2 position);
+		DungeonSpikes* CreateSpikes(ivec2 position);
+		void RemoveSpikes(ivec2 position);
 		DungeonTransporter* GetTransporter(string transporterName);
 	
 		void Save(std::string filename);
@@ -96,6 +101,7 @@ namespace Crawl
 		// Test on movement
 		std::vector<DungeonActivatorPlate*> activatorPlates;
 		std::vector<DungeonTransporter*> transporterPlates;
+		std::vector<DungeonSpikes*> spikesPlates;
 		DungeonPlayer* player = nullptr;
 
 		// spikes

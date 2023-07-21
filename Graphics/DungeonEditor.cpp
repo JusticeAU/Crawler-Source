@@ -5,6 +5,7 @@
 #include "DungeonTransporter.h"
 #include "DungeonHelpers.h"
 #include "DungeonPlayer.h"
+#include "DungeonSpikes.h"
 #include "Object.h"
 #include "Input.h"
 #include "Camera.h"
@@ -390,6 +391,23 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		//RefreshSelectedTile(); // shouldn't need this?
 	}
 
+	// Spikes - exclusive on a tile ( combine? )
+	if (selectedHasSpikes)
+	{	
+		if (ImGui::Button("Delete Spikes"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemoveSpikes(selectedTile->position);
+			selectedHasSpikes = false;
+		}
+	}
+	else if (ImGui::Button("Add Spikes"))
+	{
+		MarkUnsavedChanges();
+		dungeon->CreateSpikes(selectedTile->position);
+		selectedHasSpikes = true;
+	}
+
 	if (selectedDoorWindowOpen)
 		DrawGUIModeTileEditDoor();
 	if (selectedLeverWindowOpen)
@@ -742,6 +760,14 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 		if (dungeon->transporterPlates[i]->position == selectedTile->position)
 			selectedTransporter = dungeon->transporterPlates[i];
 	}
+
+	selectedHasSpikes = false;
+	for (int i = 0; i < dungeon->spikesPlates.size(); i++)
+	{
+		if (dungeon->spikesPlates[i]->position == selectedTile->position)
+			selectedHasSpikes = true;
+	}
+
 }
 
 int Crawl::DungeonEditor::GetNextAvailableLeverID()
