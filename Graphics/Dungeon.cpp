@@ -8,6 +8,9 @@
 #include "DungeonTransporter.h"
 #include "DungeonSpikes.h"
 #include "DungeonPushableBlock.h"
+#include "DungeonShootLaser.h"
+#include "DungeonShootLaserVisual.h"
+#include "DungeonShootLaserProjectile.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
@@ -129,6 +132,58 @@ bool Crawl::Dungeon::IsOpenTile(ivec2 position)
 	return true;
 }
 
+bool Crawl::Dungeon::HasLineOfSight(ivec2 fromPos, int directionIndex)
+{
+	glm::ivec2 toPos = fromPos + directions[directionIndex];
+
+	unsigned int directionMask;
+	if (directionIndex == NORTH_INDEX) directionMask = NORTH_MASK;
+	else if (directionIndex == EAST_INDEX) directionMask = EAST_MASK;
+	else if (directionIndex == SOUTH_INDEX) directionMask = SOUTH_MASK;
+	else directionMask = WEST_MASK;
+	unsigned int reverseDirectionIndex = directionIndex + 2;
+	if (reverseDirectionIndex > 3) reverseDirectionIndex -= 4;
+
+	bool canMove = true;
+	DungeonTile* currentTile = GetTile(fromPos);
+	if (!currentTile) return false; // early out if we're not a tile. We goofed up design wise and cant really resolve this, and shouldn't. Fix the level!
+
+	// Check if the tile we're on allows us to move in the requested direction - Maybe I could just create some Masks for each cardinal direction and pass those around instead.
+	canMove = (currentTile->mask & directionMask) == directionMask;
+
+	if (!canMove)
+		return canMove;
+
+	// check for edge blocked - Doors!
+	// Check tile we're on
+	DungeonDoor* doorCheck = nullptr;
+	for (int i = 0; i < activatable.size(); i++)
+	{
+		if (activatable[i]->position == fromPos && activatable[i]->orientation == directionIndex)
+		{
+			doorCheck = activatable[i];
+			break;
+		}
+	}
+	if (doorCheck && !doorCheck->open)
+		return false;
+
+	// check tile we want to move to.
+	doorCheck = nullptr;
+	for (int i = 0; i < activatable.size(); i++)
+	{
+		if (activatable[i]->position == toPos && activatable[i]->orientation == reverseDirectionIndex)
+		{
+			doorCheck = activatable[i];
+			break;
+		}
+	}
+	if (doorCheck && !doorCheck->open)
+		return false;
+
+	return canMove;
+}
+
 bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 {
 	glm::ivec2 toPos = fromPos + directions[directionIndex];
@@ -232,6 +287,7 @@ Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, uns
 	lever->orientation = directionIndex;
 	lever->dungeon = this;
 	lever->startStatus = startStatus;
+	lever->status = startStatus;
 
 	// Load lever Objects from JSON
 	ordered_json lever_objectJSON = ReadJSONFromDisk("crawler/object/interactable_lever.object");
@@ -269,6 +325,15 @@ void Crawl::Dungeon::DoActivate(unsigned int id, bool on)
 	{
 		if (activatable[i]->id == id)
 			activatable[i]->Toggle(on);
+	}
+
+	if (on)
+	{
+		for (int i = 0; i < shootLasers.size(); i++)
+		{
+			if (shootLasers[i]->activateID == id)
+				shootLasers[i]->Activate();
+		}
 	}
 }
 
@@ -338,6 +403,7 @@ Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int dire
 	else if (directionIndex == EAST_INDEX) door_object->localRotation.z = 90.0f;
 	else if (directionIndex == EAST_INDEX) door_object->localRotation.z = 180.0f;
 	door_object->children[0]->dirtyTransform = true;
+	door->UpdateTransforms();
 	activatable.push_back(door);
 	return door;
 }
@@ -434,6 +500,56 @@ Crawl::DungeonTransporter* Crawl::Dungeon::GetTransporter(string transporterName
 	return nullptr;
 }
 
+Crawl::DungeonShootLaser* Crawl::Dungeon::CreateShootLaser(ivec2 position, FACING_INDEX facing, unsigned int id)
+{
+	DungeonShootLaser* shootLaser = new DungeonShootLaser();
+	shootLaser->dungeon = this;
+	shootLaser->id = id;
+	shootLaser->position = position;
+	shootLaser->facing = facing;
+	shootLaser->object = Scene::CreateObject();
+	shootLaser->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/shoot_laser.object"));
+	shootLaser->object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
+	shootLaser->object->SetLocalRotationZ(orientationEulersReversed[facing]);
+	shootLasers.emplace_back(shootLaser);
+	return shootLaser;
+}
+
+void Crawl::Dungeon::RemoveDungeonShootLaser(ivec2 position)
+{
+	for (int i = 0; i < shootLasers.size(); i++)
+	{
+		if (shootLasers[i]->position == position)
+		{
+			delete shootLasers[i];
+			shootLasers.erase(shootLasers.begin() + i);
+		}
+	}
+}
+
+void Crawl::Dungeon::CreateShootLaserVisual(ivec2 position)
+{
+	DungeonShootLaserVisual* visual = new DungeonShootLaserVisual();
+	visual->position = position;
+	visual->object = Scene::CreateObject();
+	visual->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/shoot_laser_visual.object"));
+	visual->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
+	shootLaserVisuals.emplace_back(visual);
+}
+
+void Crawl::Dungeon::CreateShootLaserProjectile(ivec2 position, FACING_INDEX direction)
+{
+	DungeonShootLaserProjectile* projectile = new DungeonShootLaserProjectile();
+	projectile->dungeon = this;
+	projectile->turnCreated = turn;
+	projectile->position = position;
+	projectile->facing = direction;
+	projectile->object = Scene::CreateObject();
+	projectile->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/shoot_laser_visual.object"));
+	projectile->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
+	shootLaserProjectiles.emplace_back(projectile);
+}
+
 void Crawl::Dungeon::Save(std::string filename)
 {
 	BuildSerialised();
@@ -493,6 +609,11 @@ void Crawl::Dungeon::BuildSerialised()
 	for (auto& block : pushableBlocks)
 		blocks_json.push_back(*block);
 	serialised["blocks"] = blocks_json;
+
+	ordered_json shootLaser_json;
+	for (auto& shootLaser : shootLasers)
+		shootLaser_json.push_back(*shootLaser);
+	serialised["shootLasers"] = shootLaser_json;
 }
 
 void Crawl::Dungeon::RebuildFromSerialised()
@@ -564,6 +685,17 @@ void Crawl::Dungeon::RebuildFromSerialised()
 		CreatePushableBlock(block.position);
 	}
 
+	auto& shootLasers_json = serialised["shootLasers"];
+	for (auto it = shootLasers_json.begin(); it != shootLasers_json.end(); it++)
+	{
+		DungeonShootLaser shootLaser = it.value().get<Crawl::DungeonShootLaser>();
+		DungeonShootLaser* newLaser = CreateShootLaser(shootLaser.position, shootLaser.facing, shootLaser.id);
+		newLaser->detectsLineOfSight = shootLaser.detectsLineOfSight;
+		newLaser->firesProjectile = shootLaser.firesProjectile;
+		newLaser->firesImmediately = shootLaser.firesImmediately;
+		newLaser->activateID = shootLaser.activateID;
+	}
+
 	BuildSceneFromDungeonLayout();
 }
 
@@ -580,6 +712,8 @@ void Crawl::Dungeon::InitialiseTileMap()
 
 void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 {
+	turn = 0;
+
 	for (auto& x : tiles)
 	{
 		for (auto& y : x.second.row)
@@ -613,6 +747,19 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 		delete pushableBlocks[i];
 	pushableBlocks.clear();
 
+	for (int i = 0; i < shootLasers.size(); i++)
+		delete shootLasers[i];
+	shootLasers.clear();
+
+	// clean up - do not need to be rebuild, just stuff created from game play
+	for (int i = 0; i < shootLaserVisuals.size(); i++)
+		delete shootLaserVisuals[i];
+	shootLaserVisuals.clear();
+
+	for (int i = 0; i < shootLaserProjectiles.size(); i++)
+		delete shootLaserProjectiles[i];
+	shootLaserProjectiles.clear();
+
 }
 
 Object* Crawl::Dungeon::GetTileTemplate(int mask)
@@ -644,16 +791,62 @@ unsigned int Crawl::Dungeon::GetReverseDirectionMask(unsigned int direction)
 
 void Crawl::Dungeon::Update()
 {
+	turn++;
+	string turnMessage = "Turn: " + std::to_string(turn);
+	LogUtils::Log(turnMessage.c_str());
+
+	// UPDATE PHASE! - Order of precedence is very important here.
+	// remove any expired shoot visual indicators
+	for (int i = 0; i < shootLaserVisuals.size(); i++)
+		delete shootLaserVisuals[i];
+	shootLaserVisuals.clear();
+
 	// test all activator plates
 	for (auto& tileTest : activatorPlates)
 		tileTest->TestPosition();
-
 
 	// update all doors
 	for (auto& door : activatable)
 		door->Update();
 
-	// test all transporters
+	// have all shooters update
+	for (auto& shooters : shootLasers)
+		shooters->Update();
+
+	// All spikes perform damage
+	for (auto& spikes : spikesPlates)
+	{
+		// check for pushable boxes at spikes
+		for (int i = 0; i < pushableBlocks.size(); i++)
+		{
+			if (pushableBlocks[i]->position == spikes->position)
+			{
+				GetTile(pushableBlocks[i]->position)->occupied = false;
+				spikes->disabled = true;
+				((ComponentRenderer*)spikes->object->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/spikes_covered.material");
+				delete pushableBlocks[i];
+				pushableBlocks.erase(pushableBlocks.begin() + i);
+				break;
+			}
+		}
+
+		if(!spikes->disabled)
+			DamageAtPosition(spikes->position);
+	}
+
+	// make all projectiles update and destroy them if they have collided
+	for (int i = 0; i < shootLaserProjectiles.size(); i++)
+	{
+		shootLaserProjectiles[i]->Update();
+		if (shootLaserProjectiles[i]->shouldDestrySelf)
+		{
+			delete shootLaserProjectiles[i];
+			shootLaserProjectiles.erase(shootLaserProjectiles.begin() + i);
+			i--;
+		}
+	}
+
+	// Test all transporters - This should probably be in the player controller rather than the dungeon.
 	DungeonTransporter* activateTransporter = nullptr;
 	for (auto& transporter : transporterPlates)
 	{
@@ -681,27 +874,6 @@ void Crawl::Dungeon::Update()
 		}
 		else
 			LogUtils::Log("Unable to find transporter in new dungeon");
-	}
-
-	// All spikes perform damage
-	for (auto& spikes : spikesPlates)
-	{
-		// check for pushable boxes at spikes
-		for (int i = 0; i < pushableBlocks.size(); i++)
-		{
-			if (pushableBlocks[i]->position == spikes->position)
-			{
-				GetTile(pushableBlocks[i]->position)->occupied = false;
-				spikes->disabled = true;
-				((ComponentRenderer*)spikes->object->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/spikes_covered.material");
-				delete pushableBlocks[i];
-				pushableBlocks.erase(pushableBlocks.begin() + i);
-				break;
-			}
-		}
-
-		if(!spikes->disabled)
-			DamageAtPosition(spikes->position);
 	}
 }
 

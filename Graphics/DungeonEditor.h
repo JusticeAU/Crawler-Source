@@ -34,6 +34,7 @@ namespace Crawl
 		void DrawGUIModeTileEditLever();
 		void DrawGUIModeTileEditPlate();
 		void DrawGUIModeTileEditTransporter();
+		void DrawGUIModeTileEditShootLaser();
 		void DrawGUIModeDungeonProperties();
 
 		void Update();
@@ -111,6 +112,9 @@ namespace Crawl
 		bool selectedHasSpikes = false;
 		bool selectedHasBlock = false;
 
+		std::vector<DungeonShootLaser*> selectTileShootLasers;
+		DungeonShootLaser* selectedTileShootLaser = nullptr;
+		bool selectedShootLaserWindowOpen = false;
 
 		bool unsavedChanges = false;
 		bool shouldConfirmSaveBeforeLoad = false;

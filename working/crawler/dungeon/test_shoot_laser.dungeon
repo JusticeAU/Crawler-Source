@@ -1,0 +1,338 @@
+{
+  "type": "dungeon",
+  "version": 1,
+  "defaultPosition": {
+    "x": 0,
+    "y": 0
+  },
+  "defaultOrientation": 1,
+  "tiles": [
+    {
+      "position": {
+        "x": -1,
+        "y": 0
+      },
+      "mask": 4,
+      "wallVariants": [
+        2,
+        2,
+        0,
+        1
+      ]
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "mask": 6,
+      "wallVariants": [
+        1,
+        2,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": -3
+      },
+      "mask": 5,
+      "wallVariants": [
+        0,
+        3,
+        0,
+        1
+      ]
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": -2
+      },
+      "mask": 13,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        2
+      ]
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": -1
+      },
+      "mask": 13,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        3
+      ]
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": 0
+      },
+      "mask": 14,
+      "wallVariants": [
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": -4
+      },
+      "mask": 5,
+      "wallVariants": [
+        0,
+        1,
+        0,
+        3
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": -3
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": -2
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": -1
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": 0
+      },
+      "mask": 14,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": -5
+      },
+      "mask": 1,
+      "wallVariants": [
+        0,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": -4
+      },
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": -3
+      },
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        3,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": -2
+      },
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": -1
+      },
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": 0
+      },
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        3,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": 1
+      },
+      "mask": 8,
+      "wallVariants": [
+        2,
+        0,
+        3,
+        1
+      ]
+    }
+  ],
+  "levers": [
+    {
+      "position": {
+        "x": 3,
+        "y": 0
+      },
+      "id": 1,
+      "orientation": 1,
+      "status": true,
+      "activateID": 1
+    }
+  ],
+  "doors": [
+    {
+      "position": {
+        "x": 2,
+        "y": -4
+      },
+      "id": 2,
+      "orientation": 0,
+      "open": false
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": -4
+      },
+      "id": 3,
+      "orientation": 1,
+      "open": false
+    }
+  ],
+  "plates": [
+    {
+      "position": {
+        "x": 1,
+        "y": 0
+      },
+      "activateID": 2
+    }
+  ],
+  "transporters": [
+    {
+      "name": "Entry",
+      "position": {
+        "x": -1,
+        "y": 0
+      },
+      "fromOrientation": 1,
+      "toDungeon": "crawler/dungeon/test_shoot_laser",
+      "toTransporter": "Exit"
+    },
+    {
+      "name": "Exit",
+      "position": {
+        "x": 3,
+        "y": -5
+      },
+      "fromOrientation": 0,
+      "toDungeon": "test_shoot_laser",
+      "toTransporter": "Entry"
+    }
+  ],
+  "spikes": [
+    {
+      "position": {
+        "x": 3,
+        "y": 0
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "position": {
+        "x": 2,
+        "y": -2
+      }
+    }
+  ],
+  "shootLasers": [
+    {
+      "id": 1,
+      "position": {
+        "x": 3,
+        "y": 1
+      },
+      "facing": 2,
+      "detectsLineOfSight": true,
+      "firesProjectile": false,
+      "firesImmediately": false,
+      "activateID": 0
+    }
+  ]
+}

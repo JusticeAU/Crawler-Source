@@ -35,6 +35,13 @@ namespace Crawl
 		90.0f
 	};
 
+	static float orientationEulersReversed[4] = {
+		180.0f,
+		90.0f,
+		0.0f,
+		-90.0f
+	};
+
 	const glm::ivec2 NORTH_COORDINATE	= { 0,1 };
 	const glm::ivec2 SOUTH_COORDINATE	= { 0,-1};
 	const glm::ivec2 EAST_COORDINATE	= { 1,0 };

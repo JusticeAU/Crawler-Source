@@ -10,7 +10,8 @@ Crawl::DungeonPlayer::DungeonPlayer()
 	object = Scene::s_instance->objects[1];
 }
 
-void Crawl::DungeonPlayer::Update(float deltaTime)
+// Returns true if the player made a game-state changing action
+bool Crawl::DungeonPlayer::Update(float deltaTime)
 {
 	// damage player for testing
 	/*if (Input::Keyboard(GLFW_KEY_SPACE).Down())
@@ -18,12 +19,12 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 
 	if (state == IDLE)
 	{
-		if (hp == 0)
+		if (hp <= 0)
 		{
 			LogUtils::Log("Died. Resetting & Respawning");
 			dungeon->RebuildFromSerialised();
 			Respawn();
-			return;
+			return false;
 		}
 
 		glm::ivec2 coordinate = { 0, 0 };
@@ -32,8 +33,7 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 		if (Input::Keyboard(GLFW_KEY_SPACE).Down())
 		{
 			dungeon->DoKick(position, facing);
-			dungeon->Update();
-			return;
+			return true;
 		}
 
 		// Test Object Picking stuffo
@@ -44,7 +44,7 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 		{
 			dungeon->DoInteractable(Scene::s_instance->objectPickedID);
 			Scene::s_instance->objectPickedID = 0;
-			dungeon->Update(); // this should move in to a big order of events process somewhere.
+			return true;
 		}
 
 		int index = -1;
@@ -76,7 +76,7 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 			targetPosition = { position.x * Crawl::DUNGEON_GRID_SCALE, position.y * Crawl::DUNGEON_GRID_SCALE , 0 };
 			moveCurrent = 0.0f;
 			didMove = false;
-			return;
+			return true;
 		}
 
 		// Turning
@@ -113,7 +113,6 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 		{
 			object->SetLocalPosition(targetPosition);
 			state = IDLE;
-			dungeon->Update();  // this should move in to a big order of events process somewhere.
 		}
 		else
 			object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, t));
@@ -130,6 +129,8 @@ void Crawl::DungeonPlayer::Update(float deltaTime)
 		else
 			object->SetLocalRotationZ(MathUtils::Lerp(oldTurn, targetTurn, t));
 	}
+
+	return false;
 }
 
 void Crawl::DungeonPlayer::Teleport(ivec2 position)

@@ -21,7 +21,7 @@ namespace Crawl
 		void SetDungeon(Dungeon* dungeonPtr) { this->dungeon = dungeonPtr; }
 		void SetPlayerObject(Object* objectPtr) { this->object = objectPtr; }
 
-		void Update(float deltaTime);
+		bool Update(float deltaTime);
 
 		ivec2 GetPosition() { return position; }
 		void Teleport(ivec2 position);

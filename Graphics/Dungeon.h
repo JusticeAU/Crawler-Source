@@ -9,6 +9,7 @@
 
 using glm::ivec2;
 
+
 namespace Crawl
 {
 	const int DUNGEON_GRID_SCALE = 5;
@@ -20,6 +21,9 @@ namespace Crawl
 	class DungeonTransporter;
 	class DungeonSpikes;
 	class DungeonPushableBlock;
+	class DungeonShootLaser;
+	class DungeonShootLaserVisual;
+	class DungeonShootLaserProjectile;
 
 	struct Column
 	{
@@ -43,6 +47,8 @@ namespace Crawl
 
 
 		bool IsOpenTile(ivec2 position);
+
+		bool HasLineOfSight(ivec2 fromPos, int directionIndex);
 		bool CanMove(ivec2 fromPos, int directionIndex);
 
 		void SetPlayer(DungeonPlayer* player) { this->player = player; }
@@ -63,6 +69,11 @@ namespace Crawl
 		DungeonPushableBlock* CreatePushableBlock(ivec2 position);
 		void RemovePushableBlock(ivec2 position);
 		DungeonTransporter* GetTransporter(string transporterName);
+
+		DungeonShootLaser* CreateShootLaser(ivec2 position, FACING_INDEX facing, unsigned int id);
+		void RemoveDungeonShootLaser(ivec2 position);
+		void CreateShootLaserVisual(ivec2 position);
+		void CreateShootLaserProjectile(ivec2 position, FACING_INDEX direction);
 	
 		void Save(std::string filename);
 		void Load(std::string filename);
@@ -95,6 +106,7 @@ namespace Crawl
 	public:
 		ordered_json serialised;
 
+		unsigned int turn = 0;
 		ivec2 defaultPlayerStartPosition = { 0,0 };
 		FACING_INDEX defaultPlayerStartOrientation = EAST_INDEX;
 
@@ -107,12 +119,11 @@ namespace Crawl
 		std::vector<DungeonTransporter*> transporterPlates;
 		std::vector<DungeonSpikes*> spikesPlates;
 		std::vector<DungeonPushableBlock*> pushableBlocks;
+		std::vector<DungeonShootLaser*> shootLasers;
+		std::vector<DungeonShootLaserVisual*> shootLaserVisuals;
+		std::vector<DungeonShootLaserProjectile*> shootLaserProjectiles;
 		
 		DungeonPlayer* player = nullptr;
-
-		// spikes
-		// enemies
-		// kickable blocks?
 	};
 }
 

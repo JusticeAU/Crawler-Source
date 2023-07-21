@@ -7,6 +7,7 @@
 #include "DungeonPlayer.h"
 #include "DungeonSpikes.h"
 #include "DungeonPushableBlock.h"
+#include "DungeonShootLaser.h"
 #include "Object.h"
 #include "Input.h"
 #include "Camera.h"
@@ -70,27 +71,28 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	// Gameplay
 	if (ImGui::Button(!dirtyGameplayScene ? "Play" : "Resume"))
 	{
+		TileEditUnselectAll();
 		requestedGameMode = true;
 		dirtyGameplayScene = true;
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Reset Dungeon"))
 	{
+		MarkUnsavedChanges();
 		dungeon->RebuildFromSerialised();
 		dungeon->player->Teleport(dungeon->defaultPlayerStartPosition);
 		dungeon->player->Orient(dungeon->defaultPlayerStartOrientation);
 		dirtyGameplayScene = false;
+		TileEditUnselectAll();
 	}
 
 	// File Manipulation
-
 	if (dungeonFilePath == "" || !unsavedChanges)
 		ImGui::BeginDisabled();
 
 	if (ImGui::Button("Save"))
 		Save();
-
-	if (dungeonFilePath == "" || !unsavedChanges)
+	else if (dungeonFilePath == "" || !unsavedChanges)
 		ImGui::EndDisabled();
 
 	ImGui::SameLine();
@@ -427,6 +429,24 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		selectedHasBlock = true;
 	}
 
+	for (auto& shootLaser : selectTileShootLasers)
+	{
+		string shootLaserName = "shootLaser ID (";
+		shootLaserName += to_string(shootLaser->id);
+		shootLaserName += ")";
+		if (ImGui::Selectable(shootLaserName.c_str()))
+		{
+			selectedTileShootLaser = shootLaser;
+			selectedShootLaserWindowOpen = true;
+		}
+	}
+	if (ImGui::Button("Add Shoot Laser"))
+	{
+		MarkUnsavedChanges();
+		dungeon->CreateShootLaser(selectedTile->position, (FACING_INDEX)0, GetNextAvailableDoorID());
+		RefreshSelectedTile();
+	}
+
 	if (selectedDoorWindowOpen)
 		DrawGUIModeTileEditDoor();
 	if (selectedLeverWindowOpen)
@@ -435,6 +455,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		DrawGUIModeTileEditPlate();
 	if (selectedTransporterWindowOpen)
 		DrawGUIModeTileEditTransporter();
+	if (selectedShootLaserWindowOpen)
+		DrawGUIModeTileEditShootLaser();
 
 
 }
@@ -651,6 +673,44 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
 	ImGui::End();
 }
 
+void Crawl::DungeonEditor::DrawGUIModeTileEditShootLaser()
+{
+
+	ImGui::Begin("Edit Shoot Laser", &selectedShootLaserWindowOpen);
+
+	if (ImGui::InputInt("ID", (int*)&selectedTileShootLaser->id))
+		MarkUnsavedChanges();
+
+	if (ImGui::BeginCombo("Look Direction", orientationNames[selectedTileShootLaser->facing].c_str()))
+	{
+		int oldOrientation = selectedTileShootLaser->facing;
+		for (int i = 0; i < 4; i++)
+			if (ImGui::Selectable(orientationNames[i].c_str()))
+			{
+				selectedTileShootLaser->facing = (FACING_INDEX)i;
+				if (selectedTileShootLaser->facing != oldOrientation)
+				{
+					MarkUnsavedChanges();
+					selectedTileShootLaser->object->SetLocalRotationZ(orientationEulersReversed[i]);
+				}
+			}
+		ImGui::EndCombo();
+	}
+	if (ImGui::Checkbox("Activates on Line of Sight", &selectedTileShootLaser->detectsLineOfSight))
+		MarkUnsavedChanges();
+
+	if (ImGui::Checkbox("Fires Projectile", &selectedTileShootLaser->firesProjectile))
+		MarkUnsavedChanges();
+
+	if (ImGui::Checkbox("Fires Immediately", &selectedTileShootLaser->firesImmediately))
+		MarkUnsavedChanges();
+
+	if (ImGui::InputInt("Activate ID", (int*)&selectedTileShootLaser->activateID))
+		MarkUnsavedChanges();
+
+	ImGui::End();
+}
+
 void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 {
 	if(ImGui::InputInt2("Default Position", &dungeon->defaultPlayerStartPosition.x))
@@ -792,6 +852,13 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 	{
 		if (dungeon->pushableBlocks[i]->position == selectedTile->position)
 			selectedHasBlock = true;
+	}
+
+	selectTileShootLasers.clear();
+	for (int i = 0; i < dungeon->shootLasers.size(); i++)
+	{
+		if (dungeon->shootLasers[i]->position == selectedTile->position)
+			selectTileShootLasers.push_back(dungeon->shootLasers[i]);
 	}
 
 }
@@ -944,6 +1011,8 @@ void Crawl::DungeonEditor::Save()
 
 void Crawl::DungeonEditor::Load(string path)
 {	
+	TileEditUnselectAll();
+
 	int lastSlash = path.find_last_of('/');
 	int extensionStart = path.find_last_of('.');
 	string name = path.substr(lastSlash + 1, extensionStart - (lastSlash+1));
@@ -983,8 +1052,10 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedDoor = nullptr;
 	selectedTransporter = nullptr;
 	selectedActivatorPlate = nullptr;
+	selectedTileShootLaser = nullptr;
 	selectedDoorWindowOpen = false;
 	selectedLeverWindowOpen = false;
 	selectedActivatorPlateWindowOpen = false;
 	selectedTransporterWindowOpen = false;
+	selectedShootLaserWindowOpen = false;
 }

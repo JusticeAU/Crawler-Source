@@ -219,6 +219,9 @@
     <ClCompile Include="DungeonPlayer.cpp" />
     <ClCompile Include="DungeonActivatorPlate.cpp" />
     <ClCompile Include="DungeonPushableBlock.cpp" />
+    <ClCompile Include="DungeonShootLaser.cpp" />
+    <ClCompile Include="DungeonShootLaserProjectile.cpp" />
+    <ClCompile Include="DungeonShootLaserVisual.cpp" />
     <ClCompile Include="DungeonSpikes.cpp" />
     <ClCompile Include="DungeonTransporter.cpp" />
     <ClCompile Include="FrameBuffer.cpp" />
@@ -282,6 +285,9 @@
     <ClInclude Include="DungeonInteractableLever.h" />
     <ClInclude Include="DungeonPlayer.h" />
     <ClInclude Include="DungeonPushableBlock.h" />
+    <ClInclude Include="DungeonShootLaser.h" />
+    <ClInclude Include="DungeonShootLaserProjectile.h" />
+    <ClInclude Include="DungeonShootLaserVisual.h" />
     <ClInclude Include="DungeonSpikes.h" />
     <ClInclude Include="DungeonTile.h" />
     <ClInclude Include="DungeonActivatorPlate.h" />
