@@ -1,6 +1,11 @@
 {
   "type": "dungeon",
   "version": 1,
+  "defaultPosition": {
+    "x": -1,
+    "y": 0
+  },
+  "defaultOrientation": 1,
   "tiles": [
     {
       "position": {

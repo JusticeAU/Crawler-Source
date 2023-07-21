@@ -301,78 +301,100 @@ Crawl::DungeonTransporter* Crawl::Dungeon::GetTransporter(string transporterName
 
 void Crawl::Dungeon::Save(std::string filename)
 {
-	ordered_json output;
+	BuildSerialised();
+	WriteJSONToDisk(filename, serialised);
+}
+
+void Crawl::Dungeon::Load(std::string filename)
+{
+	serialised = ReadJSONFromDisk(filename);
+	RebuildFromSerialised();
+}
+
+void Crawl::Dungeon::BuildSerialised()
+{
+	serialised.clear();
+
 	ordered_json tiles_json;
 
-	output["type"] = "dungeon";
-	output["version"] = 1;
+	serialised["type"] = "dungeon";
+	serialised["version"] = 1;
+	serialised["defaultPosition"] = defaultPlayerStartPosition;
+	serialised["defaultOrientation"] = defaultPlayerStartOrientation;
 
 	for (auto& x : tiles)
 	{
 		for (auto& y : x.second.row)
 			tiles_json.push_back(y.second);
 	}
-	output["tiles"] = tiles_json;
-	
+	serialised["tiles"] = tiles_json;
+
 	ordered_json levers_json;
 	for (auto& interactable : interactables)
 		levers_json.push_back(*interactable);
-	output["levers"] = levers_json;
+	serialised["levers"] = levers_json;
 
 	ordered_json doors_json;
 	for (auto& door : activatable)
 		doors_json.push_back(*door);
-	output["doors"] = doors_json;
+	serialised["doors"] = doors_json;
 
 	ordered_json plates_json;
 	for (auto& plate : activatorPlates)
 		plates_json.push_back(*plate);
-	output["plates"] = plates_json;
+	serialised["plates"] = plates_json;
 
 	ordered_json transporters_json;
 	for (auto& plate : transporterPlates)
 		transporters_json.push_back(*plate);
-	output["transporters"] = transporters_json;
-
-	WriteJSONToDisk(filename, output);
+	serialised["transporters"] = transporters_json;
 }
 
-void Crawl::Dungeon::Load(std::string filename)
+void Crawl::Dungeon::RebuildFromSerialised()
 {
-	auto input = ReadJSONFromDisk(filename);
-
 	DestroySceneFromDungeonLayout();
 	tiles.clear();
 
-	auto& tiles_json = input["tiles"];
+	if (serialised.contains("defaultPosition"))
+		serialised.at("defaultPosition").get_to(defaultPlayerStartPosition);
+	else
+		defaultPlayerStartPosition = { 0,0 };
+
+	if (serialised.contains("defaultOrientation"))
+		serialised.at("defaultOrientation").get_to(defaultPlayerStartOrientation);
+	else
+		defaultPlayerStartOrientation = EAST_INDEX;
+
+
+	auto& tiles_json = serialised["tiles"];
 	for (auto it = tiles_json.begin(); it != tiles_json.end(); it++)
 	{
 		DungeonTile tile = it.value().get<Crawl::DungeonTile>();
 		AddTile(tile);
 	}
 
-	auto& levers_json = input["levers"];
+	auto& levers_json = serialised["levers"];
 	for (auto it = levers_json.begin(); it != levers_json.end(); it++)
 	{
 		DungeonInteractableLever lever = it.value().get<Crawl::DungeonInteractableLever>();
 		CreateLever(lever.position, lever.orientation, lever.id, lever.activateID, lever.startStatus);
 	}
 
-	auto& doors_json = input["doors"];
+	auto& doors_json = serialised["doors"];
 	for (auto it = doors_json.begin(); it != doors_json.end(); it++)
 	{
 		DungeonDoor door = it.value().get<Crawl::DungeonDoor>();
 		CreateDoor(door.position, door.orientation, door.id, door.startOpen);
 	}
 
-	auto& plates_json = input["plates"];
+	auto& plates_json = serialised["plates"];
 	for (auto it = plates_json.begin(); it != plates_json.end(); it++)
 	{
 		DungeonActivatorPlate plate = it.value().get<Crawl::DungeonActivatorPlate>();
 		CreatePlate(plate.position, plate.activateID);
 	}
 
-	auto& transporters_json = input["transporters"];
+	auto& transporters_json = serialised["transporters"];
 	for (auto it = transporters_json.begin(); it != transporters_json.end(); it++)
 	{
 		DungeonTransporter transporter = it.value().get<Crawl::DungeonTransporter>();
@@ -487,8 +509,8 @@ void Crawl::Dungeon::Update()
 		// Set player Position
 		if (gotoTransporter)
 		{
-			player->Teleport(gotoTransporter->position);
-			player->Orient((FACING_INDEX)gotoTransporter->fromOrientation);
+			player->SetRespawn(gotoTransporter->position, (FACING_INDEX)gotoTransporter->fromOrientation);
+			player->Respawn();
 		}
 		else
 			LogUtils::Log("Unable to find transporter in new dungeon");

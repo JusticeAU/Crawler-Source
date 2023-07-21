@@ -243,25 +243,30 @@ void Application::Update(float delta)
 
 	if (developerMode)
 	{
-		if (Input::Keyboard(GLFW_KEY_1).Down())
+		if (dungeonEditor->requestedGameMode)
 		{
 			s_mode = Mode::Game;
 			Scene::ChangeScene("Dungeon");
 			Scene::SetCameraIndex(1);
-
+			dungeonEditor->requestedGameMode = false;
 		}
-		if (Input::Keyboard(GLFW_KEY_2).Down())
+
+		if (s_mode == Mode::Game && Input::Keyboard(GLFW_KEY_ESCAPE).Down())
 		{
 			s_mode = Mode::Design;
 			dungeonEditor->Activate();
 		}
-		if (Input::Keyboard(GLFW_KEY_3).Down())
-		{
-			s_mode = Mode::Art;
-			artTester->Activate();
-		}
+
 		if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_F12).Down())
-			s_mode = Mode::Programming;
+		{
+			if (s_mode == Mode::Programming)
+				s_mode = s_modeOld;
+			else
+			{
+				s_modeOld = s_mode;
+				s_mode = Mode::Programming;
+			}
+		}
 	}
 
 
@@ -275,3 +280,4 @@ void Application::Update(float delta)
 }
 
 Application::Mode Application::s_mode = Mode::Game;
+Application::Mode Application::s_modeOld = Mode::Game;

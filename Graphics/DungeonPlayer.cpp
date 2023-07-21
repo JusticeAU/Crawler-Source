@@ -2,20 +2,30 @@
 #include "Input.h"
 #include "Scene.h"
 #include "MathUtils.h"
+#include "LogUtils.h"
 
 Crawl::DungeonPlayer::DungeonPlayer()
 {
-	
+	// TODO better inject / handle this better.
+	object = Scene::s_instance->objects[1];
 }
 
 void Crawl::DungeonPlayer::Update(float deltaTime)
 {
-	// TODO better inject / handle this better.
-	if (object == nullptr)
-		object = Scene::s_instance->objects[1];
+	// damage player for testing
+	if (Input::Keyboard(GLFW_KEY_SPACE).Down())
+		hp -= 1;
 
 	if (state == IDLE)
 	{
+		if (hp == 0)
+		{
+			LogUtils::Log("Died. Resetting & Respawning");
+			dungeon->RebuildFromSerialised();
+			Respawn();
+			return;
+		}
+
 		glm::ivec2 coordinate = { 0, 0 };
 		glm::ivec2 coordinateUnchanged = { 0, 0 }; // TO DO this sucks
 
@@ -127,6 +137,29 @@ void Crawl::DungeonPlayer::Orient(FACING_INDEX facing)
 {
 	this->facing = facing;
 	object->SetLocalRotationZ(orientationEulers[facing]);
+}
+
+void Crawl::DungeonPlayer::SetRespawn(ivec2 position, FACING_INDEX orientation)
+{
+	hasRespawnLocation = true;
+	this->respawnPosition = position;
+	respawnOrientation = orientation;
+}
+
+void Crawl::DungeonPlayer::Respawn()
+{
+	dungeon->RebuildFromSerialised();
+	if (hasRespawnLocation)
+	{
+		Teleport(respawnPosition);
+		Orient(respawnOrientation);
+	}
+	else
+	{
+		Teleport(dungeon->defaultPlayerStartPosition);
+		Orient(dungeon->defaultPlayerStartOrientation);
+	}
+	hp = maxHp;
 }
 
 // Take the requested direction and offset by the direction we're facing, check for overflow, then index in to the directions array.

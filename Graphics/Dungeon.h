@@ -57,6 +57,9 @@ namespace Crawl
 	
 		void Save(std::string filename);
 		void Load(std::string filename);
+
+		void BuildSerialised();
+		void RebuildFromSerialised();
 	
 		// Calculates the tile mask based on adjacent tiles
 		unsigned int GetAutoTileMask(ivec2 position);
@@ -81,6 +84,11 @@ namespace Crawl
 		Object* tile_template;
 		Object* tilesParentObject = nullptr;
 	public:
+		ordered_json serialised;
+
+		ivec2 defaultPlayerStartPosition = { 0,0 };
+		FACING_INDEX defaultPlayerStartOrientation = EAST_INDEX;
+
 		std::vector<DungeonInteractableLever*> interactables;
 		std::vector<DungeonDoor*> activatable;
 		std::vector<string> wallVariantPaths;

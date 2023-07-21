@@ -12,13 +12,16 @@ namespace Crawl
 		{
 			TileBrush,
 			TileEdit,
-			EntityEdit
+			EntityEdit,
+			DungeonProperties
 		};
 
 		DungeonEditor();
 
 		void Activate();
 		void Deactivate();
+		bool requestedGameMode = false;
+		bool dirtyGameplayScene = false;
 
 		void SetDungeon(Dungeon* dungeonPtr) { dungeon = dungeonPtr; }
 		void DrawGUI();
@@ -31,6 +34,7 @@ namespace Crawl
 		void DrawGUIModeTileEditLever();
 		void DrawGUIModeTileEditPlate();
 		void DrawGUIModeTileEditTransporter();
+		void DrawGUIModeDungeonProperties();
 
 		void Update();
 		void UpdateModeTileBrush();
@@ -77,7 +81,7 @@ namespace Crawl
 		const int WALL_VARIANT_COUNT = 3;
 
 		Mode editMode = Mode::TileBrush;
-		std::string editModeNames[2]{ "Tile Brush", "Tile Edit" };
+		std::string editModeNames[4]{ "Tile Brush", "Tile Edit", "Entity Edit", "Dungeon Properties" };
 
 		// Brush Mode
 		unsigned int brush_tileMask = 0;

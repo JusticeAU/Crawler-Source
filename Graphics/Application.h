@@ -36,6 +36,7 @@ public:
 	bool developerMode = false;
 	// Crawl Game and Editor Objects
 	static Mode s_mode;
+	static Mode s_modeOld;
 	Crawl::Dungeon* dungeon = nullptr;
 	Crawl::DungeonPlayer* dungeonPlayer = nullptr;
 	

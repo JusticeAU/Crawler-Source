@@ -4,6 +4,7 @@
 #include "DungeonActivatorPlate.h"
 #include "DungeonTransporter.h"
 #include "DungeonHelpers.h"
+#include "DungeonPlayer.h"
 #include "Object.h"
 #include "Input.h"
 #include "Camera.h"
@@ -50,6 +51,11 @@ void Crawl::DungeonEditor::DrawGUI()
 			DrawGUIModeTileEdit();
 			break;
 		}
+		case Mode::DungeonProperties:
+		{
+			DrawGUIModeDungeonProperties();
+			break;
+		}
 	}
 	ImGui::End();
 }
@@ -58,6 +64,23 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	ImGui::BeginDisabled();
 	ImGui::Text(dungeonFileName.c_str());
 	ImGui::EndDisabled();
+
+	// Gameplay
+	if (ImGui::Button(!dirtyGameplayScene ? "Play" : "Resume"))
+	{
+		requestedGameMode = true;
+		dirtyGameplayScene = true;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Reset Dungeon"))
+	{
+		dungeon->RebuildFromSerialised();
+		dungeon->player->Teleport(dungeon->defaultPlayerStartPosition);
+		dungeon->player->Orient(dungeon->defaultPlayerStartOrientation);
+		dirtyGameplayScene = false;
+	}
+
+	// File Manipulation
 
 	if (dungeonFilePath == "" || !unsavedChanges)
 		ImGui::BeginDisabled();
@@ -79,6 +102,8 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	ImGui::SameLine();
 	if (ImGui::Button("Load"))
 		ImGui::OpenPopup("Load Dungeon");
+
+
 
 	// Save As prompt
 	ImGui::SetNextWindowSize({ 300, 100 });
@@ -204,9 +229,14 @@ void Crawl::DungeonEditor::DrawGUIModeSelect()
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 			ImGui::SetTooltip("Edit specific configuration items on a tile.");
 		
-		ImGui::Selectable("Entity Editor");
+		/*ImGui::Selectable("Entity Editor");
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-			ImGui::SetTooltip("Add and edit entities in the world");
+			ImGui::SetTooltip("Add and edit entities in the world");*/
+
+		if (ImGui::Selectable(editModeNames[3].c_str()))
+			editMode = Mode::DungeonProperties;
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("Edit specific configuration items about this particular dungeon");
 		ImGui::EndCombo();
 	}
 }
@@ -582,6 +612,25 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
 	}
 
 	ImGui::End();
+}
+
+void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
+{
+	if(ImGui::InputInt2("Default Position", &dungeon->defaultPlayerStartPosition.x))
+		MarkUnsavedChanges();
+
+	if (ImGui::BeginCombo("Default Orientation", orientationNames[dungeon->defaultPlayerStartOrientation].c_str()))
+	{
+		int oldOrientation = dungeon->defaultPlayerStartOrientation;
+		for (int i = 0; i < 4; i++)
+			if (ImGui::Selectable(orientationNames[i].c_str()))
+			{
+				dungeon->defaultPlayerStartOrientation = (FACING_INDEX)i;
+				if (dungeon->defaultPlayerStartOrientation != oldOrientation)
+					MarkUnsavedChanges();
+			}
+		ImGui::EndCombo();
+	}
 }
 
 void Crawl::DungeonEditor::Update()

@@ -26,6 +26,8 @@ namespace Crawl
 		ivec2 GetPosition() { return position; }
 		void Teleport(ivec2 position);
 		void Orient(FACING_INDEX facing);
+		void SetRespawn(ivec2 position, FACING_INDEX orientation);
+		void Respawn();
 
 		// combines our requested direction with our facing direction to return the actual direction.
 		unsigned int GetMoveCardinalIndex(DIRECTION_INDEX dir);
@@ -47,6 +49,11 @@ namespace Crawl
 
 		bool didMove = false;
 
-		int hp = 1;
+		int maxHp = 1;
+		int hp = maxHp;
+
+		bool hasRespawnLocation = false;
+		glm::ivec2 respawnPosition = { 0,0 };
+		FACING_INDEX respawnOrientation = EAST_INDEX;
 	};
 }
