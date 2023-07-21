@@ -44,6 +44,7 @@ void MaterialManager::DrawGUI()
 		Material* material = new Material();
 		s_instance->materials.emplace(s_instance->newFileName + s_instance->fileExtension, material);
 		material->filePath = s_instance->newFileName + s_instance->fileExtension;
+		material->name = s_instance->newFileName + s_instance->fileExtension;
 		material->SaveToFile();
 	}
 	ImGui::SameLine();
