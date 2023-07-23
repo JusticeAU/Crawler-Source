@@ -71,16 +71,24 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	ImGui::EndDisabled();
 
 	// Gameplay
+	if (unsavedChanges)
+		ImGui::BeginDisabled();
+
 	if (ImGui::Button(!dirtyGameplayScene ? "Play" : "Resume"))
 	{
 		TileEditUnselectAll();
 		requestedGameMode = true;
 		dirtyGameplayScene = true;
 	}
+
+	if (unsavedChanges)
+		ImGui::EndDisabled();
+
+
 	ImGui::SameLine();
 	if (ImGui::Button("Reset Dungeon"))
 	{
-		MarkUnsavedChanges();
+		UnMarkUnsavedChanges();
 		dungeon->RebuildFromSerialised();
 		dungeon->player->Teleport(dungeon->defaultPlayerStartPosition);
 		dungeon->player->Orient(dungeon->defaultPlayerStartOrientation);
@@ -89,6 +97,9 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	}
 
 	// File Manipulation
+	if (dirtyGameplayScene)
+		ImGui::BeginDisabled();
+
 	if (dungeonFilePath == "" || !unsavedChanges)
 		ImGui::BeginDisabled();
 
@@ -109,7 +120,12 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	if (ImGui::Button("Load"))
 		ImGui::OpenPopup("Load Dungeon");
 
-
+	if (dirtyGameplayScene)
+	{
+		ImGui::SameLine();
+		ImGui::Text("Scene is Dirty");
+		ImGui::EndDisabled();
+	}
 
 	// Save As prompt
 	ImGui::SetNextWindowSize({ 300, 100 });
@@ -1070,7 +1086,7 @@ void Crawl::DungeonEditor::Save()
 {
 	dungeonFilePath = GetDungeonFilePath();
 	dungeon->Save(dungeonFilePath);
-	UnMarkUnsavedChangse();
+	UnMarkUnsavedChanges();
 }
 
 void Crawl::DungeonEditor::Load(string path)
@@ -1085,7 +1101,7 @@ void Crawl::DungeonEditor::Load(string path)
 	dungeonFilePath = path;
 	dungeon->Load(path);
 	dungeonWantLoad = "";
-	UnMarkUnsavedChangse();
+	UnMarkUnsavedChanges();
 }
 
 std::string Crawl::DungeonEditor::GetDungeonFilePath()
@@ -1103,7 +1119,7 @@ void Crawl::DungeonEditor::MarkUnsavedChanges()
 	Window::SetWindowTitle("Crawler Editor | ***(Unsaved Changes)***");
 }
 
-void Crawl::DungeonEditor::UnMarkUnsavedChangse()
+void Crawl::DungeonEditor::UnMarkUnsavedChanges()
 {
 	unsavedChanges = false;
 	Window::SetWindowTitle("Crawler Editor");

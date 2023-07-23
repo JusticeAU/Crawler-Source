@@ -6,6 +6,10 @@
     "y": 0
   },
   "defaultOrientation": 1,
+  "playerTurnIsFree": true,
+  "playerHasKnife": true,
+  "playerCanKickBox": false,
+  "playerCanPushBox": false,
   "tiles": [
     {
       "position": {
@@ -123,7 +127,7 @@
         "y": 0
       },
       "fromOrientation": 1,
-      "toDungeon": "crawler/dungeon/test_transporter",
+      "toDungeon": "crawler/dungeon/test/test_transporter",
       "toTransporter": "Loop"
     },
     {
@@ -133,8 +137,12 @@
         "y": -2
       },
       "fromOrientation": 1,
-      "toDungeon": "crawler/dungeon/test_transporter_bigroom",
+      "toDungeon": "crawler/dungeon/test/test_transporter_bigroom",
       "toTransporter": "Hall"
     }
-  ]
+  ],
+  "spikes": null,
+  "blocks": null,
+  "shootLasers": null,
+  "blockers": null
 }

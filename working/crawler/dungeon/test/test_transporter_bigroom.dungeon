@@ -1,6 +1,15 @@
 {
   "type": "dungeon",
   "version": 1,
+  "defaultPosition": {
+    "x": 0,
+    "y": 0
+  },
+  "defaultOrientation": 1,
+  "playerTurnIsFree": true,
+  "playerHasKnife": true,
+  "playerCanKickBox": false,
+  "playerCanPushBox": false,
   "tiles": [
     {
       "position": {
@@ -235,8 +244,12 @@
         "y": 1
       },
       "fromOrientation": 3,
-      "toDungeon": "crawler/dungeon/test_transporter",
+      "toDungeon": "crawler/dungeon/test/test_transporter",
       "toTransporter": "Big Room"
     }
-  ]
+  ],
+  "spikes": null,
+  "blocks": null,
+  "shootLasers": null,
+  "blockers": null
 }

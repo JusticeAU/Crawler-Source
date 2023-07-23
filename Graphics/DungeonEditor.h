@@ -60,7 +60,7 @@ namespace Crawl
 		std::string GetDungeonFilePath();
 
 		void MarkUnsavedChanges();
-		void UnMarkUnsavedChangse();
+		void UnMarkUnsavedChanges();
 
 		void TileEditUnselectAll();
 

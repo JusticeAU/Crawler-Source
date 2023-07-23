@@ -6,6 +6,10 @@
     "y": 0
   },
   "defaultOrientation": 1,
+  "playerTurnIsFree": true,
+  "playerHasKnife": true,
+  "playerCanKickBox": true,
+  "playerCanPushBox": true,
   "tiles": [
     {
       "position": {
@@ -417,5 +421,7 @@
         "y": 0
       }
     }
-  ]
+  ],
+  "shootLasers": null,
+  "blockers": null
 }
