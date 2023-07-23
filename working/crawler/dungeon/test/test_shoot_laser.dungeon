@@ -327,7 +327,7 @@
         "y": 0
       },
       "fromOrientation": 1,
-      "toDungeon": "crawler/dungeon/test_shoot_laser",
+      "toDungeon": "crawler/dungeon/test/test_shoot_laser",
       "toTransporter": "Exit"
     },
     {
@@ -337,7 +337,7 @@
         "y": -5
       },
       "fromOrientation": 0,
-      "toDungeon": "crawler/dungeon/test_shoot_laser",
+      "toDungeon": "crawler/dungeon/test/test_shoot_laser",
       "toTransporter": "Entry"
     }
   ],
