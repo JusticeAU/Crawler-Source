@@ -249,6 +249,10 @@ bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 			if (blockTo)
 			{
 				LogUtils::Log("block has a tile behind it");
+				// check line of sight
+				if (!HasLineOfSight(toPos, directionIndex))
+					return false; // A door or something is blocking.
+
 				if (blockTo->occupied)
 				{
 					LogUtils::Log("the tile is occupied");
@@ -256,7 +260,7 @@ bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 				}
 				else
 				{
-					LogUtils::Log("There tile is occupied, kicking it");
+					LogUtils::Log("There tile is not occupied, kicking it");
 					DoKick(fromPos, (FACING_INDEX)directionIndex);
 					return true;
 				}
@@ -375,10 +379,14 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position)
 	return didDamage;
 }
 
-void Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
+bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 {
 	// translate kick in direction
 	ivec2 targetPosition = fromPosition + directions[direction];
+
+	// check you have line of sight to position
+	if (!HasLineOfSight(fromPosition, direction))
+		return false;
 
 	// see if theres anything kickable in that position
 	DungeonPushableBlock* pushable = nullptr;
@@ -391,25 +399,30 @@ void Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		}
 	}
 	if (!pushable)
-		return;
+		return false;
+
 	DungeonTile* kickTile = GetTile(targetPosition);
 
 	// see if the thing can move
 	ivec2 moveToPos = targetPosition + directions[direction];
+
+	if (!HasLineOfSight(targetPosition, direction))
+		return false;
+
 	// is there a tile?
 	DungeonTile* toTile = GetTile(moveToPos);
 	if (!toTile)
-		return;
+		return false;
 	// is it occupied?
 	if (toTile->occupied)
-		return; // We coudl do damage and shit here.
+		return false; // We coudl do damage and shit here.
 
 	// kick it in that direction
 	kickTile->occupied = false;
 	toTile->occupied = true;
 	pushable->position = moveToPos;
 	pushable->object->AddLocalPosition({ directions[direction].x * DUNGEON_GRID_SCALE, directions[direction].y * DUNGEON_GRID_SCALE, 0 });
-
+	return true;
 }
 
 Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int directionIndex, unsigned int id, bool startOpen)
@@ -429,10 +442,7 @@ Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int dire
 	ordered_json door_modelJSON = ReadJSONFromDisk("crawler/model/door_jail_blockout/door_jail_blockout.object");
 	Object* door_model = Scene::CreateObject(door_object->children[0]);
 	door_model->LoadFromJSON(door_modelJSON);
-	if (directionIndex == EAST_INDEX) door_object->localRotation.z = -90.0f;
-	else if (directionIndex == EAST_INDEX) door_object->localRotation.z = 90.0f;
-	else if (directionIndex == EAST_INDEX) door_object->localRotation.z = 180.0f;
-	door_object->children[0]->dirtyTransform = true;
+	door_object->SetLocalRotationZ(orientationEulers[directionIndex]);
 	door->UpdateTransforms();
 	activatable.push_back(door);
 	return door;

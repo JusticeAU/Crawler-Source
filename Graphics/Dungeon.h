@@ -61,7 +61,7 @@ namespace Crawl
 		
 		// Returns true if this hit something
 		bool DamageAtPosition(ivec2 position);
-		void DoKick(ivec2 position, FACING_INDEX facing);
+		bool DoKick(ivec2 position, FACING_INDEX facing);
 
 		DungeonDoor* CreateDoor(ivec2 position, unsigned int directionMask, unsigned int id, bool startOpen);
 		DungeonActivatorPlate* CreatePlate(ivec2 position, unsigned int activateID);
