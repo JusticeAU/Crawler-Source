@@ -344,10 +344,10 @@ void Crawl::Dungeon::DoActivate(unsigned int id, bool on)
 	}
 }
 
-bool Crawl::Dungeon::DamageAtPosition(ivec2 position)
+bool Crawl::Dungeon::DamageAtPosition(ivec2 position, bool fromPlayer)
 {
 	bool didDamage = false;
-	CreateDamageVisual(position);
+	CreateDamageVisual(position, fromPlayer);
 	// For now it's just the player, but this might need to turn in to "damagables"
 	// For prototype, lets just go with player, and vectors of things that can take damage (enemies)
 	if (player->GetPosition() == position)
@@ -569,9 +569,12 @@ void Crawl::Dungeon::RemoveDungeonShootLaser(ivec2 position)
 	}
 }
 
-void Crawl::Dungeon::CreateDamageVisual(ivec2 position)
+void Crawl::Dungeon::CreateDamageVisual(ivec2 position, bool fromPlayer)
 {
 	DungeonDamageVisual* visual = new DungeonDamageVisual();
+	visual->turnCreated = turn;
+	if (fromPlayer)
+		visual->turnCreated += 1;
 	visual->position = position;
 	visual->object = Scene::CreateObject();
 	visual->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/damage_visual.object"));
@@ -901,8 +904,14 @@ void Crawl::Dungeon::Update()
 	// UPDATE PHASE! - Order of precedence is very important here.
 	// remove any expired shoot visual indicators
 	for (int i = 0; i < damageVisuals.size(); i++)
-		delete damageVisuals[i];
-	damageVisuals.clear();
+	{
+		if (damageVisuals[i]->turnCreated < turn)
+		{
+			delete damageVisuals[i];
+			damageVisuals.erase(damageVisuals.begin() + i);
+			i--;
+		}
+	}
 
 	// test all activator plates
 	for (auto& tileTest : activatorPlates)

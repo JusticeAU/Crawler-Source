@@ -12,5 +12,6 @@ namespace Crawl
 		~DungeonDamageVisual();
 		ivec2 position = { 0,0 };
 		Object* object = nullptr;
+		unsigned int turnCreated = 0;
 	};
 }

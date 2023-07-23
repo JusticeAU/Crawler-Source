@@ -36,6 +36,13 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 				return true;
 		}
 
+		if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down() || Input::Mouse(1).Down())
+		{
+			LogUtils::Log("Stab!");
+			dungeon->DamageAtPosition(position + directions[facing], true);
+			return true;
+		}
+
 		// Test Object Picking stuffo
 		if (Input::Mouse(0).Down())
 			Scene::RequestObjectSelection();

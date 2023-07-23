@@ -60,7 +60,7 @@ namespace Crawl
 		void DoActivate(unsigned int id, bool on);
 		
 		// Returns true if this hit something
-		bool DamageAtPosition(ivec2 position);
+		bool DamageAtPosition(ivec2 position, bool fromPlayer = false);
 		bool DoKick(ivec2 position, FACING_INDEX facing);
 
 		DungeonDoor* CreateDoor(ivec2 position, unsigned int directionMask, unsigned int id, bool startOpen);
@@ -74,7 +74,7 @@ namespace Crawl
 
 		DungeonShootLaser* CreateShootLaser(ivec2 position, FACING_INDEX facing, unsigned int id);
 		void RemoveDungeonShootLaser(ivec2 position);
-		void CreateDamageVisual(ivec2 position);
+		void CreateDamageVisual(ivec2 position, bool fromPlayer = false);
 		void CreateShootLaserProjectile(ivec2 position, FACING_INDEX direction);
 
 		DungeonEnemyBlocker* CreateEnemyBlocker(ivec2 position, FACING_INDEX direction);
@@ -114,6 +114,7 @@ namespace Crawl
 		unsigned int turn = 0;
 		ivec2 defaultPlayerStartPosition = { 0,0 };
 		FACING_INDEX defaultPlayerStartOrientation = EAST_INDEX;
+	
 
 		std::vector<DungeonInteractableLever*> interactables;
 		std::vector<DungeonDoor*> activatable;
