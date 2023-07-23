@@ -160,7 +160,7 @@ void Application::LaunchArgument(char* arg)
 
 void Application::InitGame()
 {
-	dungeon->Load("crawler/dungeon/test level.dungeon");
+	dungeon->Load("crawler/dungeon/start.dungeon");
 	Scene::SetCameraIndex(1);
 }
 

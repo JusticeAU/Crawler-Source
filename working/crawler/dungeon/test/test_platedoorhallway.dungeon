@@ -1,98 +1,16 @@
 {
   "type": "dungeon",
   "version": 1,
+  "defaultPosition": {
+    "x": 0,
+    "y": 0
+  },
+  "defaultOrientation": 1,
+  "playerTurnIsFree": true,
+  "playerHasKnife": true,
+  "playerCanKickBox": true,
+  "playerCanPushBox": true,
   "tiles": [
-    {
-      "position": {
-        "x": -5,
-        "y": 4
-      },
-      "mask": 0,
-      "wallVariants": [
-        1,
-        1,
-        1,
-        1
-      ]
-    },
-    {
-      "position": {
-        "x": -4,
-        "y": 2
-      },
-      "mask": 0,
-      "wallVariants": [
-        1,
-        1,
-        1,
-        1
-      ]
-    },
-    {
-      "position": {
-        "x": -4,
-        "y": 5
-      },
-      "mask": 4,
-      "wallVariants": [
-        1,
-        1,
-        0,
-        1
-      ]
-    },
-    {
-      "position": {
-        "x": -3,
-        "y": 5
-      },
-      "mask": 6,
-      "wallVariants": [
-        1,
-        1,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": -2,
-        "y": 2
-      },
-      "mask": 0,
-      "wallVariants": [
-        1,
-        1,
-        1,
-        1
-      ]
-    },
-    {
-      "position": {
-        "x": -2,
-        "y": 5
-      },
-      "mask": 2,
-      "wallVariants": [
-        1,
-        1,
-        1,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": -1,
-        "y": 4
-      },
-      "mask": 0,
-      "wallVariants": [
-        1,
-        1,
-        1,
-        1
-      ]
-    },
     {
       "position": {
         "x": 0,
@@ -143,19 +61,6 @@
         3,
         0,
         0
-      ]
-    },
-    {
-      "position": {
-        "x": 3,
-        "y": 4
-      },
-      "mask": 0,
-      "wallVariants": [
-        3,
-        3,
-        2,
-        2
       ]
     },
     {
@@ -227,13 +132,6 @@
   "plates": [
     {
       "position": {
-        "x": 3,
-        "y": 4
-      },
-      "activateID": 0
-    },
-    {
-      "position": {
         "x": 1,
         "y": 0
       },
@@ -260,5 +158,10 @@
       },
       "activateID": 2
     }
-  ]
+  ],
+  "transporters": null,
+  "spikes": null,
+  "blocks": null,
+  "shootLasers": null,
+  "blockers": null
 }
