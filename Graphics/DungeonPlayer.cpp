@@ -32,8 +32,8 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 
 		if (Input::Keyboard(GLFW_KEY_SPACE).Down())
 		{
-			dungeon->DoKick(position, facing);
-			return true;
+			if(dungeon->DoKick(position, facing))
+				return true;
 		}
 
 		// Test Object Picking stuffo
