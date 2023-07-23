@@ -42,9 +42,10 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 
 		if (Scene::s_instance->objectPickedID != 0)
 		{
-			dungeon->DoInteractable(Scene::s_instance->objectPickedID);
+			unsigned int picked = Scene::s_instance->objectPickedID;
 			Scene::s_instance->objectPickedID = 0;
-			return true;
+			if (dungeon->DoInteractable(picked))
+				return true;
 		}
 
 		int index = -1;

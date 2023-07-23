@@ -182,13 +182,13 @@ bool Crawl::Dungeon::HasLineOfSight(ivec2 fromPos, int directionIndex)
 	if (doorCheck && !doorCheck->open)
 		return false;
 
-	return canMove;
+return canMove;
 }
 
 bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 {
 	glm::ivec2 toPos = fromPos + directions[directionIndex];
-	
+
 	unsigned int directionMask;
 	if (directionIndex == NORTH_INDEX) directionMask = NORTH_MASK;
 	else if (directionIndex == EAST_INDEX) directionMask = EAST_MASK;
@@ -203,7 +203,7 @@ bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 
 	// Check if the tile we're on allows us to move in the requested direction - Maybe I could just create some Masks for each cardinal direction and pass those around instead.
 	canMove = (currentTile->mask & directionMask) == directionMask;
-	
+
 	if (!canMove)
 		return canMove;
 
@@ -273,16 +273,21 @@ bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 	return canMove;
 }
 
-void Crawl::Dungeon::DoInteractable(unsigned int id)
+bool Crawl::Dungeon::DoInteractable(unsigned int id)
 {
-	for(int i = 0; i < interactables.size(); i++)
+	bool didInteract = false;
+	for (int i = 0; i < interactables.size(); i++)
 	{
 		if (id == interactables[i]->id)
 		{
-			interactables[i]->Toggle();
-			break;
+			if (interactables[i]->position == player->GetPosition())
+			{
+				interactables[i]->Toggle();
+				didInteract = true;
+			}
 		}
 	}
+	return didInteract;
 }
 
 Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, unsigned int directionIndex, unsigned int id, unsigned int doorID, bool startStatus)

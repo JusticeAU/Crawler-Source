@@ -54,7 +54,7 @@ namespace Crawl
 
 		void SetPlayer(DungeonPlayer* player) { this->player = player; }
 
-		void DoInteractable(unsigned int id);
+		bool DoInteractable(unsigned int id);
 		DungeonInteractableLever* CreateLever(ivec2 position, unsigned int directionMask, unsigned int id, unsigned int doorID, bool startStatus);
 		void DoActivate(unsigned int id);
 		void DoActivate(unsigned int id, bool on);
