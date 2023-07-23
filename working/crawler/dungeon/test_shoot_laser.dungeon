@@ -142,12 +142,25 @@
         "x": 2,
         "y": 0
       },
-      "mask": 14,
+      "mask": 15,
       "wallVariants": [
-        1,
+        0,
         0,
         0,
         0
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": 1
+      },
+      "mask": 12,
+      "wallVariants": [
+        3,
+        0,
+        0,
+        3
       ]
     },
     {
@@ -233,12 +246,12 @@
         "x": 3,
         "y": 1
       },
-      "mask": 8,
+      "mask": 10,
       "wallVariants": [
         2,
         0,
         3,
-        1
+        0
       ]
     }
   ],
@@ -250,7 +263,7 @@
       },
       "id": 1,
       "orientation": 1,
-      "status": true,
+      "startStatus": true,
       "activateID": 1
     }
   ],
@@ -260,7 +273,7 @@
         "x": 2,
         "y": -4
       },
-      "id": 2,
+      "id": 0,
       "orientation": 0,
       "open": false
     },
@@ -269,20 +282,39 @@
         "x": 2,
         "y": -4
       },
-      "id": 3,
+      "id": 0,
       "orientation": 1,
+      "open": false
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": 0
+      },
+      "id": 1,
+      "orientation": 0,
+      "open": true
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": 1
+      },
+      "id": 0,
+      "orientation": 1,
+      "open": false
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": 1
+      },
+      "id": 0,
+      "orientation": 2,
       "open": false
     }
   ],
-  "plates": [
-    {
-      "position": {
-        "x": 1,
-        "y": 0
-      },
-      "activateID": 2
-    }
-  ],
+  "plates": null,
   "transporters": [
     {
       "name": "Entry",
@@ -335,14 +367,5 @@
       "activateID": 0
     }
   ],
-  "blockers": [
-    {
-      "position": {
-        "x": 3,
-        "y": -2
-      },
-      "facing": 1,
-      "rapidAttack": false
-    }
-  ]
+  "blockers": null
 }

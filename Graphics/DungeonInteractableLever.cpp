@@ -36,3 +36,13 @@ void Crawl::DungeonInteractableLever::SetID(unsigned int newID)
 	id = newID;
 	object->children[0]->children[0]->id = newID;
 }
+
+void Crawl::DungeonInteractableLever::Prime()
+{
+	if (object)
+	{
+		object->localPosition.z = 2.0f;
+		object->dirtyTransform = true;
+	}
+	dungeon->DoActivate(activateID, status);
+}

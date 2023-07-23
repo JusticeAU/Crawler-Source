@@ -305,10 +305,7 @@ Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, uns
 	lever_object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 2.5 });
 	Object* lever_model = Scene::CreateObject(lever_object->children[0]);
 	lever_model->LoadFromJSON(lever_modelJSON);
-	if (directionIndex == EAST_INDEX) lever_object->localRotation.z = -90.0f;
-	else if (directionIndex == WEST_INDEX) lever_object->localRotation.z = 90.0f;
-	else if (directionIndex == SOUTH_INDEX) lever_object->localRotation.z = 180.0f;
-	lever_object->children[0]->dirtyTransform = true;
+	lever_object->SetLocalRotationZ(orientationEulers[directionIndex]);
 	lever->SetID(id);
 	lever->activateID = doorID;
 	interactables.push_back(lever);
@@ -724,18 +721,22 @@ void Crawl::Dungeon::RebuildFromSerialised()
 		AddTile(tile);
 	}
 
-	auto& levers_json = serialised["levers"];
-	for (auto it = levers_json.begin(); it != levers_json.end(); it++)
-	{
-		DungeonInteractableLever lever = it.value().get<Crawl::DungeonInteractableLever>();
-		CreateLever(lever.position, lever.orientation, lever.id, lever.activateID, lever.startStatus);
-	}
-
 	auto& doors_json = serialised["doors"];
 	for (auto it = doors_json.begin(); it != doors_json.end(); it++)
 	{
 		DungeonDoor door = it.value().get<Crawl::DungeonDoor>();
 		CreateDoor(door.position, door.orientation, door.id, door.startOpen);
+	}
+
+	auto& levers_json = serialised["levers"];
+	for (auto it = levers_json.begin(); it != levers_json.end(); it++)
+	{
+		DungeonInteractableLever lever = it.value().get<Crawl::DungeonInteractableLever>();
+		DungeonInteractableLever* newLever = CreateLever(lever.position, lever.orientation, lever.id, lever.activateID, lever.startStatus);
+		if (newLever->status)
+		{
+			newLever->Prime();
+		}
 	}
 
 	auto& plates_json = serialised["plates"];
