@@ -32,15 +32,18 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 
 		if (Input::Keyboard(GLFW_KEY_SPACE).Down() && dungeon->playerCanKickBox)
 		{
-			if(dungeon->DoKick(position, facing))
+			if (dungeon->DoKick(position, facing))
 				return true;
 		}
 
 		if ((Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down() || Input::Mouse(1).Down()) && dungeon->playerHasKnife)
 		{
-			LogUtils::Log("Stab!");
-			dungeon->DamageAtPosition(position + directions[facing], true);
-			return true;
+			if (dungeon->HasLineOfSight(position, facing))
+			{
+				LogUtils::Log("Stab!");
+				dungeon->DamageAtPosition(position + directions[facing], true);
+				return true;
+			}
 		}
 
 		// Test Object Picking stuffo

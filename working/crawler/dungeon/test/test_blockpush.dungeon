@@ -716,6 +716,33 @@
       "id": 3,
       "orientation": 2,
       "open": false
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": -2
+      },
+      "id": 4,
+      "orientation": 0,
+      "open": false
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": -2
+      },
+      "id": 5,
+      "orientation": 1,
+      "open": false
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": -2
+      },
+      "id": 6,
+      "orientation": 3,
+      "open": false
     }
   ],
   "plates": [
@@ -773,6 +800,12 @@
     {
       "position": {
         "x": 1,
+        "y": -2
+      }
+    },
+    {
+      "position": {
+        "x": 0,
         "y": -2
       }
     }
