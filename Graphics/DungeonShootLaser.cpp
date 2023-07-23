@@ -2,6 +2,8 @@
 #include "Dungeon.h"
 #include "Object.h"
 #include "LogUtils.h"
+#include "ComponentRenderer.h"
+#include "MaterialManager.h"
 
 Crawl::DungeonShootLaser::~DungeonShootLaser()
 {
@@ -72,6 +74,7 @@ void Crawl::DungeonShootLaser::Activate()
 void Crawl::DungeonShootLaser::Prime()
 {
 	LogUtils::Log("Shooter has primed");
+	((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/shoot_laser_primed.material");
 	primed = true;
 	turnPrimed = dungeon->turn;
 }
@@ -108,5 +111,6 @@ void Crawl::DungeonShootLaser::Fire()
 		dungeon->CreateShootLaserProjectile(position, facing);
 	}
 	LogUtils::Log("Shooter is no longer primed");
+	((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/shoot_laser.material");
 	primed = false;
 }
