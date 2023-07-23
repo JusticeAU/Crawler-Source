@@ -17,7 +17,7 @@ namespace Crawl
 		FACING_INDEX facing = NORTH_INDEX;
 		unsigned int turnCreated = 0;
 
-		bool shouldDestrySelf = false;
+		bool shouldDestroySelf = false;
 
 		Object* object = nullptr;
 		Dungeon* dungeon = nullptr;

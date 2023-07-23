@@ -293,10 +293,13 @@
     <ClCompile Include="DungeonShootLaser.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
-    <ClCompile Include="DungeonShootLaserVisual.cpp">
+    <ClCompile Include="DungeonDamageVisual.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
     <ClCompile Include="DungeonShootLaserProjectile.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonEnemyBlocker.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
   </ItemGroup>
@@ -520,10 +523,13 @@
     <ClInclude Include="DungeonShootLaser.h">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
-    <ClInclude Include="DungeonShootLaserVisual.h">
+    <ClInclude Include="DungeonDamageVisual.h">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
     <ClInclude Include="DungeonShootLaserProjectile.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonEnemyBlocker.h">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
   </ItemGroup>

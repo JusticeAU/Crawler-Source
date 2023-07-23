@@ -6,12 +6,11 @@ using glm::ivec2;
 
 namespace Crawl
 {
-	class DungeonShootLaserVisual
+	class DungeonDamageVisual
 	{
 	public:
-		~DungeonShootLaserVisual();
+		~DungeonDamageVisual();
 		ivec2 position = { 0,0 };
 		Object* object = nullptr;
 	};
 }
-

@@ -8,6 +8,8 @@
 #include "DungeonSpikes.h"
 #include "DungeonPushableBlock.h"
 #include "DungeonShootLaser.h"
+#include "DungeonEnemyBlocker.h"
+
 #include "Object.h"
 #include "Input.h"
 #include "Camera.h"
@@ -412,6 +414,23 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		selectedHasSpikes = true;
 	}
 
+	if (selectedBlockerEnemy)
+	{
+		if (ImGui::Selectable("Sword Blocker")) selectedBlockerEnemyWindowOpen = true;
+		if (ImGui::Button("Delete Sword Blocker"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemoveEnemyBlocker(selectedTile->position);
+			selectedBlockerEnemyWindowOpen = false;
+		}
+	}
+	else if (ImGui::Button("Add Sword Blocker"))
+	{
+		MarkUnsavedChanges();
+		selectedBlockerEnemy = dungeon->CreateEnemyBlocker(selectedTile->position, EAST_INDEX);
+		selectedBlockerEnemyWindowOpen = true;
+	}
+
 	// Pushable Blocks - similar but different to plates - they are closer to NPCs - they occupy a space.
 	if (selectedHasBlock)
 	{
@@ -457,8 +476,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		DrawGUIModeTileEditTransporter();
 	if (selectedShootLaserWindowOpen)
 		DrawGUIModeTileEditShootLaser();
-
-
+	if (selectedBlockerEnemyWindowOpen)
+		DrawGUIModeTileEditBlocker();
 }
 
 void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
@@ -675,7 +694,6 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
 
 void Crawl::DungeonEditor::DrawGUIModeTileEditShootLaser()
 {
-
 	ImGui::Begin("Edit Shoot Laser", &selectedShootLaserWindowOpen);
 
 	if (ImGui::InputInt("ID", (int*)&selectedTileShootLaser->id))
@@ -709,6 +727,29 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditShootLaser()
 		MarkUnsavedChanges();
 
 	ImGui::End();
+}
+
+void Crawl::DungeonEditor::DrawGUIModeTileEditBlocker()
+{
+	ImGui::Begin("Edit Blocker Enemy", &selectedBlockerEnemyWindowOpen);
+
+	if (ImGui::BeginCombo("Look Direction", orientationNames[selectedBlockerEnemy->facing].c_str()))
+	{
+		int oldOrientation = selectedBlockerEnemy->facing;
+		for (int i = 0; i < 4; i++)
+			if (ImGui::Selectable(orientationNames[i].c_str()))
+			{
+				selectedBlockerEnemy->facing = (FACING_INDEX)i;
+				if (selectedBlockerEnemy->facing != oldOrientation)
+				{
+					MarkUnsavedChanges();
+					selectedBlockerEnemy->object->SetLocalRotationZ(orientationEulersReversed[i]);
+				}
+			}
+		ImGui::EndCombo();
+	}
+	if (ImGui::Checkbox("Rapid Attack", &selectedBlockerEnemy->rapidAttack))
+		MarkUnsavedChanges();
 }
 
 void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
@@ -845,6 +886,13 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 	{
 		if (dungeon->spikesPlates[i]->position == selectedTile->position)
 			selectedHasSpikes = true;
+	}
+
+	selectedBlockerEnemy = nullptr;
+	for (int i = 0; i < dungeon->blockers.size(); i++)
+	{
+		if (dungeon->blockers[i]->position == selectedTile->position)
+			selectedBlockerEnemy = dungeon->blockers[i];
 	}
 
 	selectedHasBlock = false;
@@ -1053,9 +1101,12 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedTransporter = nullptr;
 	selectedActivatorPlate = nullptr;
 	selectedTileShootLaser = nullptr;
+	selectedBlockerEnemy = nullptr;
+
 	selectedDoorWindowOpen = false;
 	selectedLeverWindowOpen = false;
 	selectedActivatorPlateWindowOpen = false;
 	selectedTransporterWindowOpen = false;
 	selectedShootLaserWindowOpen = false;
+	selectedBlockerEnemyWindowOpen = false;
 }

@@ -22,8 +22,9 @@ namespace Crawl
 	class DungeonSpikes;
 	class DungeonPushableBlock;
 	class DungeonShootLaser;
-	class DungeonShootLaserVisual;
+	class DungeonDamageVisual;
 	class DungeonShootLaserProjectile;
+	class DungeonEnemyBlocker;
 
 	struct Column
 	{
@@ -57,8 +58,9 @@ namespace Crawl
 		DungeonInteractableLever* CreateLever(ivec2 position, unsigned int directionMask, unsigned int id, unsigned int doorID, bool startStatus);
 		void DoActivate(unsigned int id);
 		void DoActivate(unsigned int id, bool on);
-
-		void DamageAtPosition(ivec2 position);
+		
+		// Returns true if this hit something
+		bool DamageAtPosition(ivec2 position);
 		void DoKick(ivec2 position, FACING_INDEX facing);
 
 		DungeonDoor* CreateDoor(ivec2 position, unsigned int directionMask, unsigned int id, bool startOpen);
@@ -72,8 +74,11 @@ namespace Crawl
 
 		DungeonShootLaser* CreateShootLaser(ivec2 position, FACING_INDEX facing, unsigned int id);
 		void RemoveDungeonShootLaser(ivec2 position);
-		void CreateShootLaserVisual(ivec2 position);
+		void CreateDamageVisual(ivec2 position);
 		void CreateShootLaserProjectile(ivec2 position, FACING_INDEX direction);
+
+		DungeonEnemyBlocker* CreateEnemyBlocker(ivec2 position, FACING_INDEX direction);
+		void RemoveEnemyBlocker(ivec2 position);
 	
 		void Save(std::string filename);
 		void Load(std::string filename);
@@ -120,8 +125,9 @@ namespace Crawl
 		std::vector<DungeonSpikes*> spikesPlates;
 		std::vector<DungeonPushableBlock*> pushableBlocks;
 		std::vector<DungeonShootLaser*> shootLasers;
-		std::vector<DungeonShootLaserVisual*> shootLaserVisuals;
 		std::vector<DungeonShootLaserProjectile*> shootLaserProjectiles;
+		std::vector<DungeonDamageVisual*> damageVisuals;
+		std::vector<DungeonEnemyBlocker*> blockers;
 		
 		DungeonPlayer* player = nullptr;
 	};

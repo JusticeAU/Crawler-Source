@@ -89,9 +89,12 @@ void Crawl::DungeonShootLaser::Fire()
 			DungeonTile* tile = dungeon->GetTile(currentPosition);
 			if (!tile)
 				break;
+			bool wasOccupied = tile->occupied;
 
 			dungeon->DamageAtPosition(currentPosition);
-			dungeon->CreateShootLaserVisual(currentPosition);
+
+			if (wasOccupied)
+				break;
 
 			if (dungeon->HasLineOfSight(currentPosition, facing))
 				currentPosition += directions[facing];

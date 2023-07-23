@@ -301,7 +301,7 @@
         "y": -5
       },
       "fromOrientation": 0,
-      "toDungeon": "test_shoot_laser",
+      "toDungeon": "crawler/dungeon/test_shoot_laser",
       "toTransporter": "Entry"
     }
   ],
@@ -333,6 +333,16 @@
       "firesProjectile": false,
       "firesImmediately": false,
       "activateID": 0
+    }
+  ],
+  "blockers": [
+    {
+      "position": {
+        "x": 3,
+        "y": -2
+      },
+      "facing": 1,
+      "rapidAttack": false
     }
   ]
 }

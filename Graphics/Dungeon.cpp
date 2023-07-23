@@ -9,8 +9,9 @@
 #include "DungeonSpikes.h"
 #include "DungeonPushableBlock.h"
 #include "DungeonShootLaser.h"
-#include "DungeonShootLaserVisual.h"
+#include "DungeonDamageVisual.h"
 #include "DungeonShootLaserProjectile.h"
+#include "DungeonEnemyBlocker.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
@@ -337,12 +338,41 @@ void Crawl::Dungeon::DoActivate(unsigned int id, bool on)
 	}
 }
 
-void Crawl::Dungeon::DamageAtPosition(ivec2 position)
+bool Crawl::Dungeon::DamageAtPosition(ivec2 position)
 {
+	bool didDamage = false;
+	CreateDamageVisual(position);
 	// For now it's just the player, but this might need to turn in to "damagables"
 	// For prototype, lets just go with player, and vectors of things that can take damage (enemies)
 	if (player->GetPosition() == position)
+	{
+		didDamage = true;
 		player->TakeDamage();
+	}
+
+	// check boxes
+	// check for pushable boxes at spikes
+	for (int i = 0; i < pushableBlocks.size(); i++)
+	{
+		if (pushableBlocks[i]->position == position)
+		{
+			GetTile(pushableBlocks[i]->position)->occupied = false;
+			delete pushableBlocks[i];
+			pushableBlocks.erase(pushableBlocks.begin() + i);
+			i--;
+		}
+	}
+
+	// check blockers
+	for (int i = 0; i < blockers.size(); i++)
+	{
+		if (blockers[i]->position == position)
+		{
+			didDamage = true;
+			RemoveEnemyBlocker(position);
+		}
+	}
+	return didDamage;
 }
 
 void Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
@@ -527,18 +557,20 @@ void Crawl::Dungeon::RemoveDungeonShootLaser(ivec2 position)
 	}
 }
 
-void Crawl::Dungeon::CreateShootLaserVisual(ivec2 position)
+void Crawl::Dungeon::CreateDamageVisual(ivec2 position)
 {
-	DungeonShootLaserVisual* visual = new DungeonShootLaserVisual();
+	DungeonDamageVisual* visual = new DungeonDamageVisual();
 	visual->position = position;
 	visual->object = Scene::CreateObject();
-	visual->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/shoot_laser_visual.object"));
+	visual->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/damage_visual.object"));
 	visual->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
-	shootLaserVisuals.emplace_back(visual);
+	damageVisuals.emplace_back(visual);
 }
 
 void Crawl::Dungeon::CreateShootLaserProjectile(ivec2 position, FACING_INDEX direction)
 {
+	DamageAtPosition(position);
+	
 	DungeonShootLaserProjectile* projectile = new DungeonShootLaserProjectile();
 	projectile->dungeon = this;
 	projectile->turnCreated = turn;
@@ -548,6 +580,44 @@ void Crawl::Dungeon::CreateShootLaserProjectile(ivec2 position, FACING_INDEX dir
 	projectile->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/shoot_laser_visual.object"));
 	projectile->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
 	shootLaserProjectiles.emplace_back(projectile);
+}
+
+Crawl::DungeonEnemyBlocker* Crawl::Dungeon::CreateEnemyBlocker(ivec2 position, FACING_INDEX direction)
+{
+	DungeonEnemyBlocker* blocker = new DungeonEnemyBlocker();
+	blocker->position = position;
+	blocker->facing = direction;
+	blocker->dungeon = this;
+	blocker->object = Scene::CreateObject();
+	blocker->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/monster_blocker.object"));
+	blocker->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
+	blockers.emplace_back(blocker);
+
+	DungeonTile* tile = GetTile(position);
+	if (tile)
+	{
+		tile->occupied = true;
+	}
+	else
+		LogUtils::Log("WARNING - ATTEMPTING TO ADD BLOCKER TO TILE THAT DOESN'T EXIST");
+
+	return blocker;
+}
+
+void Crawl::Dungeon::RemoveEnemyBlocker(ivec2 position)
+{
+	for (int i = 0; i < blockers.size(); i++)
+	{
+		if (position == blockers[i]->position)
+		{
+			delete blockers[i];
+			blockers.erase(blockers.begin() + i);
+
+			DungeonTile* tile = GetTile(position);
+			if (tile)
+				tile->occupied = false;
+		}
+	}
 }
 
 void Crawl::Dungeon::Save(std::string filename)
@@ -614,6 +684,11 @@ void Crawl::Dungeon::BuildSerialised()
 	for (auto& shootLaser : shootLasers)
 		shootLaser_json.push_back(*shootLaser);
 	serialised["shootLasers"] = shootLaser_json;
+
+	ordered_json blockers_json;
+	for (auto& blocker : blockers)
+		blockers_json.push_back(*blocker);
+	serialised["blockers"] = blockers_json;
 }
 
 void Crawl::Dungeon::RebuildFromSerialised()
@@ -696,6 +771,14 @@ void Crawl::Dungeon::RebuildFromSerialised()
 		newLaser->activateID = shootLaser.activateID;
 	}
 
+	auto& blockers_json = serialised["blockers"];
+	for (auto it = blockers_json.begin(); it != blockers_json.end(); it++)
+	{
+		DungeonEnemyBlocker blocker = it.value().get<Crawl::DungeonEnemyBlocker>();
+		DungeonEnemyBlocker* newBlocker = CreateEnemyBlocker(blocker.position, blocker.facing);
+		newBlocker->rapidAttack = blocker.rapidAttack;
+	}
+
 	BuildSceneFromDungeonLayout();
 }
 
@@ -752,13 +835,17 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 	shootLasers.clear();
 
 	// clean up - do not need to be rebuild, just stuff created from game play
-	for (int i = 0; i < shootLaserVisuals.size(); i++)
-		delete shootLaserVisuals[i];
-	shootLaserVisuals.clear();
+	for (int i = 0; i < damageVisuals.size(); i++)
+		delete damageVisuals[i];
+	damageVisuals.clear();
 
 	for (int i = 0; i < shootLaserProjectiles.size(); i++)
 		delete shootLaserProjectiles[i];
 	shootLaserProjectiles.clear();
+
+	for (int i = 0; i < blockers.size(); i++)
+		delete blockers[i];
+	blockers.clear();
 
 }
 
@@ -797,9 +884,9 @@ void Crawl::Dungeon::Update()
 
 	// UPDATE PHASE! - Order of precedence is very important here.
 	// remove any expired shoot visual indicators
-	for (int i = 0; i < shootLaserVisuals.size(); i++)
-		delete shootLaserVisuals[i];
-	shootLaserVisuals.clear();
+	for (int i = 0; i < damageVisuals.size(); i++)
+		delete damageVisuals[i];
+	damageVisuals.clear();
 
 	// test all activator plates
 	for (auto& tileTest : activatorPlates)
@@ -808,6 +895,18 @@ void Crawl::Dungeon::Update()
 	// update all doors
 	for (auto& door : activatable)
 		door->Update();
+
+	// make all projectiles update and destroy them if they have collided
+	for (int i = 0; i < shootLaserProjectiles.size(); i++)
+	{
+		shootLaserProjectiles[i]->Update();
+		if (shootLaserProjectiles[i]->shouldDestroySelf)
+		{
+			delete shootLaserProjectiles[i];
+			shootLaserProjectiles.erase(shootLaserProjectiles.begin() + i);
+			i--;
+		}
+	}
 
 	// have all shooters update
 	for (auto& shooters : shootLasers)
@@ -834,17 +933,9 @@ void Crawl::Dungeon::Update()
 			DamageAtPosition(spikes->position);
 	}
 
-	// make all projectiles update and destroy them if they have collided
-	for (int i = 0; i < shootLaserProjectiles.size(); i++)
-	{
-		shootLaserProjectiles[i]->Update();
-		if (shootLaserProjectiles[i]->shouldDestrySelf)
-		{
-			delete shootLaserProjectiles[i];
-			shootLaserProjectiles.erase(shootLaserProjectiles.begin() + i);
-			i--;
-		}
-	}
+	// All Sword Blocker Enemies Update
+	for (auto& blocker : blockers)
+		blocker->Update();
 
 	// Test all transporters - This should probably be in the player controller rather than the dungeon.
 	DungeonTransporter* activateTransporter = nullptr;

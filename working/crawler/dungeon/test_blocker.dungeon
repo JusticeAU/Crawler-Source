@@ -10,7 +10,7 @@
     {
       "position": {
         "x": -1,
-        "y": -4
+        "y": -5
       },
       "mask": 5,
       "wallVariants": [
@@ -23,6 +23,19 @@
     {
       "position": {
         "x": -1,
+        "y": -4
+      },
+      "mask": 13,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "position": {
+        "x": -1,
         "y": -3
       },
       "mask": 13,
@@ -69,710 +82,481 @@
         0,
         0,
         0,
-        1
-      ]
-    },
-    {
-      "position": {
-        "x": -1,
-        "y": 1
-      },
-      "mask": 13,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        3
-      ]
-    },
-    {
-      "position": {
-        "x": -1,
-        "y": 2
-      },
-      "mask": 13,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        1
-      ]
-    },
-    {
-      "position": {
-        "x": -1,
-        "y": 3
-      },
-      "mask": 12,
-      "wallVariants": [
-        3,
-        0,
-        0,
-        3
-      ]
-    },
-    {
-      "position": {
-        "x": 0,
-        "y": -4
-      },
-      "mask": 7,
-      "wallVariants": [
-        0,
-        3,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 0,
-        "y": -3
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 0,
-        "y": -2
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 0,
-        "y": -1
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 0,
-        "y": 0
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 0,
-        "y": 1
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 0,
-        "y": 2
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 0,
-        "y": 3
-      },
-      "mask": 14,
-      "wallVariants": [
-        2,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 1,
-        "y": -4
-      },
-      "mask": 7,
-      "wallVariants": [
-        0,
-        3,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 1,
-        "y": -3
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 1,
-        "y": -2
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 1,
-        "y": -1
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 1,
-        "y": 0
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 1,
-        "y": 1
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 1,
-        "y": 2
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 1,
-        "y": 3
-      },
-      "mask": 14,
-      "wallVariants": [
-        2,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 2,
-        "y": -4
-      },
-      "mask": 7,
-      "wallVariants": [
-        0,
-        2,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 2,
-        "y": -3
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 2,
-        "y": -2
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 2,
-        "y": -1
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 2,
-        "y": 0
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 2,
-        "y": 1
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 2,
-        "y": 2
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 2,
-        "y": 3
-      },
-      "mask": 14,
-      "wallVariants": [
-        1,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 3,
-        "y": -4
-      },
-      "mask": 7,
-      "wallVariants": [
-        0,
-        3,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 3,
-        "y": -3
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 3,
-        "y": -2
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 3,
-        "y": -1
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 3,
-        "y": 0
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 3,
-        "y": 1
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 3,
-        "y": 2
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 3,
-        "y": 3
-      },
-      "mask": 14,
-      "wallVariants": [
-        2,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 4,
-        "y": -4
-      },
-      "mask": 3,
-      "wallVariants": [
-        0,
-        1,
-        1,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 4,
-        "y": -3
-      },
-      "mask": 11,
-      "wallVariants": [
-        0,
-        0,
-        1,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 4,
-        "y": -2
-      },
-      "mask": 11,
-      "wallVariants": [
-        0,
-        0,
-        3,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 4,
-        "y": -1
-      },
-      "mask": 11,
-      "wallVariants": [
-        0,
-        0,
-        1,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 4,
-        "y": 0
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 4,
-        "y": 1
-      },
-      "mask": 11,
-      "wallVariants": [
-        0,
-        0,
-        1,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 4,
-        "y": 2
-      },
-      "mask": 11,
-      "wallVariants": [
-        0,
-        0,
-        3,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 4,
-        "y": 3
-      },
-      "mask": 10,
-      "wallVariants": [
-        3,
-        0,
-        1,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 5,
-        "y": 0
-      },
-      "mask": 6,
-      "wallVariants": [
-        2,
-        1,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 6,
-        "y": 0
-      },
-      "mask": 7,
-      "wallVariants": [
-        0,
-        3,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 6,
-        "y": 1
-      },
-      "mask": 8,
-      "wallVariants": [
-        2,
-        0,
-        3,
         2
       ]
     },
     {
       "position": {
-        "x": 7,
-        "y": 0
+        "x": -1,
+        "y": 1
       },
-      "mask": 2,
+      "mask": 13,
       "wallVariants": [
-        3,
-        3,
-        2,
-        0
+        0,
+        0,
+        0,
+        3
       ]
-    }
-  ],
-  "levers": null,
-  "doors": [
-    {
-      "position": {
-        "x": 4,
-        "y": 0
-      },
-      "id": 1,
-      "orientation": 1,
-      "open": false
     },
     {
       "position": {
-        "x": 6,
+        "x": -1,
+        "y": 2
+      },
+      "mask": 12,
+      "wallVariants": [
+        2,
+        0,
+        0,
+        3
+      ]
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": -5
+      },
+      "mask": 7,
+      "wallVariants": [
+        0,
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": -4
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": -3
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": -2
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": -1
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 0,
         "y": 0
       },
-      "id": 2,
-      "orientation": 0,
-      "open": false
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 1
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 2
+      },
+      "mask": 14,
+      "wallVariants": [
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": -5
+      },
+      "mask": 7,
+      "wallVariants": [
+        0,
+        3,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": -4
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": -3
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
         "x": 1,
         "y": -2
       },
-      "id": 3,
-      "orientation": 2,
-      "open": false
-    }
-  ],
-  "plates": [
-    {
-      "position": {
-        "x": 3,
-        "y": 0
-      },
-      "activateID": 1
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
     },
     {
       "position": {
-        "x": 7,
-        "y": 0
+        "x": 1,
+        "y": -1
       },
-      "activateID": 2
-    }
-  ],
-  "transporters": [
-    {
-      "name": "Exit",
-      "position": {
-        "x": 6,
-        "y": 1
-      },
-      "fromOrientation": 0,
-      "toDungeon": "crawler/dungeon/test_blockpush",
-      "toTransporter": "Entry"
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
     },
     {
-      "name": "Entry",
       "position": {
-        "x": -1,
+        "x": 1,
         "y": 0
       },
-      "fromOrientation": 1,
-      "toDungeon": "crawler/dungeon/test_blockpush",
-      "toTransporter": "Entry"
-    }
-  ],
-  "spikes": null,
-  "blocks": [
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": 1
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": 2
+      },
+      "mask": 14,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": -5
+      },
+      "mask": 7,
+      "wallVariants": [
+        0,
+        2,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": -4
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": -3
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": -2
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": -1
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": 0
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": 1
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": 2
+      },
+      "mask": 14,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
     {
       "position": {
         "x": 3,
-        "y": 1
-      }
+        "y": -5
+      },
+      "mask": 3,
+      "wallVariants": [
+        0,
+        3,
+        1,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": -4
+      },
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": -3
+      },
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        3,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": -2
+      },
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        3,
+        0
+      ]
     },
     {
       "position": {
         "x": 3,
         "y": -1
-      }
+      },
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        0
+      ]
     },
     {
       "position": {
+        "x": 3,
+        "y": 0
+      },
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": 1
+      },
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": 2
+      },
+      "mask": 10,
+      "wallVariants": [
+        2,
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "levers": null,
+  "doors": null,
+  "plates": null,
+  "transporters": null,
+  "spikes": [
+    {
+      "position": {
         "x": 1,
-        "y": -2
+        "y": 0
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "position": {
+        "x": 1,
+        "y": 1
       }
     }
   ],
   "shootLasers": null,
-  "blockers": null
+  "blockers": [
+    {
+      "position": {
+        "x": 2,
+        "y": 0
+      },
+      "facing": 3,
+      "rapidAttack": true
+    }
+  ]
 }

@@ -35,6 +35,7 @@ namespace Crawl
 		void DrawGUIModeTileEditPlate();
 		void DrawGUIModeTileEditTransporter();
 		void DrawGUIModeTileEditShootLaser();
+		void DrawGUIModeTileEditBlocker();
 		void DrawGUIModeDungeonProperties();
 
 		void Update();
@@ -115,6 +116,9 @@ namespace Crawl
 		std::vector<DungeonShootLaser*> selectTileShootLasers;
 		DungeonShootLaser* selectedTileShootLaser = nullptr;
 		bool selectedShootLaserWindowOpen = false;
+
+		DungeonEnemyBlocker* selectedBlockerEnemy = nullptr;
+		bool selectedBlockerEnemyWindowOpen = false;
 
 		bool unsavedChanges = false;
 		bool shouldConfirmSaveBeforeLoad = false;
