@@ -30,13 +30,13 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		glm::ivec2 coordinate = { 0, 0 };
 		glm::ivec2 coordinateUnchanged = { 0, 0 }; // TO DO this sucks
 
-		if (Input::Keyboard(GLFW_KEY_SPACE).Down())
+		if (Input::Keyboard(GLFW_KEY_SPACE).Down() && dungeon->playerCanKickBox)
 		{
 			if(dungeon->DoKick(position, facing))
 				return true;
 		}
 
-		if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down() || Input::Mouse(1).Down())
+		if ((Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down() || Input::Mouse(1).Down()) && dungeon->playerHasKnife)
 		{
 			LogUtils::Log("Stab!");
 			dungeon->DamageAtPosition(position + directions[facing], true);
@@ -99,6 +99,8 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 			turnCurrent = 0.0f;
 			oldTurn = object->localRotation.z;
 			targetTurn = object->localRotation.z - 90;
+			if (!dungeon->playerTurnIsFree)
+				return true;
 		}
 		if (Input::Keyboard(GLFW_KEY_Q).Pressed())
 		{
@@ -111,6 +113,8 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 			turnCurrent = 0.0f;
 			oldTurn = object->localRotation.z;
 			targetTurn = object->localRotation.z + 90;
+			if (!dungeon->playerTurnIsFree)
+				return true;
 		}
 	}
 	else if (state == MOVING)

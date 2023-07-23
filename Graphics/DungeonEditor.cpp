@@ -769,6 +769,20 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 			}
 		ImGui::EndCombo();
 	}
+
+	if (ImGui::Checkbox("Player Turn is Free", &dungeon->playerTurnIsFree))
+		MarkUnsavedChanges();
+
+	if (ImGui::Checkbox("Player can Knife", &dungeon->playerHasKnife))
+		MarkUnsavedChanges();
+
+	if (ImGui::Checkbox("Player can Kick Box ", &dungeon->playerCanKickBox))
+		MarkUnsavedChanges();
+
+	if (ImGui::Checkbox("Player Can Push Box", &dungeon->playerCanPushBox))
+		MarkUnsavedChanges();
+
+
 }
 
 void Crawl::DungeonEditor::Update()
@@ -779,6 +793,8 @@ void Crawl::DungeonEditor::Update()
 		UpdateModeTileBrush();	break;
 	case Mode::TileEdit:
 		UpdateModeTileEdit();	break;
+	default:
+		break;
 	}
 }
 void Crawl::DungeonEditor::UpdateModeTileBrush()

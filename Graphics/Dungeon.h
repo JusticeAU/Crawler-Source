@@ -114,7 +114,11 @@ namespace Crawl
 		unsigned int turn = 0;
 		ivec2 defaultPlayerStartPosition = { 0,0 };
 		FACING_INDEX defaultPlayerStartOrientation = EAST_INDEX;
-	
+		
+		bool playerHasKnife = false;
+		bool playerCanKickBox = false;
+		bool playerCanPushBox = false;
+		bool playerTurnIsFree = true;
 
 		std::vector<DungeonInteractableLever*> interactables;
 		std::vector<DungeonDoor*> activatable;

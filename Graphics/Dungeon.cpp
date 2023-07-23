@@ -237,37 +237,40 @@ bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 	// check destination blocked by pushable box
 	DungeonTile* toTile = GetTile(toPos);
 
-	// needs to be a 'if block can be pushed in direction check'
-	for (int i = 0; i < pushableBlocks.size(); i++)
+	// check if we can push boxes
+	if (playerCanPushBox)
 	{
-		if (pushableBlocks[i]->position == toPos)
+		// needs to be a 'if block can be pushed in direction check'
+		for (int i = 0; i < pushableBlocks.size(); i++)
 		{
-			LogUtils::Log("There is a block where we are trying to move");
-			// there is a block where we want to go to.
-			// can it be pushed?
-			DungeonTile* blockTo = GetTile(toPos + directions[directionIndex]);
-			if (blockTo)
+			if (pushableBlocks[i]->position == toPos)
 			{
-				LogUtils::Log("block has a tile behind it");
-				// check line of sight
-				if (!HasLineOfSight(toPos, directionIndex))
-					return false; // A door or something is blocking.
+				LogUtils::Log("There is a block where we are trying to move");
+				// there is a block where we want to go to.
+				// can it be pushed?
+				DungeonTile* blockTo = GetTile(toPos + directions[directionIndex]);
+				if (blockTo)
+				{
+					LogUtils::Log("block has a tile behind it");
+					// check line of sight
+					if (!HasLineOfSight(toPos, directionIndex))
+						return false; // A door or something is blocking.
 
-				if (blockTo->occupied)
-				{
-					LogUtils::Log("the tile is occupied");
-					return false;
-				}
-				else
-				{
-					LogUtils::Log("There tile is not occupied, kicking it");
-					DoKick(fromPos, (FACING_INDEX)directionIndex);
-					return true;
+					if (blockTo->occupied)
+					{
+						LogUtils::Log("the tile is occupied");
+						return false;
+					}
+					else
+					{
+						LogUtils::Log("There tile is not occupied, kicking it");
+						DoKick(fromPos, (FACING_INDEX)directionIndex);
+						return true;
+					}
 				}
 			}
 		}
 	}
-
 	canMove = !toTile->occupied;
 
 	return canMove;
@@ -657,6 +660,10 @@ void Crawl::Dungeon::BuildSerialised()
 	serialised["version"] = 1;
 	serialised["defaultPosition"] = defaultPlayerStartPosition;
 	serialised["defaultOrientation"] = defaultPlayerStartOrientation;
+	serialised["playerTurnIsFree"] = playerTurnIsFree;
+	serialised["playerHasKnife"] = playerHasKnife;
+	serialised["playerCanKickBox"] = playerCanKickBox;
+	serialised["playerCanPushBox"] = playerCanPushBox;
 
 	for (auto& x : tiles)
 	{
@@ -720,6 +727,26 @@ void Crawl::Dungeon::RebuildFromSerialised()
 		serialised.at("defaultOrientation").get_to(defaultPlayerStartOrientation);
 	else
 		defaultPlayerStartOrientation = EAST_INDEX;
+
+	if (serialised.contains("playerTurnIsFree"))
+		serialised.at("playerTurnIsFree").get_to(playerTurnIsFree);
+	else
+		playerTurnIsFree = true;
+
+	if (serialised.contains("playerHasKnife"))
+		serialised.at("playerHasKnife").get_to(playerHasKnife);
+	else
+		playerHasKnife = true;
+
+	if (serialised.contains("playerCanKickBox"))
+		serialised.at("playerCanKickBox").get_to(playerCanKickBox);
+	else
+		playerTurnIsFree = true;
+
+	if (serialised.contains("playerCanPushBox"))
+		serialised.at("playerCanPushBox").get_to(playerCanPushBox);
+	else
+		playerHasKnife = true;
 
 
 	auto& tiles_json = serialised["tiles"];
