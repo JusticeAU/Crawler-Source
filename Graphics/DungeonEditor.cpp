@@ -30,6 +30,10 @@ void Crawl::DungeonEditor::Activate()
 {
 	Scene::ChangeScene("Dungeon");
 	Scene::SetCameraIndex(0);
+
+	// It's possible that gameplay took us in to another dungeon, and this, that is the one that should now be loaded.
+	dungeonFileName = dungeon->dungeonFileName;
+	dungeonFilePath = dungeon->dungeonFilePath;
 }
 
 void Crawl::DungeonEditor::Deactivate()
@@ -1092,14 +1096,10 @@ void Crawl::DungeonEditor::Save()
 void Crawl::DungeonEditor::Load(string path)
 {	
 	TileEditUnselectAll();
-
-	int lastSlash = path.find_last_of('/');
-	int extensionStart = path.find_last_of('.');
-	string name = path.substr(lastSlash + 1, extensionStart - (lastSlash+1));
-	dungeonFileName = name;
-	dungeonFileNameSaveAs = name;
-	dungeonFilePath = path;
 	dungeon->Load(path);
+	dungeonFileName = dungeon->dungeonFileName;
+	dungeonFileNameSaveAs = dungeon->dungeonFileName;
+	dungeonFilePath = path;
 	dungeonWantLoad = "";
 	UnMarkUnsavedChanges();
 }

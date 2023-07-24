@@ -8,6 +8,7 @@
 #include <vector>
 
 using glm::ivec2;
+using std::string;
 
 
 namespace Crawl
@@ -82,6 +83,7 @@ namespace Crawl
 	
 		void Save(std::string filename);
 		void Load(std::string filename);
+		bool TestDungeonExists(std::string filename);
 
 		void BuildSerialised();
 		void RebuildFromSerialised();
@@ -110,6 +112,9 @@ namespace Crawl
 		Object* tilesParentObject = nullptr;
 	public:
 		ordered_json serialised;
+		string dungeonFileExtension = ".dungeon";
+		string dungeonFileName = "";
+		string dungeonFilePath = "";
 
 		unsigned int turn = 0;
 		ivec2 defaultPlayerStartPosition = { 0,0 };

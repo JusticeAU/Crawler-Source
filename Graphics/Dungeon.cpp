@@ -646,8 +646,18 @@ void Crawl::Dungeon::Save(std::string filename)
 
 void Crawl::Dungeon::Load(std::string filename)
 {
+	int lastSlash = filename.find_last_of('/');
+	int extensionStart = filename.find_last_of('.');
+	string name = filename.substr(lastSlash + 1, extensionStart - (lastSlash + 1));
+	dungeonFileName = name;
+	dungeonFilePath = filename;
 	serialised = ReadJSONFromDisk(filename);
 	RebuildFromSerialised();
+}
+
+bool Crawl::Dungeon::TestDungeonExists(std::string filename)
+{
+	return FileUtils::CheckFileExists(filename);
 }
 
 void Crawl::Dungeon::BuildSerialised()
@@ -1002,6 +1012,13 @@ void Crawl::Dungeon::Update()
 	if (activateTransporter)
 	{
 		string dungeonToLoad = activateTransporter->toDungeon;
+		if (!TestDungeonExists(dungeonToLoad + ".dungeon"))
+		{
+			LogUtils::Log("Dungeon does not exist, bailing on loading:");
+			LogUtils::Log(dungeonToLoad.c_str());
+			return;
+		}
+
 		string TransporterToGoTo = activateTransporter->toTransporter;
 		// Load dungeonName
 		Load(dungeonToLoad + ".dungeon");
@@ -1016,7 +1033,13 @@ void Crawl::Dungeon::Update()
 			player->Respawn();
 		}
 		else
-			LogUtils::Log("Unable to find transporter in new dungeon");
+		{
+			LogUtils::Log("Unable to find transporter in new dungeon:");
+			LogUtils::Log(TransporterToGoTo.c_str());
+			LogUtils::Log("Spawning at default dungeon position.");
+			player->SetRespawn(defaultPlayerStartPosition, defaultPlayerStartOrientation);
+			player->Respawn();
+		}
 	}
 }
 
