@@ -43,16 +43,16 @@ Scene::Scene()
 	lightGizmoRenderer->materialArray[0] = MaterialManager::GetMaterial("engine/models/materials/Gizmos.material");
 	lightGizmo->components.push_back(lightGizmoRenderer);
 
-	// Set up our framebuffer to render our chosen cameras framebuffer to.
-	TextureManager::s_instance->AddFrameBuffer(Camera::s_instance->name.c_str(), Camera::s_instance->GetFrameBuffer());
-
 	// Add editor camera to list of cameras and set our main camera to be it.
 	cameras.push_back(Camera::s_instance->GetFrameBuffer());
 	outputCameraFrameBuffer = cameras[0];
 
 	// Object picking dev - Might be able to refactor this to be something that gets attached to a camera. It needs to be used by both scene editor camera, but also 'in game' camera - not unreasonable for these to be seperate implementations though.
-	objectPickBuffer = new FrameBuffer(FrameBuffer::Type::ObjectPicker);
-	TextureManager::s_instance->AddFrameBuffer("Objecting Picking Buffer", objectPickBuffer);
+	if (objectPickBuffer == nullptr)
+	{
+		objectPickBuffer = new FrameBuffer(FrameBuffer::Type::ObjectPicker);
+		TextureManager::s_instance->AddFrameBuffer("Objecting Picking Buffer", objectPickBuffer);
+	}
 
 	// Shadow Mapping dev - This will get refactored in to something more robust once I've set up PBR.
 	shadowMap = new FrameBuffer(FrameBuffer::Type::ShadowMap);
@@ -79,6 +79,7 @@ void Scene::Init()
 Scene* Scene::NewScene(string name)
 {
 	Scene* scene = new Scene();
+	scene->sceneName = name;
 	s_instances.emplace(name, scene);
 	return scene;
 }
@@ -188,6 +189,7 @@ void Scene::RenderObjectPicking()
 	//SetSelectedObject(objectPickBuffer->GetObjectID(requestedSelectionPosition.x, requestedSelectionPosition.y)); // old method for transform gizmo
 	requestedSelectionPosition = Input::GetMousePosPixel();
 	objectPickedID = objectPickBuffer->GetObjectID(requestedSelectionPosition.x, requestedSelectionPosition.y);
+	std::cout << objectPickedID << std::endl;
 	requestedObjectSelection = false;
 }
 void Scene::RenderEditorCamera()
@@ -598,4 +600,5 @@ mat4 Scene::GetLightSpaceMatrix()
 }
 
 Scene* Scene::s_instance = nullptr;
+FrameBuffer* Scene::objectPickBuffer = nullptr;
 unordered_map<string, Scene*> Scene::s_instances;

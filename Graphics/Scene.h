@@ -54,16 +54,17 @@ public:
 
 	static Object* FindObjectWithID(unsigned int id);
 
-	//static bool IsDungeonEditing() { return s_instance->dungeonEditingEnabled; }
-
 	bool drawn3DGizmo = false;;
 
 	static Scene* s_instance;
 	static unordered_map<string, Scene*> s_instances;
+	string sceneName = "";
 	
 	vector<Object*> objects;
 	vector<Object*> gizmos;
 	vector<ComponentCamera*> componentCameras;
+
+	string GetSceneName() { return s_instance->sceneName; };
 
 	void Update(float deltaTime);
 	void Render();
@@ -117,7 +118,7 @@ protected:
 	Object* lightGizmo = nullptr; // reusable object to place the light bulb model and render it.
 
 	// Object picking buffer dev
-	FrameBuffer* objectPickBuffer = nullptr;
+	static FrameBuffer* objectPickBuffer;
 	unsigned int selectedObjectID = 0;
 	Object* selectedObject = nullptr;
 public:

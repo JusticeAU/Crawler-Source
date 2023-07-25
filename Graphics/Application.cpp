@@ -88,6 +88,11 @@ Application::Application()
 	TextureManager::Init();
 	TextureManager::LoadAllFiles(engineFolder);
 	TextureManager::LoadAllFiles(gameFolder);
+
+	// Add the scene camera to our framebuffer here
+	// This was originally in Scene constructor, but moving to scene instances caused this to conflict per scene.
+	TextureManager::s_instance->AddFrameBuffer(Camera::s_instance->name.c_str(), Camera::s_instance->GetFrameBuffer());
+
 	ShaderManager::Init();
 	MaterialManager::Init(); // Must be initialised AFTER Texture Manager
 	MaterialManager::LoadAllFiles(engineFolder);
