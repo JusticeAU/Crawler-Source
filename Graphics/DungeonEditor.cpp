@@ -579,7 +579,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLever()
 
 	if (ImGui::BeginCombo("Orientation", orientationNames[selectedLever->orientation].c_str()))
 	{
-		int oldOrientation = selectedDoor->orientation;
+		int oldOrientation = selectedLever->orientation;
 		for (int i = 0; i < 4; i++)
 		{
 			if (ImGui::Selectable(orientationNames[i].c_str()))
