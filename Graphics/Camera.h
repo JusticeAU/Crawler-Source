@@ -34,7 +34,7 @@ public:
 	float moveSpeed = 20.0f;
 	float lookSpeed = .3f;
 	float nearClip = 0.1f;
-	float farClip = 2000.0f;
+	float farClip = 200.0f;
 
 	string name = "";
 

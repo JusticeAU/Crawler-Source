@@ -120,7 +120,7 @@ void Scene::Render()
 {
 	float startTime = glfwGetTime();
 
-	RenderShadowMaps();
+	//RenderShadowMaps();
 	RenderSceneCameras();
 	if (requestedObjectSelection)
 		RenderObjectPicking();
