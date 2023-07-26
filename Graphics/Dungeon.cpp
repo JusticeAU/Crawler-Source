@@ -198,17 +198,17 @@ bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 	if (reverseDirectionIndex > 3) reverseDirectionIndex -= 4;
 
 	bool canMove = true;
+
+	// Check our current location for..
+	// for a Tile..
 	DungeonTile* currentTile = GetTile(fromPos);
 	if (!currentTile) return false; // early out if we're not a tile. We goofed up design wise and cant really resolve this, and shouldn't. Fix the level!
 
-	// Check if the tile we're on allows us to move in the requested direction - Maybe I could just create some Masks for each cardinal direction and pass those around instead.
+	// for a Wall..
 	canMove = (currentTile->mask & directionMask) == directionMask;
+	if (!canMove) return canMove;
 
-	if (!canMove)
-		return canMove;
-
-	// check for edge blocked - Doors!
-	// Check tile we're on
+	// for a Door..
 	DungeonDoor* doorCheck = nullptr;
 	for (int i = 0; i < activatable.size(); i++)
 	{
@@ -218,10 +218,14 @@ bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 			break;
 		}
 	}
-	if (doorCheck && !doorCheck->open)
-		return false;
+	if (doorCheck && !doorCheck->open) return false; // There is a closed door blocking us..
 
-	// check tile we want to move to.
+	// Check the location we want to move to...
+	// for a Tile
+	DungeonTile* toTile = GetTile(toPos);
+	if (!toTile) return false; // if there is no tile, we cant move there. (hole in wall?)
+
+	// for a Door
 	doorCheck = nullptr;
 	for (int i = 0; i < activatable.size(); i++)
 	{
@@ -231,13 +235,11 @@ bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 			break;
 		}
 	}
-	if (doorCheck && !doorCheck->open)
-		return false;
+	if (doorCheck && !doorCheck->open) return false; // There is a closed door blocking us..
 
-	// check destination blocked by pushable box
-	DungeonTile* toTile = GetTile(toPos);
 
-	// check if we can push boxes
+	// for a Box..
+	// .. that we can push
 	if (playerCanPushBox)
 	{
 		// needs to be a 'if block can be pushed in direction check'
@@ -271,9 +273,11 @@ bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 			}
 		}
 	}
-	canMove = !toTile->occupied;
 
-	return canMove;
+	// ...for general occupance (unpushable box, enemy, or other..)
+	if (toTile->occupied) return false;
+
+	return true;
 }
 
 bool Crawl::Dungeon::DoInteractable(unsigned int id)
