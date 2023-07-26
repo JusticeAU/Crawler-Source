@@ -94,7 +94,7 @@ void Crawl::DungeonShootLaser::Fire()
 				break;
 			bool wasOccupied = tile->occupied;
 
-			dungeon->DamageAtPosition(currentPosition);
+			dungeon->DamageAtPosition(currentPosition, this);
 
 			if (wasOccupied)
 				break;
@@ -108,7 +108,7 @@ void Crawl::DungeonShootLaser::Fire()
 	else // spawn a slow moving projectile
 	{
 		LogUtils::Log("Shooter spawned a projectile");
-		dungeon->CreateShootLaserProjectile(position, facing);
+		dungeon->CreateShootLaserProjectile(this, position, facing);
 	}
 	LogUtils::Log("Shooter is no longer primed");
 	((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/shoot_laser.material");

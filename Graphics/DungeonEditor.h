@@ -2,6 +2,7 @@
 #include "Dungeon.h"
 #include "glm.hpp"
 #include "Window.h"
+#include <vector>
 
 namespace Crawl
 {
@@ -36,6 +37,8 @@ namespace Crawl
 		void DrawGUIModeTileEditTransporter();
 		void DrawGUIModeTileEditShootLaser();
 		void DrawGUIModeTileEditBlocker();
+		void DrawGUIModeTileEditChase();
+
 		void DrawGUIModeDungeonProperties();
 
 		void Update();
@@ -120,8 +123,18 @@ namespace Crawl
 		DungeonEnemyBlocker* selectedBlockerEnemy = nullptr;
 		bool selectedBlockerEnemyWindowOpen = false;
 
+		DungeonEnemyChase* selectedChaseEnemy = nullptr;
+		bool selectedChaseEnemyWindowOpen = false;
+
 		bool unsavedChanges = false;
 		bool shouldConfirmSaveBeforeLoad = false;
+
+		//Path Finding Dev
+		ivec2 from = { 0,0 };
+		ivec2 to = { 0,0 };
+		std::vector<Object*> pathFindObjects;
+		ordered_json path_template = ReadJSONFromDisk("crawler/object/testing/path.object");
+		int facingTest = 0;
 	};
 }
 

@@ -17,6 +17,37 @@ public:
 		return out;
 
 	}
+
+    static float LerpDegrees(float a, float b, float t)
+    {
+        float difference = glm::abs(a - b);
+        if (difference > 180)
+        {
+            // We need to add on to one of the values.
+            if (b > a)
+            {
+                // We'll add it on to start...
+                a += 360;
+            }
+            else
+            {
+                // Add it on to end.
+                b += 360;
+            }
+        }
+
+        // Interpolate it.
+        float value = (a + ((b - a) * t));
+
+        // Wrap it..
+        float rangeZero = 360;
+
+        if (value >= 0 && value <= 360)
+            return value;
+
+        return fmod(value, rangeZero);
+    }
+
 	static float InverseLerp(float a, float b, float value)
 	{
 		return (value - a) / (b - a);

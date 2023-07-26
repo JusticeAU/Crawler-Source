@@ -1,0 +1,95 @@
+{
+  "name": "Chaser",
+  "transform": {
+    "position": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "scale": {
+      "x": 1.0,
+      "y": 1.0,
+      "z": 1.0
+    }
+  },
+  "components": null,
+  "children": [
+    {
+      "name": "Face",
+      "transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.30000001192092896,
+          "z": 1.75
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 180.0
+        },
+        "scale": {
+          "x": 1.5,
+          "y": 1.5,
+          "z": 1.5
+        }
+      },
+      "components": [
+        {
+          "type": "Model",
+          "model": "_cube"
+        },
+        {
+          "type": "Renderer",
+          "materials": [
+            "crawler/material/prototype/chaser_face.material"
+          ],
+          "frameBuffer": "",
+          "receivesShadows": true,
+          "castsShadows": true
+        }
+      ],
+      "children": null
+    },
+    {
+      "name": "Body",
+      "transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 1.75
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "scale": {
+          "x": 1.600000023841858,
+          "y": 1.600000023841858,
+          "z": 1.600000023841858
+        }
+      },
+      "components": [
+        {
+          "type": "Model",
+          "model": "_cube"
+        },
+        {
+          "type": "Renderer",
+          "materials": [
+            "crawler/material/prototype/chaser_body.material"
+          ],
+          "frameBuffer": "",
+          "receivesShadows": true,
+          "castsShadows": true
+        }
+      ],
+      "children": null
+    }
+  ]
+}

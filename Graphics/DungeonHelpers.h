@@ -4,6 +4,8 @@
 
 namespace Crawl
 {
+	const int DUNGEON_GRID_SCALE = 5;
+
 	// Useful for auto tiling. If you reverse the order of the bits you'll get the reverse direction.
 	enum DIRECTION_MASK
 	{
@@ -56,6 +58,14 @@ namespace Crawl
 		WEST_INDEX
 	};
 
+	inline FACING_INDEX facingIndexesReversed[4] =
+	{
+		SOUTH_INDEX,
+		WEST_INDEX,
+		NORTH_INDEX,
+		EAST_INDEX,
+	};
+
 	enum DIRECTION_INDEX
 	{
 		FORWARD_INDEX,
@@ -71,4 +81,21 @@ namespace Crawl
 		SOUTH_COORDINATE,
 		WEST_COORDINATE
 	};
+
+	static glm::vec3 dungeonPosToObjectScale(glm::ivec2 pos)
+	{
+		return glm::vec3(pos.x * DUNGEON_GRID_SCALE, pos.y * DUNGEON_GRID_SCALE, 0);
+	}
+
+	static FACING_INDEX dungeonRotateTowards(FACING_INDEX from, FACING_INDEX to)
+	{
+		int difference = to - from;
+		if (difference == 3) difference -= 4;
+		if (difference == -3) difference += 4;
+		int clamped = glm::clamp(difference, -1, 1);
+		int newDirection = (FACING_INDEX)(from + clamped);
+		if (newDirection == -1) newDirection = 3;
+		if (newDirection == 4) newDirection = 0;
+		return (FACING_INDEX)newDirection;
+	}
 }

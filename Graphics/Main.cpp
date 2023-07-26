@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "LogUtils.h"
+#include "DungeonHelpers.h"
 
 int main(int argc, char * argv[])
 {

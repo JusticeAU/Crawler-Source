@@ -24,7 +24,7 @@ void Crawl::DungeonEnemyBlocker::Update()
 	case(State::UpSwing):
 	{
 		LogUtils::Log("Down Swinging, attacking infront");
-		dungeon->DamageAtPosition(position + directions[facing]);
+		dungeon->DamageAtPosition(position + directions[facing], this);
 		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/monster_blocker_downSwing.material");
 		state = State::DownSwing;
 		break;

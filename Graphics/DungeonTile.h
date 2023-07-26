@@ -11,11 +11,26 @@ namespace Crawl
 		glm::ivec2 position = { 0, 0 };
 		int mask = 0;
 
-		int wallVariants[4] = { 0, 0, 0 ,0 }; // North, South, East, West
+		// State
+		bool occupied = false;
 
+		// Dependencies
 		Object* object = nullptr;
 
-		bool occupied = false;
+		// Pathfinding
+		DungeonTile* neighbors[4] = { nullptr, nullptr, nullptr, nullptr }; // address in to here with FACING_INDEX
+
+		// garbage
+		int wallVariants[4] = { 0, 0, 0 ,0 }; // North, South, East, West
+
+		// pathfind dev
+		int cost = -1;
+		bool openListed = false;
+		bool closedListed = false;
+		int enterDirection = -1;
+		DungeonTile* toDestination = nullptr;
+		DungeonTile* fromDestination = nullptr;
+
 	};
 
 	static void to_json(ordered_json& j, const DungeonTile& tile)

@@ -214,6 +214,8 @@ void Application::Update(float delta)
 	{
 		if(dungeonPlayer->Update(delta))
 			dungeon->Update();
+
+		dungeon->UpdateVisuals(delta);
 		break;
 	}
 	case Mode::Design:

@@ -302,6 +302,9 @@
     <ClCompile Include="DungeonEnemyBlocker.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
+    <ClCompile Include="DungeonEnemyChase.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -530,6 +533,9 @@
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
     <ClInclude Include="DungeonEnemyBlocker.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonEnemyChase.h">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
   </ItemGroup>

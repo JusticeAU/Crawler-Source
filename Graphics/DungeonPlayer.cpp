@@ -41,7 +41,7 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 			if (dungeon->HasLineOfSight(position, facing))
 			{
 				LogUtils::Log("Stab!");
-				dungeon->DamageAtPosition(position + directions[facing], true);
+				dungeon->DamageAtPosition(position + directions[facing], this, true);
 				return true;
 			}
 		}
@@ -71,7 +71,7 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		ivec2 oldPlayerCoordinate = position;
 		if (index != -1)
 		{
-			if (dungeon->CanMove(position, index))
+			if (dungeon->PlayerCanMove(position, index))
 			{
 				position += directions[index];
 				dungeon->GetTile(position)->occupied = true;

@@ -12,6 +12,7 @@
 #include "DungeonDamageVisual.h"
 #include "DungeonShootLaserProjectile.h"
 #include "DungeonEnemyBlocker.h"
+#include "DungeonEnemyChase.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
@@ -21,6 +22,7 @@
 #include "ModelManager.h"
 #include "MaterialManager.h"
 #include "serialisation.h"
+#include <algorithm>
 
 Crawl::Dungeon::Dungeon()
 {
@@ -38,27 +40,166 @@ Crawl::Dungeon::Dungeon()
 /// <param name="row"></param>
 /// <returns>A reference to the newly added dungeonTile. If a dungeonTile already existing, then a nullptr is returned.</returns>
 Crawl::DungeonTile* Crawl::Dungeon::AddTile(ivec2 position)
-{
-	Column& col = tiles[position.x];
-
-	auto existingTile = col.row.find(position.y);
-	if (existingTile != col.row.end())
-		return nullptr; // dungeonTile existed already, no duplicating or overwriting please!
-
+{	
 	DungeonTile newTile;
 	newTile.position = position;
-	return &col.row.emplace(position.y, newTile).first->second;
+	return AddTile(newTile);
 }
 
-void Crawl::Dungeon::AddTile(DungeonTile& dungeonTile)
+Crawl::DungeonTile* Crawl::Dungeon::AddTile(DungeonTile& dungeonTile)
 {
 	Column& col = tiles[dungeonTile.position.x];
 
 	auto existingTile = col.row.find(dungeonTile.position.y);
 	if (existingTile != col.row.end())
-		return; // dungeonTile existed already, no duplicating or overwriting please!
+		return nullptr; // dungeonTile existed already, no duplicating or overwriting please!
 
-	col.row.emplace(dungeonTile.position.y, dungeonTile).first->second;
+	// Create the tile
+	DungeonTile* tile = &col.row.emplace(dungeonTile.position.y, dungeonTile).first->second;
+	
+	UpdateTileNeighbors(tile->position);
+	return tile;
+}
+
+void Crawl::Dungeon::UpdateTileNeighbors(ivec2 atPosition)
+{
+	DungeonTile* centreTile = GetTile(atPosition);
+
+	// This is done a little weirdly, because this function is called on both creation and deletion of a tile
+	// So it can run on a co-ordinate where there isn't a tile, and it should update neighours of the deleted tile accurately with a nullptr.
+	for (int directionIndex = 0; directionIndex < 4; directionIndex++)
+	{
+		DungeonTile* neighbor = GetTile(atPosition + directions[directionIndex]);
+		if (centreTile)
+			centreTile->neighbors[directionIndex] = neighbor;
+
+		if(neighbor)
+			neighbor->neighbors[facingIndexesReversed[directionIndex]] = centreTile;
+	}
+}
+
+void Crawl::Dungeon::FindPath(ivec2 from, ivec2 to, int facing)
+{
+	bool turningIsFree = true;
+	if (facing != -1)
+		turningIsFree = false;
+
+	/*LogUtils::Log("FindPath: GO!");
+	LogUtils::Log(std::to_string(glfwGetTime()));*/
+	goodPath.clear();
+
+	// Clean up the data in the dungeon before we being.
+	for (auto& column : tiles)
+	{
+		for (auto& tile : column.second.row)
+		{
+			tile.second.cost = 0;
+			tile.second.openListed = false;
+			tile.second.closedListed = false;
+			tile.second.fromDestination = nullptr;
+			tile.second.enterDirection = -1;
+		}
+	}
+
+	DungeonTile* fromTile = GetTile(from);
+	if (fromTile == nullptr)
+	{
+		LogUtils::Log("FindPath: unable to find start tile");
+		return;
+	}
+
+	DungeonTile* toTile = GetTile(to);
+	if (toTile == nullptr)
+	{
+		LogUtils::Log("FindPath: destination not a valid tile");
+		return;
+	}
+
+	vector<DungeonTile*> openList;
+	vector<DungeonTile*> closedList;
+	openList.push_back(fromTile);
+
+	DungeonTile* currentTile = openList.front();
+	while (true)
+	{
+		// We've arrived. This will need to be tweaked based on whos doing what.
+		if (currentTile == toTile)
+			break;
+
+		currentTile->closedListed = true;
+		closedList.push_back(currentTile);
+
+		for (int directionIndex = 0; directionIndex < 4; directionIndex++) // check all directions
+		{
+			DungeonTile* connectingTile = currentTile->neighbors[directionIndex];
+			if (connectingTile) // if there is a connectingTile
+			{
+				if (!connectingTile->closedListed)
+				{
+					int cost = currentTile->cost + 1;
+					if (!turningIsFree)
+					{
+						int turnCost = glm::abs(facing - directionIndex);
+						if (turnCost == 3) turnCost = 1; // lets not turn 3 times one way when we could turn once the other
+						cost += turnCost;
+					}
+
+					if (!connectingTile->openListed)
+					{
+						// Check if the tile is occupied by something that isnt the player
+						// Disabled for the moment for coonsistent and readable chaser logic.
+						/*if (connectingTile->occupied && connectingTile->position != player->GetPosition())
+						{
+							connectingTile->openListed = true;
+							connectingTile->closedListed = true;
+						}
+						else*/
+						{
+							connectingTile->cost = cost;
+							connectingTile->openListed = true;
+							connectingTile->fromDestination = currentTile;
+							connectingTile->enterDirection = directionIndex;
+							openList.push_back(connectingTile);
+							std::push_heap(openList.begin(), openList.end(), Dungeon::CostToPlayerGreaterThan);
+						}
+					}
+					else if(cost < connectingTile->cost)
+					{
+						connectingTile->cost = cost;
+						connectingTile->fromDestination = currentTile;
+						connectingTile->enterDirection = directionIndex;
+						std::make_heap(openList.begin(), openList.end(), Dungeon::CostToPlayerGreaterThan);
+					}
+				}
+			}
+		}
+		if (openList.empty())
+			break;
+		
+		std::pop_heap(openList.begin(), openList.end(), Dungeon::CostToPlayerGreaterThan);
+		currentTile = openList.back();
+		openList.pop_back();
+		facing = currentTile->enterDirection;
+	}
+	currentTile = toTile;
+
+	if (currentTile->fromDestination == nullptr)
+	{
+		LogUtils::Log("FindPath: Unable to find path to destination");
+		return;
+	}
+
+	goodPath.push_back(currentTile);
+	// Trace the path backwards
+	while (currentTile != fromTile)
+	{
+		currentTile->fromDestination->toDestination = currentTile;
+		goodPath.push_back(currentTile->fromDestination);
+		currentTile = currentTile->fromDestination;
+	}
+	/*LogUtils::Log(std::to_string(glfwGetTime()));
+	LogUtils::Log("FindPath: Done.");*/
+
 }
 
 bool Crawl::Dungeon::SetTileMask(ivec2 position, int mask)
@@ -95,6 +236,8 @@ bool Crawl::Dungeon::DeleteTile(ivec2 position)
 
 	tile->second.object->markedForDeletion = true;
 	col->second.row.erase(tile);
+	UpdateTileNeighbors(position);
+
 	return true;
 }
 
@@ -112,7 +255,7 @@ void Crawl::Dungeon::CreateTileObject(DungeonTile* tile)
 		if (variant > 0)
 		{
 			ordered_json wall = ReadJSONFromDisk(wallVariantPaths[variant-1]);
-			obj->children[i + 1]->children[0]->LoadFromJSON(wall); // i+1 because this object has the floor tile in index 0;
+			obj->children[i + 1]->children[0]->LoadFromJSON(wall); // directionIndex+1 because this object has the floor tile in index 0;
 		}
 	}
 	obj->SetLocalPosition({ tile->position.x * DUNGEON_GRID_SCALE, tile->position.y * DUNGEON_GRID_SCALE , 0 });
@@ -156,36 +299,15 @@ bool Crawl::Dungeon::HasLineOfSight(ivec2 fromPos, int directionIndex)
 		return canMove;
 
 	// check for edge blocked - Doors!
-	// Check tile we're on
-	DungeonDoor* doorCheck = nullptr;
-	for (int i = 0; i < activatable.size(); i++)
-	{
-		if (activatable[i]->position == fromPos && activatable[i]->orientation == directionIndex)
-		{
-			doorCheck = activatable[i];
-			break;
-		}
-	}
-	if (doorCheck && !doorCheck->open)
-		return false;
+	
+	canMove = !IsDoorBlocking(currentTile, directionIndex);
+	if (!canMove)
+		return canMove;
 
-	// check tile we want to move to.
-	doorCheck = nullptr;
-	for (int i = 0; i < activatable.size(); i++)
-	{
-		if (activatable[i]->position == toPos && activatable[i]->orientation == reverseDirectionIndex)
-		{
-			doorCheck = activatable[i];
-			break;
-		}
-	}
-	if (doorCheck && !doorCheck->open)
-		return false;
-
-return canMove;
+	return canMove;
 }
 
-bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
+bool Crawl::Dungeon::PlayerCanMove(glm::ivec2 fromPos, int directionIndex)
 {
 	glm::ivec2 toPos = fromPos + directions[directionIndex];
 
@@ -194,8 +316,6 @@ bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 	else if (directionIndex == EAST_INDEX) directionMask = EAST_MASK;
 	else if (directionIndex == SOUTH_INDEX) directionMask = SOUTH_MASK;
 	else directionMask = WEST_MASK;
-	unsigned int reverseDirectionIndex = directionIndex + 2;
-	if (reverseDirectionIndex > 3) reverseDirectionIndex -= 4;
 
 	bool canMove = true;
 
@@ -208,34 +328,14 @@ bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 	canMove = (currentTile->mask & directionMask) == directionMask;
 	if (!canMove) return canMove;
 
-	// for a Door..
-	DungeonDoor* doorCheck = nullptr;
-	for (int i = 0; i < activatable.size(); i++)
-	{
-		if (activatable[i]->position == fromPos && activatable[i]->orientation == directionIndex)
-		{
-			doorCheck = activatable[i];
-			break;
-		}
-	}
-	if (doorCheck && !doorCheck->open) return false; // There is a closed door blocking us..
+	// for a Door (on both tiles, from and to)..
+	canMove = !IsDoorBlocking(currentTile, directionIndex);
+	if (!canMove) return canMove;
 
 	// Check the location we want to move to...
 	// for a Tile
 	DungeonTile* toTile = GetTile(toPos);
 	if (!toTile) return false; // if there is no tile, we cant move there. (hole in wall?)
-
-	// for a Door
-	doorCheck = nullptr;
-	for (int i = 0; i < activatable.size(); i++)
-	{
-		if (activatable[i]->position == toPos && activatable[i]->orientation == reverseDirectionIndex)
-		{
-			doorCheck = activatable[i];
-			break;
-		}
-	}
-	if (doorCheck && !doorCheck->open) return false; // There is a closed door blocking us..
 
 
 	// for a Box..
@@ -278,6 +378,36 @@ bool Crawl::Dungeon::CanMove(glm::ivec2 fromPos, int directionIndex)
 	if (toTile->occupied) return false;
 
 	return true;
+}
+
+bool Crawl::Dungeon::IsDoorBlocking(DungeonTile* fromTile, int directionIndex)
+{
+	ivec2 fromPos = fromTile->position;
+	DungeonDoor* doorCheck = nullptr;
+	for (int i = 0; i < activatable.size(); i++)
+	{
+		if (activatable[i]->position == fromPos && activatable[i]->orientation == directionIndex)
+		{
+			doorCheck = activatable[i];
+			break;
+		}
+	}
+	if (doorCheck && !doorCheck->open) return true; // There is a closed door blocking us from moving off this tile..
+
+	// check for a door on the tile we want to move on to.
+	doorCheck = nullptr;
+	ivec2 toPos = fromPos + directions[directionIndex];
+	for (int i = 0; i < activatable.size(); i++)
+	{
+		if (activatable[i]->position == toPos && activatable[i]->orientation == facingIndexesReversed[directionIndex])
+		{
+			doorCheck = activatable[i];
+			break;
+		}
+	}
+	if (doorCheck && !doorCheck->open) return true; // There is a closed door blocking us from moving on to this tile..
+
+	return false;
 }
 
 bool Crawl::Dungeon::DoInteractable(unsigned int id)
@@ -351,7 +481,7 @@ void Crawl::Dungeon::DoActivate(unsigned int id, bool on)
 	}
 }
 
-bool Crawl::Dungeon::DamageAtPosition(ivec2 position, bool fromPlayer)
+bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer)
 {
 	bool didDamage = false;
 	CreateDamageVisual(position, fromPlayer);
@@ -385,6 +515,19 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, bool fromPlayer)
 			RemoveEnemyBlocker(position);
 		}
 	}
+
+	// check chasers
+	for (int i = 0; i < chasers.size(); i++)
+	{
+		if (chasers[i]->position == position)
+		{
+			if (dealer == chasers[i]) // THIS IS PROBABLY SUPER DODGEY MAYBE I SHOULD CHECK WITH FINN :D
+				continue;
+			didDamage = true;
+			RemoveEnemyChase(position);
+		}
+	}
+
 	return didDamage;
 }
 
@@ -398,6 +541,8 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		return false;
 
 	// see if theres anything kickable in that position
+
+	// push(kick)able blocks.
 	DungeonPushableBlock* pushable = nullptr;
 	for (auto& block : pushableBlocks)
 	{
@@ -407,31 +552,112 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 			break;
 		}
 	}
-	if (!pushable)
-		return false;
+	
+	if (pushable)
+	{
+		DungeonTile* kickTile = GetTile(targetPosition);
 
-	DungeonTile* kickTile = GetTile(targetPosition);
+		// see if the thing can move
+		ivec2 moveToPos = targetPosition + directions[direction];
 
-	// see if the thing can move
-	ivec2 moveToPos = targetPosition + directions[direction];
+		if (!HasLineOfSight(targetPosition, direction))
+			return false;
 
-	if (!HasLineOfSight(targetPosition, direction))
-		return false;
+		// is there a tile?
+		DungeonTile* toTile = GetTile(moveToPos);
+		if (!toTile)
+			return false;
+		// is it occupied?
+		if (toTile->occupied)
+			return false; // We coudl do damage and shit here.
 
-	// is there a tile?
-	DungeonTile* toTile = GetTile(moveToPos);
-	if (!toTile)
-		return false;
-	// is it occupied?
-	if (toTile->occupied)
-		return false; // We coudl do damage and shit here.
+		// kick it in that direction
+		kickTile->occupied = false;
+		toTile->occupied = true;
+		pushable->position = moveToPos;
+		pushable->object->AddLocalPosition({ directions[direction].x * DUNGEON_GRID_SCALE, directions[direction].y * DUNGEON_GRID_SCALE, 0 });
+		return true;
+	}
 
-	// kick it in that direction
-	kickTile->occupied = false;
-	toTile->occupied = true;
-	pushable->position = moveToPos;
-	pushable->object->AddLocalPosition({ directions[direction].x * DUNGEON_GRID_SCALE, directions[direction].y * DUNGEON_GRID_SCALE, 0 });
-	return true;
+	// Kickable blockers
+	DungeonEnemyBlocker* kickableBlocker = nullptr;
+	for (auto& blocker : blockers)
+	{
+		if (blocker->position == targetPosition)
+		{
+			kickableBlocker = blocker;
+			break;
+		}
+	}
+
+	if (kickableBlocker)
+	{
+		DungeonTile* kickTile = GetTile(targetPosition);
+
+		// see if the thing can move
+		ivec2 moveToPos = targetPosition + directions[direction];
+
+		if (!HasLineOfSight(targetPosition, direction))
+			return false;
+
+		// is there a tile?
+		DungeonTile* toTile = GetTile(moveToPos);
+		if (!toTile)
+			return false;
+		// is it occupied?
+		if (toTile->occupied)
+			return false; // We coudl do damage and shit here.
+
+		// kick it in that direction
+		kickTile->occupied = false;
+		toTile->occupied = true;
+		kickableBlocker->position = moveToPos;
+		kickableBlocker->object->SetLocalPosition(dungeonPosToObjectScale(kickableBlocker->position));
+
+		return true;
+	}
+
+	// Kickable chasers
+	DungeonEnemyChase* kickableChaser = nullptr;
+	for (auto& chaser : chasers)
+	{
+		if (chaser->position == targetPosition)
+		{
+			kickableChaser = chaser;
+			break;
+		}
+	}
+
+	if (kickableChaser)
+	{
+		DungeonTile* kickTile = GetTile(targetPosition);
+
+		// see if the thing can move
+		ivec2 moveToPos = targetPosition + directions[direction];
+
+		if (!HasLineOfSight(targetPosition, direction))
+			return false;
+
+		// is there a tile?
+		DungeonTile* toTile = GetTile(moveToPos);
+		if (!toTile)
+			return false;
+		// is it occupied?
+		if (toTile->occupied)
+			return false; // We coudl do damage and shit here.
+
+		// kick it in that direction
+		kickTile->occupied = false;
+		toTile->occupied = true;
+		kickableChaser->position = moveToPos;
+		kickableChaser->positionWant = moveToPos;
+		kickableChaser->state = DungeonEnemyChase::STUN;
+		kickableChaser->object->SetLocalPosition(dungeonPosToObjectScale(kickableChaser->position));
+
+		return true;
+	}
+	
+	return false;
 }
 
 Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int directionIndex, unsigned int id, bool startOpen)
@@ -589,9 +815,9 @@ void Crawl::Dungeon::CreateDamageVisual(ivec2 position, bool fromPlayer)
 	damageVisuals.emplace_back(visual);
 }
 
-void Crawl::Dungeon::CreateShootLaserProjectile(ivec2 position, FACING_INDEX direction)
+void Crawl::Dungeon::CreateShootLaserProjectile(void* dealer, ivec2 position, FACING_INDEX direction)
 {
-	DamageAtPosition(position);
+	DamageAtPosition(position, dealer);
 	
 	DungeonShootLaserProjectile* projectile = new DungeonShootLaserProjectile();
 	projectile->dungeon = this;
@@ -634,6 +860,46 @@ void Crawl::Dungeon::RemoveEnemyBlocker(ivec2 position)
 		{
 			delete blockers[i];
 			blockers.erase(blockers.begin() + i);
+
+			DungeonTile* tile = GetTile(position);
+			if (tile)
+				tile->occupied = false;
+		}
+	}
+}
+
+Crawl::DungeonEnemyChase* Crawl::Dungeon::CreateEnemyChase(ivec2 position, FACING_INDEX facing)
+{
+	DungeonEnemyChase* chaser = new DungeonEnemyChase();
+	chaser->position = position;
+	chaser->positionWant = position;
+	chaser->facing = facing;
+	chaser->dungeon = this;
+	chaser->object = Scene::CreateObject();
+	chaser->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/chase.object"));
+	chaser->object->AddLocalPosition(dungeonPosToObjectScale(position));
+	chaser->object->SetLocalRotationZ(orientationEulers[facing]);
+	chasers.emplace_back(chaser);
+
+	DungeonTile* tile = GetTile(position);
+	if (tile)
+	{
+		tile->occupied = true;
+	}
+	else
+		LogUtils::Log("WARNING - ATTEMPTING TO ADD BLOCKER TO TILE THAT DOESN'T EXIST");
+
+	return chaser;
+}
+
+void Crawl::Dungeon::RemoveEnemyChase(ivec2 position)
+{
+	for (int i = 0; i < chasers.size(); i++)
+	{
+		if (position == chasers[i]->position)
+		{
+			delete chasers[i];
+			chasers.erase(chasers.begin() + i);
 
 			DungeonTile* tile = GetTile(position);
 			if (tile)
@@ -725,6 +991,11 @@ void Crawl::Dungeon::BuildSerialised()
 	for (auto& blocker : blockers)
 		blockers_json.push_back(*blocker);
 	serialised["blockers"] = blockers_json;
+
+	ordered_json chasers_json;
+	for (auto& chaser : chasers)
+		chasers_json.push_back(*chaser);
+	serialised["chasers"] = chasers_json;
 }
 
 void Crawl::Dungeon::RebuildFromSerialised()
@@ -839,6 +1110,13 @@ void Crawl::Dungeon::RebuildFromSerialised()
 		newBlocker->rapidAttack = blocker.rapidAttack;
 	}
 
+	auto& chasers_json = serialised["chasers"];
+	for (auto it = chasers_json.begin(); it != chasers_json.end(); it++)
+	{
+		DungeonEnemyChase chaser = it.value().get<Crawl::DungeonEnemyChase>();
+		DungeonEnemyChase* newChaser = CreateEnemyChase(chaser.position, chaser.facing);
+	}
+
 	BuildSceneFromDungeonLayout();
 }
 
@@ -907,6 +1185,9 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 		delete blockers[i];
 	blockers.clear();
 
+	for (int i = 0; i < chasers.size(); i++)
+		delete chasers[i];
+	chasers.clear();
 }
 
 Object* Crawl::Dungeon::GetTileTemplate(int mask)
@@ -954,6 +1235,55 @@ void Crawl::Dungeon::Update()
 		}
 	}
 
+	// Chaser Logic
+	for (auto& chaser : chasers)
+		chaser->Update();
+
+	// Check for chaser clashes
+	if (chasers.size() > 1)
+	{
+		bool clash = true;
+		while (clash)
+		{
+			clash = false;
+			for (int a = 0; a < chasers.size()-1; a++)
+			{
+				for (int b = 1; b < chasers.size(); b++)
+				{
+					if (chasers[a]->positionWant == chasers[b]->positionWant)
+					{
+						clash = true;
+						if (chasers[a]->positionWant != chasers[a]->position)
+						{
+							chasers[a]->oldPosition = chasers[a]->object->localPosition;
+							chasers[a]->targetPosition = dungeonPosToObjectScale(chasers[a]->positionWant);
+							chasers[a]->state = DungeonEnemyChase::BOUNCING;
+							chasers[a]->positionWant = chasers[a]->position;
+							chasers[a]->bounceCurrent = 0.0f;
+						}
+						
+						if (chasers[b]->positionWant != chasers[b]->position)
+						{
+							chasers[b]->oldPosition = chasers[b]->object->localPosition;
+							chasers[b]->targetPosition = dungeonPosToObjectScale(chasers[b]->positionWant);
+							chasers[b]->state = DungeonEnemyChase::BOUNCING;
+							chasers[b]->positionWant = chasers[b]->position;
+							chasers[b]->bounceCurrent = 0.0f;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	for (auto& chaser : chasers)
+	{
+		if(chaser->positionWant != chaser->position)
+			chaser->ExecuteMove();
+	}
+	for (auto& chaser : chasers)
+		chaser->ExecuteDamage();
+
 	// test all activator plates
 	for (auto& tileTest : activatorPlates)
 		tileTest->TestPosition();
@@ -996,7 +1326,7 @@ void Crawl::Dungeon::Update()
 		}
 
 		if(!spikes->disabled)
-			DamageAtPosition(spikes->position);
+			DamageAtPosition(spikes->position, spikes);
 	}
 
 	// All Sword Blocker Enemies Update
@@ -1045,6 +1375,12 @@ void Crawl::Dungeon::Update()
 			player->Respawn();
 		}
 	}
+}
+
+void Crawl::Dungeon::UpdateVisuals(float delta)
+{
+	for (auto& chaser : chasers)
+		chaser->UpdateVisuals(delta);
 }
 
 unsigned int Crawl::Dungeon::GetAutoTileMask(ivec2 position)

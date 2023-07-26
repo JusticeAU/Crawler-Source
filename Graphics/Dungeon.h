@@ -13,7 +13,6 @@ using std::string;
 
 namespace Crawl
 {
-	const int DUNGEON_GRID_SCALE = 5;
 	class DungeonPlayer;
 	class DungeonInteractable;
 	class DungeonInteractableLever;
@@ -26,6 +25,7 @@ namespace Crawl
 	class DungeonDamageVisual;
 	class DungeonShootLaserProjectile;
 	class DungeonEnemyBlocker;
+	class DungeonEnemyChase;
 
 	struct Column
 	{
@@ -37,7 +37,15 @@ namespace Crawl
 		Dungeon();
 		// Tile manipulation
 		DungeonTile* AddTile(ivec2 position);
-		void AddTile(DungeonTile& dungeonTile);
+		DungeonTile* AddTile(DungeonTile& dungeonTile);
+		void UpdateTileNeighbors(ivec2 position);
+
+		void FindPath(ivec2 from, ivec2 to, int facing = -1);
+		static bool CostToPlayerGreaterThan(const DungeonTile* first, const DungeonTile* second)
+		{
+			if (first->cost > second->cost) return true;
+			else return false;
+		}
 
 		bool SetTileMask(ivec2 position, int mask);
 		DungeonTile* GetTile(ivec2 pos);
@@ -51,7 +59,8 @@ namespace Crawl
 		bool IsOpenTile(ivec2 position);
 
 		bool HasLineOfSight(ivec2 fromPos, int directionIndex);
-		bool CanMove(ivec2 fromPos, int directionIndex);
+		bool PlayerCanMove(ivec2 fromPos, int directionIndex);
+		bool IsDoorBlocking(DungeonTile* fromTile, int directionIndex);
 
 		void SetPlayer(DungeonPlayer* player) { this->player = player; }
 
@@ -61,7 +70,7 @@ namespace Crawl
 		void DoActivate(unsigned int id, bool on);
 		
 		// Returns true if this hit something
-		bool DamageAtPosition(ivec2 position, bool fromPlayer = false);
+		bool DamageAtPosition(ivec2 position, void* dealer,  bool fromPlayer = false);
 		bool DoKick(ivec2 position, FACING_INDEX facing);
 
 		DungeonDoor* CreateDoor(ivec2 position, unsigned int directionMask, unsigned int id, bool startOpen);
@@ -76,10 +85,13 @@ namespace Crawl
 		DungeonShootLaser* CreateShootLaser(ivec2 position, FACING_INDEX facing, unsigned int id);
 		void RemoveDungeonShootLaser(ivec2 position);
 		void CreateDamageVisual(ivec2 position, bool fromPlayer = false);
-		void CreateShootLaserProjectile(ivec2 position, FACING_INDEX direction);
+		void CreateShootLaserProjectile(void* dealer, ivec2 position, FACING_INDEX direction);
 
 		DungeonEnemyBlocker* CreateEnemyBlocker(ivec2 position, FACING_INDEX direction);
 		void RemoveEnemyBlocker(ivec2 position);
+
+		DungeonEnemyChase* CreateEnemyChase(ivec2 position, FACING_INDEX direction);
+		void RemoveEnemyChase(ivec2 position);
 	
 		void Save(std::string filename);
 		void Load(std::string filename);
@@ -97,6 +109,7 @@ namespace Crawl
 		static unsigned int GetReverseDirectionMask(unsigned int direction);
 
 		void Update();
+		void UpdateVisuals(float delta);
 
 	protected:
 		void InitialiseTileMap();
@@ -138,8 +151,15 @@ namespace Crawl
 		std::vector<DungeonShootLaserProjectile*> shootLaserProjectiles;
 		std::vector<DungeonDamageVisual*> damageVisuals;
 		std::vector<DungeonEnemyBlocker*> blockers;
+
+		std::vector<DungeonEnemyChase*> chasers;
 		
 		DungeonPlayer* player = nullptr;
+
+
+		// Path Finding Visual Test
+		std::vector<DungeonTile*> goodPath;
+		std::vector<DungeonTile*> badNodes;
 	};
 }
 

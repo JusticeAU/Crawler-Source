@@ -9,6 +9,7 @@
 #include "DungeonPushableBlock.h"
 #include "DungeonShootLaser.h"
 #include "DungeonEnemyBlocker.h"
+#include "DungeonEnemyChase.h"
 
 #include "Object.h"
 #include "Input.h"
@@ -19,6 +20,8 @@ namespace fs = std::filesystem;
 
 #include "ComponentModel.h";
 #include "ComponentRenderer.h";
+
+#include "LogUtils.h"
 
 
 Crawl::DungeonEditor::DungeonEditor()
@@ -235,6 +238,17 @@ void Crawl::DungeonEditor::DrawGUICursorInformation()
 	ImGui::BeginDisabled();
 	ImGui::DragInt2("Grid Selected", &gridSelected.x);
 	ImGui::EndDisabled();
+
+	if (ImGui::BeginCombo("Path Start Orientation", orientationNames[facingTest].c_str()))
+	{
+		int oldOrientation = facingTest;
+		for (int i = 0; i < 4; i++)
+		{
+			if (ImGui::Selectable(orientationNames[i].c_str()))
+				facingTest = i;
+		}
+		ImGui::EndCombo();
+	}
 }
 void Crawl::DungeonEditor::DrawGUIModeSelect()
 {
@@ -327,7 +341,16 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		UpdateWallVariants(selectedTile);
 		dungeon->CreateTileObject(selectedTile);
 	}
-
+	int distance = dungeon->goodPath.size();
+	ImGui::InputInt("Distance", &distance);
+	ImGui::InputInt("Cost", &selectedTile->cost);
+	for (int i = 0; i < 4; i++)
+	{
+		if(selectedTile->neighbors[i])
+			ImGui::Text("neighbor");
+		else
+			ImGui::Text("nah");
+	}
 
 	// if yes, what wall variant - hidden for now, non-functional
 	/*ImGui::BeginDisabled();
@@ -451,6 +474,23 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		selectedBlockerEnemyWindowOpen = true;
 	}
 
+	if (selectedChaseEnemy)
+	{
+		if (ImGui::Selectable("Chaser")) selectedChaseEnemyWindowOpen = true;
+		if (ImGui::Button("Delete Chaser"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemoveEnemyChase(selectedTile->position);
+			selectedChaseEnemyWindowOpen = false;
+		}
+	}
+	else if (ImGui::Button("Add Chaser"))
+	{
+		MarkUnsavedChanges();
+		selectedChaseEnemy = dungeon->CreateEnemyChase(selectedTile->position, EAST_INDEX);
+		selectedChaseEnemyWindowOpen = true;
+	}
+
 	// Pushable Blocks - similar but different to plates - they are closer to NPCs - they occupy a space.
 	if (selectedHasBlock)
 	{
@@ -498,6 +538,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		DrawGUIModeTileEditShootLaser();
 	if (selectedBlockerEnemyWindowOpen)
 		DrawGUIModeTileEditBlocker();
+	if (selectedChaseEnemyWindowOpen)
+		DrawGUIModeTileEditChase();
 }
 
 void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
@@ -772,6 +814,27 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditBlocker()
 		MarkUnsavedChanges();
 }
 
+void Crawl::DungeonEditor::DrawGUIModeTileEditChase()
+{
+	ImGui::Begin("Edit Chase Enemy", &selectedChaseEnemyWindowOpen);
+
+	if (ImGui::BeginCombo("Look Direction", orientationNames[selectedChaseEnemy->facing].c_str()))
+	{
+		int oldOrientation = selectedChaseEnemy->facing;
+		for (int i = 0; i < 4; i++)
+			if (ImGui::Selectable(orientationNames[i].c_str()))
+			{
+				selectedChaseEnemy->facing = (FACING_INDEX)i;
+				if (selectedChaseEnemy->facing != oldOrientation)
+				{
+					MarkUnsavedChanges();
+					selectedChaseEnemy->object->SetLocalRotationZ(orientationEulers[i]);
+				}
+			}
+		ImGui::EndCombo();
+	}
+}
+
 void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 {
 	if(ImGui::InputInt2("Default Position", &dungeon->defaultPlayerStartPosition.x))
@@ -879,6 +942,46 @@ void Crawl::DungeonEditor::UpdateModeTileEdit()
 		
 		RefreshSelectedTile();
 	}
+
+
+
+	if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down())
+	{
+		from = GetMousePosOnGrid();
+		to = dungeon->player->GetPosition();
+		LogUtils::Log("Path finding with free turns");
+		for (auto& o : pathFindObjects)
+			o->markedForDeletion = true;
+		pathFindObjects.clear();
+
+		dungeon->FindPath(from, to);
+		for (auto& p : dungeon->goodPath)
+		{
+			Object* o = Scene::CreateObject();
+			o->LoadFromJSON(path_template);
+			o->AddLocalPosition({ p->position.x * DUNGEON_GRID_SCALE, p->position.y * DUNGEON_GRID_SCALE, 0 });
+			pathFindObjects.push_back(o);
+		}
+	}
+
+	if (Input::Keyboard(GLFW_KEY_SPACE).Down())
+	{
+		from = GetMousePosOnGrid();
+		to = dungeon->player->GetPosition();
+		LogUtils::Log("Path finding with turn cost");
+		for (auto& o : pathFindObjects)
+			o->markedForDeletion = true;
+		pathFindObjects.clear();
+
+		dungeon->FindPath(from, to, facingTest);
+		for (auto& p : dungeon->goodPath)
+		{
+			Object* o = Scene::CreateObject();
+			o->LoadFromJSON(path_template);
+			o->AddLocalPosition({ p->position.x * DUNGEON_GRID_SCALE, p->position.y * DUNGEON_GRID_SCALE, 0 });
+			pathFindObjects.push_back(o);
+		}
+	}
 }
 
 void Crawl::DungeonEditor::RefreshSelectedTile()
@@ -929,6 +1032,13 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 	{
 		if (dungeon->blockers[i]->position == selectedTile->position)
 			selectedBlockerEnemy = dungeon->blockers[i];
+	}
+
+	selectedChaseEnemy = nullptr;
+	for (int i = 0; i < dungeon->chasers.size(); i++)
+	{
+		if (dungeon->chasers[i]->position == selectedTile->position)
+			selectedChaseEnemy = dungeon->chasers[i];
 	}
 
 	selectedHasBlock = false;
@@ -1134,6 +1244,7 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedActivatorPlate = nullptr;
 	selectedTileShootLaser = nullptr;
 	selectedBlockerEnemy = nullptr;
+	selectedChaseEnemy = nullptr;
 
 	selectedDoorWindowOpen = false;
 	selectedLeverWindowOpen = false;
@@ -1141,4 +1252,5 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedTransporterWindowOpen = false;
 	selectedShootLaserWindowOpen = false;
 	selectedBlockerEnemyWindowOpen = false;
+	selectedChaseEnemyWindowOpen = false;
 }
