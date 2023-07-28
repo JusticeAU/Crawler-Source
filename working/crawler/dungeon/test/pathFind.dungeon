@@ -10,6 +10,7 @@
   "playerHasKnife": false,
   "playerCanKickBox": false,
   "playerCanPushBox": false,
+  "playerInteractIsFree": true,
   "tiles": [
     {
       "position": {
@@ -10432,5 +10433,14 @@
   "spikes": null,
   "blocks": null,
   "shootLasers": null,
-  "blockers": null
+  "blockers": null,
+  "chasers": [
+    {
+      "position": {
+        "x": 20,
+        "y": 11
+      },
+      "facing": 3
+    }
+  ]
 }

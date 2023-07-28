@@ -944,6 +944,7 @@ void Crawl::Dungeon::BuildSerialised()
 	serialised["playerHasKnife"] = playerHasKnife;
 	serialised["playerCanKickBox"] = playerCanKickBox;
 	serialised["playerCanPushBox"] = playerCanPushBox;
+	serialised["playerInteractIsFree"] = playerInteractIsFree;
 
 	for (auto& x : tiles)
 	{
@@ -1032,6 +1033,11 @@ void Crawl::Dungeon::RebuildFromSerialised()
 		serialised.at("playerCanPushBox").get_to(playerCanPushBox);
 	else
 		playerHasKnife = true;
+
+	if (serialised.contains("playerInteractIsFree"))
+		serialised.at("playerInteractIsFree").get_to(playerInteractIsFree);
+	else
+		playerInteractIsFree = true;
 
 
 	auto& tiles_json = serialised["tiles"];

@@ -137,6 +137,7 @@ namespace Crawl
 		bool playerCanKickBox = false;
 		bool playerCanPushBox = false;
 		bool playerTurnIsFree = true;
+		bool playerInteractIsFree = true;
 
 		std::vector<DungeonInteractableLever*> interactables;
 		std::vector<DungeonDoor*> activatable;

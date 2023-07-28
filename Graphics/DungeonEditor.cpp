@@ -856,6 +856,9 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 	if (ImGui::Checkbox("Player Turn is Free", &dungeon->playerTurnIsFree))
 		MarkUnsavedChanges();
 
+	if (ImGui::Checkbox("Player Interact is Free", &dungeon->playerInteractIsFree))
+		MarkUnsavedChanges();
+
 	if (ImGui::Checkbox("Player can Knife", &dungeon->playerHasKnife))
 		MarkUnsavedChanges();
 

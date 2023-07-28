@@ -6,10 +6,11 @@
     "y": 0
   },
   "defaultOrientation": 1,
-  "playerTurnIsFree": true,
+  "playerTurnIsFree": false,
   "playerHasKnife": true,
   "playerCanKickBox": true,
   "playerCanPushBox": true,
+  "playerInteractIsFree": false,
   "tiles": [
     {
       "position": {
@@ -371,5 +372,6 @@
       "activateID": 0
     }
   ],
-  "blockers": null
+  "blockers": null,
+  "chasers": null
 }

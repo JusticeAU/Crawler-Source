@@ -21,6 +21,8 @@ void Crawl::DungeonDoor::Toggle(bool on)
 		power += 1;
 	else
 		power -= 1;
+
+	Update();
 }
 
 void Crawl::DungeonDoor::Update()
