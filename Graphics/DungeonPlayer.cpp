@@ -30,6 +30,9 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		glm::ivec2 coordinate = { 0, 0 };
 		glm::ivec2 coordinateUnchanged = { 0, 0 }; // TO DO this sucks
 
+		if (Input::Keyboard(GLFW_KEY_LEFT_ALT).Down())
+			return true;
+
 		if (Input::Keyboard(GLFW_KEY_SPACE).Down() && dungeon->playerCanKickBox)
 		{
 			if (dungeon->DoKick(position, facing))
