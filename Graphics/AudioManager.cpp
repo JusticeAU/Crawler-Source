@@ -1,5 +1,6 @@
 #include "AudioManager.h"
 #include "LogUtils.h"
+#include "Input.h"
 #include "imgui.h"
 #include <filesystem>
 
@@ -9,7 +10,6 @@ namespace fs = std::filesystem;
 AudioManager::AudioManager()
 {
 	gSoloud.init();
-	LoadAllFiles();
 }
 
 AudioManager::~AudioManager()
@@ -40,9 +40,26 @@ void AudioManager::Update()
 			m_audioListener->forward.x,
 			m_audioListener->forward.y,
 			m_audioListener->forward.z,
-			0,1,0);
+			0,0,1); // Up is here
 
 		gSoloud.update3dAudio(); // This tells all current playing sounds to respect the above update.
+	}
+
+	// Adjust volumes - pretty hacky but just something while in dev.
+	if (Input::Keyboard(GLFW_KEY_KP_SUBTRACT).Down() && globalVolume > 0.0f)
+		globalVolume -= 0.1f;
+	if (Input::Keyboard(GLFW_KEY_KP_ADD).Down() && globalVolume < 1.0f)
+		globalVolume += 0.1f;
+
+
+	if (globalVolume != globalVolumeOld)
+	{
+		if (globalVolume < 0)
+			globalVolume = 0;
+
+		LogUtils::Log("Setting Volume: " + std::to_string(globalVolume).substr(0,3));
+		globalVolumeOld = globalVolume;
+		gSoloud.setGlobalVolume(globalVolume);
 	}
 }
 
@@ -54,6 +71,8 @@ void AudioManager::DrawGUI()
 	ImGui::Begin("Audio", nullptr/*, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize*/);
 
 	ImGui::BeginDisabled();
+	float soLoudVolume = s_instance->gSoloud.getGlobalVolume();
+	ImGui::InputFloat("Global Volume", &soLoudVolume);
 	int loadCount = (int)s_instance->m_loaded.size();
 	ImGui::DragInt("Loaded Count", &loadCount);
 	ImGui::DragFloat3("Audio Listener Position", (float*)&s_instance->m_audioListener->position);
@@ -183,26 +202,26 @@ void AudioManager::StreamFromFile(const char* filename)
 	m_stream.emplace(filename, sound);
 }
 
-void AudioManager::LoadAllFiles()
+void AudioManager::LoadAllFiles(string folder)
 {
 	LogUtils::Log("Loading Audio Files");
-	for (auto d : fs::recursive_directory_iterator("engine/sound/load"))
+	for (auto d : fs::recursive_directory_iterator(folder + "/sound/load"))
 	{
-		if (d.path().extension() == ".wav")
+		if (d.path().extension() == ".wav" || d.path().extension() == ".ogg")
 		{
 			string output = "Loading: " + d.path().generic_string();
 			LogUtils::Log(output.c_str());
-			LoadFromFile(d.path().generic_string().c_str());
+			s_instance->LoadFromFile(d.path().generic_string().c_str());
 		}
 	}
 
-	for (auto d : fs::recursive_directory_iterator("engine/sound/stream"))
+	for (auto d : fs::recursive_directory_iterator(folder + "/sound/stream"))
 	{
 		if (d.path().extension() == ".wav" || d.path().extension() == ".mp3")
 		{
-			string output = "Prepping for streamin: " + d.path().generic_string();
+			string output = "Prepping for streaming: " + d.path().generic_string();
 			LogUtils::Log(output.c_str());
-			StreamFromFile(d.path().generic_string().c_str());
+			s_instance->StreamFromFile(d.path().generic_string().c_str());
 		}
 	}
 }

@@ -25,6 +25,7 @@ public:
 	AudioManager& operator=(const AudioManager& other) = delete;
 
 	static void Init();
+	static void LoadAllFiles(string folder);
 
 	void Update();
 
@@ -64,6 +65,9 @@ protected:
 
 	void LoadFromFile(const char* filename);
 	void StreamFromFile(const char* filename);
-	void LoadAllFiles();
+
+	float globalVolume = 1.0f;
+	// For seperate volume sliders such as ambience, sfx, music etc. We would use SoLoud mixing buses.
+	float globalVolumeOld = 1.0f;
 };
 

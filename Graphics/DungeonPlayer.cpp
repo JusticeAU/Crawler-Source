@@ -3,6 +3,7 @@
 #include "Scene.h"
 #include "MathUtils.h"
 #include "LogUtils.h"
+#include "AudioManager.h"
 
 Crawl::DungeonPlayer::DungeonPlayer()
 {
@@ -65,13 +66,13 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		}
 
 		int index = -1;
-		if (Input::Keyboard(GLFW_KEY_W).Pressed())
+		if (Input::Keyboard(GLFW_KEY_W).Down())
 			index = GetMoveCardinalIndex(FORWARD_INDEX);
-		if (Input::Keyboard(GLFW_KEY_S).Pressed())
+		if (Input::Keyboard(GLFW_KEY_S).Down())
 			index = GetMoveCardinalIndex(BACK_INDEX);
-		if (Input::Keyboard(GLFW_KEY_A).Pressed())
+		if (Input::Keyboard(GLFW_KEY_A).Down())
 			index = GetMoveCardinalIndex(LEFT_INDEX);
-		if (Input::Keyboard(GLFW_KEY_D).Pressed())
+		if (Input::Keyboard(GLFW_KEY_D).Down())
 			index = GetMoveCardinalIndex(RIGHT_INDEX);
 
 		ivec2 oldPlayerCoordinate = position;
@@ -79,6 +80,7 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		{
 			if (dungeon->PlayerCanMove(position, index))
 			{
+				AudioManager::PlaySound(stepSounds[rand() % 4]);
 				position += directions[index];
 				dungeon->GetTile(position)->occupied = true;
 				didMove = true;
@@ -97,8 +99,9 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		}
 
 		// Turning
-		if (Input::Keyboard(GLFW_KEY_E).Pressed())
+		if (Input::Keyboard(GLFW_KEY_E).Down())
 		{
+			AudioManager::PlaySound("crawler/sound/load/turn.wav");
 			int faceInt = (int)facing;
 			faceInt++;
 			if (faceInt == 4)
@@ -111,8 +114,9 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 			if (!dungeon->playerTurnIsFree)
 				return true;
 		}
-		if (Input::Keyboard(GLFW_KEY_Q).Pressed())
+		if (Input::Keyboard(GLFW_KEY_Q).Down())
 		{
+			AudioManager::PlaySound("crawler/sound/load/turn.wav");
 			int faceInt = (int)facing;
 			faceInt--;
 			if (faceInt == -1)
@@ -177,6 +181,7 @@ void Crawl::DungeonPlayer::SetRespawn(ivec2 position, FACING_INDEX orientation)
 
 void Crawl::DungeonPlayer::Respawn()
 {
+	AudioManager::PlaySound("crawler/sound/load/start.wav");
 	dungeon->RebuildFromSerialised();
 	if (hasRespawnLocation)
 	{

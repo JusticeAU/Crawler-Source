@@ -57,5 +57,12 @@ namespace Crawl
 		bool hasRespawnLocation = false;
 		glm::ivec2 respawnPosition = { 0,0 };
 		FACING_INDEX respawnOrientation = EAST_INDEX;
+
+		string stepSounds[4] = {
+			"crawler/sound/load/step1.ogg",
+			"crawler/sound/load/step2.ogg",
+			"crawler/sound/load/step3.ogg",
+			"crawler/sound/load/step4.ogg"
+		};
 	};
 }

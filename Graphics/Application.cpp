@@ -81,6 +81,9 @@ Application::Application()
 	aspect = width / (float)height;
 	camera = new Camera(aspect, "Main Camera");
 
+	// Create input system.
+	Input::Init(window->GetGLFWwindow());
+
 	// Load Assets
 	string engineFolder = "engine";
 	string gameFolder = "crawler";
@@ -103,10 +106,10 @@ Application::Application()
 	//Scene::Init();
 	ComponentFactory::Init();
 	AudioManager::Init();
+	AudioManager::LoadAllFiles(engineFolder);
+	AudioManager::LoadAllFiles(gameFolder);
+
 	AudioManager::SetAudioListener(camera->GetAudioListener());
-	
-	// Create input system.
-	Input::Init(window->GetGLFWwindow());
 
 	// Load Crawl Game Dependencies
 	Scene* scene = Scene::NewScene("Dungeon");
@@ -116,8 +119,7 @@ Application::Application()
 	dungeon = new Crawl::Dungeon();
 	dungeonPlayer = new Crawl::DungeonPlayer();
 	dungeon->SetPlayer(dungeonPlayer);
-	dungeonPlayer->SetDungeon(dungeon);
-	
+	dungeonPlayer->SetDungeon(dungeon);	
 }
 
 Application::~Application()
@@ -160,13 +162,14 @@ void Application::LaunchArgument(char* arg)
 			artTester->Activate();
 		}
 	}
-
 }
 
 void Application::InitGame()
 {
 	dungeon->Load("crawler/dungeon/start.dungeon");
 	Scene::SetCameraIndex(1);
+	if (!developerMode)
+		dungeonPlayer->Respawn();
 }
 
 void Application::Run()

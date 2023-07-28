@@ -85,6 +85,8 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	{
 		TileEditUnselectAll();
 		requestedGameMode = true;
+		if (!dirtyGameplayScene)
+			dungeon->player->Respawn();
 		dirtyGameplayScene = true;
 	}
 

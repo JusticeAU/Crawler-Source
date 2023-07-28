@@ -4,6 +4,7 @@
 #include "LogUtils.h"
 #include "ComponentRenderer.h"
 #include "MaterialManager.h"
+#include "AudioManager.h"
 
 Crawl::DungeonShootLaser::~DungeonShootLaser()
 {
@@ -74,6 +75,7 @@ void Crawl::DungeonShootLaser::Activate()
 void Crawl::DungeonShootLaser::Prime()
 {
 	LogUtils::Log("Shooter has primed");
+	AudioManager::PlaySound("crawler/sound/load/laser_prime.wav", object->GetWorldSpacePosition());
 	((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/shoot_laser_primed.material");
 	primed = true;
 	turnPrimed = dungeon->turn;
@@ -81,6 +83,7 @@ void Crawl::DungeonShootLaser::Prime()
 
 void Crawl::DungeonShootLaser::Fire()
 {
+	AudioManager::PlaySound("crawler/sound/load/laser_shoot.wav", object->localPosition);
 	if (!firesProjectile) // full line of sight attack
 	{
 		LogUtils::Log("Shooter Fired a full line of sight attack");

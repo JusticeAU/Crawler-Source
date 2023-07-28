@@ -226,7 +226,8 @@ void ComponentCamera::UpdateAudioListener()
 {
 	m_audioListener.position = componentParent->GetWorldSpacePosition();
 	glm::mat4 transform = componentParent->transform;
-	m_audioListener.forward.x = transform[0][2];
-	m_audioListener.forward.y = transform[1][2];
-	m_audioListener.forward.z = -transform[2][2];
+
+	const vec3 forward = normalize(glm::vec3(transform[2]));
+	m_audioListener.forward.x = -forward.x;
+	m_audioListener.forward.y = -forward.y;
 }

@@ -108,23 +108,23 @@
         "x": -4,
         "y": -3
       },
-      "mask": 9,
+      "mask": 12,
       "wallVariants": [
+        2,
         0,
         0,
-        1,
         3
       ]
     },
     {
       "position": {
         "x": -4,
-        "y": -2
+        "y": -1
       },
-      "mask": 12,
+      "mask": 4,
       "wallVariants": [
-        3,
-        0,
+        1,
+        2,
         0,
         3
       ]
@@ -171,20 +171,20 @@
     {
       "position": {
         "x": -3,
-        "y": -2
+        "y": -3
       },
-      "mask": 7,
+      "mask": 3,
       "wallVariants": [
         0,
+        2,
         3,
-        0,
         0
       ]
     },
     {
       "position": {
         "x": -3,
-        "y": -1
+        "y": -2
       },
       "mask": 13,
       "wallVariants": [
@@ -192,6 +192,19 @@
         0,
         0,
         1
+      ]
+    },
+    {
+      "position": {
+        "x": -3,
+        "y": -1
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
       ]
     },
     {
@@ -1714,7 +1727,18 @@
       "activateID": 1
     }
   ],
-  "transporters": null,
+  "transporters": [
+    {
+      "name": "To Start",
+      "position": {
+        "x": -4,
+        "y": -1
+      },
+      "fromOrientation": 1,
+      "toDungeon": "crawler/dungeon/start",
+      "toTransporter": "To Level1"
+    }
+  ],
   "spikes": [
     {
       "position": {
