@@ -1,5 +1,4 @@
 #include "ModelManager.h"
-#include "Graphics.h"
 #include "LogUtils.h"
 #include "Model.h"
 #include "Mesh.h"
@@ -91,7 +90,7 @@ ModelManager::ModelManager()
 	resources.emplace("_fsQuad", primitive);
 }
 
-void ModelManager::LoadFromFile(const char* filename)
+void ModelManager::LoadFromFile(const char* filename, mat4 transformOverride)
 {
 	// create an instance so we can easily configure it.
 	Assimp::Importer importer;
@@ -107,6 +106,7 @@ void ModelManager::LoadFromFile(const char* filename)
 
 	// Create a new model to start pushing our data in to.
 	Model* model = new Model();
+	model->modelTransform = transformOverride;
 	model->name = filename;
 	char* error = (char*)importer.GetErrorString();
 
@@ -164,7 +164,7 @@ void ModelManager::LoadFromFile(const char* filename)
 	resources.emplace(filename, model);
 }
 
-void ModelManager::LoadAllFiles(string folder)
+void ModelManager::LoadAllFiles(string folder, mat4 transformOverride)
 {
 	LogUtils::Log("Loading models");
 	for (auto d : fs::recursive_directory_iterator(folder))
@@ -173,7 +173,7 @@ void ModelManager::LoadAllFiles(string folder)
 		{
 			string output = "Loading: " + d.path().generic_string();
 			LogUtils::Log(output.c_str());
-			s_instance->LoadFromFile(d.path().generic_string().c_str());
+			s_instance->LoadFromFile(d.path().generic_string().c_str(), transformOverride);
 		}
 	}
 }

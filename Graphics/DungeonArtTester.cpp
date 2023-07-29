@@ -65,6 +65,16 @@ void Crawl::ArtTester::DrawGUI()
 	ImGui::Text("");
 	ImGui::Text("Rendering");
 	ImGui::Indent();
+	ImGui::Text("Transform (Preview Only)");
+	if (ImGui::DragFloat3("Position", &Scene::s_instance->objects[1]->localPosition[0],0.1f, -5, 5))
+		Scene::s_instance->objects[1]->dirtyTransform = true;
+
+	if (ImGui::SliderFloat3("Rotation", &Scene::s_instance->objects[1]->localRotation[0], -180, 180))
+		Scene::s_instance->objects[1]->dirtyTransform = true;
+
+	if (ImGui::DragFloat3("Scale", &Scene::s_instance->objects[1]->localScale[0],0.1f, -5, 5))
+		Scene::s_instance->objects[1]->dirtyTransform = true;
+
 	if (renderer)
 		renderer->DrawGUI();
 	else if (rendererSkinned)
@@ -72,7 +82,7 @@ void Crawl::ArtTester::DrawGUI()
 		rendererSkinned->DrawGUI();
 		ImGui::Unindent();
 		ImGui::Text("");
-		ImGui::Text("Animations");
+		ImGui::Text("Animation");
 		ImGui::Indent();
 		animator->DrawGUI();
 	}
@@ -293,7 +303,7 @@ void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)
 		case FileType::Model:
 		{
 			LogUtils::Log("Dropped a Model file");
-			ModelManager::s_instance->LoadFromFile(filepath.c_str());
+			ModelManager::s_instance->LoadFromFile(filepath.c_str(), Crawl::CRAWLER_TRANSFORM);
 			model = (ComponentModel*)Scene::s_instance->objects[1]->GetComponent(Component_Model);
 			renderer = (ComponentRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_Renderer);
 			rendererSkinned = (ComponentSkinnedRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_SkinnedRenderer);

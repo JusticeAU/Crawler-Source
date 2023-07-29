@@ -16,6 +16,7 @@
 #include "LogUtils.h"
 #include "Window.h"
 
+#include "DungeonHelpers.h"
 #include "DungeonEditor.h"
 #include "DungeonPlayer.h"
 #include "DungeonArtTester.h"
@@ -90,21 +91,25 @@ Application::Application()
 	string engineFolder = "engine";
 	string gameFolder = "crawler";
 	MeshManager::Init();
+	
 	TextureManager::Init();
 	TextureManager::LoadAllFiles(engineFolder);
 	TextureManager::LoadAllFiles(gameFolder);
-
 	// Add the scene camera to our framebuffer here
 	// This was originally in Scene constructor, but moving to scene instances caused this to conflict per scene.
 	TextureManager::s_instance->AddFrameBuffer(Camera::s_instance->name.c_str(), Camera::s_instance->GetFrameBuffer());
 
 	ShaderManager::Init();
+	
 	MaterialManager::Init(); // Must be initialised AFTER Texture Manager
 	MaterialManager::LoadAllFiles(engineFolder);
 	MaterialManager::LoadAllFiles(gameFolder);
+	
 	ModelManager::Init(); // Must be initialised after mesh manager
 	ModelManager::LoadAllFiles(engineFolder);
-	ModelManager::LoadAllFiles(gameFolder);
+	// CRAWLERCONFIG - Convert from Y up to Z up and scale down by factor of 100
+	ModelManager::LoadAllFiles(gameFolder, Crawl::CRAWLER_TRANSFORM);
+
 	//Scene::Init();
 	ComponentFactory::Init();
 	AudioManager::Init();
@@ -145,10 +150,10 @@ void Application::LaunchArgument(char* arg)
 		dungeonEditor = new Crawl::DungeonEditor();
 		dungeonEditor->SetDungeon(dungeon);
 
-		artTester = new Crawl::ArtTester();
 		Scene* art = Scene::NewScene("CrawlArtTest");
 		Scene::s_instance = art;
 		art->LoadJSON("crawler/scene/test_art.scene");
+		artTester = new Crawl::ArtTester();
 		
 		if (argument == "design")
 		{

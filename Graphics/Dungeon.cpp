@@ -438,13 +438,13 @@ Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, uns
 
 	// Load lever Objects from JSON
 	ordered_json lever_objectJSON = ReadJSONFromDisk("crawler/object/interactable_lever.object");
-	ordered_json lever_modelJSON = ReadJSONFromDisk("crawler/model/interactable_lever_blockout/interactable_lever_blockout.object");
+	ordered_json lever_modelJSON = ReadJSONFromDisk("crawler/model/interactable_lever_lever/interactable_lever_lever.object");
 
 	// load Model object in to Model child object
 	Object* lever_object = Scene::CreateObject();
 	lever_object->LoadFromJSON(lever_objectJSON);
 	lever->object = lever_object;
-	lever_object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 2.5 });
+	lever_object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 1.5 });
 	Object* lever_model = Scene::CreateObject(lever_object->children[0]);
 	lever_model->LoadFromJSON(lever_modelJSON);
 	lever_object->SetLocalRotationZ(orientationEulers[directionIndex]);

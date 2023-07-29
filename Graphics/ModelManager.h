@@ -1,4 +1,5 @@
 #pragma once
+#include "Graphics.h"
 #include <string>
 #include <map>
 
@@ -7,12 +8,13 @@ class Animation;
 
 using std::string;
 using std::map;
+using glm::mat4;
 
 class ModelManager
 {
 public:
 	static void Init();
-	static void LoadAllFiles(string folder);
+	static void LoadAllFiles(string folder, mat4 transformOverride = mat4(1));
 
 	static Model* GetModel(string name);
 	static Animation* GetAnimation(string name);
@@ -23,7 +25,7 @@ public:
 	static const map<string, Model*>* Resources() { return &s_instance->resources; }
 	static const map<string, Animation*>* Animations() { return &s_instance->animations; }
 
-	void LoadFromFile(const char* filename);
+	void LoadFromFile(const char* filename, mat4 transformOverride);
 protected:
 	ModelManager();
 	map<string, Model*> resources;

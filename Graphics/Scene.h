@@ -103,7 +103,9 @@ protected:
 
 	// Point Lights
 	int MAX_LIGHTS = 4;
+public:
 	vector<Light> m_pointLights;
+protected:
 	glm::vec3* m_pointLightPositions;
 	glm::vec3* m_pointLightColours;
 

@@ -1,11 +1,14 @@
 #pragma once
-#include <glm.hpp>
+#include "glm.hpp"
+#include "ext\matrix_transform.hpp"
 #include <string>
+
+using glm::mat4;
 
 namespace Crawl
 {
-	const int DUNGEON_GRID_SCALE = 5;
-
+	const int DUNGEON_GRID_SCALE = 2;
+	const mat4 CRAWLER_TRANSFORM = glm::scale(mat4(1), { 0.01, 0.01, 0.01 }) * glm::rotate(mat4(1), glm::radians(90.0f), { 1,0,0 });
 	// Useful for auto tiling. If you reverse the order of the bits you'll get the reverse direction.
 	enum DIRECTION_MASK
 	{

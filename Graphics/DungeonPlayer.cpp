@@ -18,6 +18,8 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	/*if (Input::Keyboard(GLFW_KEY_SPACE).Down())
 		hp -= 1;*/
 
+	Scene::s_instance->m_pointLights[0].position = object->GetWorldSpacePosition(); // hacky!!!
+
 	if (state == IDLE)
 	{
 		if (hp <= 0)

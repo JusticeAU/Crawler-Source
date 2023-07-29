@@ -66,11 +66,11 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				ShaderProgram* shader = ShaderManager::GetShaderProgram("engine/shader/picking");
 				shader->Bind();
 				shader->SetUIntUniform("objectID", componentParent->id);
-				glm::mat4 pvm = pv * componentParent->transform;
+				glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
 
 				// Positions and Rotations
 				shader->SetMatrixUniform("pvmMatrix", pvm);
-				shader->SetMatrixUniform("mMatrix", componentParent->transform);
+				shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
 				shader->SetVectorUniform("cameraPosition", position);
 				
 				shader->SetIntUniform("objectID", componentParent->id);
@@ -84,11 +84,11 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 
 				ShaderProgram* shader = ShaderManager::GetShaderProgram("engine/shader/simpleDepthShader");
 				shader->Bind();
-				glm::mat4 pvm = pv * componentParent->transform;
+				glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
 
 				// Positions and Rotations
 				shader->SetMatrixUniform("pvmMatrix", pvm);
-				shader->SetMatrixUniform("mMatrix", componentParent->transform);
+				shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
 				shader->SetVectorUniform("cameraPosition", position);
 				DrawModel();
 				break;
@@ -169,11 +169,11 @@ void ComponentRenderer::BindShader()
 void ComponentRenderer::BindMatricies(mat4 pv, vec3 position)
 {
 	// Combine the matricies
-	glm::mat4 pvm = pv * componentParent->transform;
+	glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
 
 	// Positions and Rotations
 	material->shader->SetMatrixUniform("pvmMatrix", pvm);
-	material->shader->SetMatrixUniform("mMatrix", componentParent->transform);
+	material->shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
 	material->shader->SetVectorUniform("cameraPosition", position);
 	material->shader->SetMatrixUniform("lightSpaceMatrix", Scene::GetLightSpaceMatrix());
 }

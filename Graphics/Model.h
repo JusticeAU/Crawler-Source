@@ -35,6 +35,8 @@ public:
 	Object* childNodes = nullptr;
 	BoneStructure* boneStructure = nullptr;
 
+	mat4 modelTransform = mat4(1);
+
 	void DrawAllSubMeshes();
 	void DrawSubMesh(int index);
 
