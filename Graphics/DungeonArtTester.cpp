@@ -39,54 +39,44 @@ void Crawl::ArtTester::Deactivate()
 void Crawl::ArtTester::DrawGUI()
 {
 	MaterialManager::DrawGUI();
-	
-	ImGui::Begin("Crawl Art Test");
-	if (ImGui::Button(scaleIndex == 0 ? "Scale (PASS)" : "Scale (FAIL)"))
+
+	ImGui::SetNextWindowPos({ 0,0 });
+	ImGui::SetNextWindowSize({ 500, 600 });
+	ImGui::Begin("Crawl Art Test",0, ImGuiWindowFlags_NoMove);
+	if(ImGui::BeginCombo("Camera", Scene::GetCameraIndex() == 0 ? "Free" : "Player"))
 	{
-		scaleIndex += 1;
-		if (scaleIndex >= QTY_SCALES) scaleIndex = 0;
-		
-		Scene::s_instance->objects[1]->SetLocalScale(scales[scaleIndex]);
-	}
-	ImGui::SameLine();
-	ImGui::Text(std::to_string(scales[scaleIndex]).c_str());
+		if (ImGui::Selectable("Free"))
+			Scene::SetCameraIndex(0);
+		if (ImGui::Selectable("Player"))
+			Scene::SetCameraIndex(1);
 
-	if (ImGui::Button(upAxisIndex == 0 ? "Up (PASS)" : "Up (FAIL)"))
-	{
-		upAxisIndex += 1;
-		if (upAxisIndex >= QTY_UP_AXIS) upAxisIndex = 0;
-
-		Scene::s_instance->objects[1]->SetLocalRotation({upAxis[upAxisIndex], 0, 0});
-	}
-	ImGui::SameLine();
-	ImGui::Text(std::to_string(upAxis[upAxisIndex]).c_str());
-
-	if (ImGui::Button(forwardAxisIndex == 0 ? "Forward (PASS)" : "Forward (FAIL)"))
-	{
-		forwardAxisIndex += 1;
-		if (forwardAxisIndex >= QTY_FORWARD_AXIS) forwardAxisIndex = 0;
-
-		Scene::s_instance->objects[1]->SetLocalRotationZ(forwardAxis[forwardAxisIndex]);
-	}
-	ImGui::SameLine();
-	ImGui::Text(std::to_string(forwardAxis[forwardAxisIndex]).c_str());
-
-	if (ImGui::InputInt("Player Distance", &playerViewDistance, 1))
-	{
-		if(playerViewDistance > MAX_VIEW_DISTANCE) playerViewDistance = MAX_VIEW_DISTANCE;
-		if (playerViewDistance < 1) playerViewDistance = 1;
-		Scene::s_instance->objects[2]->SetLocalPosition({ 0, -playerViewDistance * DUNGEON_GRID_SCALE, 0 });
+		ImGui::EndCombo();
 	}
 
+	if (Scene::GetCameraIndex() == 1)
+	{
+		if (ImGui::InputInt("Player Distance", &playerViewDistance, 1))
+		{
+			if(playerViewDistance > MAX_VIEW_DISTANCE) playerViewDistance = MAX_VIEW_DISTANCE;
+			if (playerViewDistance < 1) playerViewDistance = 1;
+			Scene::s_instance->objects[2]->SetLocalPosition({ 0, -playerViewDistance * DUNGEON_GRID_SCALE, 0 });
+		}
+	}
+	ImGui::Text("");
 	ImGui::Text("Rendering");
+	ImGui::Indent();
 	if (renderer)
 		renderer->DrawGUI();
 	else if (rendererSkinned)
 	{
 		rendererSkinned->DrawGUI();
+		ImGui::Unindent();
+		ImGui::Text("");
 		ImGui::Text("Animations");
+		ImGui::Indent();
 		animator->DrawGUI();
 	}
+	ImGui::Unindent();
 
 	ImGui::End();
 
@@ -95,6 +85,9 @@ void Crawl::ArtTester::DrawGUI()
 
 void Crawl::ArtTester::DrawGUIStaging()
 {
+	ImGui::SetNextWindowPos({ 800,18 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 500, 600 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Staging");
 	
 	// configure
@@ -323,7 +316,7 @@ void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)
 					Scene::s_instance->objects[1]->components.push_back(animator);
 				}
 				animator->model = model->model;
-				animator->StartAnimation(model->model->animations[0]->name, true);
+				animator->StartAnimation(model->model->animations[0]->name);
 				animator->OnParentChange();
 				rendererSkinned->model = model->model;
 				rendererSkinned->OnParentChange();

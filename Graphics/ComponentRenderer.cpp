@@ -128,26 +128,26 @@ void ComponentRenderer::DrawGUI()
 		ImGui::PopID();
 	}
 
-	ImGui::Checkbox("Casts Shadows", &castsShadows);
+	//ImGui::Checkbox("Casts Shadows", &castsShadows);
 
-	string targetStr = "Target##" + to_string(componentParent->id);
-	if (ImGui::BeginCombo(targetStr.c_str(), frameBufferName.c_str()))
-	{
-		for (auto fb : *TextureManager::FrameBuffers())
-		{
-			const bool is_selected = (fb.second == frameBuffer);
-			if (ImGui::Selectable(fb.first.c_str(), is_selected))
-			{
-				frameBuffer = TextureManager::GetFrameBuffer(fb.first);
-				frameBufferName = fb.first;
-			}
+	//string targetStr = "Target##" + to_string(componentParent->id);
+	//if (ImGui::BeginCombo(targetStr.c_str(), frameBufferName.c_str()))
+	//{
+	//	for (auto fb : *TextureManager::FrameBuffers())
+	//	{
+	//		const bool is_selected = (fb.second == frameBuffer);
+	//		if (ImGui::Selectable(fb.first.c_str(), is_selected))
+	//		{
+	//			frameBuffer = TextureManager::GetFrameBuffer(fb.first);
+	//			frameBufferName = fb.first;
+	//		}
 
-			// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-			if (is_selected)
-				ImGui::SetItemDefaultFocus();
-		}
-		ImGui::EndCombo();
-	}
+	//		// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+	//		if (is_selected)
+	//			ImGui::SetItemDefaultFocus();
+	//	}
+	//	ImGui::EndCombo();
+	//}
 }
 
 void ComponentRenderer::OnParentChange()

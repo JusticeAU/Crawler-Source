@@ -83,6 +83,13 @@ void ComponentAnimator::DrawGUI()
 	{
 		if (model->animations.size() > 0)
 		{
+			ImGui::Text("Playback Settings");
+			string AnimSpeedStr = "Animation Speed##" + to_string(componentParent->id);
+			ImGui::DragFloat(AnimSpeedStr.c_str(), &current->animationSpeedScale, 0.1f, -2, 2);
+			ImGui::Text("");
+			ImGui::Text("Blend Settings");
+			ImGui::Checkbox("Next Anim Should Loop?", &transitionsShouldLoop);
+			ImGui::InputFloat("Next Anim Blend Time", &transitionBlendTime);
 			string animationNameStr = "Animation##" + to_string(componentParent->id);
 			if (ImGui::BeginCombo(animationNameStr.c_str(), current->animation->name.c_str()))
 			{
@@ -90,10 +97,7 @@ void ComponentAnimator::DrawGUI()
 				{
 					const bool is_selected = (a.second == current->animation);
 					if (ImGui::Selectable(a.first.c_str(), is_selected))
-					{
-						BlendToAnimation(a.first, 1.0f, 0.0f, true);
-						//next->position = current->position; // just assume the blended animation is in sync timing wise. like a walk cycle
-					}
+						BlendToAnimation(a.first, transitionBlendTime, 0.0f, transitionsShouldLoop);
 
 					// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
 					if (is_selected)
@@ -103,9 +107,8 @@ void ComponentAnimator::DrawGUI()
 
 			}
 
-			string AnimSpeedStr = "Animation Speed##" + to_string(componentParent->id);
-			ImGui::DragFloat(AnimSpeedStr.c_str(), &current->animationSpeedScale, 0.1f, -2, 2);
-
+			ImGui::Text("");
+			ImGui::Text("Current Animation");
 			string AnimLoopStr = "Loop##" + to_string(componentParent->id);
 			ImGui::Checkbox(AnimLoopStr.c_str(), &current->looping);
 			ImGui::SameLine();

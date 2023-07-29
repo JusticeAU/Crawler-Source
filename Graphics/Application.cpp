@@ -65,6 +65,8 @@ Application::Application()
 	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(window->GetGLFWwindow(), true);
 	ImGui_ImplOpenGL3_Init();
+	
+	ImGui::GetIO().IniFilename = NULL; // remove the storage of imgui settings
 
 	// Enable OGL depth testing.
 	glEnable(GL_DEPTH_TEST);
@@ -232,6 +234,12 @@ void Application::Update(float delta)
 	case Mode::Art:
 	{
 		artTester->DrawGUI();
+
+		if (Scene::GetCameraIndex() == 0)
+		{
+			camera->DrawGUI();
+			camera->Update(delta);
+		}
 		break;
 	}
 	case Mode::Programming:

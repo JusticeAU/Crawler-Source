@@ -60,4 +60,6 @@ public:
 	float transitionTime = 0.3f;
 	float transitionProgress = 0.0f;
 	float transitionWeight = 0.0f;
+	bool transitionsShouldLoop = false;
+	float transitionBlendTime = 0.1f;
 };
