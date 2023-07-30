@@ -13,6 +13,7 @@
 #include "DungeonShootLaserProjectile.h"
 #include "DungeonEnemyBlocker.h"
 #include "DungeonEnemyChase.h"
+#include "DungeonEnemySwitcher.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
@@ -454,6 +455,19 @@ Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, uns
 	return lever;
 }
 
+void Crawl::Dungeon::RemoveLever(DungeonInteractableLever* lever)
+{
+	for (int i = 0; i < interactables.size(); i++)
+	{
+		if (interactables[i] == lever)
+		{
+			delete interactables[i];
+			interactables.erase(interactables.begin() + i);
+			return;
+		}
+	}
+}
+
 void Crawl::Dungeon::DoActivate(unsigned int id)
 {
 	for (int i = 0; i < activatable.size(); i++)
@@ -499,10 +513,8 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 	{
 		if (pushableBlocks[i]->position == position)
 		{
-			GetTile(pushableBlocks[i]->position)->occupied = false;
-			delete pushableBlocks[i];
-			pushableBlocks.erase(pushableBlocks.begin() + i);
-			i--;
+			RemovePushableBlock(position);
+			break;
 		}
 	}
 
@@ -512,7 +524,8 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 		if (blockers[i]->position == position)
 		{
 			didDamage = true;
-			RemoveEnemyBlocker(position);
+			RemoveEnemyBlocker(blockers[i]);
+			break;
 		}
 	}
 
@@ -524,7 +537,8 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 			if (dealer == chasers[i]) // THIS IS PROBABLY SUPER DODGEY MAYBE I SHOULD CHECK WITH FINN :D
 				continue;
 			didDamage = true;
-			RemoveEnemyChase(position);
+			RemoveEnemyChase(chasers[i]);
+			break;
 		}
 	}
 
@@ -683,6 +697,19 @@ Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int dire
 	return door;
 }
 
+void Crawl::Dungeon::RemoveDoor(DungeonDoor* door)
+{
+	for (int i = 0; i < activatable.size(); i++)
+	{
+		if (activatable[i] == door)
+		{
+			delete activatable[i];
+			activatable.erase(activatable.begin() + i);
+			return;
+		}
+	}
+}
+
 Crawl::DungeonActivatorPlate* Crawl::Dungeon::CreatePlate(ivec2 position, unsigned int activateID)
 {
 	DungeonActivatorPlate* plate = new DungeonActivatorPlate();
@@ -697,6 +724,19 @@ Crawl::DungeonActivatorPlate* Crawl::Dungeon::CreatePlate(ivec2 position, unsign
 	return plate;
 }
 
+void Crawl::Dungeon::RemovePlate(DungeonActivatorPlate* plate)
+{
+	for (int i = 0; i < activatorPlates.size(); i++)
+	{
+		if (activatorPlates[i] == plate)
+		{
+			delete activatorPlates[i];
+			activatorPlates.erase(activatorPlates.begin() + i);
+			return;
+		}
+	}
+}
+
 Crawl::DungeonTransporter* Crawl::Dungeon::CreateTransporter(ivec2 position)
 {
 	DungeonTransporter* transporter = new DungeonTransporter();
@@ -706,6 +746,19 @@ Crawl::DungeonTransporter* Crawl::Dungeon::CreateTransporter(ivec2 position)
 	transporter->object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 1 });
 	transporterPlates.push_back(transporter);
 	return transporter;
+}
+
+void Crawl::Dungeon::RemoveTransporter(DungeonTransporter* transporter)
+{
+	for (int i = 0; i < transporterPlates.size(); i++)
+	{
+		if (transporterPlates[i] == transporter)
+		{
+			delete transporterPlates[i];
+			transporterPlates.erase(transporterPlates.begin() + i);
+			return;
+		}
+	}
 }
 
 Crawl::DungeonSpikes* Crawl::Dungeon::CreateSpikes(ivec2 position)
@@ -790,14 +843,15 @@ Crawl::DungeonShootLaser* Crawl::Dungeon::CreateShootLaser(ivec2 position, FACIN
 	return shootLaser;
 }
 
-void Crawl::Dungeon::RemoveDungeonShootLaser(ivec2 position)
+void Crawl::Dungeon::RemoveDungeonShootLaser(DungeonShootLaser* laser)
 {
 	for (int i = 0; i < shootLasers.size(); i++)
 	{
-		if (shootLasers[i]->position == position)
+		if (shootLasers[i] == laser)
 		{
 			delete shootLasers[i];
 			shootLasers.erase(shootLasers.begin() + i);
+			return;
 		}
 	}
 }
@@ -852,18 +906,19 @@ Crawl::DungeonEnemyBlocker* Crawl::Dungeon::CreateEnemyBlocker(ivec2 position, F
 	return blocker;
 }
 
-void Crawl::Dungeon::RemoveEnemyBlocker(ivec2 position)
+void Crawl::Dungeon::RemoveEnemyBlocker(DungeonEnemyBlocker* blocker)
 {
 	for (int i = 0; i < blockers.size(); i++)
 	{
-		if (position == blockers[i]->position)
+		if (blocker == blockers[i])
 		{
-			delete blockers[i];
-			blockers.erase(blockers.begin() + i);
-
-			DungeonTile* tile = GetTile(position);
+			DungeonTile* tile = GetTile(blocker->position);
 			if (tile)
 				tile->occupied = false;
+
+			delete blockers[i];
+			blockers.erase(blockers.begin() + i);
+			return;
 		}
 	}
 }
@@ -892,18 +947,58 @@ Crawl::DungeonEnemyChase* Crawl::Dungeon::CreateEnemyChase(ivec2 position, FACIN
 	return chaser;
 }
 
-void Crawl::Dungeon::RemoveEnemyChase(ivec2 position)
+void Crawl::Dungeon::RemoveEnemyChase(DungeonEnemyChase* chaser)
 {
 	for (int i = 0; i < chasers.size(); i++)
 	{
-		if (position == chasers[i]->position)
+		if (chaser == chasers[i])
 		{
-			delete chasers[i];
-			chasers.erase(chasers.begin() + i);
-
-			DungeonTile* tile = GetTile(position);
+			DungeonTile* tile = GetTile(chaser->position);
 			if (tile)
 				tile->occupied = false;
+
+			delete chasers[i];
+			chasers.erase(chasers.begin() + i);
+			return;
+		}
+	}
+}
+
+Crawl::DungeonEnemySwitcher* Crawl::Dungeon::CreateEnemySwitcher(ivec2 position, FACING_INDEX facing)
+{
+	DungeonEnemySwitcher* switcher = new DungeonEnemySwitcher();
+	switcher->position = position;
+	switcher->facing = facing;
+	switcher->dungeon = this;
+	switcher->object = Scene::CreateObject();
+	switcher->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/switch.object"));
+	switcher->object->AddLocalPosition(dungeonPosToObjectScale(position));
+	switcher->object->SetLocalRotationZ(orientationEulers[facing]);
+	switchers.emplace_back(switcher);
+
+	DungeonTile* tile = GetTile(position);
+	if (tile)
+	{
+		tile->occupied = true;
+	}
+	else
+		LogUtils::Log("WARNING - ATTEMPTING TO ADD SWITCHER TO TILE THAT DOESN'T EXIST");
+
+	return switcher;
+}
+
+void Crawl::Dungeon::RemoveEnemySwitcher(DungeonEnemySwitcher* switcher)
+{
+	for (int i = 0; i < switchers.size(); i++)
+	{
+		if (switcher == switchers[i])
+		{
+			DungeonTile* tile = GetTile(switcher->position);
+			if (tile)
+				tile->occupied = false;
+
+			delete switchers[i];
+			switchers.erase(switchers.begin() + i);
 		}
 	}
 }
@@ -945,6 +1040,7 @@ void Crawl::Dungeon::BuildSerialised()
 	serialised["playerCanKickBox"] = playerCanKickBox;
 	serialised["playerCanPushBox"] = playerCanPushBox;
 	serialised["playerInteractIsFree"] = playerInteractIsFree;
+	serialised["switchersMustBeLookedAt"] = switchersMustBeLookedAt;
 
 	for (auto& x : tiles)
 	{
@@ -997,6 +1093,11 @@ void Crawl::Dungeon::BuildSerialised()
 	for (auto& chaser : chasers)
 		chasers_json.push_back(*chaser);
 	serialised["chasers"] = chasers_json;
+
+	ordered_json switchers_json;
+	for (auto& switcher : switchers)
+		switchers_json.push_back(*switcher);
+	serialised["switchers"] = switchers_json;
 }
 
 void Crawl::Dungeon::RebuildFromSerialised()
@@ -1038,6 +1139,13 @@ void Crawl::Dungeon::RebuildFromSerialised()
 		serialised.at("playerInteractIsFree").get_to(playerInteractIsFree);
 	else
 		playerInteractIsFree = true;
+
+	if (serialised.contains("switchersMustBeLookedAt"))
+		serialised.at("switchersMustBeLookedAt").get_to(switchersMustBeLookedAt);
+	else
+		switchersMustBeLookedAt = true;
+
+
 
 
 	auto& tiles_json = serialised["tiles"];
@@ -1123,6 +1231,13 @@ void Crawl::Dungeon::RebuildFromSerialised()
 		DungeonEnemyChase* newChaser = CreateEnemyChase(chaser.position, chaser.facing);
 	}
 
+	auto& switchers_json = serialised["switchers"];
+	for (auto it = switchers_json.begin(); it != switchers_json.end(); it++)
+	{
+		DungeonEnemySwitcher switcher = it.value().get<Crawl::DungeonEnemySwitcher>();
+		DungeonEnemySwitcher* newSwitcher = CreateEnemySwitcher(switcher.position, switcher.facing);
+	}
+
 	BuildSceneFromDungeonLayout();
 }
 
@@ -1194,6 +1309,10 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 	for (int i = 0; i < chasers.size(); i++)
 		delete chasers[i];
 	chasers.clear();
+
+	for (int i = 0; i < switchers.size(); i++)
+		delete switchers[i];
+	switchers.clear();
 }
 
 Object* Crawl::Dungeon::GetTileTemplate(int mask)
@@ -1349,6 +1468,10 @@ void Crawl::Dungeon::Update()
 			break;
 		}
 	}
+
+	for (auto& switcher : switchers)
+		switcher->Update();
+
 	if (activateTransporter)
 	{
 		string dungeonToLoad = activateTransporter->toDungeon;

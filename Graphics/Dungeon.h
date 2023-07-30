@@ -26,6 +26,7 @@ namespace Crawl
 	class DungeonShootLaserProjectile;
 	class DungeonEnemyBlocker;
 	class DungeonEnemyChase;
+	class DungeonEnemySwitcher;
 
 	struct Column
 	{
@@ -65,33 +66,46 @@ namespace Crawl
 		void SetPlayer(DungeonPlayer* player) { this->player = player; }
 
 		bool DoInteractable(unsigned int id);
-		DungeonInteractableLever* CreateLever(ivec2 position, unsigned int directionMask, unsigned int id, unsigned int doorID, bool startStatus);
 		void DoActivate(unsigned int id);
 		void DoActivate(unsigned int id, bool on);
-		
+
 		// Returns true if this hit something
-		bool DamageAtPosition(ivec2 position, void* dealer,  bool fromPlayer = false);
+		bool DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer = false);
 		bool DoKick(ivec2 position, FACING_INDEX facing);
+		
+		DungeonInteractableLever* CreateLever(ivec2 position, unsigned int directionMask, unsigned int id, unsigned int doorID, bool startStatus);
+		void RemoveLever(DungeonInteractableLever* lever);
 
 		DungeonDoor* CreateDoor(ivec2 position, unsigned int directionMask, unsigned int id, bool startOpen);
+		void RemoveDoor(DungeonDoor* door);
+
 		DungeonActivatorPlate* CreatePlate(ivec2 position, unsigned int activateID);
+		void RemovePlate(DungeonActivatorPlate* plate);
+
 		DungeonTransporter* CreateTransporter(ivec2 position);
-		DungeonSpikes* CreateSpikes(ivec2 position);
-		void RemoveSpikes(ivec2 position);
-		DungeonPushableBlock* CreatePushableBlock(ivec2 position);
-		void RemovePushableBlock(ivec2 position);
+		void RemoveTransporter(DungeonTransporter* transporter);
 		DungeonTransporter* GetTransporter(string transporterName);
 
+		DungeonSpikes* CreateSpikes(ivec2 position);
+		void RemoveSpikes(ivec2 position);
+
+		DungeonPushableBlock* CreatePushableBlock(ivec2 position);
+		void RemovePushableBlock(ivec2 position);
+
 		DungeonShootLaser* CreateShootLaser(ivec2 position, FACING_INDEX facing, unsigned int id);
-		void RemoveDungeonShootLaser(ivec2 position);
+		void RemoveDungeonShootLaser(DungeonShootLaser* laser);
+
 		void CreateDamageVisual(ivec2 position, bool fromPlayer = false);
 		void CreateShootLaserProjectile(void* dealer, ivec2 position, FACING_INDEX direction);
 
 		DungeonEnemyBlocker* CreateEnemyBlocker(ivec2 position, FACING_INDEX direction);
-		void RemoveEnemyBlocker(ivec2 position);
+		void RemoveEnemyBlocker(DungeonEnemyBlocker* blocker);
 
 		DungeonEnemyChase* CreateEnemyChase(ivec2 position, FACING_INDEX direction);
-		void RemoveEnemyChase(ivec2 position);
+		void RemoveEnemyChase(DungeonEnemyChase* chaser);
+
+		DungeonEnemySwitcher* CreateEnemySwitcher(ivec2 position, FACING_INDEX direction);
+		void RemoveEnemySwitcher(DungeonEnemySwitcher* switcher);
 	
 		void Save(std::string filename);
 		void Load(std::string filename);
@@ -138,6 +152,7 @@ namespace Crawl
 		bool playerCanPushBox = false;
 		bool playerTurnIsFree = true;
 		bool playerInteractIsFree = true;
+		bool switchersMustBeLookedAt = true;
 
 		std::vector<DungeonInteractableLever*> interactables;
 		std::vector<DungeonDoor*> activatable;
@@ -154,6 +169,7 @@ namespace Crawl
 		std::vector<DungeonEnemyBlocker*> blockers;
 
 		std::vector<DungeonEnemyChase*> chasers;
+		std::vector<DungeonEnemySwitcher*> switchers;
 		
 		DungeonPlayer* player = nullptr;
 

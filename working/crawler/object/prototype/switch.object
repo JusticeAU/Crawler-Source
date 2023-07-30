@@ -1,0 +1,59 @@
+{
+  "name": "switcher",
+  "transform": {
+    "position": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "scale": {
+      "x": 1.0,
+      "y": 1.0,
+      "z": 1.0
+    }
+  },
+  "components": null,
+  "children": [
+    {
+      "name": "Model",
+      "transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 1.2000000476837158
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 180.0
+        },
+        "scale": {
+          "x": 0.699999988079071,
+          "y": 0.699999988079071,
+          "z": 1.2000000476837158
+        }
+      },
+      "components": [
+        {
+          "type": "Model",
+          "model": "_cube"
+        },
+        {
+          "type": "Renderer",
+          "materials": [
+            "crawler/material/prototype/switch.material"
+          ],
+          "frameBuffer": "",
+          "receivesShadows": true,
+          "castsShadows": true
+        }
+      ],
+      "children": null
+    }
+  ]
+}

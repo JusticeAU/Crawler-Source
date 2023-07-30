@@ -5,6 +5,8 @@
 #include "LogUtils.h"
 #include "AudioManager.h"
 
+#include "DungeonEnemySwitcher.h"
+
 Crawl::DungeonPlayer::DungeonPlayer()
 {
 	// TODO better inject / handle this better.
@@ -28,6 +30,12 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 			dungeon->RebuildFromSerialised();
 			Respawn();
 			return false;
+		}
+
+		if (shouldSwitchWith) // fairly hacky
+		{
+			shouldSwitchWith->SwapWithPlayer();
+			shouldSwitchWith = nullptr;
 		}
 
 		glm::ivec2 coordinate = { 0, 0 };

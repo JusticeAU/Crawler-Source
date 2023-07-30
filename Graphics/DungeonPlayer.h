@@ -24,12 +24,15 @@ namespace Crawl
 		bool Update(float deltaTime);
 
 		ivec2 GetPosition() { return position; }
+		FACING_INDEX GetOrientation() { return facing; }
 		void Teleport(ivec2 position);
 		void Orient(FACING_INDEX facing);
 		void SetRespawn(ivec2 position, FACING_INDEX orientation);
 		void Respawn();
 
 		void TakeDamage();
+
+		void SetShouldSwitchWith(DungeonEnemySwitcher* switcher) { shouldSwitchWith = switcher; }
 
 		// combines our requested direction with our facing direction to return the actual direction.
 		unsigned int GetMoveCardinalIndex(DIRECTION_INDEX dir);
@@ -57,6 +60,8 @@ namespace Crawl
 		bool hasRespawnLocation = false;
 		glm::ivec2 respawnPosition = { 0,0 };
 		FACING_INDEX respawnOrientation = EAST_INDEX;
+
+		DungeonEnemySwitcher* shouldSwitchWith = nullptr;
 
 		string stepSounds[4] = {
 			"crawler/sound/load/step1.ogg",
