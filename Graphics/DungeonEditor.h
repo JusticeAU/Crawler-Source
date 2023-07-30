@@ -38,6 +38,8 @@ namespace Crawl
 		void DrawGUIModeTileEditShootLaser();
 		void DrawGUIModeTileEditBlocker();
 		void DrawGUIModeTileEditChase();
+		void DrawGUIModeTileEditSwitcher();
+
 
 		void DrawGUIModeDungeonProperties();
 
@@ -103,8 +105,9 @@ namespace Crawl
 		// Tile edit mode
 		DungeonTile* selectedTile = nullptr;
 		bool selectedTileOpenWalls[4] = { false, false, false, false };
-		std::vector<DungeonDoor*> selectTileDoors;
-		std::vector<DungeonInteractableLever*> selectTileLevers;
+		bool selectedTileOccupied = false;
+		std::vector<DungeonDoor*> selectedTileDoors;
+		std::vector<DungeonInteractableLever*> selectedTileLevers;
 		DungeonDoor* selectedDoor = nullptr;
 		bool selectedDoorWindowOpen = false;
 		DungeonInteractableLever* selectedLever = nullptr;
@@ -116,7 +119,7 @@ namespace Crawl
 		bool selectedHasSpikes = false;
 		bool selectedHasBlock = false;
 
-		std::vector<DungeonShootLaser*> selectTileShootLasers;
+		std::vector<DungeonShootLaser*> selectedTileShootLasers;
 		DungeonShootLaser* selectedTileShootLaser = nullptr;
 		bool selectedShootLaserWindowOpen = false;
 
@@ -125,6 +128,9 @@ namespace Crawl
 
 		DungeonEnemyChase* selectedChaseEnemy = nullptr;
 		bool selectedChaseEnemyWindowOpen = false;
+
+		DungeonEnemySwitcher* selectedSwitcherEnemy = nullptr;
+		bool selectedSwitcherEnemyWindowOpen = false;
 
 		bool unsavedChanges = false;
 		bool shouldConfirmSaveBeforeLoad = false;

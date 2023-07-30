@@ -10,6 +10,8 @@
 #include "DungeonShootLaser.h"
 #include "DungeonEnemyBlocker.h"
 #include "DungeonEnemyChase.h"
+#include "DungeonEnemySwitcher.h"
+
 
 #include "Object.h"
 #include "Input.h"
@@ -47,6 +49,7 @@ void Crawl::DungeonEditor::Deactivate()
 void Crawl::DungeonEditor::DrawGUI()
 {
 	ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_Always);
+	ImGui::SetNextWindowSize({ 320, 600 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Dungeon Edit", 0, ImGuiWindowFlags_NoMove);
 	DrawGUIFileOperations();
 	DrawGUICursorInformation();
@@ -241,7 +244,7 @@ void Crawl::DungeonEditor::DrawGUICursorInformation()
 	ImGui::DragInt2("Grid Selected", &gridSelected.x);
 	ImGui::EndDisabled();
 
-	if (ImGui::BeginCombo("Path Start Orientation", orientationNames[facingTest].c_str()))
+	/*if (ImGui::BeginCombo("Path Start Orientation", orientationNames[facingTest].c_str()))
 	{
 		int oldOrientation = facingTest;
 		for (int i = 0; i < 4; i++)
@@ -250,7 +253,7 @@ void Crawl::DungeonEditor::DrawGUICursorInformation()
 				facingTest = i;
 		}
 		ImGui::EndCombo();
-	}
+	}*/
 }
 void Crawl::DungeonEditor::DrawGUIModeSelect()
 {
@@ -343,7 +346,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		UpdateWallVariants(selectedTile);
 		dungeon->CreateTileObject(selectedTile);
 	}
-	int distance = dungeon->goodPath.size();
+	// Path finding dev stuff.
+	/*int distance = dungeon->goodPath.size();
 	ImGui::InputInt("Distance", &distance);
 	ImGui::InputInt("Cost", &selectedTile->cost);
 	for (int i = 0; i < 4; i++)
@@ -352,7 +356,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 			ImGui::Text("neighbor");
 		else
 			ImGui::Text("nah");
-	}
+	}*/
 
 	// if yes, what wall variant - hidden for now, non-functional
 	/*ImGui::BeginDisabled();
@@ -378,71 +382,148 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 
 	ImGui::EndDisabled();*/
 
-	// entities
-	for (auto& door : selectTileDoors)
-	{
-		string doorName = "Door ID (";
-		doorName += to_string(door->id);
-		doorName += ")";
-		if (ImGui::Selectable(doorName.c_str()))
-		{
-			selectedDoor = door;
-			selectedDoorWindowOpen = true;
-		}
-	}
-	if (ImGui::Button("Add Door"))
+	// Buttons
+	ImGui::Text("Add");
+	ImGui::PushID("Add");
+	if (ImGui::Button("Door"))
 	{
 		MarkUnsavedChanges();
-		dungeon->CreateDoor(selectedTile->position, 0, GetNextAvailableDoorID(), false);
-		RefreshSelectedTile();
+		selectedDoor = dungeon->CreateDoor(selectedTile->position, 0, GetNextAvailableDoorID(), false);
+		selectedTileDoors.push_back(selectedDoor);
+		selectedDoorWindowOpen = true;
 	}
-
-	for (auto& lever : selectTileLevers)
-	{
-		string leverName = "Lever ID (";
-		leverName += to_string(lever->id);
-		leverName += ")";
-		if (ImGui::Selectable(leverName.c_str()))
-		{
-			selectedLever = lever;
-			selectedLeverWindowOpen = true;
-		}
-	}
-	if (ImGui::Button("Add Lever"))
+	ImGui::SameLine();
+	if (ImGui::Button("Lever"))
 	{
 		MarkUnsavedChanges();
-		dungeon->CreateLever(selectedTile->position, 0, GetNextAvailableLeverID(), 0, false);
-		RefreshSelectedTile();
+		selectedLever = dungeon->CreateLever(selectedTile->position, 0, GetNextAvailableLeverID(), 0, false);
+		selectedTileLevers.push_back(selectedLever);
+		selectedLeverWindowOpen = true;
 	}
-
-	// Activator Plates - exclusive on a tile ( combine? )
-	if (selectedActivatorPlate)
-	{
-		if (ImGui::Selectable("Plate")) selectedActivatorPlateWindowOpen = true;
-
-	}
-	else if (ImGui::Button("Add Activator Plate"))
+	ImGui::SameLine();
+	if (ImGui::Button("Shooter"))
 	{
 		MarkUnsavedChanges();
-		dungeon->CreatePlate(selectedTile->position, 0);
-		RefreshSelectedTile();
+		selectedTileShootLaser = dungeon->CreateShootLaser(selectedTile->position, (FACING_INDEX)0, GetNextAvailableDoorID());
+		selectedTileShootLasers.push_back(selectedTileShootLaser);
+		selectedShootLaserWindowOpen = true;
 	}
-
-	// Transporters - exclusive on a tile ( combine? )
-	if (selectedTransporter)
+	bool tileOccupied = selectedTileOccupied;
+	if (tileOccupied) ImGui::BeginDisabled();
+	if (ImGui::Button("Activator Plate"))
 	{
-		if (ImGui::Selectable("transporter")) selectedTransporterWindowOpen = true;
-
+		MarkUnsavedChanges();
+		selectedActivatorPlate = dungeon->CreatePlate(selectedTile->position, 0);
+		selectedActivatorPlateWindowOpen = true;
+		selectedTileOccupied = true;
 	}
-	else if (ImGui::Button("Add Transporter"))
+	ImGui::SameLine();
+	if (ImGui::Button("Transporter"))
 	{
 		MarkUnsavedChanges();
 		selectedTransporter = dungeon->CreateTransporter(selectedTile->position);
 		selectedTransporterWindowOpen = true;
-		//RefreshSelectedTile(); // shouldn't need this?
+		selectedTileOccupied = true;
 	}
-
-	// Spikes - exclusive on a tile ( combine? )
+	ImGui::SameLine();
+	if (ImGui::Button("Spikes"))
+	{
+		MarkUnsavedChanges();
+		dungeon->CreateSpikes(selectedTile->position);
+		selectedHasSpikes = true;
+		selectedTileOccupied = true;
+	}
+	if (ImGui::Button("Blocker"))
+	{
+		MarkUnsavedChanges();
+		selectedBlockerEnemy = dungeon->CreateEnemyBlocker(selectedTile->position, NORTH_INDEX);
+		selectedBlockerEnemyWindowOpen = true;
+		selectedTileOccupied = true;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Chaser"))
+	{
+		MarkUnsavedChanges();
+		selectedChaseEnemy = dungeon->CreateEnemyChase(selectedTile->position, NORTH_INDEX);
+		selectedChaseEnemyWindowOpen = true;
+		selectedTileOccupied = true;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Switcher"))
+	{
+		MarkUnsavedChanges();
+		selectedSwitcherEnemy = dungeon->CreateEnemySwitcher(selectedTile->position, NORTH_INDEX);
+		selectedSwitcherEnemyWindowOpen = true;
+		selectedTileOccupied = true;
+	}
+	if (ImGui::Button("Box"))
+	{
+		MarkUnsavedChanges();
+		dungeon->CreatePushableBlock(selectedTile->position);
+		selectedHasBlock = true;
+		selectedTileOccupied = true;
+	}
+	if (tileOccupied) ImGui::EndDisabled();
+	ImGui::PopID();
+	// Entity List
+	ImGui::Text("Modify/Remove");
+	ImGui::PushID("Modify");
+	ImGui::Indent();
+	for (int i = 0; i < selectedTileDoors.size(); i++)
+	{
+		ImGui::PushID(i);
+		string doorName = "Door (ID: ";
+		doorName += to_string(selectedTileDoors[i]->id);
+		doorName += ")";
+		if (ImGui::Selectable(doorName.c_str()))
+		{
+			selectedDoor = selectedTileDoors[i];
+			selectedDoorWindowOpen = true;
+		}
+		ImGui::PopID();
+	}
+	for (int i = 0; i < selectedTileLevers.size(); i++)
+	{
+		ImGui::PushID(i);
+		string leverName = "Lever (ID: ";
+		leverName += to_string(selectedTileLevers[i]->id);
+		leverName += ", Activates ID: ";
+		leverName += to_string(selectedTileLevers[i]->activateID);
+		leverName += ")";
+		if (ImGui::Selectable(leverName.c_str()))
+		{
+			selectedLever = selectedTileLevers[i];
+			selectedLeverWindowOpen = true;
+		}
+		ImGui::PopID();
+	}
+	for (int i = 0; i < selectedTileShootLasers.size(); i++)
+	{
+		ImGui::PushID(i);
+		string shootLaserName = "shootLaser ID (";
+		shootLaserName += to_string(selectedTileShootLasers[i]->id);
+		shootLaserName += ")";
+		if (ImGui::Selectable(shootLaserName.c_str()))
+		{
+			selectedTileShootLaser = selectedTileShootLasers[i];
+			selectedShootLaserWindowOpen = true;
+		}
+		ImGui::PopID();
+	}
+	if (selectedActivatorPlate)
+	{
+		string plateName = "Plate (Activates ID: ";
+		plateName += selectedActivatorPlate->activateID;
+		plateName += ")";
+		if (ImGui::Selectable(plateName.c_str())) selectedActivatorPlateWindowOpen = true;
+	}
+	if (selectedTransporter)
+	{
+		string transporterName = "Transporter (Name: ";
+		transporterName += selectedTransporter->name;
+		transporterName += ")";
+		if (ImGui::Selectable(transporterName.c_str())) selectedTransporterWindowOpen = true;
+	}
 	if (selectedHasSpikes)
 	{	
 		if (ImGui::Button("Delete Spikes"))
@@ -452,48 +533,19 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 			selectedHasSpikes = false;
 		}
 	}
-	else if (ImGui::Button("Add Spikes"))
-	{
-		MarkUnsavedChanges();
-		dungeon->CreateSpikes(selectedTile->position);
-		selectedHasSpikes = true;
-	}
-
 	if (selectedBlockerEnemy)
 	{
-		if (ImGui::Selectable("Sword Blocker")) selectedBlockerEnemyWindowOpen = true;
-		if (ImGui::Button("Delete Sword Blocker"))
-		{
-			MarkUnsavedChanges();
-			dungeon->RemoveEnemyBlocker(selectedTile->position);
-			selectedBlockerEnemyWindowOpen = false;
-		}
+		if (ImGui::Selectable("Blocker")) selectedBlockerEnemyWindowOpen = true;
+		ImGui::SameLine();
 	}
-	else if (ImGui::Button("Add Sword Blocker"))
-	{
-		MarkUnsavedChanges();
-		selectedBlockerEnemy = dungeon->CreateEnemyBlocker(selectedTile->position, EAST_INDEX);
-		selectedBlockerEnemyWindowOpen = true;
-	}
-
 	if (selectedChaseEnemy)
 	{
 		if (ImGui::Selectable("Chaser")) selectedChaseEnemyWindowOpen = true;
-		if (ImGui::Button("Delete Chaser"))
-		{
-			MarkUnsavedChanges();
-			dungeon->RemoveEnemyChase(selectedTile->position);
-			selectedChaseEnemyWindowOpen = false;
-		}
 	}
-	else if (ImGui::Button("Add Chaser"))
+	if (selectedSwitcherEnemy)
 	{
-		MarkUnsavedChanges();
-		selectedChaseEnemy = dungeon->CreateEnemyChase(selectedTile->position, EAST_INDEX);
-		selectedChaseEnemyWindowOpen = true;
+		if (ImGui::Selectable("Switcher")) selectedSwitcherEnemyWindowOpen = true;
 	}
-
-	// Pushable Blocks - similar but different to plates - they are closer to NPCs - they occupy a space.
 	if (selectedHasBlock)
 	{
 		if (ImGui::Button("Delete Block"))
@@ -503,31 +555,10 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 			selectedHasBlock = false;
 		}
 	}
-	else if (ImGui::Button("Add Block"))
-	{
-		MarkUnsavedChanges();
-		dungeon->CreatePushableBlock(selectedTile->position);
-		selectedHasBlock = true;
-	}
+	ImGui::Unindent();
+	ImGui::PopID();
 
-	for (auto& shootLaser : selectTileShootLasers)
-	{
-		string shootLaserName = "shootLaser ID (";
-		shootLaserName += to_string(shootLaser->id);
-		shootLaserName += ")";
-		if (ImGui::Selectable(shootLaserName.c_str()))
-		{
-			selectedTileShootLaser = shootLaser;
-			selectedShootLaserWindowOpen = true;
-		}
-	}
-	if (ImGui::Button("Add Shoot Laser"))
-	{
-		MarkUnsavedChanges();
-		dungeon->CreateShootLaser(selectedTile->position, (FACING_INDEX)0, GetNextAvailableDoorID());
-		RefreshSelectedTile();
-	}
-
+	ImGui::PushID("EntityProperties");
 	if (selectedDoorWindowOpen)
 		DrawGUIModeTileEditDoor();
 	if (selectedLeverWindowOpen)
@@ -542,10 +573,15 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		DrawGUIModeTileEditBlocker();
 	if (selectedChaseEnemyWindowOpen)
 		DrawGUIModeTileEditChase();
+	if (selectedSwitcherEnemyWindowOpen)
+		DrawGUIModeTileEditSwitcher();
+	ImGui::PopID();
 }
 
 void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
 {
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Edit Door", &selectedDoorWindowOpen);
 
 	if(ImGui::InputInt("ID", (int*)&selectedDoor->id))
@@ -586,18 +622,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
 		if (ImGui::Button("Yes"))
 		{
 			MarkUnsavedChanges();
-			// remove from list
-			for (int i = 0; i < dungeon->activatable.size(); i++)
-			{
-				if (selectedDoor == dungeon->activatable[i])
-				{
-					dungeon->activatable.erase(dungeon->activatable.begin()+i);
-					break;
-				}
-			}
-			// call delete on pointer
-			delete selectedDoor;
-			// remove from selected
+			dungeon->RemoveDoor(selectedDoor);
 			selectedDoor = nullptr;
 			selectedDoorWindowOpen = false;
 			RefreshSelectedTile();
@@ -613,6 +638,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
 }
 void Crawl::DungeonEditor::DrawGUIModeTileEditLever()
 {
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 170 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Edit Lever", &selectedLeverWindowOpen);
 
 	if (ImGui::InputInt("ID", (int*)&selectedLever->id))
@@ -662,17 +689,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLever()
 		if (ImGui::Button("Yes"))
 		{
 			MarkUnsavedChanges();
-			// remove from list
-			for (int i = 0; i < dungeon->interactables.size(); i++)
-			{
-				if (selectedLever == dungeon->interactables[i])
-				{
-					dungeon->interactables.erase(dungeon->interactables.begin() + i);
-					break;
-				}
-			}
-			// call delete on pointer
-			delete selectedLever;
+			dungeon->RemoveLever(selectedLever);
 			// remove from selected
 			selectedLever = nullptr;
 			selectedLeverWindowOpen = false;
@@ -686,78 +703,10 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLever()
 	}
 	ImGui::End();
 }
-
-void Crawl::DungeonEditor::DrawGUIModeTileEditPlate()
-{
-	ImGui::SetNextWindowSize({ 300, 100 });
-	ImGui::Begin("Edit Plate", &selectedActivatorPlateWindowOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
-
-	ImGui::InputInt("Activate ID", (int*)&selectedActivatorPlate->activateID);
-	if (ImGui::Button("Delete"))
-	{
-		for (auto it = dungeon->activatorPlates.begin(); it != dungeon->activatorPlates.end(); it++)
-		{
-			if (selectedActivatorPlate == *it)
-			{
-				dungeon->activatorPlates.erase(it);
-				delete selectedActivatorPlate;
-				selectedActivatorPlate = nullptr;
-				selectedActivatorPlateWindowOpen = false;
-				break;
-			}
-		}
-	}
-
-	ImGui::End();
-}
-
-void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
-{
-	ImGui::SetNextWindowSize({ 500, 165 });
-	ImGui::Begin("Edit Transporter", &selectedTransporterWindowOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
-	if (ImGui::InputText("Name", &selectedTransporter->name))
-		MarkUnsavedChanges();
-	if (ImGui::BeginCombo("Orientation", orientationNames[selectedTransporter->fromOrientation].c_str()))
-	{
-		int oldOrientation = selectedTransporter->fromOrientation;
-		for (int i = 0; i < 4; i++)
-			if (ImGui::Selectable(orientationNames[i].c_str()))
-			{
-				selectedTransporter->fromOrientation = i;
-				if (selectedTransporter->fromOrientation != oldOrientation)
-				{
-					MarkUnsavedChanges();
-					selectedTransporter->object->SetLocalRotationZ(orientationEulers[i]);
-				}
-			}
-		ImGui::EndCombo();
-	}
-	if(ImGui::InputText("To Dungeon", &selectedTransporter->toDungeon))
-		MarkUnsavedChanges();
-	if(ImGui::InputText("To Transporter", &selectedTransporter->toTransporter))
-		MarkUnsavedChanges();
-
-	if (ImGui::Button("Delete"))
-	{
-		for (auto it = dungeon->transporterPlates.begin(); it != dungeon->transporterPlates.end(); it++)
-		{
-			if (selectedTransporter == *it)
-			{
-				dungeon->transporterPlates.erase(it);
-				delete selectedTransporter;
-				selectedTransporter = nullptr;
-				selectedTransporterWindowOpen = false;
-				break;
-			}
-		}
-		MarkUnsavedChanges();
-	}
-
-	ImGui::End();
-}
-
 void Crawl::DungeonEditor::DrawGUIModeTileEditShootLaser()
 {
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 350, 195 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Edit Shoot Laser", &selectedShootLaserWindowOpen);
 
 	if (ImGui::InputInt("ID", (int*)&selectedTileShootLaser->id))
@@ -790,11 +739,116 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditShootLaser()
 	if (ImGui::InputInt("Activate ID", (int*)&selectedTileShootLaser->activateID))
 		MarkUnsavedChanges();
 
+	if (ImGui::Button("Delete"))
+		ImGui::OpenPopup("delete_lever_confirm");
+
+
+	if (ImGui::BeginPopupModal("delete_lever_confirm"))
+	{
+		ImGui::Text("Are you sure you want to delete the Shooter?");
+		if (ImGui::Button("Yes"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemoveDungeonShootLaser(selectedTileShootLaser);
+			// remove from selected
+			selectedTileShootLaser = nullptr;
+			selectedShootLaserWindowOpen = false;
+			RefreshSelectedTile();
+		}
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
 	ImGui::End();
 }
+void Crawl::DungeonEditor::DrawGUIModeTileEditPlate()
+{
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 100 }, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Edit Plate", &selectedActivatorPlateWindowOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
+	ImGui::InputInt("Activate ID", (int*)&selectedActivatorPlate->activateID);
+	
+	if (ImGui::Button("Delete"))
+		ImGui::OpenPopup("delete_plate_confirm");
+
+
+	if (ImGui::BeginPopupModal("delete_plate_confirm"))
+	{
+		ImGui::Text("Are you sure you want to delete the Plate?");
+		if (ImGui::Button("Yes"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemovePlate(selectedActivatorPlate);
+			selectedActivatorPlate = nullptr;
+			selectedActivatorPlateWindowOpen = false;
+			RefreshSelectedTile();
+		}
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
+	ImGui::End();
+}
+void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
+{
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 500, 165 }, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Edit Transporter", &selectedTransporterWindowOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+	if (ImGui::InputText("Name", &selectedTransporter->name))
+		MarkUnsavedChanges();
+	if (ImGui::BeginCombo("Orientation", orientationNames[selectedTransporter->fromOrientation].c_str()))
+	{
+		int oldOrientation = selectedTransporter->fromOrientation;
+		for (int i = 0; i < 4; i++)
+			if (ImGui::Selectable(orientationNames[i].c_str()))
+			{
+				selectedTransporter->fromOrientation = i;
+				if (selectedTransporter->fromOrientation != oldOrientation)
+				{
+					MarkUnsavedChanges();
+					selectedTransporter->object->SetLocalRotationZ(orientationEulers[i]);
+				}
+			}
+		ImGui::EndCombo();
+	}
+	if(ImGui::InputText("To Dungeon", &selectedTransporter->toDungeon))
+		MarkUnsavedChanges();
+	if(ImGui::InputText("To Transporter", &selectedTransporter->toTransporter))
+		MarkUnsavedChanges();
+
+	if (ImGui::Button("Delete"))
+		ImGui::OpenPopup("delete_transporter_confirm");
+	if (ImGui::BeginPopupModal("delete_transporter_confirm"))
+	{
+		ImGui::Text("Are you sure you want to delete the Transporter?");
+		if (ImGui::Button("Yes"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemoveTransporter(selectedTransporter);
+			selectedTransporter = nullptr;
+			selectedTransporterWindowOpen = false;
+			RefreshSelectedTile();
+		}
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
+	ImGui::End();
+}
 void Crawl::DungeonEditor::DrawGUIModeTileEditBlocker()
 {
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Edit Blocker Enemy", &selectedBlockerEnemyWindowOpen);
 
 	if (ImGui::BeginCombo("Look Direction", orientationNames[selectedBlockerEnemy->facing].c_str()))
@@ -814,10 +868,33 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditBlocker()
 	}
 	if (ImGui::Checkbox("Rapid Attack", &selectedBlockerEnemy->rapidAttack))
 		MarkUnsavedChanges();
-}
 
+	if (ImGui::Button("Delete"))
+		ImGui::OpenPopup("delete_blocker_confirm");
+	if (ImGui::BeginPopupModal("delete_blocker_confirm"))
+	{
+		ImGui::Text("Are you sure you want to delete the Blocker?");
+		if (ImGui::Button("Yes"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemoveEnemyBlocker(selectedBlockerEnemy);
+			selectedBlockerEnemy = nullptr;
+			selectedBlockerEnemyWindowOpen = false;
+			RefreshSelectedTile();
+		}
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
+	ImGui::End();
+}
 void Crawl::DungeonEditor::DrawGUIModeTileEditChase()
 {
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Edit Chase Enemy", &selectedChaseEnemyWindowOpen);
 
 	if (ImGui::BeginCombo("Look Direction", orientationNames[selectedChaseEnemy->facing].c_str()))
@@ -835,8 +912,72 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditChase()
 			}
 		ImGui::EndCombo();
 	}
+
+	if (ImGui::Button("Delete"))
+		ImGui::OpenPopup("delete_chaser_confirm");
+	if (ImGui::BeginPopupModal("delete_chaser_confirm"))
+	{
+		ImGui::Text("Are you sure you want to delete the Chaser?");
+		if (ImGui::Button("Yes"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemoveEnemyChase(selectedChaseEnemy);
+			selectedChaseEnemy = nullptr;
+			selectedChaseEnemyWindowOpen = false;
+			RefreshSelectedTile();
+		}
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
+	ImGui::End();
 }
 
+void Crawl::DungeonEditor::DrawGUIModeTileEditSwitcher()
+{
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Edit Switcher Enemy", &selectedSwitcherEnemyWindowOpen);
+
+	if (ImGui::BeginCombo("Look Direction", orientationNames[selectedSwitcherEnemy->facing].c_str()))
+	{
+		int oldOrientation = selectedSwitcherEnemy->facing;
+		for (int i = 0; i < 4; i++)
+			if (ImGui::Selectable(orientationNames[i].c_str()))
+			{
+				selectedSwitcherEnemy->facing = (FACING_INDEX)i;
+				if (selectedSwitcherEnemy->facing != oldOrientation)
+				{
+					MarkUnsavedChanges();
+					selectedSwitcherEnemy->object->SetLocalRotationZ(orientationEulers[i]);
+				}
+			}
+		ImGui::EndCombo();
+	}
+
+	if (ImGui::Button("Delete"))
+		ImGui::OpenPopup("delete_switcher_confirm");
+	if (ImGui::BeginPopupModal("delete_switcher_confirm"))
+	{
+		ImGui::Text("Are you sure you want to delete the Switcher?");
+		if (ImGui::Button("Yes"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemoveEnemySwitcher(selectedSwitcherEnemy);
+			selectedSwitcherEnemy = nullptr;
+			selectedSwitcherEnemyWindowOpen = false;
+			RefreshSelectedTile();
+		}
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+}
 void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 {
 	if(ImGui::InputInt2("Default Position", &dungeon->defaultPlayerStartPosition.x))
@@ -868,6 +1009,9 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 		MarkUnsavedChanges();
 
 	if (ImGui::Checkbox("Player Can Push Box", &dungeon->playerCanPushBox))
+		MarkUnsavedChanges();
+
+	if (ImGui::Checkbox("Switchers Must Be Looked At", &dungeon->switchersMustBeLookedAt))
 		MarkUnsavedChanges();
 
 
@@ -996,68 +1140,98 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 	selectedTileOpenWalls[2] = (selectedTile->mask & 4) == 4; // East Check
 	selectedTileOpenWalls[3] = (selectedTile->mask & 2) == 2; // West Check
 
+	selectedTileOccupied = false;
+
 	// update list of tiles doors and levers / interactabes
-	selectTileDoors.clear();
+	selectedTileDoors.clear();
 	for (int i = 0; i < dungeon->activatable.size(); i++)
 	{
 		if (dungeon->activatable[i]->position == selectedTile->position)
-			selectTileDoors.push_back(dungeon->activatable[i]);
+			selectedTileDoors.push_back(dungeon->activatable[i]);
 	}
 
-	selectTileLevers.clear();
+	selectedTileLevers.clear();
 	for (int i = 0; i < dungeon->interactables.size(); i++)
 	{
 		if (dungeon->interactables[i]->position == selectedTile->position)
-			selectTileLevers.push_back(dungeon->interactables[i]);
+			selectedTileLevers.push_back(dungeon->interactables[i]);
 	}
 
 	selectedActivatorPlate = nullptr;
 	for (int i = 0; i < dungeon->activatorPlates.size(); i++)
 	{
 		if (dungeon->activatorPlates[i]->position == selectedTile->position)
+		{
 			selectedActivatorPlate = dungeon->activatorPlates[i];
+			selectedTileOccupied = true;
+		}
 	}
 
 	selectedTransporter = nullptr;
 	for (int i = 0; i < dungeon->transporterPlates.size(); i++)
 	{
 		if (dungeon->transporterPlates[i]->position == selectedTile->position)
+		{
 			selectedTransporter = dungeon->transporterPlates[i];
+			selectedTileOccupied = true;
+		}
 	}
 
 	selectedHasSpikes = false;
 	for (int i = 0; i < dungeon->spikesPlates.size(); i++)
 	{
 		if (dungeon->spikesPlates[i]->position == selectedTile->position)
+		{
 			selectedHasSpikes = true;
+			selectedTileOccupied = true;
+		}
 	}
 
 	selectedBlockerEnemy = nullptr;
 	for (int i = 0; i < dungeon->blockers.size(); i++)
 	{
 		if (dungeon->blockers[i]->position == selectedTile->position)
+		{
 			selectedBlockerEnemy = dungeon->blockers[i];
+			selectedTileOccupied = true;
+		}
 	}
 
 	selectedChaseEnemy = nullptr;
 	for (int i = 0; i < dungeon->chasers.size(); i++)
 	{
 		if (dungeon->chasers[i]->position == selectedTile->position)
+		{
 			selectedChaseEnemy = dungeon->chasers[i];
+			selectedTileOccupied = true;
+		}
+	}
+
+	selectedSwitcherEnemy = nullptr;
+	for (int i = 0; i < dungeon->switchers.size(); i++)
+	{
+		if (dungeon->switchers[i]->position == selectedTile->position)
+		{
+			selectedSwitcherEnemy = dungeon->switchers[i];
+			selectedTileOccupied = true;
+		}
 	}
 
 	selectedHasBlock = false;
 	for (int i = 0; i < dungeon->pushableBlocks.size(); i++)
 	{
 		if (dungeon->pushableBlocks[i]->position == selectedTile->position)
+		{
 			selectedHasBlock = true;
+			selectedTileOccupied = true;
+		}
 	}
 
-	selectTileShootLasers.clear();
+	selectedTileShootLasers.clear();
 	for (int i = 0; i < dungeon->shootLasers.size(); i++)
 	{
 		if (dungeon->shootLasers[i]->position == selectedTile->position)
-			selectTileShootLasers.push_back(dungeon->shootLasers[i]);
+			selectedTileShootLasers.push_back(dungeon->shootLasers[i]);
 	}
 
 }
@@ -1250,6 +1424,7 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedTileShootLaser = nullptr;
 	selectedBlockerEnemy = nullptr;
 	selectedChaseEnemy = nullptr;
+	selectedSwitcherEnemy = nullptr;
 
 	selectedDoorWindowOpen = false;
 	selectedLeverWindowOpen = false;
@@ -1258,4 +1433,5 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedShootLaserWindowOpen = false;
 	selectedBlockerEnemyWindowOpen = false;
 	selectedChaseEnemyWindowOpen = false;
+	selectedSwitcherEnemyWindowOpen = false;
 }
