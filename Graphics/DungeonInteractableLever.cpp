@@ -15,7 +15,7 @@ void Crawl::DungeonInteractableLever::Toggle()
 	{
 		if (object)
 		{
-			object->localPosition.z = 2.0f;
+			object->localPosition.z = wallHeightOn;
 			object->dirtyTransform = true;
 		}
 	}
@@ -23,7 +23,7 @@ void Crawl::DungeonInteractableLever::Toggle()
 	{
 		if (object)
 		{
-			object->localPosition.z = 2.5f;
+			object->localPosition.z = wallHeightOff;
 			object->dirtyTransform = true;
 		}
 	}
@@ -41,8 +41,11 @@ void Crawl::DungeonInteractableLever::Prime()
 {
 	if (object)
 	{
-		object->localPosition.z = 2.0f;
+		object->localPosition.z = wallHeightOn;
 		object->dirtyTransform = true;
 	}
 	dungeon->DoActivate(activateID, status);
 }
+
+const float Crawl::DungeonInteractableLever::wallHeightOn = 1.25f;
+const float Crawl::DungeonInteractableLever::wallHeightOff = 1.50f;

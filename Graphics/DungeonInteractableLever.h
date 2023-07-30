@@ -17,6 +17,9 @@ namespace Crawl
 
 		void Prime();
 
+		static const float wallHeightOff;
+		static const float wallHeightOn;
+
 		bool startStatus = false;
 		bool status = false;
 
