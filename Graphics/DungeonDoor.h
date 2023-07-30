@@ -16,6 +16,9 @@ namespace Crawl
 		void Update();
 		void UpdateTransforms();
 
+		static const float openHeight;
+		static const float closedHeight;
+
 		glm::ivec2 position = { 0, 0 };
 		int orientation = 0; // Use DIRECTION_MASK in DungeonHelpers.h
 		unsigned int id = 0;

@@ -43,7 +43,7 @@ void Crawl::DungeonDoor::UpdateTransforms()
 	{
 		if (object)
 		{
-			object->localPosition.z = 5.0f;
+			object->localPosition.z = openHeight;
 			object->dirtyTransform = true;
 		}
 	}
@@ -51,8 +51,11 @@ void Crawl::DungeonDoor::UpdateTransforms()
 	{
 		if (object)
 		{
-			object->localPosition.z = 0.0f;
+			object->localPosition.z = closedHeight;
 			object->dirtyTransform = true;
 		}
 	}
 }
+
+const float Crawl::DungeonDoor::closedHeight = 0.0f;
+const float Crawl::DungeonDoor::openHeight = 3.0f;
