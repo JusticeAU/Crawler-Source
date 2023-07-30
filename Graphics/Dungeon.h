@@ -91,6 +91,7 @@ namespace Crawl
 
 		DungeonPushableBlock* CreatePushableBlock(ivec2 position);
 		void RemovePushableBlock(ivec2 position);
+		bool IsPushableBlockAtPosition(ivec2 position);
 
 		DungeonShootLaser* CreateShootLaser(ivec2 position, FACING_INDEX facing, unsigned int id);
 		void RemoveDungeonShootLaser(DungeonShootLaser* laser);
@@ -100,12 +101,14 @@ namespace Crawl
 
 		DungeonEnemyBlocker* CreateEnemyBlocker(ivec2 position, FACING_INDEX direction);
 		void RemoveEnemyBlocker(DungeonEnemyBlocker* blocker);
+		bool IsEnemyBlockerAtPosition(ivec2 position);
 
 		DungeonEnemyChase* CreateEnemyChase(ivec2 position, FACING_INDEX direction);
 		void RemoveEnemyChase(DungeonEnemyChase* chaser);
 
 		DungeonEnemySwitcher* CreateEnemySwitcher(ivec2 position, FACING_INDEX direction);
 		void RemoveEnemySwitcher(DungeonEnemySwitcher* switcher);
+		bool IsEnemySwitcherAtPosition(ivec2 position);
 	
 		void Save(std::string filename);
 		void Load(std::string filename);

@@ -11,6 +11,7 @@
   "playerCanKickBox": true,
   "playerCanPushBox": true,
   "playerInteractIsFree": false,
+  "switchersMustBeLookedAt": true,
   "tiles": [
     {
       "position": {
@@ -1684,7 +1685,7 @@
         "y": -2
       },
       "id": 1,
-      "orientation": 0,
+      "orientation": 2,
       "startStatus": false,
       "activateID": 1
     }
@@ -1797,5 +1798,6 @@
       },
       "facing": 0
     }
-  ]
+  ],
+  "switchers": null
 }

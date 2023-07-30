@@ -441,6 +441,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		selectedTileOccupied = true;
 	}
 	ImGui::SameLine();
+	bool maxChasers = (dungeon->chasers.size() > 1);
+	if (maxChasers) ImGui::BeginDisabled();
 	if (ImGui::Button("Chaser"))
 	{
 		MarkUnsavedChanges();
@@ -448,6 +450,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		selectedChaseEnemyWindowOpen = true;
 		selectedTileOccupied = true;
 	}
+	if (maxChasers) ImGui::EndDisabled();
 	ImGui::SameLine();
 	if (ImGui::Button("Switcher"))
 	{

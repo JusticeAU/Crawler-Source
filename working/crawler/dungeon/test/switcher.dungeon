@@ -796,6 +796,13 @@
         "y": -3
       },
       "facing": 0
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": 2
+      },
+      "facing": 2
     }
   ],
   "switchers": [

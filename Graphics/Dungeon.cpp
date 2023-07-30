@@ -147,14 +147,18 @@ void Crawl::Dungeon::FindPath(ivec2 from, ivec2 to, int facing)
 
 					if (!connectingTile->openListed)
 					{
-						// Check if the tile is occupied by something that isnt the player
-						// Disabled for the moment for coonsistent and readable chaser logic.
-						/*if (connectingTile->occupied && connectingTile->position != player->GetPosition())
+						// Check if the tile is occupied by something that isnt the player or another chaser/enemy
+						bool shouldSkip = false;
+						if (IsEnemyBlockerAtPosition(connectingTile->position)) shouldSkip = true;
+						if (IsPushableBlockAtPosition(connectingTile->position)) shouldSkip = true;
+						if (IsEnemySwitcherAtPosition(connectingTile->position)) shouldSkip = true;
+
+						if (shouldSkip)
 						{
 							connectingTile->openListed = true;
 							connectingTile->closedListed = true;
 						}
-						else*/
+						else
 						{
 							connectingTile->cost = cost;
 							connectingTile->openListed = true;
@@ -820,6 +824,16 @@ void Crawl::Dungeon::RemovePushableBlock(ivec2 position)
 	}
 }
 
+bool Crawl::Dungeon::IsPushableBlockAtPosition(ivec2 position)
+{
+	for (int i = 0; i < pushableBlocks.size(); i++)
+	{
+		if (pushableBlocks[i]->position == position) return true;
+	}
+
+	return false;
+}
+
 Crawl::DungeonTransporter* Crawl::Dungeon::GetTransporter(string transporterName)
 {
 	for (auto& transporter : transporterPlates)
@@ -923,6 +937,16 @@ void Crawl::Dungeon::RemoveEnemyBlocker(DungeonEnemyBlocker* blocker)
 	}
 }
 
+bool Crawl::Dungeon::IsEnemyBlockerAtPosition(ivec2 position)
+{
+	for (int i = 0; i < blockers.size(); i++)
+	{
+		if (blockers[i]->position == position) return true;
+	}
+
+	return false;
+}
+
 Crawl::DungeonEnemyChase* Crawl::Dungeon::CreateEnemyChase(ivec2 position, FACING_INDEX facing)
 {
 	DungeonEnemyChase* chaser = new DungeonEnemyChase();
@@ -1001,6 +1025,16 @@ void Crawl::Dungeon::RemoveEnemySwitcher(DungeonEnemySwitcher* switcher)
 			switchers.erase(switchers.begin() + i);
 		}
 	}
+}
+
+bool Crawl::Dungeon::IsEnemySwitcherAtPosition(ivec2 position)
+{
+	for (int i = 0; i < switchers.size(); i++)
+	{
+		if (switchers[i]->position == position) return true;
+	}
+
+	return false;
 }
 
 void Crawl::Dungeon::Save(std::string filename)

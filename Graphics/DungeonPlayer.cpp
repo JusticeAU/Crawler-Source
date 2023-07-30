@@ -34,6 +34,7 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 
 		if (shouldSwitchWith) // fairly hacky
 		{
+			AudioManager::PlaySound("crawler/sound/load/switcher.wav");
 			shouldSwitchWith->SwapWithPlayer();
 			shouldSwitchWith = nullptr;
 		}
@@ -204,6 +205,7 @@ void Crawl::DungeonPlayer::Respawn()
 		Orient(dungeon->defaultPlayerStartOrientation);
 	}
 	hp = maxHp;
+	shouldSwitchWith = nullptr;
 }
 
 void Crawl::DungeonPlayer::TakeDamage()
