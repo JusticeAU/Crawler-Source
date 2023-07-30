@@ -104,6 +104,7 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 		dungeon->RebuildFromSerialised();
 		dungeon->player->Teleport(dungeon->defaultPlayerStartPosition);
 		dungeon->player->Orient(dungeon->defaultPlayerStartOrientation);
+		dungeon->player->SetRespawn(dungeon->defaultPlayerStartPosition, dungeon->defaultPlayerStartOrientation);
 		dirtyGameplayScene = false;
 		TileEditUnselectAll();
 	}
