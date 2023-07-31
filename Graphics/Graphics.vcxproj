@@ -213,6 +213,7 @@
     <ClCompile Include="ComponentRenderer.cpp" />
     <ClCompile Include="ComponentSkinnedRenderer.cpp" />
     <ClCompile Include="Dungeon.cpp" />
+    <ClCompile Include="DungeonCheckpoint.cpp" />
     <ClCompile Include="DungeonDoor.cpp" />
     <ClCompile Include="DungeonEditor.cpp" />
     <ClCompile Include="DungeonEnemyBlocker.cpp" />
@@ -281,6 +282,7 @@
     <ClInclude Include="ComponentRenderer.h" />
     <ClInclude Include="ComponentSkinnedRenderer.h" />
     <ClInclude Include="Dungeon.h" />
+    <ClInclude Include="DungeonCheckpoint.h" />
     <ClInclude Include="DungeonDoor.h" />
     <ClInclude Include="DungeonEditor.h" />
     <ClInclude Include="DungeonEnemyBlocker.h" />

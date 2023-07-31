@@ -6,43 +6,17 @@
     "y": 0
   },
   "defaultOrientation": 1,
-  "playerTurnIsFree": false,
-  "playerHasKnife": true,
-  "playerCanKickBox": true,
-  "playerCanPushBox": true,
-  "playerInteractIsFree": false,
+  "playerTurnIsFree": true,
+  "playerHasKnife": false,
+  "playerCanKickBox": false,
+  "playerCanPushBox": false,
+  "playerInteractIsFree": true,
   "switchersMustBeLookedAt": true,
   "tiles": [
     {
       "position": {
         "x": -1,
-        "y": 0
-      },
-      "mask": 4,
-      "wallVariants": [
-        2,
-        2,
-        0,
-        1
-      ]
-    },
-    {
-      "position": {
-        "x": 0,
-        "y": 0
-      },
-      "mask": 6,
-      "wallVariants": [
-        1,
-        2,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": 1,
-        "y": -3
+        "y": -2
       },
       "mask": 5,
       "wallVariants": [
@@ -54,8 +28,21 @@
     },
     {
       "position": {
-        "x": 1,
-        "y": -2
+        "x": -1,
+        "y": -1
+      },
+      "mask": 13,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "position": {
+        "x": -1,
+        "y": 0
       },
       "mask": 13,
       "wallVariants": [
@@ -67,21 +54,86 @@
     },
     {
       "position": {
-        "x": 1,
-        "y": -1
+        "x": -1,
+        "y": 1
       },
       "mask": 13,
       "wallVariants": [
         0,
         0,
         0,
-        3
+        1
       ]
     },
     {
       "position": {
-        "x": 1,
+        "x": -1,
+        "y": 2
+      },
+      "mask": 12,
+      "wallVariants": [
+        2,
+        0,
+        0,
+        2
+      ]
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": -2
+      },
+      "mask": 7,
+      "wallVariants": [
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": -1
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 0,
         "y": 0
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 1
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 0,
+        "y": 2
       },
       "mask": 14,
       "wallVariants": [
@@ -93,21 +145,21 @@
     },
     {
       "position": {
-        "x": 2,
-        "y": -4
+        "x": 1,
+        "y": -2
       },
-      "mask": 5,
+      "mask": 7,
       "wallVariants": [
         0,
-        1,
+        2,
         0,
-        3
+        0
       ]
     },
     {
       "position": {
-        "x": 2,
-        "y": -3
+        "x": 1,
+        "y": -1
       },
       "mask": 15,
       "wallVariants": [
@@ -119,13 +171,52 @@
     },
     {
       "position": {
-        "x": 2,
-        "y": -2
+        "x": 1,
+        "y": 0
       },
       "mask": 15,
       "wallVariants": [
         0,
         0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": 1
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 1,
+        "y": 2
+      },
+      "mask": 14,
+      "wallVariants": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 2,
+        "y": -2
+      },
+      "mask": 7,
+      "wallVariants": [
+        0,
+        3,
         0,
         0
       ]
@@ -161,50 +252,24 @@
         "x": 2,
         "y": 1
       },
-      "mask": 12,
-      "wallVariants": [
-        3,
-        0,
-        0,
-        3
-      ]
-    },
-    {
-      "position": {
-        "x": 3,
-        "y": -5
-      },
-      "mask": 1,
-      "wallVariants": [
-        0,
-        1,
-        1,
-        1
-      ]
-    },
-    {
-      "position": {
-        "x": 3,
-        "y": -4
-      },
-      "mask": 11,
+      "mask": 15,
       "wallVariants": [
         0,
         0,
-        2,
+        0,
         0
       ]
     },
     {
       "position": {
-        "x": 3,
-        "y": -3
+        "x": 2,
+        "y": 2
       },
-      "mask": 11,
+      "mask": 14,
       "wallVariants": [
+        2,
         0,
         0,
-        3,
         0
       ]
     },
@@ -213,17 +278,82 @@
         "x": 3,
         "y": -2
       },
-      "mask": 11,
+      "mask": 7,
       "wallVariants": [
         0,
+        3,
         0,
-        2,
         0
       ]
     },
     {
       "position": {
         "x": 3,
+        "y": -1
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": 0
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": 1
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 3,
+        "y": 2
+      },
+      "mask": 14,
+      "wallVariants": [
+        3,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 4,
+        "y": -2
+      },
+      "mask": 3,
+      "wallVariants": [
+        0,
+        3,
+        1,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 4,
         "y": -1
       },
       "mask": 11,
@@ -236,21 +366,34 @@
     },
     {
       "position": {
-        "x": 3,
+        "x": 4,
         "y": 0
       },
       "mask": 11,
       "wallVariants": [
         0,
         0,
-        3,
+        1,
         0
       ]
     },
     {
       "position": {
-        "x": 3,
+        "x": 4,
         "y": 1
+      },
+      "mask": 11,
+      "wallVariants": [
+        0,
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": 4,
+        "y": 2
       },
       "mask": 10,
       "wallVariants": [
@@ -261,119 +404,29 @@
       ]
     }
   ],
-  "levers": [
-    {
-      "position": {
-        "x": 3,
-        "y": 0
-      },
-      "id": 1,
-      "orientation": 1,
-      "status": true,
-      "activateID": 1
-    }
-  ],
-  "doors": [
-    {
-      "position": {
-        "x": 2,
-        "y": -4
-      },
-      "id": 0,
-      "orientation": 0,
-      "open": false
-    },
-    {
-      "position": {
-        "x": 2,
-        "y": -4
-      },
-      "id": 0,
-      "orientation": 1,
-      "open": false
-    },
-    {
-      "position": {
-        "x": 3,
-        "y": 0
-      },
-      "id": 1,
-      "orientation": 0,
-      "open": true
-    },
-    {
-      "position": {
-        "x": 2,
-        "y": 1
-      },
-      "id": 0,
-      "orientation": 1,
-      "open": false
-    },
-    {
-      "position": {
-        "x": 2,
-        "y": 1
-      },
-      "id": 0,
-      "orientation": 2,
-      "open": false
-    }
-  ],
+  "levers": null,
+  "doors": null,
   "plates": null,
-  "transporters": [
-    {
-      "name": "Entry",
-      "position": {
-        "x": -1,
-        "y": 0
-      },
-      "fromOrientation": 1,
-      "toDungeon": "crawler/dungeon/test/test_shoot_laser",
-      "toTransporter": "Exit"
-    },
-    {
-      "name": "Exit",
-      "position": {
-        "x": 3,
-        "y": -5
-      },
-      "fromOrientation": 0,
-      "toDungeon": "crawler/dungeon/test/pathFindTurnCost",
-      "toTransporter": "Entry"
-    }
-  ],
-  "checkpoints": null,
-  "spikes": [
-    {
-      "position": {
-        "x": 3,
-        "y": 0
-      }
-    }
-  ],
-  "blocks": [
+  "transporters": null,
+  "checkpoints": [
     {
       "position": {
         "x": 2,
-        "y": -2
-      }
-    }
-  ],
-  "shootLasers": [
-    {
-      "id": 1,
-      "position": {
-        "x": 3,
-        "y": 1
+        "y": 0
       },
-      "facing": 2,
-      "detectsLineOfSight": true,
-      "firesProjectile": false,
-      "firesImmediately": false,
-      "activateID": 0
+      "facing": 1
+    },
+    {
+      "position": {
+        "x": 4,
+        "y": -1
+      },
+      "facing": 0
     }
   ],
+  "spikes": null,
+  "blocks": null,
+  "shootLasers": null,
   "blockers": null,
   "chasers": null,
   "switchers": null

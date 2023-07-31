@@ -20,7 +20,6 @@ namespace Crawl
 		static const float wallHeightOff;
 		static const float wallHeightOn;
 
-		bool startStatus = false;
 		bool status = false;
 
 		Dungeon* dungeon = nullptr;
@@ -31,7 +30,7 @@ namespace Crawl
 
 	static void to_json(ordered_json& j, const DungeonInteractableLever& lever)
 	{
-		j = { {"position", lever.position }, {"id", lever.id }, {"orientation", lever.orientation }, {"startStatus", lever.startStatus}, {"activateID", lever.activateID }};
+		j = { {"position", lever.position }, {"id", lever.id }, {"orientation", lever.orientation }, {"status", lever.status}, {"activateID", lever.activateID }};
 	}
 
 	static void from_json(const ordered_json& j, DungeonInteractableLever& lever)
@@ -39,7 +38,12 @@ namespace Crawl
 		j.at("position").get_to(lever.position);
 		j.at("id").get_to(lever.id);
 		j.at("orientation").get_to(lever.orientation);
-		j.at("startStatus").get_to(lever.startStatus);
+		
+		if(j.contains("startStatus"))
+			j.at("startStatus").get_to(lever.status);
+		if (j.contains("status"))
+			j.at("status").get_to(lever.status);
+
 		j.at("activateID").get_to(lever.activateID);
 	}
 }

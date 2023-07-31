@@ -35,6 +35,8 @@ namespace Crawl
 		void DrawGUIModeTileEditLever();
 		void DrawGUIModeTileEditPlate();
 		void DrawGUIModeTileEditTransporter();
+		void DrawGUIModeTileEditCheckpoint();
+
 		void DrawGUIModeTileEditShootLaser();
 		void DrawGUIModeTileEditBlocker();
 		void DrawGUIModeTileEditChase();
@@ -116,6 +118,8 @@ namespace Crawl
 		bool selectedActivatorPlateWindowOpen = false;
 		DungeonTransporter* selectedTransporter = nullptr;
 		bool selectedTransporterWindowOpen = false;
+		DungeonCheckpoint* selectedCheckpoint = nullptr;
+		bool selectedCheckpointWindowOpen = false;
 		bool selectedHasSpikes = false;
 		bool selectedHasBlock = false;
 

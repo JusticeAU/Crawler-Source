@@ -11,6 +11,7 @@
 #include "DungeonEnemyBlocker.h"
 #include "DungeonEnemyChase.h"
 #include "DungeonEnemySwitcher.h"
+#include "DungeonCheckpoint.h"
 
 
 #include "Object.h"
@@ -101,10 +102,11 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	if (ImGui::Button("Reset Dungeon"))
 	{
 		UnMarkUnsavedChanges();
-		dungeon->RebuildFromSerialised();
+		dungeon->RebuildDungeonFromSerialised(dungeon->serialised);
 		dungeon->player->Teleport(dungeon->defaultPlayerStartPosition);
 		dungeon->player->Orient(dungeon->defaultPlayerStartOrientation);
 		dungeon->player->SetRespawn(dungeon->defaultPlayerStartPosition, dungeon->defaultPlayerStartOrientation);
+		dungeon->player->checkpointExists = false;
 		dirtyGameplayScene = false;
 		TileEditUnselectAll();
 	}
@@ -419,6 +421,21 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		selectedTileOccupied = true;
 	}
 	ImGui::SameLine();
+	if (ImGui::Button("Spikes"))
+	{
+		MarkUnsavedChanges();
+		dungeon->CreateSpikes(selectedTile->position);
+		selectedHasSpikes = true;
+		selectedTileOccupied = true;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Box"))
+	{
+		MarkUnsavedChanges();
+		dungeon->CreatePushableBlock(selectedTile->position);
+		selectedHasBlock = true;
+		selectedTileOccupied = true;
+	}
 	if (ImGui::Button("Transporter"))
 	{
 		MarkUnsavedChanges();
@@ -427,11 +444,11 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		selectedTileOccupied = true;
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Spikes"))
+	if (ImGui::Button("Checkpoint"))
 	{
 		MarkUnsavedChanges();
-		dungeon->CreateSpikes(selectedTile->position);
-		selectedHasSpikes = true;
+		selectedCheckpoint = dungeon->CreateCheckpoint(selectedTile->position, NORTH_INDEX);
+		selectedCheckpointWindowOpen = true;
 		selectedTileOccupied = true;
 	}
 	if (ImGui::Button("Blocker"))
@@ -460,14 +477,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		selectedSwitcherEnemyWindowOpen = true;
 		selectedTileOccupied = true;
 	}
-	if (ImGui::Button("Box"))
-	{
-		MarkUnsavedChanges();
-		dungeon->CreatePushableBlock(selectedTile->position);
-		selectedHasBlock = true;
-		selectedTileOccupied = true;
-	}
 	if (tileOccupied) ImGui::EndDisabled();
+
 	ImGui::PopID();
 	// Entity List
 	ImGui::Text("Modify/Remove");
@@ -528,6 +539,13 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		transporterName += ")";
 		if (ImGui::Selectable(transporterName.c_str())) selectedTransporterWindowOpen = true;
 	}
+	if (selectedCheckpoint)
+	{
+		string checkpointName = "Checkpoint (Facing: ";
+		checkpointName += orientationNames[selectedCheckpoint->facing];
+		checkpointName += ")";
+		if (ImGui::Selectable(checkpointName.c_str())) selectedCheckpointWindowOpen = true;
+	}
 	if (selectedHasSpikes)
 	{	
 		if (ImGui::Button("Delete Spikes"))
@@ -571,6 +589,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		DrawGUIModeTileEditPlate();
 	if (selectedTransporterWindowOpen)
 		DrawGUIModeTileEditTransporter();
+	if (selectedCheckpointWindowOpen)
+		DrawGUIModeTileEditCheckpoint();
 	if (selectedShootLaserWindowOpen)
 		DrawGUIModeTileEditShootLaser();
 	if (selectedBlockerEnemyWindowOpen)
@@ -670,12 +690,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLever()
 		ImGui::EndCombo();
 	}
 
-	if(ImGui::Checkbox("Starts Status", &selectedLever->startStatus))
-		MarkUnsavedChanges();
-
 	if (ImGui::Checkbox("Status", &selectedLever->status))
 	{
-
 		selectedLever->status = !selectedLever->status;
 		selectedLever->Toggle(); // this could go out of sync.
 	}
@@ -839,6 +855,51 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
 			selectedTransporter = nullptr;
 			selectedTransporterWindowOpen = false;
 			RefreshSelectedTile();
+		}
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
+	ImGui::End();
+}
+void Crawl::DungeonEditor::DrawGUIModeTileEditCheckpoint()
+{
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 100 }, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Edit Checkpoint", &selectedActivatorPlateWindowOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+
+	if (ImGui::BeginCombo("Spawn Direction", orientationNames[selectedCheckpoint->facing].c_str()))
+	{
+		int oldOrientation = selectedCheckpoint->facing;
+		for (int i = 0; i < 4; i++)
+			if (ImGui::Selectable(orientationNames[i].c_str()))
+			{
+				selectedCheckpoint->facing = (FACING_INDEX)i;
+				if (selectedCheckpoint->facing != oldOrientation)
+				{
+					MarkUnsavedChanges();
+					selectedCheckpoint->object->SetLocalRotationZ(orientationEulers[i]);
+				}
+			}
+		ImGui::EndCombo();
+	}
+
+	if (ImGui::Button("Delete"))
+		ImGui::OpenPopup("Delete Checkpoint?");
+
+
+	if (ImGui::BeginPopupModal("Delete Checkpoint?"))
+	{
+		ImGui::Text("Are you sure you want to delete the Checkpoint?");
+		if (ImGui::Button("Yes"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemoveCheckpoint(selectedCheckpoint);
+			selectedCheckpoint = nullptr;
+			selectedCheckpointWindowOpen = false;
 		}
 		if (ImGui::Button("Cancel"))
 		{
@@ -1181,6 +1242,10 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 		}
 	}
 
+	selectedCheckpoint = dungeon->GetCheckpointAt(selectedTile->position); // holy smokes this is a little better!
+	if (selectedCheckpoint)
+		selectedTileOccupied = true;
+
 	selectedHasSpikes = false;
 	for (int i = 0; i < dungeon->spikesPlates.size(); i++)
 	{
@@ -1429,6 +1494,7 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedBlockerEnemy = nullptr;
 	selectedChaseEnemy = nullptr;
 	selectedSwitcherEnemy = nullptr;
+	selectedCheckpoint = nullptr;
 
 	selectedDoorWindowOpen = false;
 	selectedLeverWindowOpen = false;
@@ -1438,4 +1504,5 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedBlockerEnemyWindowOpen = false;
 	selectedChaseEnemyWindowOpen = false;
 	selectedSwitcherEnemyWindowOpen = false;
+	selectedCheckpointWindowOpen = false;
 }

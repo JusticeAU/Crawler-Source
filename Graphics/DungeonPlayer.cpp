@@ -6,6 +6,7 @@
 #include "AudioManager.h"
 
 #include "DungeonEnemySwitcher.h"
+#include "DungeonCheckpoint.h"
 
 Crawl::DungeonPlayer::DungeonPlayer()
 {
@@ -24,12 +25,27 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 
 	if (state == IDLE)
 	{
+		if (Input::Keyboard(GLFW_KEY_R).Down())
+			Respawn();
+
+		// All these checks should move to a turn processors state machine.
 		if (hp <= 0)
 		{
 			LogUtils::Log("Died. Resetting & Respawning");
-			dungeon->RebuildFromSerialised();
+			dungeon->RebuildDungeonFromSerialised(dungeon->serialised);
 			Respawn();
 			return false;
+		}
+
+		if (dungeon->GetCheckpointAt(position))
+		{
+			DungeonCheckpoint* newCheckpoint = dungeon->GetCheckpointAt(position);
+			if (!newCheckpoint->activated)
+			{
+				LogUtils::Log("You activated a checkpoint");
+				newCheckpoint->SetCheckpoint(this);
+			}
+
 		}
 
 		if (shouldSwitchWith) // fairly hacky
@@ -38,6 +54,8 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 			shouldSwitchWith->SwapWithPlayer();
 			shouldSwitchWith = nullptr;
 		}
+
+		// To here.
 
 		glm::ivec2 coordinate = { 0, 0 };
 		glm::ivec2 coordinateUnchanged = { 0, 0 }; // TO DO this sucks
@@ -193,19 +211,28 @@ void Crawl::DungeonPlayer::SetRespawn(ivec2 position, FACING_INDEX orientation)
 void Crawl::DungeonPlayer::Respawn()
 {
 	AudioManager::PlaySound("crawler/sound/load/start.wav");
-	dungeon->RebuildFromSerialised();
-	if (hasRespawnLocation)
+	if (checkpointExists)
 	{
-		Teleport(respawnPosition);
-		Orient(respawnOrientation);
+		dungeon->RebuildDungeonFromSerialised(checkpointSerialised);
+		Teleport(checkpointPosition);
+		Orient(checkpointFacing);
 	}
 	else
 	{
-		Teleport(dungeon->defaultPlayerStartPosition);
-		Orient(dungeon->defaultPlayerStartOrientation);
+		dungeon->RebuildDungeonFromSerialised(dungeon->serialised);
+		if (hasRespawnLocation)
+		{
+			Teleport(respawnPosition);
+			Orient(respawnOrientation);
+		}
+		else
+		{
+			Teleport(dungeon->defaultPlayerStartPosition);
+			Orient(dungeon->defaultPlayerStartOrientation);
+		}
+		hp = maxHp;
+		shouldSwitchWith = nullptr;
 	}
-	hp = maxHp;
-	shouldSwitchWith = nullptr;
 }
 
 void Crawl::DungeonPlayer::TakeDamage()

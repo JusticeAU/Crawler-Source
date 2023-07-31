@@ -40,6 +40,7 @@ namespace Crawl
 	private:
 		glm::ivec2 position;
 		FACING_INDEX facing = EAST_INDEX;
+		
 		STATE state = IDLE;
 		float moveSpeed = 0.25f;
 		float moveCurrent = 0.0f;
@@ -49,6 +50,7 @@ namespace Crawl
 		float turnCurrent = 0.0f;
 		float oldTurn;
 		float targetTurn;
+		
 		Dungeon* dungeon;
 		Object* object;
 
@@ -63,6 +65,14 @@ namespace Crawl
 
 		DungeonEnemySwitcher* shouldSwitchWith = nullptr;
 
+		// Checkpointing
+	public:
+		bool checkpointExists = false;
+		ordered_json checkpointSerialised;
+		glm::ivec2 checkpointPosition = { 0,0 };
+		FACING_INDEX checkpointFacing = NORTH_INDEX;
+	
+	protected:
 		string stepSounds[4] = {
 			"crawler/sound/load/step1.ogg",
 			"crawler/sound/load/step2.ogg",

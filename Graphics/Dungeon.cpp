@@ -14,6 +14,7 @@
 #include "DungeonEnemyBlocker.h"
 #include "DungeonEnemyChase.h"
 #include "DungeonEnemySwitcher.h"
+#include "DungeonCheckpoint.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
@@ -432,14 +433,13 @@ bool Crawl::Dungeon::DoInteractable(unsigned int id)
 	return didInteract;
 }
 
-Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, unsigned int directionIndex, unsigned int id, unsigned int doorID, bool startStatus)
+Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, unsigned int directionIndex, unsigned int id, unsigned int doorID, bool status)
 {
 	DungeonInteractableLever* lever = new DungeonInteractableLever();
 	lever->position = position;
 	lever->orientation = directionIndex;
 	lever->dungeon = this;
-	lever->startStatus = startStatus;
-	lever->status = startStatus;
+	lever->status = status;
 
 	// Load lever Objects from JSON
 	ordered_json lever_objectJSON = ReadJSONFromDisk("crawler/object/interactable_lever.object");
@@ -456,6 +456,9 @@ Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, uns
 	lever->SetID(id);
 	lever->activateID = doorID;
 	interactables.push_back(lever);
+	if (lever->status)
+		lever->Prime();
+
 	return lever;
 }
 
@@ -765,12 +768,16 @@ void Crawl::Dungeon::RemoveTransporter(DungeonTransporter* transporter)
 	}
 }
 
-Crawl::DungeonSpikes* Crawl::Dungeon::CreateSpikes(ivec2 position)
+Crawl::DungeonSpikes* Crawl::Dungeon::CreateSpikes(ivec2 position, bool disabled)
 {
 	DungeonSpikes* spikes = new DungeonSpikes();
 	spikes->position = position;
+	spikes->disabled = disabled;
+	spikes->dungeon = this;
 	spikes->object = Scene::CreateObject();
 	spikes->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/spikes.object"));
+	if (spikes->disabled)
+		spikes->Disable();
 	spikes->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
 	spikesPlates.push_back(spikes);
 	return spikes;
@@ -1037,9 +1044,49 @@ bool Crawl::Dungeon::IsEnemySwitcherAtPosition(ivec2 position)
 	return false;
 }
 
+Crawl::DungeonCheckpoint* Crawl::Dungeon::CreateCheckpoint(ivec2 position, FACING_INDEX facing, bool activated)
+{
+	DungeonCheckpoint* checkpoint = new DungeonCheckpoint();
+	checkpoint->position = position;
+	checkpoint->facing = facing;
+	checkpoint->activated = activated;
+	checkpoint->dungeon = this;
+	checkpoint->object = Scene::CreateObject();
+	checkpoint->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/checkpoint.object"));
+	checkpoint->object->AddLocalPosition(dungeonPosToObjectScale(position));
+	if (checkpoint->activated)
+		checkpoint->SetActivatedMaterial();
+	checkpoints.push_back(checkpoint);
+	return checkpoint;
+}
+
+void Crawl::Dungeon::RemoveCheckpoint(DungeonCheckpoint* checkpoint)
+{
+
+	for (int i = 0; i < checkpoints.size(); i++)
+	{
+		if (checkpoint == checkpoints[i])
+		{
+			delete checkpoint;
+			checkpoints.erase(checkpoints.begin() + i);
+		}
+	}
+}
+
+Crawl::DungeonCheckpoint* Crawl::Dungeon::GetCheckpointAt(ivec2 position)
+{
+	for (int i = 0; i < checkpoints.size(); i++)
+	{
+		if (position == checkpoints[i]->position)
+			return checkpoints[i];
+	}
+
+	return nullptr;
+}
+
 void Crawl::Dungeon::Save(std::string filename)
 {
-	BuildSerialised();
+	serialised = GetDungeonSerialised();
 	WriteJSONToDisk(filename, serialised);
 }
 
@@ -1050,8 +1097,10 @@ void Crawl::Dungeon::Load(std::string filename)
 	string name = filename.substr(lastSlash + 1, extensionStart - (lastSlash + 1));
 	dungeonFileName = name;
 	dungeonFilePath = filename;
+
+	serialised.clear();
 	serialised = ReadJSONFromDisk(filename);
-	RebuildFromSerialised();
+	RebuildDungeonFromSerialised(serialised);
 }
 
 bool Crawl::Dungeon::TestDungeonExists(std::string filename)
@@ -1059,82 +1108,89 @@ bool Crawl::Dungeon::TestDungeonExists(std::string filename)
 	return FileUtils::CheckFileExists(filename);
 }
 
-void Crawl::Dungeon::BuildSerialised()
+ordered_json Crawl::Dungeon::GetDungeonSerialised()
 {
-	serialised.clear();
+	ordered_json dungeon_serialised;
 
 	ordered_json tiles_json;
 
-	serialised["type"] = "dungeon";
-	serialised["version"] = 1;
-	serialised["defaultPosition"] = defaultPlayerStartPosition;
-	serialised["defaultOrientation"] = defaultPlayerStartOrientation;
-	serialised["playerTurnIsFree"] = playerTurnIsFree;
-	serialised["playerHasKnife"] = playerHasKnife;
-	serialised["playerCanKickBox"] = playerCanKickBox;
-	serialised["playerCanPushBox"] = playerCanPushBox;
-	serialised["playerInteractIsFree"] = playerInteractIsFree;
-	serialised["switchersMustBeLookedAt"] = switchersMustBeLookedAt;
+	dungeon_serialised["type"] = "dungeon";
+	dungeon_serialised["version"] = 1;
+	dungeon_serialised["defaultPosition"] = defaultPlayerStartPosition;
+	dungeon_serialised["defaultOrientation"] = defaultPlayerStartOrientation;
+	dungeon_serialised["playerTurnIsFree"] = playerTurnIsFree;
+	dungeon_serialised["playerHasKnife"] = playerHasKnife;
+	dungeon_serialised["playerCanKickBox"] = playerCanKickBox;
+	dungeon_serialised["playerCanPushBox"] = playerCanPushBox;
+	dungeon_serialised["playerInteractIsFree"] = playerInteractIsFree;
+	dungeon_serialised["switchersMustBeLookedAt"] = switchersMustBeLookedAt;
 
 	for (auto& x : tiles)
 	{
 		for (auto& y : x.second.row)
 			tiles_json.push_back(y.second);
 	}
-	serialised["tiles"] = tiles_json;
+	dungeon_serialised["tiles"] = tiles_json;
 
 	ordered_json levers_json;
 	for (auto& interactable : interactables)
 		levers_json.push_back(*interactable);
-	serialised["levers"] = levers_json;
+	dungeon_serialised["levers"] = levers_json;
 
 	ordered_json doors_json;
 	for (auto& door : activatable)
 		doors_json.push_back(*door);
-	serialised["doors"] = doors_json;
+	dungeon_serialised["doors"] = doors_json;
 
 	ordered_json plates_json;
 	for (auto& plate : activatorPlates)
 		plates_json.push_back(*plate);
-	serialised["plates"] = plates_json;
+	dungeon_serialised["plates"] = plates_json;
 
 	ordered_json transporters_json;
 	for (auto& plate : transporterPlates)
 		transporters_json.push_back(*plate);
-	serialised["transporters"] = transporters_json;
+	dungeon_serialised["transporters"] = transporters_json;
+
+	ordered_json checkpoints_json;
+	for (auto& checkpoint : checkpoints)
+		checkpoints_json.push_back(*checkpoint);
+	dungeon_serialised["checkpoints"] = checkpoints_json;
 
 	ordered_json spikes_json;
 	for (auto& spikes : spikesPlates)
 		spikes_json.push_back(*spikes);
-	serialised["spikes"] = spikes_json;
+	dungeon_serialised["spikes"] = spikes_json;
 
 	ordered_json blocks_json;
 	for (auto& block : pushableBlocks)
 		blocks_json.push_back(*block);
-	serialised["blocks"] = blocks_json;
+	dungeon_serialised["blocks"] = blocks_json;
 
 	ordered_json shootLaser_json;
 	for (auto& shootLaser : shootLasers)
 		shootLaser_json.push_back(*shootLaser);
-	serialised["shootLasers"] = shootLaser_json;
+	dungeon_serialised["shootLasers"] = shootLaser_json;
 
 	ordered_json blockers_json;
 	for (auto& blocker : blockers)
 		blockers_json.push_back(*blocker);
-	serialised["blockers"] = blockers_json;
+	dungeon_serialised["blockers"] = blockers_json;
 
 	ordered_json chasers_json;
 	for (auto& chaser : chasers)
 		chasers_json.push_back(*chaser);
-	serialised["chasers"] = chasers_json;
+	dungeon_serialised["chasers"] = chasers_json;
 
 	ordered_json switchers_json;
 	for (auto& switcher : switchers)
 		switchers_json.push_back(*switcher);
-	serialised["switchers"] = switchers_json;
+	dungeon_serialised["switchers"] = switchers_json;
+
+	return dungeon_serialised;
 }
 
-void Crawl::Dungeon::RebuildFromSerialised()
+void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 {
 	DestroySceneFromDungeonLayout();
 	tiles.clear();
@@ -1200,11 +1256,7 @@ void Crawl::Dungeon::RebuildFromSerialised()
 	for (auto it = levers_json.begin(); it != levers_json.end(); it++)
 	{
 		DungeonInteractableLever lever = it.value().get<Crawl::DungeonInteractableLever>();
-		DungeonInteractableLever* newLever = CreateLever(lever.position, lever.orientation, lever.id, lever.activateID, lever.startStatus);
-		if (newLever->status)
-		{
-			newLever->Prime();
-		}
+		DungeonInteractableLever* newLever = CreateLever(lever.position, lever.orientation, lever.id, lever.activateID, lever.status);
 	}
 
 	auto& plates_json = serialised["plates"];
@@ -1225,11 +1277,19 @@ void Crawl::Dungeon::RebuildFromSerialised()
 		newTransporter->fromOrientation = transporter.fromOrientation;
 	}
 
+	auto& checkpoints_json = serialised["checkpoints"];
+	for (auto it = checkpoints_json.begin(); it != checkpoints_json.end(); it++)
+	{
+		DungeonCheckpoint checkpoint = it.value().get<Crawl::DungeonCheckpoint>();
+		DungeonCheckpoint* newCheckpoint = CreateCheckpoint(checkpoint.position, checkpoint.facing);
+	}
+
+
 	auto& spikes_json = serialised["spikes"];
 	for (auto it = spikes_json.begin(); it != spikes_json.end(); it++)
 	{
 		DungeonSpikes spikes = it.value().get<Crawl::DungeonSpikes>();
-		CreateSpikes(spikes.position);
+		CreateSpikes(spikes.position, spikes.disabled);
 	}
 
 	auto& blocks_json = serialised["blocks"];
@@ -1314,6 +1374,10 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 	for (int i = 0; i < transporterPlates.size(); i++)
 		delete transporterPlates[i];
 	transporterPlates.clear();
+
+	for (int i = 0; i < checkpoints.size(); i++)
+		delete checkpoints[i];
+	checkpoints.clear();
 
 	for (int i = 0; i < spikesPlates.size(); i++)
 		delete spikesPlates[i];
@@ -1475,9 +1539,7 @@ void Crawl::Dungeon::Update()
 		{
 			if (pushableBlocks[i]->position == spikes->position)
 			{
-				GetTile(pushableBlocks[i]->position)->occupied = false;
-				spikes->disabled = true;
-				((ComponentRenderer*)spikes->object->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/spikes_covered.material");
+				spikes->Disable();
 				delete pushableBlocks[i];
 				pushableBlocks.erase(pushableBlocks.begin() + i);
 				break;
@@ -1493,6 +1555,9 @@ void Crawl::Dungeon::Update()
 		blocker->Update();
 
 	// Test all transporters - This should probably be in the player controller rather than the dungeon.
+	for (auto& switcher : switchers)
+		switcher->Update();
+
 	DungeonTransporter* activateTransporter = nullptr;
 	for (auto& transporter : transporterPlates)
 	{
@@ -1502,9 +1567,6 @@ void Crawl::Dungeon::Update()
 			break;
 		}
 	}
-
-	for (auto& switcher : switchers)
-		switcher->Update();
 
 	if (activateTransporter)
 	{
@@ -1522,6 +1584,9 @@ void Crawl::Dungeon::Update()
 
 		// Get Transporter By Name
 		DungeonTransporter* gotoTransporter = GetTransporter(TransporterToGoTo);
+
+		// Reset previous checkpoint
+		player->checkpointExists = false;
 
 		// Set player Position
 		if (gotoTransporter)

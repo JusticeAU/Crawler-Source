@@ -27,6 +27,7 @@ namespace Crawl
 	class DungeonEnemyBlocker;
 	class DungeonEnemyChase;
 	class DungeonEnemySwitcher;
+	class DungeonCheckpoint;
 
 	struct Column
 	{
@@ -86,7 +87,7 @@ namespace Crawl
 		void RemoveTransporter(DungeonTransporter* transporter);
 		DungeonTransporter* GetTransporter(string transporterName);
 
-		DungeonSpikes* CreateSpikes(ivec2 position);
+		DungeonSpikes* CreateSpikes(ivec2 position, bool disabled = false);
 		void RemoveSpikes(ivec2 position);
 
 		DungeonPushableBlock* CreatePushableBlock(ivec2 position);
@@ -109,13 +110,17 @@ namespace Crawl
 		DungeonEnemySwitcher* CreateEnemySwitcher(ivec2 position, FACING_INDEX direction);
 		void RemoveEnemySwitcher(DungeonEnemySwitcher* switcher);
 		bool IsEnemySwitcherAtPosition(ivec2 position);
+
+		DungeonCheckpoint* CreateCheckpoint(ivec2 position, FACING_INDEX direction, bool activated = false);
+		void RemoveCheckpoint(DungeonCheckpoint* checkpoint);
+		DungeonCheckpoint* GetCheckpointAt(ivec2 position);
 	
 		void Save(std::string filename);
 		void Load(std::string filename);
 		bool TestDungeonExists(std::string filename);
 
-		void BuildSerialised();
-		void RebuildFromSerialised();
+		ordered_json GetDungeonSerialised();
+		void RebuildDungeonFromSerialised(ordered_json& serialised);
 	
 		// Calculates the tile mask based on adjacent tiles
 		unsigned int GetAutoTileMask(ivec2 position);
@@ -173,6 +178,8 @@ namespace Crawl
 
 		std::vector<DungeonEnemyChase*> chasers;
 		std::vector<DungeonEnemySwitcher*> switchers;
+
+		std::vector<DungeonCheckpoint*> checkpoints;
 		
 		DungeonPlayer* player = nullptr;
 

@@ -10,6 +10,8 @@
   "playerHasKnife": true,
   "playerCanKickBox": true,
   "playerCanPushBox": true,
+  "playerInteractIsFree": true,
+  "switchersMustBeLookedAt": true,
   "tiles": [
     {
       "position": {
@@ -678,7 +680,7 @@
         "y": 1
       },
       "fromOrientation": 0,
-      "toDungeon": "crawler/dungeon/test/test_blockpush",
+      "toDungeon": "crawler/dungeon/test/test_shoot_laser",
       "toTransporter": "Entry"
     },
     {
@@ -688,10 +690,11 @@
         "y": 0
       },
       "fromOrientation": 1,
-      "toDungeon": "crawler/dungeon/test/test_blockpush",
-      "toTransporter": "Entry"
+      "toDungeon": "crawler/dungeon/start",
+      "toTransporter": "Exit"
     }
   ],
+  "checkpoints": null,
   "spikes": null,
   "blocks": [
     {
@@ -720,5 +723,7 @@
     }
   ],
   "shootLasers": null,
-  "blockers": null
+  "blockers": null,
+  "chasers": null,
+  "switchers": null
 }

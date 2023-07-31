@@ -16,170 +16,92 @@
     {
       "position": {
         "x": -4,
+        "y": 0
+      },
+      "mask": 4,
+      "wallVariants": [
+        3,
+        3,
+        0,
+        3
+      ]
+    },
+    {
+      "position": {
+        "x": -3,
         "y": -3
       },
       "mask": 5,
       "wallVariants": [
         0,
-        3,
+        1,
+        0,
+        1
+      ]
+    },
+    {
+      "position": {
+        "x": -3,
+        "y": -2
+      },
+      "mask": 13,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        3
+      ]
+    },
+    {
+      "position": {
+        "x": -3,
+        "y": -1
+      },
+      "mask": 13,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        3
+      ]
+    },
+    {
+      "position": {
+        "x": -3,
+        "y": 0
+      },
+      "mask": 15,
+      "wallVariants": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "position": {
+        "x": -3,
+        "y": 1
+      },
+      "mask": 13,
+      "wallVariants": [
+        0,
+        0,
         0,
         2
       ]
     },
     {
       "position": {
-        "x": -4,
-        "y": -2
-      },
-      "mask": 13,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        1
-      ]
-    },
-    {
-      "position": {
-        "x": -4,
-        "y": -1
-      },
-      "mask": 13,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        1
-      ]
-    },
-    {
-      "position": {
-        "x": -4,
-        "y": 0
-      },
-      "mask": 13,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        3
-      ]
-    },
-    {
-      "position": {
-        "x": -4,
-        "y": 1
-      },
-      "mask": 13,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        3
-      ]
-    },
-    {
-      "position": {
-        "x": -4,
-        "y": 2
-      },
-      "mask": 13,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        3
-      ]
-    },
-    {
-      "position": {
-        "x": -4,
-        "y": 3
-      },
-      "mask": 12,
-      "wallVariants": [
-        2,
-        0,
-        0,
-        1
-      ]
-    },
-    {
-      "position": {
-        "x": -3,
-        "y": -3
-      },
-      "mask": 7,
-      "wallVariants": [
-        0,
-        1,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": -3,
-        "y": -2
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": -3,
-        "y": -1
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": -3,
-        "y": 0
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
-        "x": -3,
-        "y": 1
-      },
-      "mask": 15,
-      "wallVariants": [
-        0,
-        0,
-        0,
-        0
-      ]
-    },
-    {
-      "position": {
         "x": -3,
         "y": 2
       },
-      "mask": 15,
+      "mask": 13,
       "wallVariants": [
         0,
         0,
         0,
-        0
+        2
       ]
     },
     {
@@ -187,12 +109,12 @@
         "x": -3,
         "y": 3
       },
-      "mask": 14,
+      "mask": 12,
       "wallVariants": [
         1,
         0,
         0,
-        0
+        3
       ]
     },
     {
@@ -784,7 +706,19 @@
   "levers": null,
   "doors": null,
   "plates": null,
-  "transporters": null,
+  "transporters": [
+    {
+      "name": "Entry",
+      "position": {
+        "x": -4,
+        "y": 0
+      },
+      "fromOrientation": 1,
+      "toDungeon": "test\\pathFindTurnCost",
+      "toTransporter": "Exit"
+    }
+  ],
+  "checkpoints": null,
   "spikes": null,
   "blocks": null,
   "shootLasers": null,
