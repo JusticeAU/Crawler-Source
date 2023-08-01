@@ -29,6 +29,8 @@ namespace Crawl
 	public:
 		ArtTester();
 
+		void Update(float delta);
+
 		void Activate();
 		void Deactivate();
 
@@ -48,7 +50,6 @@ namespace Crawl
 
 		ComponentModel* model = nullptr;
 		ComponentRenderer* renderer = nullptr;
-		ComponentSkinnedRenderer* rendererSkinned = nullptr;
 		ComponentAnimator* animator = nullptr;
 		Material* editingMaterial = nullptr;
 
@@ -58,16 +59,20 @@ namespace Crawl
 		static void Refresh();
 
 		// Staging Configuration
+		float timeLastRefreshed = 0.0f;
 		int type = 0;
-		string types[5] = { "Monster", "Tile", "Interactble", "Door", "Decoration"};
-		string typesFolders[5] = { "monster_", "tile_", "interactable_", "door_", "decoration_"};
+		string types[6] = { "Monster", "Tile", "Interactble", "Door", "Decoration", "Other"};
+		string typesFolders[6] = { "monster_", "tile_", "interactable_", "door_", "decoration_", "" };
 		string stagedType = "Monster";
 
 		// Staging names and paths
 		string stagedName = "name";	// Managed by ImGui and UpdateStagingFolders function
-		string stagingFolder = "";	// staging/model/monster_name/
-		string stagingPath = "";	// staging/model/monster_name/monster_
-		string assetPath = "";		// crawler/model/monster_name/monster_
+		//string stagingFolder = "";	// staging/model/monster_name/
+		//string stagingPath = "";	// staging/model/monster_name/monster_
+		
+		string modelPath = "";
+		string materialPath = "";
+		string texturePath = "";		// crawler/texture/monster_
 
 		vector<string> stagingModels;
 		vector<string> stagingMaterials;

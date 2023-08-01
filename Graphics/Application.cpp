@@ -238,6 +238,7 @@ void Application::Update(float delta)
 	}
 	case Mode::Art:
 	{
+		artTester->Update(delta);
 		artTester->DrawGUI();
 
 		if (Scene::GetCameraIndex() == 0)

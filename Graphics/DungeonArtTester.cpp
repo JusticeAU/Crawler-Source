@@ -8,6 +8,7 @@
 #include "ComponentFactory.h"
 #include "MaterialManager.h"
 #include "TextureManager.h"
+#include "ShaderManager.h"
 #include "LogUtils.h"
 #include <string>
 #include <filesystem>
@@ -20,6 +21,15 @@ Crawl::ArtTester::ArtTester()
 {
 	s_instance = this;
 	UpdateStagingFolders();
+}
+
+void Crawl::ArtTester::Update(float delta)
+{
+	if (Window::GetTime() > timeLastRefreshed + 1.0f)
+	{
+		UpdateStagingFolders();
+		timeLastRefreshed = Window::GetTime();
+	}
 }
 
 void Crawl::ArtTester::Activate()
@@ -39,6 +49,36 @@ void Crawl::ArtTester::Deactivate()
 void Crawl::ArtTester::DrawGUI()
 {
 	MaterialManager::DrawGUI();
+	
+	if (MaterialManager::MaterialSelected)
+	{
+		Material* selected = MaterialManager::MaterialSelected;
+		ImGui::SetNextWindowPos({ 550, 10 }, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize({ 600, 400 }, ImGuiCond_FirstUseEver);
+		ImGui::Begin("Material");
+		
+		bool canEditName = true;
+		if (selected->name.substr(0,7) == "crawler")
+			canEditName = false;
+
+		if (!canEditName)
+			ImGui::BeginDisabled();
+
+		string newName = selected->name;
+		if (ImGui::InputText("Name", &newName, ImGuiInputTextFlags_EnterReturnsTrue))
+		{
+			// Material Manager change name
+			MaterialManager::RemoveMaterial(selected->name);
+			MaterialManager::PushMaterial(newName, selected);
+			// change name
+			selected->name = newName;
+		}
+
+		if (!canEditName)
+			ImGui::EndDisabled();
+		selected->DrawGUI();
+		ImGui::End();
+	}
 
 	ImGui::SetNextWindowPos({ 0,0 });
 	ImGui::SetNextWindowSize({ 500, 600 });
@@ -75,11 +115,10 @@ void Crawl::ArtTester::DrawGUI()
 	if (ImGui::DragFloat3("Scale", &Scene::s_instance->objects[1]->localScale[0],0.1f, -5, 5))
 		Scene::s_instance->objects[1]->dirtyTransform = true;
 
-	if (renderer)
-		renderer->DrawGUI();
-	else if (rendererSkinned)
+	renderer->DrawGUI();
+	
+	if (animator)
 	{
-		rendererSkinned->DrawGUI();
 		ImGui::Unindent();
 		ImGui::Text("");
 		ImGui::Text("Animation");
@@ -104,10 +143,10 @@ void Crawl::ArtTester::DrawGUIStaging()
 	if (ImGui::InputText("Name", &stagedName))
 		UpdateStagingFolders();
 
-	ImGui::SameLine();
+	
 	if (ImGui::BeginCombo("Asset Type", stagedType.c_str()))
 	{
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < 6; i++)
 		{
 			const bool is_selected = (stagedType == types[i]);
 			if (ImGui::Selectable(types[i].c_str(), is_selected))
@@ -123,15 +162,19 @@ void Crawl::ArtTester::DrawGUIStaging()
 		}
 		ImGui::EndCombo();
 	}
-	//ImGui::DragInt("uhh", &stagedType);
 
 	// preview
-	ImGui::Text("Output");
+	ImGui::Text("Output Preview");
 	ImGui::BeginDisabled();
 	ImGui::Text("Model");
 		ImGui::Indent();
 		for (string& str : stagingModels)
 			ImGui::Selectable(str.c_str());	
+		if (stagingModels.size() > 0)
+		{
+			string objectName = modelPath + stagedName + ".object";
+			ImGui::Selectable(objectName.c_str());
+		}
 		ImGui::Unindent();
 	ImGui::Text("Materials");
 		ImGui::Indent();
@@ -143,15 +186,11 @@ void Crawl::ArtTester::DrawGUIStaging()
 		for (string& str : stagingTextures)
 			ImGui::Selectable(str.c_str());
 		ImGui::Unindent();
-	ImGui::Text("Object");
-		ImGui::Indent();
-		string objectName = assetPath + stagedName + ".object";
-		ImGui::Selectable(objectName.c_str());
-		ImGui::Unindent();
 	ImGui::EndDisabled();
 
 	// Save
-	if (ImGui::Button("Export"))
+	ImGui::Text("");
+	if (ImGui::Button("Add To Game Data"))
 		ExportStaging(false);
 
 	ImGui::End();
@@ -166,8 +205,6 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 		stagingMaterials.clear();
 		stagingTextures.clear();
 	}
-	else
-		fs::create_directories(stagingFolder);
 
 	// Create Object JSON
 	Object* object = Scene::s_instance->objects[1];
@@ -179,11 +216,11 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 	if (modelName.substr(0, 1) != "_" && modelName.substr(0, 7) != "crawler" && modelName.substr(0, 6) != "engine")
 	{
 		if (preview)
-			stagingModels.push_back(assetPath + stagedName + ".fbx");
+			stagingModels.push_back(modelPath + stagedName + ".fbx");
 		else
 		{
-			fs::copy_file(modelName, stagingPath + stagedName + ".fbx", fs::copy_options::overwrite_existing);
-			objectJSON["components"][0]["model"] = assetPath + stagedName + ".fbx";
+			fs::copy_file(modelName, modelPath + stagedName + ".fbx", fs::copy_options::overwrite_existing);
+			objectJSON["components"][0]["model"] = modelPath + stagedName + ".fbx";
 		}
 	}
 
@@ -193,77 +230,96 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 		string materialName = objectJSON["components"][1]["materials"][i];
 		if (materialName.substr(0, 7) != "crawler" && materialName.substr(0, 6) != "engine")
 		{
-
 			// Staged material, need to copy
 			Material savedMaterial = *MaterialManager::GetMaterial(materialName);
 			string newMaterialName = stagedName + "_" + savedMaterial.name;
+			
+			// Check we havent processed this material already from a previous submesh
+			bool duplicate = false;
+			for (auto& matStr : stagingMaterials)
+			{
+				if (matStr == materialPath + newMaterialName + ".material") duplicate = true;
+			}
+			if (duplicate)
+				break;
 
 			// updates names of each texture as required
 			if (savedMaterial.albedoMap != nullptr && savedMaterial.albedoMapName.substr(0, 7) != "crawler" && savedMaterial.albedoMapName.substr(0, 6) != "engine")
 			{
 				if (preview)
-					stagingTextures.push_back(assetPath + newMaterialName + "_albedo.png");
+					stagingTextures.push_back(texturePath + newMaterialName + "_albedo.tga");
 				else
 				{
-					fs::copy_file(savedMaterial.albedoMapName, stagingPath + stagedName + "_" + savedMaterial.name + "_albedo.png", fs::copy_options::overwrite_existing);
-					savedMaterial.albedoMapName = assetPath + newMaterialName + "_albedo.png";
+					fs::copy_file(savedMaterial.albedoMapName, texturePath + stagedName + "_" + savedMaterial.name + "_albedo.tga", fs::copy_options::overwrite_existing);
+					savedMaterial.albedoMapName = texturePath + newMaterialName + "_albedo.tga";
 				}
 			}
 
 			if (savedMaterial.normalMap != nullptr && savedMaterial.normalMapName.substr(0, 7) != "crawler" && savedMaterial.normalMapName.substr(0, 6) != "engine")
 			{
 				if (preview)
-					stagingTextures.push_back(assetPath + newMaterialName + "_normal.png");
+					stagingTextures.push_back(texturePath + newMaterialName + "_normal.tga");
 				else
 				{
-					fs::copy_file(savedMaterial.normalMapName, stagingPath + stagedName + "_" + savedMaterial.name + "_normal.png", fs::copy_options::overwrite_existing);
-					savedMaterial.normalMapName = assetPath + newMaterialName + "_normal.png";
+					fs::copy_file(savedMaterial.normalMapName, texturePath + stagedName + "_" + savedMaterial.name + "_normal.tga", fs::copy_options::overwrite_existing);
+					savedMaterial.normalMapName = texturePath + newMaterialName + "_normal.tga";
 				}
 			}
 
 			if (savedMaterial.metallicMap != nullptr && savedMaterial.metallicMapName.substr(0, 7) != "crawler" && savedMaterial.metallicMapName.substr(0, 6) != "engine")
 			{
 				if (preview)
-					stagingTextures.push_back(assetPath + newMaterialName + "_metallic.png");
+					stagingTextures.push_back(texturePath + newMaterialName + "_metallic.tga");
 				else
 				{
-					fs::copy_file(savedMaterial.metallicMapName, stagingPath + stagedName + "_" + savedMaterial.name + "_metallic.png", fs::copy_options::overwrite_existing);
-					savedMaterial.metallicMapName = assetPath + newMaterialName + "_metallic.png";
+					fs::copy_file(savedMaterial.metallicMapName, texturePath + stagedName + "_" + savedMaterial.name + "_metallic.tga", fs::copy_options::overwrite_existing);
+					savedMaterial.metallicMapName = texturePath + newMaterialName + "_metallic.tga";
 				}
 			}
 
 			if (savedMaterial.roughnessMap != nullptr && savedMaterial.roughnessMapName.substr(0, 7) != "crawler" && savedMaterial.roughnessMapName.substr(0, 6) != "engine")
 			{
 				if (preview)
-					stagingTextures.push_back(assetPath + newMaterialName + "_roughness.png");
+					stagingTextures.push_back(texturePath + newMaterialName + "_roughness.tga");
 				else
 				{
-					fs::copy_file(savedMaterial.roughnessMapName, stagingPath + stagedName + "_" + savedMaterial.name + "_roughness.png", fs::copy_options::overwrite_existing);
-					savedMaterial.roughnessMapName = assetPath + newMaterialName + "_roughness.png";
+					fs::copy_file(savedMaterial.roughnessMapName, texturePath + stagedName + "_" + savedMaterial.name + "_roughness.tga", fs::copy_options::overwrite_existing);
+					savedMaterial.roughnessMapName = texturePath + newMaterialName + "_roughness.tga";
 				}
 			}
 
 			if (savedMaterial.aoMap != nullptr && savedMaterial.aoMapName.substr(0, 7) != "crawler" && savedMaterial.aoMapName.substr(0, 6) != "engine")
 			{
 				if (preview)
-					stagingTextures.push_back(assetPath + newMaterialName + "_ao.png");
+					stagingTextures.push_back(texturePath + newMaterialName + "_ao.tga");
 				else
 				{
-					fs::copy_file(savedMaterial.aoMapName, stagingPath + stagedName + "_" + savedMaterial.name + "_ao.png", fs::copy_options::overwrite_existing);
-					savedMaterial.aoMapName = assetPath + newMaterialName + "_ao.png";
+					fs::copy_file(savedMaterial.aoMapName, texturePath + stagedName + "_" + savedMaterial.name + "_ao.tga", fs::copy_options::overwrite_existing);
+					savedMaterial.aoMapName = texturePath + newMaterialName + "_ao.tga";
 				}
 			}
 
-			if (preview)
-				stagingMaterials.push_back(assetPath + newMaterialName + ".material");
-			else
+			if (savedMaterial.emissiveMap != nullptr && savedMaterial.emissiveMapName.substr(0, 7) != "crawler" && savedMaterial.emissiveMapName.substr(0, 6) != "engine")
+			{
+				if (preview)
+					stagingTextures.push_back(texturePath + newMaterialName + "_emissive.tga");
+				else
+				{
+					fs::copy_file(savedMaterial.emissiveMapName, texturePath + stagedName + "_" + savedMaterial.name + "_emissive.tga", fs::copy_options::overwrite_existing);
+					savedMaterial.emissiveMapName = texturePath + newMaterialName + "_emissive.tga";
+				}
+			}
+
+			stagingMaterials.push_back(materialPath + newMaterialName + ".material");
+
+			if(!preview)
 			{
 				// save the new material to disk
-				savedMaterial.filePath = stagingPath + newMaterialName + ".material";
+				savedMaterial.filePath = materialPath + newMaterialName + ".material";
 				savedMaterial.SaveToFile();
 
 				// update reference to the  material in the JSON
-				objectJSON["components"][1]["materials"][i] = assetPath + newMaterialName + ".material";
+				objectJSON["components"][1]["materials"][i] = materialPath + newMaterialName + ".material";
 			}
 		}
 	}
@@ -271,20 +327,24 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 	if (preview)
 		return;
 
-	// Save object configuration
-	WriteJSONToDisk(stagingPath + stagedName + ".object", objectJSON);
+	if(stagingModels.size() > 0)
+		WriteJSONToDisk(modelPath + stagedName + ".object", objectJSON);
 
-	// open folder to location
-	string working = fs::current_path().string();
-	string command = "explorer " + working + "\\staging";
-	system(command.c_str());
+	// Below is no longer required as Art team will be working directly in the repo.
+	//// open folder to location
+	//string working = fs::current_path().string();
+	//string command = "explorer " + working + "\\staging";
+	//system(command.c_str());
 }
 
 void Crawl::ArtTester::UpdateStagingFolders()
 {
-	stagingFolder = "staging/model/" + typesFolders[type] + stagedName + "/";						// staging/model/monster_name/
-	stagingPath = "staging/model/" + typesFolders[type] + stagedName + "/" + typesFolders[type];	// staging/model/monster_name/monster_
-	assetPath = "crawler/model/" + typesFolders[type] + stagedName + "/" + typesFolders[type];		// crawler/model/monster_name/monster_
+	//stagingFolder = "staging/model/";						// staging/model/monster_name/
+	//stagingPath = "staging/model/" + typesFolders[type];	// staging/model/monster_name/monster_
+	
+	modelPath = "crawler/model/" + typesFolders[type];		// crawler/model/monster_name/monster_
+	materialPath = "crawler/material/" + typesFolders[type];		// crawler/model/monster_name/monster_
+	texturePath = "crawler/texture/" + typesFolders[type];		// crawler/model/monster_name/monster_
 	ExportStaging(true);
 }
 
@@ -306,20 +366,13 @@ void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)
 			ModelManager::s_instance->LoadFromFile(filepath.c_str(), Crawl::CRAWLER_TRANSFORM);
 			model = (ComponentModel*)Scene::s_instance->objects[1]->GetComponent(Component_Model);
 			renderer = (ComponentRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_Renderer);
-			rendererSkinned = (ComponentSkinnedRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_SkinnedRenderer);
+			//rendererSkinned = (ComponentSkinnedRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_SkinnedRenderer);
 			animator = (ComponentAnimator*)Scene::s_instance->objects[1]->GetComponent(Component_Animator);
 			model->model = ModelManager::GetModel(filepath);
 			model->modelName = filepath;
-			if (model->model->animations.size() > 0) // has animations, should use skinned renderer
+			if (model->model->animations.size() > 0) // has animations, should attach an animator
 			{
 				// Configure animated stuff
-				hasAnimations = true;
-				if (rendererSkinned == nullptr)
-				{
-					rendererSkinned = (ComponentSkinnedRenderer*)ComponentFactory::NewComponent(Scene::s_instance->objects[1], Component_SkinnedRenderer);
-					Scene::s_instance->objects[1]->components.push_back(rendererSkinned);
-				}
-
 				if (animator == nullptr)
 				{
 					animator = (ComponentAnimator*)ComponentFactory::NewComponent(Scene::s_instance->objects[1], Component_Animator);
@@ -328,17 +381,12 @@ void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)
 				animator->model = model->model;
 				animator->StartAnimation(model->model->animations[0]->name);
 				animator->OnParentChange();
-				rendererSkinned->model = model->model;
-				rendererSkinned->OnParentChange();
-				for (int i = 0; i < rendererSkinned->materialArray.size(); i++)
+				renderer->model = model->model;
+				renderer->OnParentChange();
+				for (int i = 0; i < renderer->materialArray.size(); i++)
 				{
-					rendererSkinned->materialArray[i] = MaterialManager::GetMaterial("engine/model/materials/SkinnedLambertBlue.material");
+					renderer->materialArray[i] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
 				}
-
-				// Clear off maybe unneeded stuff
-				if (renderer != nullptr)
-					renderer->markedForDeletion = true;
-
 			}
 			else
 			{
@@ -353,8 +401,6 @@ void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)
 				// Clear off animator component
 				if (animator != nullptr)
 					animator->markedForDeletion = true;
-				if (rendererSkinned != nullptr)
-					rendererSkinned->markedForDeletion = true;
 
 
 				renderer->model = model->model;
@@ -373,11 +419,11 @@ void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)
 			string filename = paths[i];
 			int extensionPos = filename.find_last_of('.');
 			int mapNamePos = filename.find_last_of('_');
-			int meshNamePos = filename.find_last_of('_', mapNamePos - 1);
+			int meshNamePos = filename.find_last_of('\\', mapNamePos - 1);
 			int fileNamePos = filename.find_last_of('\\', meshNamePos - 1);
 			string mapName = filename.substr(mapNamePos + 1, extensionPos - mapNamePos - 1);
 			string meshName = filename.substr(meshNamePos + 1, mapNamePos - meshNamePos - 1);
-			string name = filename.substr(fileNamePos + 1, meshNamePos - fileNamePos - 1);
+
 
 			// check if there is a material existing, otherwise create one
 			Material* currentMaterial = nullptr;
@@ -386,28 +432,33 @@ void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)
 			{
 				currentMaterial = new Material();
 				currentMaterial->name = meshName;
+				currentMaterial->shader = ShaderManager::GetShaderProgram("engine/shader/PBR");
+				currentMaterial->shaderName = "engine/shader/PBR";
+				currentMaterial->shaderSkinned = ShaderManager::GetShaderProgram("engine/shader/PBRSkinned");
+				currentMaterial->shaderSkinnedName = "engine/shader/PBRSkinned";
+				currentMaterial->isPBR = true;
 				MaterialManager::PushMaterial(meshName, currentMaterial);
 			}
 
 			// load texture
 			TextureManager::s_instance->LoadFromFile(paths[i]);
 			// assign in to the map
-			if (mapName == "albedo" || mapName == "colour" || mapName == "base")
+			if (mapName == "albedo")
 			{
 				currentMaterial->albedoMapName = paths[i];
 				currentMaterial->albedoMap = TextureManager::GetTexture(paths[i]);
 			}
-			else if (mapName == "normal" || mapName == "nmap")
+			else if (mapName == "normal")
 			{
 				currentMaterial->normalMapName = paths[i];
 				currentMaterial->normalMap = TextureManager::GetTexture(paths[i]);
 			}
-			else if (mapName == "metallic" || mapName == "metalness")
+			else if (mapName == "metallic")
 			{
 				currentMaterial->metallicMapName = paths[i];
 				currentMaterial->metallicMap = TextureManager::GetTexture(paths[i]);
 			}
-			else if (mapName == "roughness" || mapName == "rough")
+			else if (mapName == "roughness")
 			{
 				currentMaterial->roughnessMapName = paths[i];
 				currentMaterial->roughnessMap = TextureManager::GetTexture(paths[i]);
@@ -416,6 +467,11 @@ void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)
 			{
 				currentMaterial->aoMapName = paths[i];
 				currentMaterial->aoMap = TextureManager::GetTexture(paths[i]);
+			}
+			else if (mapName == "emissive")
+			{
+				currentMaterial->emissiveMapName = paths[i];
+				currentMaterial->emissiveMap = TextureManager::GetTexture(paths[i]);
 			}
 
 			break;
@@ -434,9 +490,6 @@ void Crawl::ArtTester::Refresh()
 	s_instance->renderer = (ComponentRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_Renderer);
 	if (s_instance->renderer && s_instance->renderer->markedForDeletion)
 		s_instance->renderer == nullptr;
-	s_instance->rendererSkinned = (ComponentSkinnedRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_SkinnedRenderer);
-	if (s_instance->rendererSkinned && s_instance->rendererSkinned->markedForDeletion)
-		s_instance->rendererSkinned == nullptr;
 	s_instance->animator = (ComponentAnimator*)Scene::s_instance->objects[1]->GetComponent(Component_Animator);
 	if (s_instance->animator && s_instance->animator->markedForDeletion)
 		s_instance->animator == nullptr;
@@ -453,9 +506,9 @@ Crawl::FileType Crawl::ArtTester::GetFileType(string filename)
 	int extensionPos = filename.find_last_of('.');
 	string extension = filename.substr(extensionPos+1, filename.length() - extensionPos);
 
-	if (extension == "FBX" || extension == "fbx" || extension == "obj")
+	if (extension == "FBX" || extension == "fbx")
 		return FileType::Model;
-	else if (extension == "jpg" || extension == "png")
+	else if (extension == "tga")
 		return FileType::Texture;
 
 	return FileType::Other;

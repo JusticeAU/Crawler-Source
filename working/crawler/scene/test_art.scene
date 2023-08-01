@@ -105,7 +105,7 @@
         {
           "type": "Renderer",
           "materials": [
-            "crawler/texture/tile_blockout/tile_blockout.material"
+            "crawler/material/prototype/tile_blockout.material"
           ],
           "frameBuffer": "",
           "receivesShadows": true,
@@ -140,7 +140,7 @@
             {
               "type": "Renderer",
               "materials": [
-                "crawler/texture/tile_blockout/tile_blockout.material"
+                "crawler/material/prototype/tile_blockout.material"
               ],
               "frameBuffer": "",
               "receivesShadows": true,
@@ -176,7 +176,7 @@
             {
               "type": "Renderer",
               "materials": [
-                "crawler/texture/tile_blockout/tile_blockout.material"
+                "crawler/material/prototype/tile_blockout.material"
               ],
               "frameBuffer": "",
               "receivesShadows": true,
@@ -212,7 +212,7 @@
             {
               "type": "Renderer",
               "materials": [
-                "crawler/texture/tile_blockout/tile_blockout.material"
+                "crawler/material/prototype/tile_blockout.material"
               ],
               "frameBuffer": "",
               "receivesShadows": true,

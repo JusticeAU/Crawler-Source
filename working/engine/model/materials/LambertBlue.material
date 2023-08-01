@@ -1,7 +1,8 @@
 {
   "type": "material",
   "version": 1,
-  "shader": "engine/shader/lambertLitSingleLight",
+  "shader": "engine/shader/Lambert",
+  "shaderSkinned": "engine/shader/LambertSkinned",
   "Ka": {
     "x": 1.0,
     "y": 1.0,
@@ -25,5 +26,6 @@
   "normalMap": "_null",
   "metallicMap": "_null",
   "roughnessMap": "_null",
-  "aoMap": "_null"
+  "aoMap": "_null",
+  "emissiveMap": ""
 }

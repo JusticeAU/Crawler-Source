@@ -1,5 +1,5 @@
 {
-  "shader": "engine/shader/skinnedMeshLambert",
+  "shader": "engine/shader/LambertSkinned",
   "Ka": {
     "x": 1.0,
     "y": 1.0,
