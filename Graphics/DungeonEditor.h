@@ -41,6 +41,7 @@ namespace Crawl
 		void DrawGUIModeTileEditBlocker();
 		void DrawGUIModeTileEditChase();
 		void DrawGUIModeTileEditSwitcher();
+		void DrawGUIModeTileEditMirror();
 
 
 		void DrawGUIModeDungeonProperties();
@@ -135,6 +136,9 @@ namespace Crawl
 
 		DungeonEnemySwitcher* selectedSwitcherEnemy = nullptr;
 		bool selectedSwitcherEnemyWindowOpen = false;
+
+		DungeonMirror* selectedMirror = nullptr;
+		bool selectedMirrorWindowOpen = false;
 
 		bool unsavedChanges = false;
 		bool shouldConfirmSaveBeforeLoad = false;

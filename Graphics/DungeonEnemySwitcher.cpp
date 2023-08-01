@@ -3,6 +3,7 @@
 #include "DungeonTile.h"
 #include "Dungeon.h"
 #include "DungeonPlayer.h"
+#include "DungeonMirror.h"
 #include "Object.h"
 #include "LogUtils.h"
 
@@ -20,7 +21,8 @@ void Crawl::DungeonEnemySwitcher::Update()
 		return;
 
 	bool shouldContinue = true;
-	glm::ivec2 currentPosition = position + directions[facing];
+	FACING_INDEX direction = facing;
+	glm::ivec2 currentPosition = position + directions[direction];
 	while (shouldContinue)
 	{
 		DungeonTile* tile = dungeon->GetTile(currentPosition);
@@ -33,17 +35,32 @@ void Crawl::DungeonEnemySwitcher::Update()
 			{
 				if (dungeon->switchersMustBeLookedAt)
 				{
-					if (facing == facingIndexesReversed[dungeon->player->GetOrientation()])
+					if (direction == facingIndexesReversed[dungeon->player->GetOrientation()])
 						dungeon->player->SetShouldSwitchWith(this);
 				}
 				else
 					dungeon->player->SetShouldSwitchWith(this);
 			}
-			return;
+			else if (dungeon->GetMirrorAt(tile->position))
+			{
+				// this is occupied by a mirror and we should continue but process it below!
+				LogUtils::Log("There is a mirro here, testing for redirection");
+				DungeonMirror* mirror = dungeon->GetMirrorAt(tile->position);
+				int reflection = mirror->ShouldReflect(direction);
+				if (reflection < 0)
+					return;
+				else
+					direction = (FACING_INDEX)reflection;
+			}
+			else
+				return;
 		}
 
-		if (dungeon->HasLineOfSight(currentPosition, facing))
-			currentPosition += directions[facing];
+		if (dungeon->HasLineOfSight(currentPosition, direction))
+		{
+
+			currentPosition += directions[direction];
+		}
 		else
 			return;
 	}

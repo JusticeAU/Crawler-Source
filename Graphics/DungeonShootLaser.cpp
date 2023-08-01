@@ -1,5 +1,6 @@
 #include "DungeonShootLaser.h"
 #include "Dungeon.h"
+#include "DungeonMirror.h"
 #include "Object.h"
 #include "LogUtils.h"
 #include "ComponentRenderer.h"
@@ -31,6 +32,9 @@ void Crawl::DungeonShootLaser::Update()
 
 			if (tile->occupied)
 			{
+				if(dungeon->GetMirrorAt(tile->position))
+					return;
+
 				LogUtils::Log("Detected object in line of sight.");
 				if (firesImmediately)
 				{
@@ -87,23 +91,38 @@ void Crawl::DungeonShootLaser::Fire()
 	if (!firesProjectile) // full line of sight attack
 	{
 		LogUtils::Log("Shooter Fired a full line of sight attack");
+		
 		// Damage Line Of Sight
 		bool shouldContinue = true;
+		FACING_INDEX direction = facing;
 		ivec2 currentPosition = position;
 		while (shouldContinue)
 		{
 			DungeonTile* tile = dungeon->GetTile(currentPosition);
 			if (!tile)
 				break;
-			bool wasOccupied = tile->occupied;
 
-			dungeon->DamageAtPosition(currentPosition, this);
+			DungeonMirror* mirror = dungeon->GetMirrorAt(currentPosition);
+			if (mirror)
+			{
+				int reflection = mirror->ShouldReflect(direction);
+				if (reflection < 0)
+					break;
+				else
+					direction = (FACING_INDEX)reflection;
+			}
+			else
+			{
+				bool wasOccupied = tile->occupied;
 
-			if (wasOccupied)
-				break;
+				dungeon->DamageAtPosition(currentPosition, this);
 
-			if (dungeon->HasLineOfSight(currentPosition, facing))
-				currentPosition += directions[facing];
+				if (wasOccupied)
+					break;
+			}
+
+			if (dungeon->HasLineOfSight(currentPosition, direction))
+				currentPosition += directions[direction];
 			else
 				break;
 		}

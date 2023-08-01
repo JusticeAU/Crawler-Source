@@ -12,6 +12,7 @@
 #include "DungeonEnemyChase.h"
 #include "DungeonEnemySwitcher.h"
 #include "DungeonCheckpoint.h"
+#include "DungeonMirror.h"
 
 
 #include "Object.h"
@@ -436,6 +437,15 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		selectedHasBlock = true;
 		selectedTileOccupied = true;
 	}
+	ImGui::SameLine();
+	if (ImGui::Button("Mirror"))
+	{
+		MarkUnsavedChanges();
+		selectedMirror = dungeon->CreateMirror(selectedTile->position, NORTH_INDEX);
+		selectedMirrorWindowOpen = true;
+		selectedTileOccupied = true;
+	}
+
 	if (ImGui::Button("Transporter"))
 	{
 		MarkUnsavedChanges();
@@ -577,10 +587,15 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 			selectedHasBlock = false;
 		}
 	}
+	if (selectedMirror)
+	{
+		if (ImGui::Selectable("Mirror")) selectedMirrorWindowOpen = true;
+	}
 	ImGui::Unindent();
 	ImGui::PopID();
 
 	ImGui::PushID("EntityProperties");
+	
 	if (selectedDoorWindowOpen)
 		DrawGUIModeTileEditDoor();
 	if (selectedLeverWindowOpen)
@@ -599,6 +614,9 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		DrawGUIModeTileEditChase();
 	if (selectedSwitcherEnemyWindowOpen)
 		DrawGUIModeTileEditSwitcher();
+	if (selectedMirrorWindowOpen)
+		DrawGUIModeTileEditMirror();
+	
 	ImGui::PopID();
 }
 
@@ -1034,6 +1052,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditSwitcher()
 			dungeon->RemoveEnemySwitcher(selectedSwitcherEnemy);
 			selectedSwitcherEnemy = nullptr;
 			selectedSwitcherEnemyWindowOpen = false;
+			selectedTileOccupied = false;
 			RefreshSelectedTile();
 		}
 		if (ImGui::Button("Cancel"))
@@ -1042,6 +1061,52 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditSwitcher()
 		}
 		ImGui::EndPopup();
 	}
+}
+void Crawl::DungeonEditor::DrawGUIModeTileEditMirror()
+{
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 100 }, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Edit Mirror", &selectedMirrorWindowOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+
+	if (ImGui::BeginCombo("Spawn Direction", orientationNames[selectedMirror->facing].c_str()))
+	{
+		int oldOrientation = selectedMirror->facing;
+		for (int i = 0; i < 4; i++)
+			if (ImGui::Selectable(orientationNames[i].c_str()))
+			{
+				selectedMirror->facing = (FACING_INDEX)i;
+				if (selectedMirror->facing != oldOrientation)
+				{
+					MarkUnsavedChanges();
+					selectedMirror->object->SetLocalRotationZ(orientationEulers[i]);
+				}
+			}
+		ImGui::EndCombo();
+	}
+
+	if (ImGui::Button("Delete"))
+		ImGui::OpenPopup("Delete Mirror?");
+
+
+	if (ImGui::BeginPopupModal("Delete Mirror?"))
+	{
+		ImGui::Text("Are you sure you want to delete the Mirror?");
+		if (ImGui::Button("Yes"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemoveMirror(selectedMirror);
+			selectedMirror = nullptr;
+			selectedMirrorWindowOpen = false;
+			selectedTileOccupied = false;
+		}
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
+	ImGui::End();
 }
 void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 {
@@ -1222,6 +1287,13 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 			selectedTileLevers.push_back(dungeon->interactables[i]);
 	}
 
+	selectedTileShootLasers.clear();
+	for (int i = 0; i < dungeon->shootLasers.size(); i++)
+	{
+		if (dungeon->shootLasers[i]->position == selectedTile->position)
+			selectedTileShootLasers.push_back(dungeon->shootLasers[i]);
+	}
+
 	selectedActivatorPlate = nullptr;
 	for (int i = 0; i < dungeon->activatorPlates.size(); i++)
 	{
@@ -1296,13 +1368,15 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 		}
 	}
 
-	selectedTileShootLasers.clear();
-	for (int i = 0; i < dungeon->shootLasers.size(); i++)
+	selectedMirror = nullptr;
+	for (int i = 0; i < dungeon->mirrors.size(); i++)
 	{
-		if (dungeon->shootLasers[i]->position == selectedTile->position)
-			selectedTileShootLasers.push_back(dungeon->shootLasers[i]);
+		if (dungeon->mirrors[i]->position == selectedTile->position)
+		{
+			selectedMirror = dungeon->mirrors[i];
+			selectedTileOccupied = true;
+		}
 	}
-
 }
 
 int Crawl::DungeonEditor::GetNextAvailableLeverID()
@@ -1495,6 +1569,7 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedChaseEnemy = nullptr;
 	selectedSwitcherEnemy = nullptr;
 	selectedCheckpoint = nullptr;
+	selectedMirror = nullptr;
 
 	selectedDoorWindowOpen = false;
 	selectedLeverWindowOpen = false;
@@ -1505,4 +1580,5 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedChaseEnemyWindowOpen = false;
 	selectedSwitcherEnemyWindowOpen = false;
 	selectedCheckpointWindowOpen = false;
+	selectedMirrorWindowOpen = false;
 }

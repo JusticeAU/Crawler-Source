@@ -1,0 +1,118 @@
+{
+  "name": "mirror_prototype",
+  "transform": {
+    "position": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "rotation": {
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0
+    },
+    "scale": {
+      "x": 1.0,
+      "y": 1.0,
+      "z": 1.0
+    }
+  },
+  "components": null,
+  "children": [
+    {
+      "name": "Model",
+      "transform": {
+        "position": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 1.5
+        },
+        "rotation": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": -45.0
+        },
+        "scale": {
+          "x": 1.0,
+          "y": 1.0,
+          "z": 1.0
+        }
+      },
+      "components": null,
+      "children": [
+        {
+          "name": "Frame",
+          "transform": {
+            "position": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "scale": {
+              "x": 0.05000000074505806,
+              "y": 0.7699999809265137,
+              "z": 1.5
+            }
+          },
+          "components": [
+            {
+              "type": "Model",
+              "model": "_cube"
+            },
+            {
+              "type": "Renderer",
+              "materials": [
+                "engine/model/materials/LambertBlue.material"
+              ],
+              "frameBuffer": "",
+              "receivesShadows": true,
+              "castsShadows": true
+            }
+          ],
+          "children": null
+        },
+        {
+          "name": "Back",
+          "transform": {
+            "position": {
+              "x": 0.5,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "rotation": {
+              "x": 0.0,
+              "y": 0.0,
+              "z": 0.0
+            },
+            "scale": {
+              "x": 0.41999998688697815,
+              "y": 0.38999998569488525,
+              "z": 1.5
+            }
+          },
+          "components": [
+            {
+              "type": "Model",
+              "model": "_cube"
+            },
+            {
+              "type": "Renderer",
+              "materials": [
+                "engine/model/materials/LambertBlue.material"
+              ],
+              "frameBuffer": "",
+              "receivesShadows": true,
+              "castsShadows": true
+            }
+          ],
+          "children": null
+        }
+      ]
+    }
+  ]
+}

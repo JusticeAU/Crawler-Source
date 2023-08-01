@@ -15,6 +15,7 @@
 #include "DungeonEnemyChase.h"
 #include "DungeonEnemySwitcher.h"
 #include "DungeonCheckpoint.h"
+#include "DungeonMirror.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
@@ -380,6 +381,41 @@ bool Crawl::Dungeon::PlayerCanMove(glm::ivec2 fromPos, int directionIndex)
 		}
 	}
 
+	// for a Mirror..
+	if (playerCanPushMirror)
+	{
+		// needs to be a 'if mirror/block/thing can be pushed in direction check'
+		for (int i = 0; i < mirrors.size(); i++)
+		{
+			if (mirrors[i]->position == toPos)
+			{
+				LogUtils::Log("There is a mirror where we are trying to move");
+				// there is a mirror where we want to go to.
+				// can it be pushed?
+				DungeonTile* blockTo = GetTile(toPos + directions[directionIndex]);
+				if (blockTo)
+				{
+					LogUtils::Log("mirror has a tile behind it");
+					// check line of sight
+					if (!HasLineOfSight(toPos, directionIndex))
+						return false; // A door or something is blocking.
+
+					if (blockTo->occupied)
+					{
+						LogUtils::Log("the tile is occupied");
+						return false;
+					}
+					else
+					{
+						LogUtils::Log("There tile is not occupied, kicking it");
+						DoKick(fromPos, (FACING_INDEX)directionIndex);
+						return true;
+					}
+				}
+			}
+		}
+	}
+
 	// ...for general occupance (unpushable box, enemy, or other..)
 	if (toTile->occupied) return false;
 
@@ -674,6 +710,44 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		kickableChaser->positionWant = moveToPos;
 		kickableChaser->state = DungeonEnemyChase::STUN;
 		kickableChaser->object->SetLocalPosition(dungeonPosToObjectScale(kickableChaser->position));
+
+		return true;
+	}
+
+	// Kickable blockers
+	DungeonMirror* kickableMirror = nullptr;
+	for (auto& mirror : mirrors)
+	{
+		if (mirror->position == targetPosition)
+		{
+			kickableMirror = mirror;
+			break;
+		}
+	}
+
+	if (kickableMirror)
+	{
+		DungeonTile* kickTile = GetTile(targetPosition);
+
+		// see if the thing can move
+		ivec2 moveToPos = targetPosition + directions[direction];
+
+		if (!HasLineOfSight(targetPosition, direction))
+			return false;
+
+		// is there a tile?
+		DungeonTile* toTile = GetTile(moveToPos);
+		if (!toTile)
+			return false;
+		// is it occupied?
+		if (toTile->occupied)
+			return false; // We coudl do damage and shit here.
+
+		// kick it in that direction
+		kickTile->occupied = false;
+		toTile->occupied = true;
+		kickableMirror->position = moveToPos;
+		kickableMirror->object->SetLocalPosition(dungeonPosToObjectScale(kickableMirror->position));
 
 		return true;
 	}
@@ -1062,7 +1136,6 @@ Crawl::DungeonCheckpoint* Crawl::Dungeon::CreateCheckpoint(ivec2 position, FACIN
 
 void Crawl::Dungeon::RemoveCheckpoint(DungeonCheckpoint* checkpoint)
 {
-
 	for (int i = 0; i < checkpoints.size(); i++)
 	{
 		if (checkpoint == checkpoints[i])
@@ -1082,6 +1155,73 @@ Crawl::DungeonCheckpoint* Crawl::Dungeon::GetCheckpointAt(ivec2 position)
 	}
 
 	return nullptr;
+}
+
+Crawl::DungeonMirror* Crawl::Dungeon::CreateMirror(ivec2 position, FACING_INDEX direction)
+{
+	DungeonMirror* mirror = new DungeonMirror();
+	mirror->position = position;
+	mirror->facing = direction;
+	//mirror->dungeon = this;
+	mirror->object = Scene::CreateObject();
+	mirror->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/mirror.object"));
+	mirror->object->AddLocalPosition(dungeonPosToObjectScale(position));
+	mirror->object->SetLocalRotationZ(orientationEulers[direction]);
+	mirrors.push_back(mirror);
+
+	DungeonTile* tile = GetTile(position);
+	if (tile)
+	{
+		tile->occupied = true;
+	}
+	else
+		LogUtils::Log("WARNING - ATTEMPTING TO ADD MIRROR TO TILE THAT DOESN'T EXIST");
+
+	return mirror;
+}
+
+void Crawl::Dungeon::RemoveMirror(DungeonMirror* mirror)
+{
+	for (int i = 0; i < mirrors.size(); i++)
+	{
+		if (mirrors[i] == mirror)
+		{
+			delete mirror;
+			mirrors.erase(mirrors.begin() + i);
+
+			DungeonTile* tile = GetTile(mirror->position);
+			if (tile)
+			{
+				tile->occupied = true;
+			}
+			else
+				LogUtils::Log("WARNING - ATTEMPTING TO REMOVE MIRROR TO TILE THAT DOESN'T EXIST");
+			return;
+		}
+	}
+}
+
+Crawl::DungeonMirror* Crawl::Dungeon::GetMirrorAt(ivec2 position)
+{
+	for (int i = 0; i < mirrors.size(); i++)
+	{
+		if (mirrors[i]->position == position)
+			return mirrors[i];
+	}
+
+	return nullptr;
+}
+
+// direction should be a sign of a direction e.g. -1 or 1 to upadte the mirrors FACING_INDEX
+void Crawl::Dungeon::RotateMirror(DungeonMirror* mirror, int direction)
+{
+	mirror->facing = (FACING_INDEX)(mirror->facing + direction);
+	if (mirror->facing > 3)
+		mirror->facing = (FACING_INDEX)0;
+	else if (mirror->facing < 0)
+		mirror->facing = (FACING_INDEX)3;
+
+	mirror->object->SetLocalRotationZ(orientationEulers[(int)mirror->facing]);
 }
 
 void Crawl::Dungeon::Save(std::string filename)
@@ -1186,6 +1326,11 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 	for (auto& switcher : switchers)
 		switchers_json.push_back(*switcher);
 	dungeon_serialised["switchers"] = switchers_json;
+
+	ordered_json mirrors_json;
+	for (auto& mirror : mirrors)
+		mirrors_json.push_back(*mirror);
+	dungeon_serialised["mirrors"] = mirrors_json;
 
 	return dungeon_serialised;
 }
@@ -1332,6 +1477,13 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		DungeonEnemySwitcher* newSwitcher = CreateEnemySwitcher(switcher.position, switcher.facing);
 	}
 
+	auto& mirrors_json = serialised["mirrors"];
+	for (auto it = mirrors_json.begin(); it != mirrors_json.end(); it++)
+	{
+		DungeonMirror mirror = it.value().get<Crawl::DungeonMirror>();
+		DungeonMirror* newMirror = CreateMirror(mirror.position, mirror.facing);
+	}
+
 	BuildSceneFromDungeonLayout();
 }
 
@@ -1411,6 +1563,10 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 	for (int i = 0; i < switchers.size(); i++)
 		delete switchers[i];
 	switchers.clear();
+
+	for (int i = 0; i < mirrors.size(); i++)
+		delete mirrors[i];
+	mirrors.clear();
 }
 
 Object* Crawl::Dungeon::GetTileTemplate(int mask)

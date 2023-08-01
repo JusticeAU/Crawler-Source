@@ -158,6 +158,28 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 			if (!dungeon->playerTurnIsFree)
 				return true;
 		}
+
+		// Rotators
+
+		if (Input::Keyboard(GLFW_KEY_Z).Down())
+		{
+			DungeonMirror* mirror = dungeon->GetMirrorAt(position + directions[facing]);
+			if (mirror)
+			{
+				dungeon->RotateMirror(mirror, 1);
+				return true;
+			}
+		}
+		if (Input::Keyboard(GLFW_KEY_C).Down())
+		{
+			DungeonMirror* mirror = dungeon->GetMirrorAt(position + directions[facing]);
+			if (mirror)
+			{
+				dungeon->RotateMirror(mirror, -1);
+				return true;
+			}
+		}
+
 	}
 	else if (state == MOVING)
 	{

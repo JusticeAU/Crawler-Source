@@ -28,6 +28,7 @@ namespace Crawl
 	class DungeonEnemyChase;
 	class DungeonEnemySwitcher;
 	class DungeonCheckpoint;
+	class DungeonMirror;
 
 	struct Column
 	{
@@ -114,6 +115,11 @@ namespace Crawl
 		DungeonCheckpoint* CreateCheckpoint(ivec2 position, FACING_INDEX direction, bool activated = false);
 		void RemoveCheckpoint(DungeonCheckpoint* checkpoint);
 		DungeonCheckpoint* GetCheckpointAt(ivec2 position);
+
+		DungeonMirror* CreateMirror(ivec2 position, FACING_INDEX direction);
+		void RemoveMirror(DungeonMirror* mirror);
+		DungeonMirror* GetMirrorAt(ivec2 position);
+		void RotateMirror(DungeonMirror* mirror, int direction);
 	
 		void Save(std::string filename);
 		void Load(std::string filename);
@@ -161,6 +167,7 @@ namespace Crawl
 		bool playerTurnIsFree = true;
 		bool playerInteractIsFree = true;
 		bool switchersMustBeLookedAt = true;
+		bool playerCanPushMirror = true;
 
 		std::vector<DungeonInteractableLever*> interactables;
 		std::vector<DungeonDoor*> activatable;
@@ -180,6 +187,8 @@ namespace Crawl
 		std::vector<DungeonEnemySwitcher*> switchers;
 
 		std::vector<DungeonCheckpoint*> checkpoints;
+
+		std::vector<DungeonMirror*> mirrors;
 		
 		DungeonPlayer* player = nullptr;
 
