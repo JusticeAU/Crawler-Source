@@ -21,6 +21,17 @@ Crawl::ArtTester::ArtTester()
 {
 	s_instance = this;
 	UpdateStagingFolders();
+
+	model = (ComponentModel*)Scene::s_instance->objects[1]->GetComponent(Component_Model);
+	renderer = (ComponentRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_Renderer);
+
+	// Load existing model paths
+	string folder = "crawler/model/";
+	for (auto d : fs::recursive_directory_iterator(folder))
+	{
+		if (d.path().extension() == ".object")
+			models.push_back(d.path().generic_string());
+	}
 }
 
 void Crawl::ArtTester::Update(float delta)
@@ -49,7 +60,6 @@ void Crawl::ArtTester::Deactivate()
 void Crawl::ArtTester::DrawGUI()
 {
 	MaterialManager::DrawGUI();
-	
 	if (MaterialManager::MaterialSelected)
 	{
 		Material* selected = MaterialManager::MaterialSelected;
@@ -102,6 +112,9 @@ void Crawl::ArtTester::DrawGUI()
 			Scene::s_instance->objects[2]->SetLocalPosition({ 0, -playerViewDistance * DUNGEON_GRID_SCALE, 0 });
 		}
 	}
+
+	DrawModelSelector();
+
 	ImGui::Text("");
 	ImGui::Text("Rendering");
 	ImGui::Indent();
@@ -196,6 +209,37 @@ void Crawl::ArtTester::DrawGUIStaging()
 	ImGui::End();
 }
 
+void Crawl::ArtTester::DrawModelSelector()
+{
+	if (ImGui::BeginCombo("Load Existing Model", "Select"))
+	{
+		for (auto& path : models)
+		{
+			if (ImGui::Selectable(path.c_str(), false))
+			{
+				model->markedForDeletion = true;
+				renderer->markedForDeletion = true;
+				if(animator)
+					animator->markedForDeletion = true;
+				Object* o = model->GetComponentParentObject();
+				o->Update(0);
+				Scene::s_instance->objects[1]->LoadFromJSON(ReadJSONFromDisk(path));
+				Scene::s_instance->objects[1]->dirtyTransform = true;
+
+				RefreshComponentReferences();
+			}
+		}
+		ImGui::EndCombo();
+	}
+}
+
+void Crawl::ArtTester::RefreshComponentReferences()
+{
+	model = (ComponentModel*)Scene::s_instance->objects[1]->GetComponent(Component_Model);
+	renderer = (ComponentRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_Renderer);
+	animator = (ComponentAnimator*)Scene::s_instance->objects[1]->GetComponent(Component_Animator);
+}
+
 void Crawl::ArtTester::ExportStaging(bool preview)
 {
 	// Create staging folder
@@ -210,6 +254,19 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 	Object* object = Scene::s_instance->objects[1];
 	ordered_json objectJSON = *object;
 	objectJSON["name"] = stagedName;
+
+	// Reset the transform for this export
+	objectJSON["transform"]["position"]["x"] = 0.0f;
+	objectJSON["transform"]["position"]["y"] = 0.0f;
+	objectJSON["transform"]["position"]["z"] = 0.0f;
+
+	objectJSON["transform"]["rotation"]["x"] = 0.0f;
+	objectJSON["transform"]["rotation"]["y"] = 0.0f;
+	objectJSON["transform"]["rotation"]["z"] = 0.0f;
+
+	objectJSON["transform"]["scale"]["x"] = 1.0f;
+	objectJSON["transform"]["scale"]["y"] = 1.0f;
+	objectJSON["transform"]["scale"]["z"] = 1.0f;
 
 	// copy model if needed
 	string modelName = objectJSON["components"][0]["model"];
@@ -228,7 +285,7 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 	for (int i = 0; i < objectJSON["components"][1]["materials"].size(); i++)
 	{
 		string materialName = objectJSON["components"][1]["materials"][i];
-		if (materialName.substr(0, 7) != "crawler" && materialName.substr(0, 6) != "engine")
+		if (materialName.substr(0, 7) != "crawler" && materialName.substr(0, 6) != "engine" && materialName.substr(0, 4) != "NULL")
 		{
 			// Staged material, need to copy
 			Material savedMaterial = *MaterialManager::GetMaterial(materialName);

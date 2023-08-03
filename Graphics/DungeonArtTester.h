@@ -36,6 +36,9 @@ namespace Crawl
 
 		void DrawGUI();
 		void DrawGUIStaging();
+		void DrawModelSelector();
+		void RefreshComponentReferences();
+		
 		void ExportStaging(bool preview);
 		void UpdateStagingFolders();
 
@@ -77,6 +80,8 @@ namespace Crawl
 		vector<string> stagingModels;
 		vector<string> stagingMaterials;
 		vector<string> stagingTextures;
+
+		vector<string> models;
 	};
 
 	void ModelDropCallback(GLFWwindow* window, int count, const char** paths);

@@ -46,7 +46,7 @@ public:
 	void AnnounceChange();
 	virtual void OnParentChange() {};
 
-	const Object* GetComponentParentObject() { return componentParent; }
+	Object* GetComponentParentObject() { return componentParent; }
 
 	virtual Component* Clone(Object* parent) { return nullptr; }
 
