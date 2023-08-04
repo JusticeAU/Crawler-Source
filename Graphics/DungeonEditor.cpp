@@ -13,6 +13,7 @@
 #include "DungeonEnemySwitcher.h"
 #include "DungeonCheckpoint.h"
 #include "DungeonMirror.h"
+#include "DungeonEnemySlug.h"
 
 
 #include "Object.h"
@@ -22,8 +23,8 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 
-#include "ComponentModel.h";
-#include "ComponentRenderer.h";
+#include "ComponentModel.h"
+#include "ComponentRenderer.h"
 
 #include "LogUtils.h"
 
@@ -286,6 +287,11 @@ void Crawl::DungeonEditor::DrawGUIModeSelect()
 			editMode = Mode::DungeonProperties;
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 			ImGui::SetTooltip("Edit specific configuration items about this particular dungeon");
+
+		if (ImGui::Selectable(editModeNames[4].c_str()))
+			editMode = Mode::SlugPathEditor;
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("Build paths for the slugs");
 		ImGui::EndCombo();
 	}
 }
@@ -480,6 +486,14 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	}
 	if (maxChasers) ImGui::EndDisabled();
 	ImGui::SameLine();
+	if (ImGui::Button("Slug"))
+	{
+		MarkUnsavedChanges();
+		selectedSlugEnemy = dungeon->CreateSlug(selectedTile->position, NORTH_INDEX);
+		selectedSlugEnemyWindowOpen = true;
+		selectedTileOccupied = true;
+	}
+	ImGui::SameLine();
 	if (ImGui::Button("Switcher"))
 	{
 		MarkUnsavedChanges();
@@ -574,6 +588,10 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	{
 		if (ImGui::Selectable("Chaser")) selectedChaseEnemyWindowOpen = true;
 	}
+	if (selectedSlugEnemy)
+	{
+		if (ImGui::Selectable("Slug")) selectedSlugEnemyWindowOpen = true;
+	}
 	if (selectedSwitcherEnemy)
 	{
 		if (ImGui::Selectable("Switcher")) selectedSwitcherEnemyWindowOpen = true;
@@ -612,6 +630,9 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		DrawGUIModeTileEditBlocker();
 	if (selectedChaseEnemyWindowOpen)
 		DrawGUIModeTileEditChase();
+	if (selectedSlugEnemyWindowOpen)
+		DrawGUIModeTileEditSlug();
+
 	if (selectedSwitcherEnemyWindowOpen)
 		DrawGUIModeTileEditSwitcher();
 	if (selectedMirrorWindowOpen)
@@ -956,20 +977,20 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditBlocker()
 		ImGui::OpenPopup("delete_blocker_confirm");
 	if (ImGui::BeginPopupModal("delete_blocker_confirm"))
 	{
-		ImGui::Text("Are you sure you want to delete the Blocker?");
-		if (ImGui::Button("Yes"))
-		{
-			MarkUnsavedChanges();
-			dungeon->RemoveEnemyBlocker(selectedBlockerEnemy);
-			selectedBlockerEnemy = nullptr;
-			selectedBlockerEnemyWindowOpen = false;
-			RefreshSelectedTile();
-		}
-		if (ImGui::Button("Cancel"))
-		{
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::EndPopup();
+ImGui::Text("Are you sure you want to delete the Blocker?");
+if (ImGui::Button("Yes"))
+{
+	MarkUnsavedChanges();
+	dungeon->RemoveEnemyBlocker(selectedBlockerEnemy);
+	selectedBlockerEnemy = nullptr;
+	selectedBlockerEnemyWindowOpen = false;
+	RefreshSelectedTile();
+}
+if (ImGui::Button("Cancel"))
+{
+	ImGui::CloseCurrentPopup();
+}
+ImGui::EndPopup();
 	}
 
 	ImGui::End();
@@ -1028,7 +1049,86 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditChase()
 
 	ImGui::End();
 }
+void Crawl::DungeonEditor::DrawGUIModeTileEditSlug()
+{
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Edit Slug Enemy", &selectedSlugEnemyWindowOpen);
 
+	if (ImGui::BeginCombo("Look Direction", orientationNames[selectedSlugEnemy->facing].c_str()))
+	{
+		int oldOrientation = selectedSlugEnemy->facing;
+		for (int i = 0; i < 4; i++)
+			if (ImGui::Selectable(orientationNames[i].c_str()))
+			{
+				selectedSlugEnemy->facing = (FACING_INDEX)i;
+				if (selectedSlugEnemy->facing != oldOrientation)
+				{
+					MarkUnsavedChanges();
+					selectedSlugEnemy->object->SetLocalRotationZ(orientationEulers[i]);
+				}
+			}
+		ImGui::EndCombo();
+	}
+
+	// Commands
+	/*
+	ImGui::Text("Commands");
+	for (int i = 0; i < selectedSlugEnemy->commands.size(); i++)
+	{
+		ImGui::PushID(i);
+		// Combo box for command
+		if (ImGui::BeginCombo("", DungeonEnemySlug::commandStrings[(int)selectedSlugEnemy->commands[i]].c_str()))
+		{
+			for (int ii = 0; ii < 3; ii++)
+			{
+				if (ImGui::Selectable(DungeonEnemySlug::commandStrings[ii].c_str()))
+				{
+					MarkUnsavedChanges();
+					selectedSlugEnemy->commands[i] = (DungeonEnemySlug::Command)ii;
+				}
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Delete"))
+		{
+			selectedSlugEnemy->commands.erase(selectedSlugEnemy->commands.begin() + i);
+			i--;
+		}
+		// Delete button
+
+		ImGui::PopID();
+	}
+	// add button
+	if (ImGui::Button("Add Command"))
+	{
+		MarkUnsavedChanges();
+		selectedSlugEnemy->commands.emplace_back(DungeonEnemySlug::Command::WALK_FORWARD);
+	}
+	*/
+	if (ImGui::Button("Delete"))
+		ImGui::OpenPopup("delete_chaser_confirm");
+	if (ImGui::BeginPopupModal("delete_chaser_confirm"))
+	{
+		ImGui::Text("Are you sure you want to delete the Slug?");
+		if (ImGui::Button("Yes"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemoveSlug(selectedSlugEnemy);
+			selectedSlugEnemy = nullptr;
+			selectedSlugEnemyWindowOpen = false;
+			RefreshSelectedTile();
+		}
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
+	ImGui::End();
+}
 void Crawl::DungeonEditor::DrawGUIModeTileEditSwitcher()
 {
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
@@ -1165,6 +1265,8 @@ void Crawl::DungeonEditor::Update()
 		UpdateModeTileBrush();	break;
 	case Mode::TileEdit:
 		UpdateModeTileEdit();	break;
+	case Mode::SlugPathEditor:
+		UpdateModeSlugPathEdit();	break;
 	default:
 		break;
 	}
@@ -1272,6 +1374,33 @@ void Crawl::DungeonEditor::UpdateModeTileEdit()
 		}
 	}
 }
+void Crawl::DungeonEditor::UpdateModeSlugPathEdit()
+{
+	if (slugPathCursor == nullptr)
+	{
+		slugPathCursor = Scene::CreateObject();
+		slugPathCursor->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/slug_rail_nothing.object"));
+	}
+	
+	gridSelected = GetMousePosOnGrid();
+	slugPathCursor->SetLocalPosition(dungeonPosToObjectScale(gridSelected));
+
+	if (Input::Mouse(0).Down())
+	{
+		if (dungeon->CreateSlugPath(gridSelected))
+			MarkUnsavedChanges();
+	}
+
+	if (Input::Mouse(2).Down())
+	{
+		DungeonEnemySlugPath* toDelete = dungeon->GetSlugPath(gridSelected);
+		if (toDelete)
+		{
+			dungeon->RemoveSlugPath(toDelete);
+			MarkUnsavedChanges();
+		}
+	}
+}
 
 void Crawl::DungeonEditor::RefreshSelectedTile()
 {
@@ -1354,6 +1483,16 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 		if (dungeon->chasers[i]->position == selectedTile->position)
 		{
 			selectedChaseEnemy = dungeon->chasers[i];
+			selectedTileOccupied = true;
+		}
+	}
+
+	selectedSlugEnemy = nullptr;
+	for (int i = 0; i < dungeon->slugs.size(); i++)
+	{
+		if (dungeon->slugs[i]->position == selectedTile->position)
+		{
+			selectedSlugEnemy = dungeon->slugs[i];
 			selectedTileOccupied = true;
 		}
 	}
@@ -1580,6 +1719,7 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedSwitcherEnemy = nullptr;
 	selectedCheckpoint = nullptr;
 	selectedMirror = nullptr;
+	selectedSlugEnemy = nullptr;
 
 	selectedDoorWindowOpen = false;
 	selectedLeverWindowOpen = false;
@@ -1591,4 +1731,5 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedSwitcherEnemyWindowOpen = false;
 	selectedCheckpointWindowOpen = false;
 	selectedMirrorWindowOpen = false;
+	selectedSlugEnemyWindowOpen = false;
 }

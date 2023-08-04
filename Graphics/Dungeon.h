@@ -29,6 +29,8 @@ namespace Crawl
 	class DungeonEnemySwitcher;
 	class DungeonCheckpoint;
 	class DungeonMirror;
+	class DungeonEnemySlug;
+	class DungeonEnemySlugPath;
 
 	struct Column
 	{
@@ -121,6 +123,14 @@ namespace Crawl
 		void RemoveMirror(DungeonMirror* mirror);
 		DungeonMirror* GetMirrorAt(ivec2 position);
 		void RotateMirror(DungeonMirror* mirror, int direction);
+
+		DungeonEnemySlug* CreateSlug(ivec2 position, FACING_INDEX direction);
+		void RemoveSlug(DungeonEnemySlug* slug);
+		
+		DungeonEnemySlugPath* CreateSlugPath(ivec2 position);
+		void RemoveSlugPath(DungeonEnemySlugPath* slugPath);
+		bool IsSlugPath(ivec2 position);
+		DungeonEnemySlugPath* GetSlugPath(ivec2 position);
 	
 		void Save(std::string filename);
 		void Load(std::string filename);
@@ -186,6 +196,8 @@ namespace Crawl
 
 		std::vector<DungeonEnemyChase*> chasers;
 		std::vector<DungeonEnemySwitcher*> switchers;
+		std::vector<DungeonEnemySlug*> slugs;
+		std::vector<DungeonEnemySlugPath*> slugPaths;
 
 		std::vector<DungeonCheckpoint*> checkpoints;
 

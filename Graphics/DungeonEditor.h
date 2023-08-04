@@ -14,7 +14,8 @@ namespace Crawl
 			TileBrush,
 			TileEdit,
 			EntityEdit,
-			DungeonProperties
+			DungeonProperties,
+			SlugPathEditor
 		};
 
 		DungeonEditor();
@@ -42,6 +43,7 @@ namespace Crawl
 		void DrawGUIModeTileEditChase();
 		void DrawGUIModeTileEditSwitcher();
 		void DrawGUIModeTileEditMirror();
+		void DrawGUIModeTileEditSlug();
 
 
 		void DrawGUIModeDungeonProperties();
@@ -49,6 +51,7 @@ namespace Crawl
 		void Update();
 		void UpdateModeTileBrush();
 		void UpdateModeTileEdit();
+		void UpdateModeSlugPathEdit();
 
 		void RefreshSelectedTile();
 
@@ -91,7 +94,7 @@ namespace Crawl
 		const int WALL_VARIANT_COUNT = 3;
 
 		Mode editMode = Mode::TileBrush;
-		std::string editModeNames[4]{ "Tile Brush", "Tile Edit", "Entity Edit", "Dungeon Properties" };
+		std::string editModeNames[5]{ "Tile Brush", "Tile Edit", "Entity Edit", "Dungeon Properties", "Slug Path Editor"};
 
 		// Brush Mode
 		unsigned int brush_tileMask = 0;
@@ -137,11 +140,17 @@ namespace Crawl
 		DungeonEnemySwitcher* selectedSwitcherEnemy = nullptr;
 		bool selectedSwitcherEnemyWindowOpen = false;
 
+		DungeonEnemySlug* selectedSlugEnemy = nullptr;
+		bool selectedSlugEnemyWindowOpen = false;
+
 		DungeonMirror* selectedMirror = nullptr;
 		bool selectedMirrorWindowOpen = false;
 
 		bool unsavedChanges = false;
 		bool shouldConfirmSaveBeforeLoad = false;
+
+		// Slug Path Editor Mode
+		Object* slugPathCursor = nullptr;
 
 		//Path Finding Dev
 		ivec2 from = { 0,0 };

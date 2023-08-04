@@ -11,6 +11,7 @@
   "playerCanKickBox": false,
   "playerCanPushBox": false,
   "playerInteractIsFree": true,
+  "switchersMustBeLookedAt": true,
   "tiles": [
     {
       "position": {
@@ -10430,6 +10431,7 @@
   "doors": null,
   "plates": null,
   "transporters": null,
+  "checkpoints": null,
   "spikes": null,
   "blocks": null,
   "shootLasers": null,
@@ -10440,7 +10442,12 @@
         "x": 20,
         "y": 11
       },
-      "facing": 3
+      "facing": 3,
+      "state": 1
     }
-  ]
+  ],
+  "slugs": null,
+  "slugPaths": null,
+  "switchers": null,
+  "mirrors": null
 }

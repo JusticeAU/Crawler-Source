@@ -2,8 +2,8 @@
   "type": "dungeon",
   "version": 1,
   "defaultPosition": {
-    "x": 0,
-    "y": 0
+    "x": -4,
+    "y": -1
   },
   "defaultOrientation": 1,
   "playerTurnIsFree": false,
@@ -1312,15 +1312,20 @@
         "x": 8,
         "y": 1
       },
-      "facing": 3
+      "facing": 3,
+      "state": 1
     },
     {
       "position": {
         "x": 4,
         "y": 3
       },
-      "facing": 0
+      "facing": 0,
+      "state": 1
     }
   ],
-  "switchers": null
+  "slugs": null,
+  "slugPaths": null,
+  "switchers": null,
+  "mirrors": null
 }

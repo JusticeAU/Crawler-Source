@@ -16,6 +16,8 @@
 #include "DungeonEnemySwitcher.h"
 #include "DungeonCheckpoint.h"
 #include "DungeonMirror.h"
+#include "DungeonEnemySlug.h"
+#include "DungeonEnemySlugPath.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
@@ -156,6 +158,7 @@ bool Crawl::Dungeon::FindPath(ivec2 from, ivec2 to, int facing)
 						if (IsPushableBlockAtPosition(connectingTile->position)) shouldSkip = true;
 						if (IsEnemySwitcherAtPosition(connectingTile->position)) shouldSkip = true;
 						if (IsSpikesAtPosition(connectingTile->position)) shouldSkip = true;
+						if (IsSlugPath(connectingTile->position)) shouldSkip = true;
 
 						if (shouldSkip)
 						{
@@ -1149,6 +1152,9 @@ Crawl::DungeonCheckpoint* Crawl::Dungeon::CreateCheckpoint(ivec2 position, FACIN
 
 void Crawl::Dungeon::RemoveCheckpoint(DungeonCheckpoint* checkpoint)
 {
+	if (checkpoint == nullptr)
+		return;
+
 	for (int i = 0; i < checkpoints.size(); i++)
 	{
 		if (checkpoint == checkpoints[i])
@@ -1235,6 +1241,118 @@ void Crawl::Dungeon::RotateMirror(DungeonMirror* mirror, int direction)
 		mirror->facing = (FACING_INDEX)3;
 
 	mirror->object->SetLocalRotationZ(orientationEulers[(int)mirror->facing]);
+}
+
+Crawl::DungeonEnemySlug* Crawl::Dungeon::CreateSlug(ivec2 position, FACING_INDEX direction)
+{
+	DungeonEnemySlug* slug = new DungeonEnemySlug();
+	slug->position = position;
+	slug->facing = direction;
+	slug->dungeon = this;
+	slug->object = Scene::CreateObject();
+	slug->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/slug.object"));
+	slug->object->AddLocalPosition(dungeonPosToObjectScale(position));
+	slug->object->SetLocalRotationZ(orientationEulers[direction]);
+	slugs.push_back(slug);
+
+	DungeonTile* tile = GetTile(position);
+	if (tile)
+	{
+		tile->occupied = true;
+	}
+	else
+		LogUtils::Log("WARNING - ATTEMPTING TO ADD SLUG TO TILE THAT DOESN'T EXIST");
+
+	return slug;
+}
+
+void Crawl::Dungeon::RemoveSlug(DungeonEnemySlug* slug)
+{
+	for (int i = 0; i < slugs.size(); i++)
+	{
+		if (slugs[i] == slug)
+		{
+			delete slug;
+			slugs.erase(slugs.begin() + i);
+
+			DungeonTile* tile = GetTile(slug->position);
+			if (tile)
+			{
+				tile->occupied = true;
+			}
+			else
+				LogUtils::Log("WARNING - ATTEMPTING TO REMOVE SLUG TO TILE THAT DOESN'T EXIST");
+			return;
+		}
+	}
+}
+
+bool Crawl::Dungeon::IsSlugPath(ivec2 position)
+{
+	for (auto* path : slugPaths)
+	{
+		if (path->position == position)
+			return true;
+	}
+	return false;
+}
+
+Crawl::DungeonEnemySlugPath* Crawl::Dungeon::GetSlugPath(ivec2 position)
+{
+	for (auto* path : slugPaths)
+	{
+		if (path->position == position)
+			return path;
+	}
+	return nullptr;
+}
+
+Crawl::DungeonEnemySlugPath* Crawl::Dungeon::CreateSlugPath(ivec2 position)
+{	
+	if (IsSlugPath(position))
+		return nullptr;
+
+	DungeonEnemySlugPath* slugPath = new DungeonEnemySlugPath();
+	slugPath->position = position;
+	slugPath->dungeon = this;
+	slugPaths.push_back(slugPath);
+
+	// create neighbor references
+	slugPath->RefreshNeighbors();
+	slugPath->RefreshObject();
+	for (int i = 0; i < 4; i++)
+	{
+		if (slugPath->neighbors[i])
+		{
+			slugPath->neighbors[i]->neighbors[facingIndexesReversed[i]] = slugPath;
+			slugPath->neighbors[i]->RefreshObject();
+		}
+	}
+
+	return slugPath;
+}
+
+void Crawl::Dungeon::RemoveSlugPath(DungeonEnemySlugPath* slugPath)
+{
+	for (int i = 0; i < slugPaths.size(); i++)
+	{
+		if (slugPaths[i] == slugPath)
+		{
+			DungeonEnemySlugPath* toDelete = slugPaths[i];
+			slugPaths.erase(slugPaths.begin() + i); // remove from list
+			for (int j = 0; j < 4; j++)
+			{
+				if (toDelete->neighbors[j])
+				{
+					toDelete->neighbors[j]->neighbors[facingIndexesReversed[j]] = nullptr;
+					toDelete->neighbors[j]->RefreshObject();
+				}
+			}
+			delete toDelete;
+			return;
+		}
+	}
+	return;
 }
 
 void Crawl::Dungeon::Save(std::string filename)
@@ -1334,6 +1452,16 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 	for (auto& chaser : chasers)
 		chasers_json.push_back(*chaser);
 	dungeon_serialised["chasers"] = chasers_json;
+
+	ordered_json slugs_json;
+	for (auto& slug : slugs)
+		slugs_json.push_back(*slug);
+	dungeon_serialised["slugs"] = slugs_json;
+
+	ordered_json slugPaths_json;
+	for (auto& slugPath : slugPaths)
+		slugPaths_json.push_back(*slugPath);
+	dungeon_serialised["slugPaths"] = slugPaths_json;
 
 	ordered_json switchers_json;
 	for (auto& switcher : switchers)
@@ -1484,6 +1612,21 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		newChaser->state = chaser.state;
 	}
 
+	auto& slugs_json = serialised["slugs"];
+	for (auto it = slugs_json.begin(); it != slugs_json.end(); it++)
+	{
+		DungeonEnemySlug slug = it.value().get<Crawl::DungeonEnemySlug>();
+		DungeonEnemySlug* newSlug = CreateSlug(slug.position, slug.facing);
+		newSlug->commands = slug.commands;
+	}
+
+	auto& slugPaths_json = serialised["slugPaths"];
+	for (auto it = slugPaths_json.begin(); it != slugPaths_json.end(); it++)
+	{
+		DungeonEnemySlugPath slug = it.value().get<Crawl::DungeonEnemySlugPath>();
+		DungeonEnemySlugPath* newSlug = CreateSlugPath(slug.position);
+	}
+
 	auto& switchers_json = serialised["switchers"];
 	for (auto it = switchers_json.begin(); it != switchers_json.end(); it++)
 	{
@@ -1574,6 +1717,14 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 		delete chasers[i];
 	chasers.clear();
 
+	for (int i = 0; i < slugs.size(); i++)
+		delete slugs[i];
+	slugs.clear();
+
+	for (int i = 0; i < slugPaths.size(); i++)
+		delete slugPaths[i];
+	slugPaths.clear();
+
 	for (int i = 0; i < switchers.size(); i++)
 		delete switchers[i];
 	switchers.clear();
@@ -1627,6 +1778,10 @@ void Crawl::Dungeon::Update()
 			i--;
 		}
 	}
+
+	// slug logic
+	for (auto& slug : slugs)
+		slug->Update();
 
 	// Chaser Logic
 	for (auto& chaser : chasers)
@@ -1779,6 +1934,10 @@ void Crawl::Dungeon::UpdateVisuals(float delta)
 {
 	for (auto& chaser : chasers)
 		chaser->UpdateVisuals(delta);
+	
+	for (auto& slug : slugs)
+		slug->UpdateVisuals(delta);
+
 }
 
 unsigned int Crawl::Dungeon::GetAutoTileMask(ivec2 position)

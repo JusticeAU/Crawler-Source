@@ -101,4 +101,12 @@ namespace Crawl
 		if (newDirection == 4) newDirection = 0;
 		return (FACING_INDEX)newDirection;
 	}
+
+	static FACING_INDEX dungeonRotate(FACING_INDEX from, int direction)
+	{
+		FACING_INDEX newIndex = (FACING_INDEX)(from + direction);
+		if (newIndex < 0) newIndex = (FACING_INDEX)3;
+		if (newIndex > 3) newIndex = (FACING_INDEX)0;
+		return newIndex;
+	}
 }
