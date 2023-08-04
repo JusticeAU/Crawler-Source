@@ -62,17 +62,19 @@ void MaterialManager::DrawGUI()
 	for (auto m : s_instance->materials)
 	{
 		if (ImGui::Selectable(m.first.c_str()))
-			editingMaterial = m.second;
-	}
-	
-	if (editingMaterial)
-	{
-		ImGui::Begin("Material");
-		editingMaterial->DrawGUI();
-		ImGui::End();
+			MaterialSelected = m.second;
 	}
 
 	ImGui::End();
+}
+
+void MaterialManager::RemoveMaterial(string name)
+{
+	auto old = s_instance->materials.find(name);
+	if (old != s_instance->materials.end())
+	{
+		s_instance->materials.erase(old);
+	}
 }
 
 MaterialManager::MaterialManager()
@@ -107,4 +109,4 @@ void MaterialManager::LoadAllFiles(string folder)
 }
 
 MaterialManager* MaterialManager::s_instance = nullptr;
-Material* MaterialManager::editingMaterial = nullptr;
+Material* MaterialManager::MaterialSelected = nullptr;

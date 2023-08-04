@@ -6,7 +6,7 @@
 void Material::DrawGUI()
 {
 	// Shader
-	string shaderStr = "Shader";
+	string shaderStr = "Static Shader";
 	if (ImGui::BeginCombo(shaderStr.c_str(), shader != nullptr ? shader->name.c_str() : "NULL"))
 	{
 		for (auto s : *ShaderManager::ShaderPrograms())
@@ -22,6 +22,26 @@ void Material::DrawGUI()
 		ImGui::EndCombo();
 	}
 
+	shaderStr = "Skinned Shader";
+	if (ImGui::BeginCombo(shaderStr.c_str(), shaderSkinned != nullptr ? shaderSkinned->name.c_str() : "NULL"))
+	{
+		for (auto s : *ShaderManager::ShaderPrograms())
+		{
+			const bool is_selected = (s.second == shaderSkinned);
+			if (ImGui::Selectable(s.first.c_str(), is_selected))
+				shaderSkinned = ShaderManager::GetShaderProgram(s.first);
+
+			// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+			if (is_selected)
+				ImGui::SetItemDefaultFocus();
+		}
+		ImGui::EndCombo();
+	}
+
+	ImGui::Checkbox("Is PBR", &isPBR);
+
+	if (!isPBR)
+	{
 	// Ka
 	float KaGUI[3] = { Ka.r, Ka.g, Ka.b, };
 	if (ImGui::ColorEdit3("Ambient Colour", KaGUI))
@@ -99,105 +119,125 @@ void Material::DrawGUI()
 		}
 		ImGui::EndCombo();
 	}
-
-	// PBR Textures
-	// Albedo
-	string albedoMapStr = "PBR Albedo##";
-	if (ImGui::BeginCombo(albedoMapStr.c_str(), albedoMapName.c_str()))
-	{
-		for (auto t : *TextureManager::Textures())
-		{
-			const bool is_selected = (t.second == albedoMap);
-			if (ImGui::Selectable(t.first.c_str(), is_selected))
-			{
-				albedoMap = TextureManager::GetTexture(t.first);
-				albedoMapName = t.first;
-			}
-
-			// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-			if (is_selected)
-				ImGui::SetItemDefaultFocus();
-		}
-		ImGui::EndCombo();
 	}
-	// Normal
-	string normalMapStr = "PBR Normal##";
-	if (ImGui::BeginCombo(normalMapStr.c_str(), normalMapName.c_str()))
+	else
 	{
-		for (auto t : *TextureManager::Textures())
+		// PBR Textures
+		// Albedo
+		string albedoMapStr = "PBR Albedo##";
+		if (ImGui::BeginCombo(albedoMapStr.c_str(), albedoMapName.c_str()))
 		{
-			const bool is_selected = (t.second == normalMap);
-			if (ImGui::Selectable(t.first.c_str(), is_selected))
+			for (auto t : *TextureManager::Textures())
 			{
-				normalMap = TextureManager::GetTexture(t.first);
-				normalMapName = t.first;
-			}
+				const bool is_selected = (t.second == albedoMap);
+				if (ImGui::Selectable(t.first.c_str(), is_selected))
+				{
+					albedoMap = TextureManager::GetTexture(t.first);
+					albedoMapName = t.first;
+				}
 
-			// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-			if (is_selected)
-				ImGui::SetItemDefaultFocus();
+				// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
 		}
-		ImGui::EndCombo();
-	}
-	// Metallic
-	string metallicMapStr = "PBR Metallic##";
-	if (ImGui::BeginCombo(metallicMapStr.c_str(), metallicMapName.c_str()))
-	{
-		for (auto t : *TextureManager::Textures())
+		// Normal
+		string normalMapStr = "PBR Normal##";
+		if (ImGui::BeginCombo(normalMapStr.c_str(), normalMapName.c_str()))
 		{
-			const bool is_selected = (t.second == metallicMap);
-			if (ImGui::Selectable(t.first.c_str(), is_selected))
+			for (auto t : *TextureManager::Textures())
 			{
-				metallicMap = TextureManager::GetTexture(t.first);
-				metallicMapName = t.first;
-			}
+				const bool is_selected = (t.second == normalMap);
+				if (ImGui::Selectable(t.first.c_str(), is_selected))
+				{
+					normalMap = TextureManager::GetTexture(t.first);
+					normalMapName = t.first;
+				}
 
-			// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-			if (is_selected)
-				ImGui::SetItemDefaultFocus();
+				// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
 		}
-		ImGui::EndCombo();
-	}
-	// Roughness
-	string roughnessMapStr = "PBR Roughness##";
-	if (ImGui::BeginCombo(roughnessMapStr.c_str(), roughnessMapName.c_str()))
-	{
-		for (auto t : *TextureManager::Textures())
+		// Metallic
+		string metallicMapStr = "PBR Metallic##";
+		if (ImGui::BeginCombo(metallicMapStr.c_str(), metallicMapName.c_str()))
 		{
-			const bool is_selected = (t.second == roughnessMap);
-			if (ImGui::Selectable(t.first.c_str(), is_selected))
+			for (auto t : *TextureManager::Textures())
 			{
-				roughnessMap = TextureManager::GetTexture(t.first);
-				roughnessMapName = t.first;
-			}
+				const bool is_selected = (t.second == metallicMap);
+				if (ImGui::Selectable(t.first.c_str(), is_selected))
+				{
+					metallicMap = TextureManager::GetTexture(t.first);
+					metallicMapName = t.first;
+				}
 
-			// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-			if (is_selected)
-				ImGui::SetItemDefaultFocus();
+				// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
 		}
-		ImGui::EndCombo();
-	}
-	// Ambient Occlusion
-	string aoMapStr = "PBR Ambient Occlusion##";
-	if (ImGui::BeginCombo(aoMapStr.c_str(), aoMapName.c_str()))
-	{
-		for (auto t : *TextureManager::Textures())
+		// Roughness
+		string roughnessMapStr = "PBR Roughness##";
+		if (ImGui::BeginCombo(roughnessMapStr.c_str(), roughnessMapName.c_str()))
 		{
-			const bool is_selected = (t.second == aoMap);
-			if (ImGui::Selectable(t.first.c_str(), is_selected))
+			for (auto t : *TextureManager::Textures())
 			{
-				aoMap = TextureManager::GetTexture(t.first);
-				aoMapName = t.first;
+				const bool is_selected = (t.second == roughnessMap);
+				if (ImGui::Selectable(t.first.c_str(), is_selected))
+				{
+					roughnessMap = TextureManager::GetTexture(t.first);
+					roughnessMapName = t.first;
+				}
+
+				// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();
 			}
-
-			// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-			if (is_selected)
-				ImGui::SetItemDefaultFocus();
+			ImGui::EndCombo();
 		}
-		ImGui::EndCombo();
+		// Ambient Occlusion
+		string aoMapStr = "PBR AO##";
+		if (ImGui::BeginCombo(aoMapStr.c_str(), aoMapName.c_str()))
+		{
+			for (auto t : *TextureManager::Textures())
+			{
+				const bool is_selected = (t.second == aoMap);
+				if (ImGui::Selectable(t.first.c_str(), is_selected))
+				{
+					aoMap = TextureManager::GetTexture(t.first);
+					aoMapName = t.first;
+				}
+
+				// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
+		// Emissive
+		string emissiveMapStr = "PBR Emissive##";
+		if (ImGui::BeginCombo(emissiveMapStr.c_str(), emissiveMapName.c_str()))
+		{
+			for (auto t : *TextureManager::Textures())
+			{
+				const bool is_selected = (t.second == aoMap);
+				if (ImGui::Selectable(t.first.c_str(), is_selected))
+				{
+					emissiveMap = TextureManager::GetTexture(t.first);
+					emissiveMapName = t.first;
+				}
+
+				// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+				if (is_selected)
+					ImGui::SetItemDefaultFocus();
+			}
+			ImGui::EndCombo();
+		}
 	}
-
-
 	if (ImGui::Button("Save"))
 		SaveToFile();
 }
@@ -214,6 +254,9 @@ void to_json(nlohmann::ordered_json& j, const Material& mat)
 	j["version"] = 1;
 	
 	j["shader"] = mat.shader ? mat.shader->name : "NULL";
+	j["shaderSkinned"] = mat.shaderSkinned ? mat.shaderSkinned->name : "NULL";
+
+	j["isPBR"] = mat.isPBR;
 	
 	j["Ka"] = mat.Ka;
 	j["Kd"] = mat.Kd;
@@ -228,6 +271,8 @@ void to_json(nlohmann::ordered_json& j, const Material& mat)
 	j["metallicMap"] = mat.metallicMapName;
 	j["roughnessMap"] = mat.roughnessMapName;
 	j["aoMap"] = mat.aoMapName;
+	j["emissiveMap"] = mat.emissiveMapName;
+
 }
 void from_json(const nlohmann::ordered_json& j, Material& mat)
 {
@@ -235,6 +280,16 @@ void from_json(const nlohmann::ordered_json& j, Material& mat)
 	{
 		j.at("shader").get_to(mat.shaderName);
 		mat.shader = ShaderManager::GetShaderProgram(mat.shaderName);
+	}
+	if (j.contains("shaderSkinned"))
+	{
+		j.at("shaderSkinned").get_to(mat.shaderSkinnedName);
+		mat.shaderSkinned = ShaderManager::GetShaderProgram(mat.shaderSkinnedName);
+	}
+
+	if (j.contains("isPBR"))
+	{
+		j.at("isPBR").get_to(mat.isPBR);
 	}
 
 	if(j.contains("Ka"))
@@ -292,5 +347,11 @@ void from_json(const nlohmann::ordered_json& j, Material& mat)
 	{
 		j.at("aoMap").get_to(mat.aoMapName);
 		mat.aoMap = TextureManager::GetTexture(mat.aoMapName);
+	}
+
+	if (j.contains("emissiveMap"))
+	{
+		j.at("emissiveMap").get_to(mat.emissiveMapName);
+		mat.emissiveMap = TextureManager::GetTexture(mat.emissiveMapName);
 	}
 }

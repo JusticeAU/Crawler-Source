@@ -30,21 +30,27 @@ public:
 	Texture* mapBump = nullptr; // normal map
 	string mapBumpName = "";
 
-	ShaderProgram* shader	= nullptr;
-	string shaderName		= "";
+	ShaderProgram* shader = nullptr;
+	string shaderName = "";
+	ShaderProgram* shaderSkinned = nullptr;
+	string shaderSkinnedName = "";
+
 
 	// PBR
+	bool isPBR = false;
 	Texture* albedoMap		= nullptr;
 	Texture* normalMap		= nullptr;
 	Texture* metallicMap	= nullptr;
 	Texture* roughnessMap	= nullptr;
-	Texture* aoMap			= nullptr;
+	Texture* aoMap = nullptr;
+	Texture* emissiveMap = nullptr;
+
 	string albedoMapName	= "";
 	string normalMapName	= "";
 	string metallicMapName	= "";
 	string roughnessMapName = "";
 	string aoMapName		= "";
-
+	string emissiveMapName = "";
 };
 
 extern void to_json(nlohmann::ordered_json& j, const Material& mat);

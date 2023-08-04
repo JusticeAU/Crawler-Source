@@ -1,5 +1,5 @@
 {
-  "name": "wall2_blockout",
+  "name": "plane",
   "transform": {
     "position": {
       "x": 0.0,
@@ -20,12 +20,12 @@
   "components": [
     {
       "type": "Model",
-      "model": "crawler/model/tile_wall2_blockout/tile_wall2_blockout.fbx"
+      "model": "crawler/model/arttest_plane/arttest_plane.fbx"
     },
     {
       "type": "Renderer",
       "materials": [
-        "crawler/texture/tile_blockout/tile_blockout.material"
+        "engine/model/materials/LambertBlue.material"
       ],
       "frameBuffer": "",
       "receivesShadows": true,

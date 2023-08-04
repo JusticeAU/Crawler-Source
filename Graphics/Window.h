@@ -11,6 +11,7 @@ public:
 	static const glm::ivec2 GetViewPortSize() { return s_instance->m_viewPortSize; };
 	static void SetViewPortSize(glm::ivec2 size) { s_instance->m_viewPortSize = size; };
 	static void SetWindowTitle(std::string title);
+	static double GetTime() { return glfwGetTime(); }
 
 	static Window* Get() { return s_instance; };
 	

@@ -21,6 +21,9 @@ public:
 	static MaterialManager* s_instance;
 	static const map<string, Material*>* Materials() { return &s_instance->materials; }
 	static void PushMaterial(string name, Material* material) { s_instance->materials.emplace(name, material); }
+	static void RemoveMaterial(string name);
+
+	static Material* MaterialSelected;
 protected:
 	MaterialManager();
 	map<string, Material*> materials;
@@ -29,6 +32,5 @@ protected:
 
 	string fileExtension = ".material";
 	string newFileName = "models/model/modelname";
-	static Material* editingMaterial;
 };
 

@@ -1,7 +1,8 @@
 {
   "type": "material",
   "version": 1,
-  "shader": "engine/shader/lambertLitSingleLight",
+  "shader": "engine/shader/Lambert",
+  "shaderSkinned": "engine/shader/LambertSkinned",
   "Ka": {
     "x": 0.0,
     "y": 0.0,

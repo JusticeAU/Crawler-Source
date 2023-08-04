@@ -8,6 +8,10 @@
 #include "ShaderManager.h"
 #include "MaterialManager.h"
 
+#include "ComponentAnimator.h"
+#include "ComponentAnimationBlender.h"
+#include "UniformBuffer.h"
+
 #include "FrameBuffer.h"
 
 #include "Window.h"
@@ -54,6 +58,8 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 					ApplyMaterials();
 					BindMatricies(pv, position);
 					SetUniforms();
+					if(isAnimated)
+						BindBoneTransform();
 					model->DrawSubMesh(i);
 				}
 				break;
@@ -63,7 +69,7 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				if (componentParent->id == 0) // Don't waste ur time buddy.
 					break;
 
-				ShaderProgram* shader = ShaderManager::GetShaderProgram("engine/shader/picking");
+				ShaderProgram* shader = isAnimated ? ShaderManager::GetShaderProgram("engine/shader/skinnedPicking") : ShaderManager::GetShaderProgram("engine/shader/picking");
 				shader->Bind();
 				shader->SetUIntUniform("objectID", componentParent->id);
 				glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
@@ -74,6 +80,8 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				shader->SetVectorUniform("cameraPosition", position);
 				
 				shader->SetIntUniform("objectID", componentParent->id);
+				if (isAnimated)
+					BindBoneTransform();
 				DrawModel();
 				break;
 			}
@@ -82,7 +90,7 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				if (!castsShadows)
 					return;
 
-				ShaderProgram* shader = ShaderManager::GetShaderProgram("engine/shader/simpleDepthShader");
+				ShaderProgram* shader = isAnimated ? ShaderManager::GetShaderProgram("engine/shader/simpleDepthShaderSkinned") : ShaderManager::GetShaderProgram("engine/shader/simpleDepthShader");
 				shader->Bind();
 				glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
 
@@ -90,6 +98,8 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				shader->SetMatrixUniform("pvmMatrix", pvm);
 				shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
 				shader->SetVectorUniform("cameraPosition", position);
+				if (isAnimated)
+					BindBoneTransform();
 				DrawModel();
 				break;
 			}
@@ -152,18 +162,33 @@ void ComponentRenderer::DrawGUI()
 
 void ComponentRenderer::OnParentChange()
 {
+;
+
 	Component* component = componentParent->GetComponent(Component_Model);
 	if (component)
 	{
 		model = static_cast<ComponentModel*>(component)->model;
 		if (model != nullptr)
+		{
 			materialArray.resize(model->GetMeshCount());
+			isAnimated = (model->animations.size() > 0);
+		}
 	}
+
+	animator = nullptr;
+	animationBlender = nullptr;
+	component = nullptr;
+	component = componentParent->GetComponent(Component_Animator);
+	if (component)
+		animator = static_cast<ComponentAnimator*>(component);
 }
 
 void ComponentRenderer::BindShader()
 {
-	material->shader->Bind();
+	if(!isAnimated)
+		material->shader->Bind();
+	else
+		material->shaderSkinned->Bind();
 }
 
 void ComponentRenderer::BindMatricies(mat4 pv, vec3 position)
@@ -259,6 +284,37 @@ void ComponentRenderer::ApplyMaterials()
 void ComponentRenderer::DrawModel()
 {
 	model->DrawAllSubMeshes();
+}
+
+void ComponentRenderer::BindBoneTransform()
+{
+	if (material == nullptr || material->shader == nullptr)
+		return;
+
+	// skinned mesh rendering
+	//shader->SetIntUniform("selectedBone", animator->selectedBone); // dev testing really, used by boneWeights shader
+	if (animator != nullptr && animator->boneTransfomBuffer != nullptr)
+	{
+		// get the shader uniform block index and set binding point - we'll just hardcode 0 for this.
+		material->shader->SetUniformBlockIndex("boneTransformBuffer", 0);
+		// TODO - this could be done in shader initialisation if it detected that that shader had this uniform buffer
+		// It only needs to be done once per shader too, assuming im not reusing the index anywhere else (which im not)
+
+		// Now link the UniformBufferObject to the bind point in the GL context.
+		animator->boneTransfomBuffer->Bind(0);
+
+		animator->boneTransfomBuffer->SendData(animator->boneTransforms);
+
+		// Technically, all animated models can share the same boneTransformBuffer and just keep uploading their data in to it every frame.
+		// A dedicated animation system could provide a single global buffer for the shader for this.
+	}
+
+	if (animationBlender != nullptr && animationBlender->boneTransfomBuffer != nullptr)
+	{
+		material->shader->SetUniformBlockIndex("boneTransformBuffer", 0);
+		animationBlender->boneTransfomBuffer->Bind(0);
+		animationBlender->boneTransfomBuffer->SendData(animationBlender->boneTransforms);
+	}
 }
 
 Component* ComponentRenderer::Clone(Object* parent)

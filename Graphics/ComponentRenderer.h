@@ -10,6 +10,8 @@ class ShaderProgram;
 class Texture;
 class Material;
 class FrameBuffer;
+class ComponentAnimator;
+class ComponentAnimationBlender;
 
 using std::string;
 using std::vector;
@@ -31,6 +33,7 @@ public:
 	void SetUniforms();
 	void ApplyMaterials();
 	void DrawModel();
+	void BindBoneTransform();
 
 	Component* Clone(Object* parent);
 public:
@@ -38,6 +41,7 @@ public:
 	
 	vector<Material*> materialArray;
 	Material* material = nullptr;
+	bool isAnimated = false;
 
 	FrameBuffer* frameBuffer = nullptr;
 	string frameBufferName = "";
@@ -45,4 +49,8 @@ public:
 	bool castsShadows = true;
 	bool receivesShadows = true;
 	float shadowBias = 0.005f;
+
+protected:
+	ComponentAnimator* animator = nullptr;
+	ComponentAnimationBlender* animationBlender = nullptr;
 };
