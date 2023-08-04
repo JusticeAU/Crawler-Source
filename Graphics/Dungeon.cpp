@@ -30,8 +30,8 @@
 Crawl::Dungeon::Dungeon()
 {
 	wallVariantPaths.push_back("crawler/model/tile_wall1_blockout/tile_wall1_blockout.object");
-	wallVariantPaths.push_back("crawler/model/tile_wall2_blockout/tile_wall2_blockout.object");
-	wallVariantPaths.push_back("crawler/model/tile_wall3_blockout/tile_wall3_blockout.object");
+	//wallVariantPaths.push_back("crawler/model/tile_wall1_blockout/tile_wall1_blockout.object");
+	//wallVariantPaths.push_back("crawler/model/tile_wall1_blockout/tile_wall1_blockout.object");
 
 	InitialiseTileMap();
 }
@@ -261,7 +261,7 @@ void Crawl::Dungeon::CreateTileObject(DungeonTile* tile)
 		int variant = tile->wallVariants[i];
 		if (variant > 0)
 		{
-			ordered_json wall = ReadJSONFromDisk(wallVariantPaths[variant-1]);
+			ordered_json wall = ReadJSONFromDisk(wallVariantPaths[0]); // There are no variants right now.
 			obj->children[i + 1]->children[0]->LoadFromJSON(wall); // directionIndex+1 because this object has the floor tile in index 0;
 		}
 	}
