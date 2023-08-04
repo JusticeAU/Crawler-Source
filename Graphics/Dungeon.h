@@ -43,7 +43,7 @@ namespace Crawl
 		DungeonTile* AddTile(DungeonTile& dungeonTile);
 		void UpdateTileNeighbors(ivec2 position);
 
-		void FindPath(ivec2 from, ivec2 to, int facing = -1);
+		bool FindPath(ivec2 from, ivec2 to, int facing = -1);
 		static bool CostToPlayerGreaterThan(const DungeonTile* first, const DungeonTile* second)
 		{
 			if (first->cost > second->cost) return true;
@@ -90,6 +90,7 @@ namespace Crawl
 
 		DungeonSpikes* CreateSpikes(ivec2 position, bool disabled = false);
 		void RemoveSpikes(ivec2 position);
+		bool IsSpikesAtPosition(ivec2 position);
 
 		DungeonPushableBlock* CreatePushableBlock(ivec2 position);
 		void RemovePushableBlock(ivec2 position);

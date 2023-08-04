@@ -996,6 +996,16 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditChase()
 		ImGui::EndCombo();
 	}
 
+	bool startActive = selectedChaseEnemy->state == Crawl::DungeonEnemyChase::IDLE;
+	if (ImGui::Checkbox("Start Active", &startActive))
+	{
+		MarkUnsavedChanges();
+		if (startActive)
+			selectedChaseEnemy->state = Crawl::DungeonEnemyChase::IDLE;
+		else
+			selectedChaseEnemy->state = Crawl::DungeonEnemyChase::INACTIVE;
+	}
+
 	if (ImGui::Button("Delete"))
 		ImGui::OpenPopup("delete_chaser_confirm");
 	if (ImGui::BeginPopupModal("delete_chaser_confirm"))

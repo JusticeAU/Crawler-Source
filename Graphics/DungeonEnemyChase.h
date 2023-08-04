@@ -12,6 +12,7 @@ namespace Crawl
 	{
 	public:
 		enum STATE {
+			INACTIVE,
 			IDLE,
 			MOVING,
 			TURNING,
@@ -21,7 +22,7 @@ namespace Crawl
 		~DungeonEnemyChase();
 		glm::ivec2 position = {0,0};
 		FACING_INDEX facing = NORTH_INDEX;
-		STATE state = IDLE;
+		STATE state = INACTIVE;
 
 		// movement
 		glm::ivec2 positionWant = { 0,0 };
@@ -52,12 +53,14 @@ namespace Crawl
 
 	static void to_json(ordered_json& j, const DungeonEnemyChase& object)
 	{
-		j = { {"position", object.position }, {"facing", object.facing } };
+		j = { {"position", object.position }, {"facing", object.facing }, {"state", object.state } };
 	}
 
 	static void from_json(const ordered_json& j, DungeonEnemyChase& object)
 	{
 		j.at("position").get_to(object.position);
 		j.at("facing").get_to(object.facing);
+		if(j.contains("state"))
+			j.at("state").get_to(object.state);
 	}
 }

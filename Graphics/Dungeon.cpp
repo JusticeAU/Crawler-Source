@@ -81,7 +81,7 @@ void Crawl::Dungeon::UpdateTileNeighbors(ivec2 atPosition)
 	}
 }
 
-void Crawl::Dungeon::FindPath(ivec2 from, ivec2 to, int facing)
+bool Crawl::Dungeon::FindPath(ivec2 from, ivec2 to, int facing)
 {
 	bool turningIsFree = true;
 	if (facing != -1)
@@ -100,6 +100,7 @@ void Crawl::Dungeon::FindPath(ivec2 from, ivec2 to, int facing)
 			tile.second.openListed = false;
 			tile.second.closedListed = false;
 			tile.second.fromDestination = nullptr;
+			tile.second.toDestination = nullptr;
 			tile.second.enterDirection = -1;
 		}
 	}
@@ -108,14 +109,14 @@ void Crawl::Dungeon::FindPath(ivec2 from, ivec2 to, int facing)
 	if (fromTile == nullptr)
 	{
 		LogUtils::Log("FindPath: unable to find start tile");
-		return;
+		return false;
 	}
 
 	DungeonTile* toTile = GetTile(to);
 	if (toTile == nullptr)
 	{
 		LogUtils::Log("FindPath: destination not a valid tile");
-		return;
+		return false;
 	}
 
 	vector<DungeonTile*> openList;
@@ -154,6 +155,7 @@ void Crawl::Dungeon::FindPath(ivec2 from, ivec2 to, int facing)
 						if (IsEnemyBlockerAtPosition(connectingTile->position)) shouldSkip = true;
 						if (IsPushableBlockAtPosition(connectingTile->position)) shouldSkip = true;
 						if (IsEnemySwitcherAtPosition(connectingTile->position)) shouldSkip = true;
+						if (IsSpikesAtPosition(connectingTile->position)) shouldSkip = true;
 
 						if (shouldSkip)
 						{
@@ -193,7 +195,7 @@ void Crawl::Dungeon::FindPath(ivec2 from, ivec2 to, int facing)
 	if (currentTile->fromDestination == nullptr)
 	{
 		LogUtils::Log("FindPath: Unable to find path to destination");
-		return;
+		return false;
 	}
 
 	goodPath.push_back(currentTile);
@@ -206,6 +208,7 @@ void Crawl::Dungeon::FindPath(ivec2 from, ivec2 to, int facing)
 	}
 	/*LogUtils::Log(std::to_string(glfwGetTime()));
 	LogUtils::Log("FindPath: Done.");*/
+	return true;
 
 }
 
@@ -870,6 +873,16 @@ void Crawl::Dungeon::RemoveSpikes(ivec2 position)
 	}
 }
 
+bool Crawl::Dungeon::IsSpikesAtPosition(ivec2 position)
+{
+	for (int i = 0; i < spikesPlates.size(); i++)
+	{
+		if (spikesPlates[i]->position == position) return true;
+	}
+
+	return false;
+}
+
 Crawl::DungeonPushableBlock* Crawl::Dungeon::CreatePushableBlock(ivec2 position)
 {
 	DungeonPushableBlock* pushable = new DungeonPushableBlock();
@@ -1468,6 +1481,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	{
 		DungeonEnemyChase chaser = it.value().get<Crawl::DungeonEnemyChase>();
 		DungeonEnemyChase* newChaser = CreateEnemyChase(chaser.position, chaser.facing);
+		newChaser->state = chaser.state;
 	}
 
 	auto& switchers_json = serialised["switchers"];

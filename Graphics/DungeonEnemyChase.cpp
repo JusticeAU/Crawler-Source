@@ -4,6 +4,7 @@
 #include "DungeonPlayer.h"
 #include "DungeonHelpers.h"
 #include "MathUtils.h"
+#include "LogUtils.h"	
 
 Crawl::DungeonEnemyChase::~DungeonEnemyChase()
 {
@@ -23,36 +24,76 @@ void Crawl::DungeonEnemyChase::Update()
 		state = IDLE;
 		return;
 	}
-
-	// calculate path to player
-	dungeon->FindPath(position, dungeon->player->GetPosition(), facing);
-	
-	// get intended tile to move to
-	DungeonTile* myTile = dungeon->GetTile(position);
-	if (!myTile)
-		return;
-	// if tile is in direction we're facing, move to it
-	if (facing == myTile->toDestination->enterDirection)
+	if (state == INACTIVE)
 	{
-		positionWant = myTile->toDestination->position;
-		
-		// We are facing the direction we want to go.
-		// check if a door is blocking us.
-		if (dungeon->IsDoorBlocking(myTile, facing))
-		{
-			positionWant = position;
+		// check that player is in line of sight
+		LogUtils::Log("Chaser is checking line of sight");
+		if (!dungeon->HasLineOfSight(position, facing))
 			return;
-		}
 
+		bool shouldContinue = true;
+		FACING_INDEX direction = facing;
+		glm::ivec2 currentPosition = position + directions[direction];
+		while (shouldContinue)
+		{
+			DungeonTile* tile = dungeon->GetTile(currentPosition);
+			if (!tile)
+				return;
+
+			if (tile->occupied)
+			{
+				if (dungeon->player->GetPosition() == tile->position) // player is here - activate!
+				{
+					LogUtils::Log("Chaser saw player - activating.");
+					state = IDLE;
+				}
+				else
+					return;
+			}
+
+			if (dungeon->HasLineOfSight(currentPosition, direction))
+				currentPosition += directions[direction];
+			else
+				return;
+		}
 	}
 	else
 	{
-		facing = dungeonRotateTowards(facing, (FACING_INDEX)myTile->toDestination->enterDirection);
-		state = TURNING;
-		targetTurn = orientationEulers[facing];
-		turnCurrent = -0.0f;
+		// calculate path to player
+		bool canPath = dungeon->FindPath(position, dungeon->player->GetPosition(), facing);
+
+		if (!canPath)
+		{
+			LogUtils::Log("Lost player. Doing nothing.");
+			return;
+		}
+		// get intended tile to move to
+		DungeonTile* myTile = dungeon->GetTile(position);
+		if (!myTile)
+			return;
+		// if tile is in direction we're facing, move to it
+		if (facing == myTile->toDestination->enterDirection)
+		{
+			positionWant = myTile->toDestination->position;
+
+			// We are facing the direction we want to go.
+			// check if a door is blocking us.
+			if (dungeon->IsDoorBlocking(myTile, facing))
+			{
+				positionWant = position;
+				return;
+			}
+
+		}
+		else
+		{
+			facing = dungeonRotateTowards(facing, (FACING_INDEX)myTile->toDestination->enterDirection);
+			state = TURNING;
+			targetTurn = orientationEulers[facing];
+			turnCurrent = -0.0f;
+		}
+		// else turn to face it
 	}
-	// else turn to face it
 }
 
 void Crawl::DungeonEnemyChase::ExecuteMove()
