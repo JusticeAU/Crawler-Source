@@ -10,9 +10,26 @@ namespace Crawl
 	class DungeonPushableBlock
 	{
 	public:
+		enum STATE
+		{
+			IDLE,
+			MOVING
+		};
 		~DungeonPushableBlock();
 		ivec2 position;
+		STATE state = IDLE;
+
+		bool isDead = false;
+		
 		Object* object;
+
+		// visuals
+		float moveSpeed = 0.15f;
+		float moveCurrent = 0.0f;
+		glm::vec3 oldPosition;
+		glm::vec3 targetPosition;
+
+		void UpdateVisuals(float delta);
 	private:
 	};
 

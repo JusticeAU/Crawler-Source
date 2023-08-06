@@ -1245,7 +1245,7 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 	if (ImGui::Checkbox("Player can Knife", &dungeon->playerHasKnife))
 		MarkUnsavedChanges();
 
-	if (ImGui::Checkbox("Player can Kick Box ", &dungeon->playerCanKickBox))
+	if (ImGui::Checkbox("Player can Kick ", &dungeon->playerCanKickBox))
 		MarkUnsavedChanges();
 
 	if (ImGui::Checkbox("Player Can Push Box", &dungeon->playerCanPushBox))

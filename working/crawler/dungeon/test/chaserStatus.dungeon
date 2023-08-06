@@ -8,7 +8,7 @@
   "defaultOrientation": 1,
   "playerTurnIsFree": true,
   "playerHasKnife": false,
-  "playerCanKickBox": false,
+  "playerCanKickBox": true,
   "playerCanPushBox": false,
   "playerInteractIsFree": true,
   "switchersMustBeLookedAt": true,
@@ -665,6 +665,8 @@
       "state": 1
     }
   ],
+  "slugs": null,
+  "slugPaths": null,
   "switchers": null,
   "mirrors": null
 }

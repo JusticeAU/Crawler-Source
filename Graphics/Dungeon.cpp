@@ -562,7 +562,7 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 	{
 		if (pushableBlocks[i]->position == position)
 		{
-			RemovePushableBlock(position);
+			pushableBlocks[i]->isDead = true;
 			break;
 		}
 	}
@@ -586,7 +586,7 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 			if (dealer == chasers[i]) // THIS IS PROBABLY SUPER DODGEY MAYBE I SHOULD CHECK WITH FINN :D
 				continue;
 			didDamage = true;
-			RemoveEnemyChase(chasers[i]);
+			chasers[i]->isDead = true;
 			break;
 		}
 	}
@@ -637,8 +637,12 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		// kick it in that direction
 		kickTile->occupied = false;
 		toTile->occupied = true;
+		pushable->oldPosition = dungeonPosToObjectScale(pushable->position);
 		pushable->position = moveToPos;
-		pushable->object->AddLocalPosition({ directions[direction].x * DUNGEON_GRID_SCALE, directions[direction].y * DUNGEON_GRID_SCALE, 0 });
+		pushable->state = Crawl::DungeonPushableBlock::MOVING;
+		pushable->targetPosition = dungeonPosToObjectScale(moveToPos);
+		pushable->moveCurrent = 0.0f;
+		//pushable->object->AddLocalPosition({ directions[direction].x * DUNGEON_GRID_SCALE, directions[direction].y * DUNGEON_GRID_SCALE, 0 });
 		return true;
 	}
 
@@ -712,10 +716,13 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		// kick it in that direction
 		kickTile->occupied = false;
 		toTile->occupied = true;
+		kickableChaser->state = DungeonEnemyChase::STUN;
+		kickableChaser->stateVisual = DungeonEnemyChase::KICKED;
+		kickableChaser->moveCurrent = 0.0f;
+		kickableChaser->oldPosition = dungeonPosToObjectScale(kickableChaser->position);
+		kickableChaser->targetPosition = dungeonPosToObjectScale(moveToPos);
 		kickableChaser->position = moveToPos;
 		kickableChaser->positionWant = moveToPos;
-		kickableChaser->state = DungeonEnemyChase::STUN;
-		kickableChaser->object->SetLocalPosition(dungeonPosToObjectScale(kickableChaser->position));
 
 		return true;
 	}
@@ -892,7 +899,7 @@ Crawl::DungeonPushableBlock* Crawl::Dungeon::CreatePushableBlock(ivec2 position)
 	pushable->position = position;
 	pushable->object = Scene::CreateObject();
 	pushable->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/pushable.object"));
-	pushable->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
+	pushable->object->SetLocalPosition(dungeonPosToObjectScale(position));
 	pushableBlocks.push_back(pushable);
 
 	// set tile its in to be occupied.
@@ -1805,7 +1812,7 @@ void Crawl::Dungeon::Update()
 						{
 							chasers[a]->oldPosition = chasers[a]->object->localPosition;
 							chasers[a]->targetPosition = dungeonPosToObjectScale(chasers[a]->positionWant);
-							chasers[a]->state = DungeonEnemyChase::BOUNCING;
+							chasers[a]->stateVisual = DungeonEnemyChase::BOUNCING;
 							chasers[a]->positionWant = chasers[a]->position;
 							chasers[a]->bounceCurrent = 0.0f;
 						}
@@ -1814,7 +1821,7 @@ void Crawl::Dungeon::Update()
 						{
 							chasers[b]->oldPosition = chasers[b]->object->localPosition;
 							chasers[b]->targetPosition = dungeonPosToObjectScale(chasers[b]->positionWant);
-							chasers[b]->state = DungeonEnemyChase::BOUNCING;
+							chasers[b]->stateVisual = DungeonEnemyChase::BOUNCING;
 							chasers[b]->positionWant = chasers[b]->position;
 							chasers[b]->bounceCurrent = 0.0f;
 						}
@@ -1865,8 +1872,7 @@ void Crawl::Dungeon::Update()
 			if (pushableBlocks[i]->position == spikes->position)
 			{
 				spikes->Disable();
-				delete pushableBlocks[i];
-				pushableBlocks.erase(pushableBlocks.begin() + i);
+				pushableBlocks[i]->isDead = true;
 				break;
 			}
 		}
@@ -1932,11 +1938,30 @@ void Crawl::Dungeon::Update()
 
 void Crawl::Dungeon::UpdateVisuals(float delta)
 {
-	for (auto& chaser : chasers)
-		chaser->UpdateVisuals(delta);
+	for (int i = 0; i < chasers.size(); i++)
+	{
+		chasers[i]->UpdateVisuals(delta);
+		{
+			if (chasers[i]->isDead && chasers[i]->stateVisual == Crawl::DungeonEnemyChase::IDLE)
+			{
+				RemoveEnemyChase(chasers[i]);
+				i--;
+			}
+		}
+	}
 	
 	for (auto& slug : slugs)
 		slug->UpdateVisuals(delta);
+
+	for (int i = 0; i < pushableBlocks.size(); i++)
+	{
+		pushableBlocks[i]->UpdateVisuals(delta);
+		if (pushableBlocks[i]->isDead && pushableBlocks[i]->state == Crawl::DungeonPushableBlock::IDLE)
+		{
+			RemovePushableBlock(pushableBlocks[i]->position);
+			i--;
+		}
+	}
 
 }
 

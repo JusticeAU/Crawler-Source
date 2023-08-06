@@ -14,11 +14,6 @@ Crawl::DungeonEnemyChase::~DungeonEnemyChase()
 
 void Crawl::DungeonEnemyChase::Update()
 {
-	object->SetLocalPosition(dungeonPosToObjectScale(position));
-	oldPosition = dungeonPosToObjectScale(position);
-	object->SetLocalRotationZ(orientationEulers[facing]);
-	oldTurn = orientationEulers[facing];
-
 	if (state == STUN)
 	{
 		state = IDLE;
@@ -59,6 +54,12 @@ void Crawl::DungeonEnemyChase::Update()
 	}
 	else
 	{
+		stateVisual = IDLE;
+		object->SetLocalPosition(dungeonPosToObjectScale(position));
+		oldPosition = dungeonPosToObjectScale(position);
+		object->SetLocalRotationZ(orientationEulers[facing]);
+		oldTurn = orientationEulers[facing];
+
 		// calculate path to player
 		bool canPath = dungeon->FindPath(position, dungeon->player->GetPosition(), facing);
 
@@ -88,9 +89,9 @@ void Crawl::DungeonEnemyChase::Update()
 		else
 		{
 			facing = dungeonRotateTowards(facing, (FACING_INDEX)myTile->toDestination->enterDirection);
-			state = TURNING;
+			stateVisual = TURNING;
 			targetTurn = orientationEulers[facing];
-			turnCurrent = -0.0f;
+			turnCurrent = 0.0f;
 		}
 		// else turn to face it
 	}
@@ -100,10 +101,11 @@ void Crawl::DungeonEnemyChase::ExecuteMove()
 {
 	DungeonTile* myTile = dungeon->GetTile(position);
 	myTile->occupied = false;
+	oldPosition = dungeonPosToObjectScale(position);
 	position = positionWant;
 	myTile = dungeon->GetTile(position);
 	myTile->occupied = true;
-	state = MOVING;
+	stateVisual = MOVING;
 	targetPosition = dungeonPosToObjectScale(position);
 	moveCurrent = -0.0f;
 }
@@ -115,7 +117,7 @@ void Crawl::DungeonEnemyChase::ExecuteDamage()
 
 void Crawl::DungeonEnemyChase::UpdateVisuals(float delta)
 {
-	switch (state)
+	switch (stateVisual)
 	{
 	case IDLE:
 		break;
@@ -126,7 +128,7 @@ void Crawl::DungeonEnemyChase::UpdateVisuals(float delta)
 		if (turnCurrent > turnSpeed)
 		{
 			object->SetLocalRotationZ(targetTurn);
-			state = IDLE;
+			stateVisual = IDLE;
 		}
 		else
 			object->SetLocalRotationZ(MathUtils::LerpDegrees(oldTurn, targetTurn, t));
@@ -139,7 +141,20 @@ void Crawl::DungeonEnemyChase::UpdateVisuals(float delta)
 		if (moveCurrent > moveSpeed)
 		{
 			object->SetLocalPosition(targetPosition);
-			state = IDLE;
+			stateVisual = IDLE;
+		}
+		else
+			object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, t));
+		break;
+	}
+	case KICKED:
+	{
+		moveCurrent += delta;
+		float t = MathUtils::InverseLerp(0, kickedSpeed, glm::max(0.0f, moveCurrent));
+		if (moveCurrent > kickedSpeed)
+		{
+			object->SetLocalPosition(targetPosition);
+			stateVisual = IDLE;
 		}
 		else
 			object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, t));
@@ -152,7 +167,7 @@ void Crawl::DungeonEnemyChase::UpdateVisuals(float delta)
 		if (bounceCurrent > bounceSpeed)
 		{
 			object->SetLocalPosition(oldPosition);
-			state = IDLE;
+			stateVisual = IDLE;
 		}
 		else
 		{

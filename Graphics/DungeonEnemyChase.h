@@ -17,12 +17,18 @@ namespace Crawl
 			MOVING,
 			TURNING,
 			BOUNCING,
-			STUN
+			STUN,
+			KICKED
 		};
 		~DungeonEnemyChase();
 		glm::ivec2 position = {0,0};
 		FACING_INDEX facing = NORTH_INDEX;
+		
+		bool isDead = false;
+
+		
 		STATE state = INACTIVE;
+		STATE stateVisual = IDLE;
 
 		// movement
 		glm::ivec2 positionWant = { 0,0 };
@@ -37,7 +43,6 @@ namespace Crawl
 		Object* object = nullptr;
 		Dungeon* dungeon = nullptr;
 
-
 		// visuals
 		float moveSpeed = 0.25f;
 		float moveCurrent = 0.0f;
@@ -49,6 +54,7 @@ namespace Crawl
 		float targetTurn;
 		float bounceSpeed = 0.5;
 		float bounceCurrent = 0.0f;
+		float kickedSpeed = 0.15f;
 	};
 
 	static void to_json(ordered_json& j, const DungeonEnemyChase& object)
