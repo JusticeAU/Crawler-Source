@@ -227,6 +227,8 @@ void Crawl::ArtTester::DrawModelSelector()
 				Scene::s_instance->objects[1]->dirtyTransform = true;
 
 				RefreshComponentReferences();
+				if(animator) // If there is an animator, force it to update so that there's a 'current' animation created.
+					animator->Update(0);
 			}
 		}
 		ImGui::EndCombo();
@@ -242,13 +244,11 @@ void Crawl::ArtTester::RefreshComponentReferences()
 
 void Crawl::ArtTester::ExportStaging(bool preview)
 {
-	// Create staging folder
-	if (preview)
-	{
-		stagingModels.clear();
-		stagingMaterials.clear();
-		stagingTextures.clear();
-	}
+	// Clear the staging data.
+	stagingModels.clear();
+	stagingMaterials.clear();
+	stagingTextures.clear();
+
 
 	// Create Object JSON
 	Object* object = Scene::s_instance->objects[1];
@@ -272,9 +272,8 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 	string modelName = objectJSON["components"][0]["model"];
 	if (modelName.substr(0, 1) != "_" && modelName.substr(0, 7) != "crawler" && modelName.substr(0, 6) != "engine")
 	{
-		if (preview)
-			stagingModels.push_back(modelPath + stagedName + ".fbx");
-		else
+		stagingModels.push_back(modelPath + stagedName + ".fbx");
+		if(!preview)
 		{
 			fs::copy_file(modelName, modelPath + stagedName + ".fbx", fs::copy_options::overwrite_existing);
 			objectJSON["components"][0]["model"] = modelPath + stagedName + ".fbx";
@@ -303,9 +302,8 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 			// updates names of each texture as required
 			if (savedMaterial.albedoMap != nullptr && savedMaterial.albedoMapName.substr(0, 7) != "crawler" && savedMaterial.albedoMapName.substr(0, 6) != "engine")
 			{
-				if (preview)
-					stagingTextures.push_back(texturePath + newMaterialName + "_albedo.tga");
-				else
+				stagingTextures.push_back(texturePath + newMaterialName + "_albedo.tga");
+				if(!preview)
 				{
 					fs::copy_file(savedMaterial.albedoMapName, texturePath + stagedName + "_" + savedMaterial.name + "_albedo.tga", fs::copy_options::overwrite_existing);
 					savedMaterial.albedoMapName = texturePath + newMaterialName + "_albedo.tga";
@@ -314,9 +312,8 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 
 			if (savedMaterial.normalMap != nullptr && savedMaterial.normalMapName.substr(0, 7) != "crawler" && savedMaterial.normalMapName.substr(0, 6) != "engine")
 			{
-				if (preview)
-					stagingTextures.push_back(texturePath + newMaterialName + "_normal.tga");
-				else
+				stagingTextures.push_back(texturePath + newMaterialName + "_normal.tga");
+				if (!preview)
 				{
 					fs::copy_file(savedMaterial.normalMapName, texturePath + stagedName + "_" + savedMaterial.name + "_normal.tga", fs::copy_options::overwrite_existing);
 					savedMaterial.normalMapName = texturePath + newMaterialName + "_normal.tga";
@@ -325,9 +322,8 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 
 			if (savedMaterial.metallicMap != nullptr && savedMaterial.metallicMapName.substr(0, 7) != "crawler" && savedMaterial.metallicMapName.substr(0, 6) != "engine")
 			{
-				if (preview)
-					stagingTextures.push_back(texturePath + newMaterialName + "_metallic.tga");
-				else
+				stagingTextures.push_back(texturePath + newMaterialName + "_metallic.tga");
+				if(!preview)
 				{
 					fs::copy_file(savedMaterial.metallicMapName, texturePath + stagedName + "_" + savedMaterial.name + "_metallic.tga", fs::copy_options::overwrite_existing);
 					savedMaterial.metallicMapName = texturePath + newMaterialName + "_metallic.tga";
@@ -336,9 +332,8 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 
 			if (savedMaterial.roughnessMap != nullptr && savedMaterial.roughnessMapName.substr(0, 7) != "crawler" && savedMaterial.roughnessMapName.substr(0, 6) != "engine")
 			{
-				if (preview)
-					stagingTextures.push_back(texturePath + newMaterialName + "_roughness.tga");
-				else
+				stagingTextures.push_back(texturePath + newMaterialName + "_roughness.tga");
+				if(!preview)
 				{
 					fs::copy_file(savedMaterial.roughnessMapName, texturePath + stagedName + "_" + savedMaterial.name + "_roughness.tga", fs::copy_options::overwrite_existing);
 					savedMaterial.roughnessMapName = texturePath + newMaterialName + "_roughness.tga";
@@ -347,9 +342,8 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 
 			if (savedMaterial.aoMap != nullptr && savedMaterial.aoMapName.substr(0, 7) != "crawler" && savedMaterial.aoMapName.substr(0, 6) != "engine")
 			{
-				if (preview)
-					stagingTextures.push_back(texturePath + newMaterialName + "_ao.tga");
-				else
+				stagingTextures.push_back(texturePath + newMaterialName + "_ao.tga");
+				if (!preview)
 				{
 					fs::copy_file(savedMaterial.aoMapName, texturePath + stagedName + "_" + savedMaterial.name + "_ao.tga", fs::copy_options::overwrite_existing);
 					savedMaterial.aoMapName = texturePath + newMaterialName + "_ao.tga";
@@ -358,9 +352,8 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 
 			if (savedMaterial.emissiveMap != nullptr && savedMaterial.emissiveMapName.substr(0, 7) != "crawler" && savedMaterial.emissiveMapName.substr(0, 6) != "engine")
 			{
-				if (preview)
-					stagingTextures.push_back(texturePath + newMaterialName + "_emissive.tga");
-				else
+				stagingTextures.push_back(texturePath + newMaterialName + "_emissive.tga");
+				if (!preview)
 				{
 					fs::copy_file(savedMaterial.emissiveMapName, texturePath + stagedName + "_" + savedMaterial.name + "_emissive.tga", fs::copy_options::overwrite_existing);
 					savedMaterial.emissiveMapName = texturePath + newMaterialName + "_emissive.tga";
@@ -386,12 +379,6 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 
 	if(stagingModels.size() > 0)
 		WriteJSONToDisk(modelPath + stagedName + ".object", objectJSON);
-
-	// Below is no longer required as Art team will be working directly in the repo.
-	//// open folder to location
-	//string working = fs::current_path().string();
-	//string command = "explorer " + working + "\\staging";
-	//system(command.c_str());
 }
 
 void Crawl::ArtTester::UpdateStagingFolders()
