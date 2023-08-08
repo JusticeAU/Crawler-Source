@@ -30,7 +30,6 @@ namespace Crawl
 		int enterDirection = -1;
 		DungeonTile* toDestination = nullptr;
 		DungeonTile* fromDestination = nullptr;
-
 	};
 
 	static void to_json(ordered_json& j, const DungeonTile& tile)

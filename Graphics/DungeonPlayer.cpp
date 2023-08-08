@@ -16,6 +16,14 @@ Crawl::DungeonPlayer::DungeonPlayer()
 	object->LoadFromJSON(ReadJSONFromDisk("crawler/object/player.object"));
 	object->children[2]->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/viewmodel_hands.object"));
 	animator = (ComponentAnimator*)object->children[2]->children[0]->GetComponent(Component_Animator);
+	
+	// Hack the light in
+	Scene::s_instance->m_pointLights.push_back(Light());
+	Scene::s_instance->m_pointLights[0].position.z = 1.6;
+	Scene::s_instance->m_pointLights[0].colour.x = 0.7009804248809814;
+	Scene::s_instance->m_pointLights[0].colour.y = 0.36686262488365173;
+	Scene::s_instance->m_pointLights[0].colour.z = 0.10308541357517242;
+	Scene::s_instance->m_pointLights[0].intensity = 25.0f;
 }
 
 // Returns true if the player made a game-state changing action

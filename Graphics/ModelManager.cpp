@@ -13,6 +13,7 @@
 #include "assimp/Importer.hpp"
 
 #include <filesystem>
+#include "StringUtils.h"
 
 using std::vector;
 namespace fs = std::filesystem;
@@ -159,9 +160,9 @@ void ModelManager::LoadFromFile(const char* filename, mat4 transformOverride)
 		}
 
 		model->animations.push_back(anim);
-		animations.emplace(anim->name,anim);
+		animations.emplace(StringUtils::ToLower(anim->name),anim);
 	}
-	resources.emplace(filename, model);
+	resources.emplace(StringUtils::ToLower(filename), model);
 }
 
 void ModelManager::LoadAllFiles(string folder, mat4 transformOverride)

@@ -47,10 +47,15 @@ namespace Crawl
 		-90.0f
 	};
 
-	const glm::ivec2 NORTH_COORDINATE	= { 0,1 };
-	const glm::ivec2 SOUTH_COORDINATE	= { 0,-1};
-	const glm::ivec2 EAST_COORDINATE	= { 1,0 };
-	const glm::ivec2 WEST_COORDINATE	= {-1,0 };
+	const glm::ivec2 NORTH_COORDINATE = { 0,1 };
+	const glm::ivec2 EAST_COORDINATE = { 1,0 };
+	const glm::ivec2 SOUTH_COORDINATE = { 0,-1 };
+	const glm::ivec2 WEST_COORDINATE = { -1,0 };
+	const glm::ivec2 NORTHEAST_COORDINATE = { 1,1 };
+	const glm::ivec2 SOUTHEAST_COORDINATE = { 1,-1 };
+	const glm::ivec2 SOUTHWEST_COORDINATE = { -1,-1 };
+	const glm::ivec2 NORTHWEST_COORDINATE = { -1,1 };
+
 
 	// With the below FACING_INDEX, DIRECTION_INDEX and directions[4], if you add a facing index with a direction index, wrap it, you can get a cartesian coordinate.
 	enum FACING_INDEX
@@ -84,6 +89,28 @@ namespace Crawl
 		SOUTH_COORDINATE,
 		WEST_COORDINATE
 	};
+
+	inline glm::ivec2 directionsDiagonal[4] = {
+		NORTHEAST_COORDINATE,
+		SOUTHEAST_COORDINATE,
+		SOUTHWEST_COORDINATE,
+		NORTHWEST_COORDINATE
+	};
+
+	inline glm::ivec2 tileToPillarCoordinates[4] = {
+		{ 0, 0},
+		{ 0,-1},
+		{-1,-1},
+		{ -1,0}
+	};
+
+	inline glm::ivec2 pillarToTileCoordinates[4] = {
+		{ 1, 1},
+		{ 1, 0},
+		{ 0, 0},
+		{ 0, 1}
+	};
+
 
 	static glm::vec3 dungeonPosToObjectScale(glm::ivec2 pos)
 	{

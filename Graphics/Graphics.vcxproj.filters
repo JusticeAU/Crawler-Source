@@ -568,5 +568,8 @@
     <ClInclude Include="DungeonEnemySlugPath.h">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
+    <ClInclude Include="StringUtils.h">
+      <Filter>Source Files\StaticUtility</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

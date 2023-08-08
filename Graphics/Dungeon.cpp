@@ -31,11 +31,11 @@
 
 Crawl::Dungeon::Dungeon()
 {
-	wallVariantPaths.push_back("crawler/model/tile_Wall_1.object");
+	wallVariantPaths.push_back("crawler/model/tile_wall_1.object");
 	//wallVariantPaths.push_back("crawler/model/tile_wall1_blockout/tile_wall1_blockout.object");
 	//wallVariantPaths.push_back("crawler/model/tile_wall1_blockout/tile_wall1_blockout.object");
 
-	tilesParentObject = Scene::FindObjectWithName("Tiles");
+	tilesParentObject = Scene::CreateObject("Tiles");
 
 	InitialiseTileMap();
 }
@@ -276,6 +276,13 @@ void Crawl::Dungeon::CreateTileObject(DungeonTile* tile)
 	obj->SetLocalPosition({ tile->position.x * DUNGEON_GRID_SCALE, tile->position.y * DUNGEON_GRID_SCALE , 0 });
 
 	tile->object = obj;
+
+	// Set up Pillars
+	UpdatePillarsForTileCoordinate(tile->position);
+
+	// ceiling
+	Object* ceiling = Scene::CreateObject(obj);
+	ceiling->LoadFromJSON(ReadJSONFromDisk("crawler/model/tile_ceiling1.object"));
 }
 
 bool Crawl::Dungeon::IsOpenTile(ivec2 position)
@@ -1657,7 +1664,7 @@ void Crawl::Dungeon::InitialiseTileMap()
 {
 	// Load the JSON template
 	ordered_json tile_layout = ReadJSONFromDisk("crawler/object/tile_layout.object");
-	ordered_json tile_ground1 = ReadJSONFromDisk("crawler/model/tile_ground1_blockout/tile_ground1_blockout.object");
+	ordered_json tile_ground1 = ReadJSONFromDisk("crawler/model/tile_wood.object");
 
 	tile_template = new Object(0, "Tile Template");
 	tile_template->LoadFromJSON(tile_layout);
@@ -1741,6 +1748,10 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 	for (int i = 0; i < mirrors.size(); i++)
 		delete mirrors[i];
 	mirrors.clear();
+
+	for (auto& pillar : pillars)
+		pillar.second->markedForDeletion = true;
+	pillars.clear();
 }
 
 Object* Crawl::Dungeon::GetTileTemplate(int mask)
@@ -1994,6 +2005,48 @@ void Crawl::Dungeon::BuildSceneFromDungeonLayout()
 		{
 			Crawl::DungeonTile* tile = &row.second;
 			CreateTileObject(tile);
+		}
+	}
+}
+
+bool Crawl::Dungeon::ShouldHavePillar(ivec2 coordinate)
+{
+	int tilesOpen = 0;
+	for (int i = 0; i < 4; i++)
+		if (IsOpenTile(coordinate + pillarToTileCoordinates[i])) tilesOpen++;
+	return tilesOpen < 4;
+}
+
+void Crawl::Dungeon::UpdatePillarsForTileCoordinate(ivec2 coordinate)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		ivec2 pillarCoordinate = coordinate + tileToPillarCoordinates[i];
+		if (ShouldHavePillar(pillarCoordinate))
+		{
+			// check if there is a pillar in the pillars list
+			auto pillar = pillars.find(pillarCoordinate);
+			// if not, add it
+			if (pillar == pillars.end())
+			{
+				Object* pillarObj = Scene::CreateObject();
+				pillarObj->LoadFromJSON(ReadJSONFromDisk("crawler/model/tile_pillar.object"));
+				pillarObj->SetLocalPosition(dungeonPosToObjectScale(coordinate));
+				pillarObj->AddLocalPosition({ directionsDiagonal[i].x, directionsDiagonal[i].y, 0 });
+				pillars.emplace(pillarCoordinate, pillarObj);
+			}
+		}
+		else
+		{
+			// check if there is a pillar in the pillars list
+			auto pillar = pillars.find(pillarCoordinate);
+			// if not, add it
+			if (pillar != pillars.end())
+			{
+				// if there is, remove it.
+				pillar->second->markedForDeletion = true;
+				pillars.erase(pillar);
+			}
 		}
 	}
 }

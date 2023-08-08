@@ -82,6 +82,6 @@ namespace Crawl
 			"crawler/sound/load/step4.ogg"
 		};
 
-		string animationNamePush = "crawler/model/viewmodel_hands.fbxArmature|ArmatureAction";
+		string animationNamePush = "crawler/model/viewmodel_hands.fbxarmature|armatureaction";
 	};
 }

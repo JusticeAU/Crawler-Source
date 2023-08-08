@@ -121,7 +121,6 @@ Application::Application()
 	// Load Crawl Game Dependencies
 	Scene* scene = Scene::NewScene("Dungeon");
 	Scene::s_instance = scene;
-	scene->LoadJSON("crawler/scene/dungeon.scene");
 
 	dungeon = new Crawl::Dungeon();
 	dungeonPlayer = new Crawl::DungeonPlayer();

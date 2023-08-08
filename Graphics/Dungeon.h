@@ -162,6 +162,19 @@ namespace Crawl
 		std::map<int, Column> tiles;
 		Object* tile_template;
 		Object* tilesParentObject = nullptr;
+
+		// Pillars
+		// https://stackoverflow.com/questions/62103494/using-stdmap-with-a-glmivec2-as-keyvalue
+		// to be able to store vec2s in a map
+		struct ivec2Compare {
+			bool operator()(const glm::ivec2& a, const glm::ivec2& b) const {
+				return (((std::int64_t)a.x << 30) + a.y) < (((std::int64_t)b.x << 30) + b.y);
+			}
+		};
+		std::map<ivec2, Object*, ivec2Compare> pillars;
+
+		bool ShouldHavePillar(ivec2 coordinate);
+		void UpdatePillarsForTileCoordinate(ivec2 coordinate);
 	public:
 		ordered_json serialised;
 		string dungeonFileExtension = ".dungeon";

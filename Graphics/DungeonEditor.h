@@ -97,6 +97,7 @@ namespace Crawl
 		std::string editModeNames[5]{ "Tile Brush", "Tile Edit", "Entity Edit", "Dungeon Properties", "Slug Path Editor"};
 
 		// Brush Mode
+		Object* brushObject = nullptr;
 		unsigned int brush_tileMask = 0;
 		// Auto Tile configuration
 		bool brush_AutoTileEnabled = true;

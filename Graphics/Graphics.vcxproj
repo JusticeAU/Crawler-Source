@@ -313,6 +313,7 @@
     <ClInclude Include="glm2json.h" />
     <ClInclude Include="PostProcess.h" />
     <ClInclude Include="serialisation.h" />
+    <ClInclude Include="StringUtils.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Input.h" />

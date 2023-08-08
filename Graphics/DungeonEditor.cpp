@@ -31,7 +31,8 @@ namespace fs = std::filesystem;
 
 Crawl::DungeonEditor::DungeonEditor()
 {
-	
+	brushObject = Scene::CreateObject("Tile Brush");
+	brushObject->LoadFromJSON(ReadJSONFromDisk("crawler/model/tile_wood.object"));
 }
 
 void Crawl::DungeonEditor::Activate()
@@ -1607,10 +1608,7 @@ void Crawl::DungeonEditor::UpdateMousePosOnGrid()
 			brush_tileMask += SOUTH_MASK;
 	}
 
-	Object* tileTemplate = dungeon->GetTileTemplate(brush_tileMask);
-	Scene::s_instance->objects[0] = tileTemplate;
-	Scene::s_instance->objects[0]->SetLocalPosition({ gridSelected.x * DUNGEON_GRID_SCALE, gridSelected.y * DUNGEON_GRID_SCALE, 0 });
-
+	brushObject->SetLocalPosition({ gridSelected.x * DUNGEON_GRID_SCALE, gridSelected.y * DUNGEON_GRID_SCALE, 0 });
 }
 
 void Crawl::DungeonEditor::UpdateAutoTile(ivec2 position)
