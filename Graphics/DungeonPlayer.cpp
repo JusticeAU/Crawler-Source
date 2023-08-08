@@ -4,14 +4,18 @@
 #include "MathUtils.h"
 #include "LogUtils.h"
 #include "AudioManager.h"
+#include "ComponentAnimator.h"
 
 #include "DungeonEnemySwitcher.h"
 #include "DungeonCheckpoint.h"
 
 Crawl::DungeonPlayer::DungeonPlayer()
 {
-	// TODO better inject / handle this better.
-	object = Scene::s_instance->objects[1];
+	// Initialise the player Scene Object;
+	object = Scene::CreateObject();
+	object->LoadFromJSON(ReadJSONFromDisk("crawler/object/player.object"));
+	object->children[2]->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/viewmodel_hands.object"));
+	animator = (ComponentAnimator*)object->children[2]->children[0]->GetComponent(Component_Animator);
 }
 
 // Returns true if the player made a game-state changing action
@@ -66,7 +70,10 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		if (Input::Keyboard(GLFW_KEY_SPACE).Down() && dungeon->playerCanKickBox)
 		{
 			if (dungeon->DoKick(position, facing))
+			{
+				animator->BlendToAnimation(animationNamePush, 0.1f);
 				return true;
+			}
 		}
 
 		if ((Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down() || Input::Mouse(1).Down()) && dungeon->playerHasKnife)
@@ -89,6 +96,7 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 			Scene::s_instance->objectPickedID = 0;
 			if (dungeon->DoInteractable(picked))
 			{
+				animator->BlendToAnimation(animationNamePush, 0.1f);
 				if (!dungeon->playerInteractIsFree)
 					return true;
 			}

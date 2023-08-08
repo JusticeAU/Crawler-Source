@@ -502,6 +502,18 @@ Object* Scene::FindObjectWithID(unsigned int id)
 	return nullptr;
 }
 
+Object* Scene::FindObjectWithName(string objectName)
+{
+	for (auto o : s_instance->objects)
+		if (o->objectName == objectName) return o;
+
+	for (auto o : s_instance->objects)
+		o->FindObjectWithName(objectName);
+
+
+	return nullptr;
+}
+
 void Scene::SaveJSON()
 {
 	// Create the JSON structures

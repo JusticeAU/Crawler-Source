@@ -31,9 +31,11 @@
 
 Crawl::Dungeon::Dungeon()
 {
-	wallVariantPaths.push_back("crawler/model/tile_wall1_blockout/tile_wall1_blockout.object");
+	wallVariantPaths.push_back("crawler/model/tile_Wall_1.object");
 	//wallVariantPaths.push_back("crawler/model/tile_wall1_blockout/tile_wall1_blockout.object");
 	//wallVariantPaths.push_back("crawler/model/tile_wall1_blockout/tile_wall1_blockout.object");
+
+	tilesParentObject = Scene::FindObjectWithName("Tiles");
 
 	InitialiseTileMap();
 }
@@ -259,7 +261,7 @@ void Crawl::Dungeon::CreateTileObject(DungeonTile* tile)
 	if (tile->object != nullptr)
 		tile->object->markedForDeletion = true;
 
-	Object* obj = Scene::s_instance->DuplicateObject(tile_template, Scene::s_instance->objects[2]);
+	Object* obj = Scene::s_instance->DuplicateObject(tile_template, tilesParentObject);
 	
 	// Set up wall variants
 	for (int i = 0; i < 4; i++)
@@ -862,7 +864,7 @@ Crawl::DungeonSpikes* Crawl::Dungeon::CreateSpikes(ivec2 position, bool disabled
 	spikes->disabled = disabled;
 	spikes->dungeon = this;
 	spikes->object = Scene::CreateObject();
-	spikes->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/spikes.object"));
+	spikes->object->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_trap_spikes.object"));
 	if (spikes->disabled)
 		spikes->Disable();
 	spikes->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });

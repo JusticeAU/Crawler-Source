@@ -423,7 +423,8 @@ void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)
 					Scene::s_instance->objects[1]->components.push_back(animator);
 				}
 				animator->model = model->model;
-				animator->StartAnimation(model->model->animations[0]->name);
+				animator->isPlaying = true;
+				animator->StartAnimation(model->model->animations[0]->name, true);
 				animator->OnParentChange();
 				renderer->model = model->model;
 				renderer->OnParentChange();

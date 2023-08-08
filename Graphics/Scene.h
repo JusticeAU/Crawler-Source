@@ -53,6 +53,7 @@ public:
 	static void RequestObjectSelection() { s_instance->requestedObjectSelection = true; };
 
 	static Object* FindObjectWithID(unsigned int id);
+	static Object* FindObjectWithName(string objectName);
 
 	bool drawn3DGizmo = false;;
 

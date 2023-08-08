@@ -4,6 +4,7 @@
 #include "glm.hpp"
 
 class Object;
+class ComponentAnimator;
 
 namespace Crawl
 {
@@ -53,6 +54,7 @@ namespace Crawl
 		
 		Dungeon* dungeon;
 		Object* object;
+		ComponentAnimator* animator;
 
 		bool didMove = false;
 
@@ -79,5 +81,7 @@ namespace Crawl
 			"crawler/sound/load/step3.ogg",
 			"crawler/sound/load/step4.ogg"
 		};
+
+		string animationNamePush = "crawler/model/viewmodel_hands.fbxArmature|ArmatureAction";
 	};
 }

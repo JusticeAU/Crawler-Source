@@ -76,6 +76,7 @@ public:
 	void RecalculateTransforms();
 
 	Object* FindObjectWithID(unsigned int id);
+	Object* FindObjectWithName(string objectName);
 
 	void SaveObjectToJSON();
 };

@@ -46,7 +46,7 @@ public:
 		void Update(float delta);
 	};
 
-	bool isPlaying = true;
+	bool isPlaying = false;
 
 	// dependencies
 	Model* model = nullptr;

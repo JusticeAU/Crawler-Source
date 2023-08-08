@@ -444,6 +444,17 @@ Object* Object::FindObjectWithID(unsigned int id)
 	return nullptr;
 }
 
+Object* Object::FindObjectWithName(string objectName)
+{
+	for (auto& o : children)
+		if (o->objectName == objectName) return o;
+
+	for (auto& o : children)
+		o->FindObjectWithName(objectName);
+
+	return nullptr;
+}
+
 // Just for dumping to disk for easy templating
 void Object::SaveObjectToJSON()
 {

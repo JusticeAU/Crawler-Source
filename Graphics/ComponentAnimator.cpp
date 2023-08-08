@@ -4,8 +4,9 @@
 #include "Animation.h"
 #include "Object.h"
 #include "UniformBuffer.h"
-
 #include "ModelManager.h"
+
+#include "LogUtils.h"
 
 using std::to_string;
 
@@ -236,8 +237,12 @@ void ComponentAnimator::BlendToAnimation(string name, float time, float offset, 
 
 	Animation* animation = ModelManager::GetAnimation(name);
 	if (animation == nullptr)
+	{
+		LogUtils::Log("Attemping to play animation that does not exist: " + name);
 		return;
+	}
 
+	isPlaying = true;
 	AnimationState* newAnimation = new AnimationState();
 	newAnimation->animation = animation;
 	newAnimation->looping = loop;
