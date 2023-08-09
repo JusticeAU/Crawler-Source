@@ -592,10 +592,23 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 	{
 		if (chasers[i]->position == position)
 		{
-			if (dealer == chasers[i]) // THIS IS PROBABLY SUPER DODGEY MAYBE I SHOULD CHECK WITH FINN :D
+			if (dealer == chasers[i])
 				continue;
 			didDamage = true;
 			chasers[i]->isDead = true;
+			break;
+		}
+	}
+
+	// Check for slugs
+	for (int i = 0; i < slugs.size(); i++)
+	{
+		if (slugs[i]->position == position)
+		{
+			if (dealer == slugs[i])
+				continue;
+			didDamage = true;
+			slugs[i]->isDead = true;
 			break;
 		}
 	}
@@ -1288,16 +1301,16 @@ void Crawl::Dungeon::RemoveSlug(DungeonEnemySlug* slug)
 	{
 		if (slugs[i] == slug)
 		{
-			delete slug;
-			slugs.erase(slugs.begin() + i);
-
 			DungeonTile* tile = GetTile(slug->position);
 			if (tile)
 			{
-				tile->occupied = true;
+				tile->occupied = false;
 			}
 			else
 				LogUtils::Log("WARNING - ATTEMPTING TO REMOVE SLUG TO TILE THAT DOESN'T EXIST");
+
+			delete slug;
+			slugs.erase(slugs.begin() + i);
 			return;
 		}
 	}
@@ -1633,7 +1646,6 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	{
 		DungeonEnemySlug slug = it.value().get<Crawl::DungeonEnemySlug>();
 		DungeonEnemySlug* newSlug = CreateSlug(slug.position, slug.facing);
-		newSlug->commands = slug.commands;
 	}
 
 	auto& slugPaths_json = serialised["slugPaths"];
@@ -1959,6 +1971,18 @@ void Crawl::Dungeon::UpdateVisuals(float delta)
 			if (chasers[i]->isDead && chasers[i]->stateVisual == Crawl::DungeonEnemyChase::IDLE)
 			{
 				RemoveEnemyChase(chasers[i]);
+				i--;
+			}
+		}
+	}
+
+	for (int i = 0; i < slugs.size(); i++)
+	{
+		slugs[i]->UpdateVisuals(delta);
+		{
+			if (slugs[i]->isDead && slugs[i]->state == Crawl::DungeonEnemySlug::IDLE)
+			{
+				RemoveSlug(slugs[i]);
 				i--;
 			}
 		}

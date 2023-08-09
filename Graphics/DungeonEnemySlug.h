@@ -22,26 +22,18 @@ namespace Crawl
 			STUN
 		};
 
-		enum class Command {
-			TURN_LEFT,
-			TURN_RIGHT,
-			WALK_FORWARD,
-		};
-		const static std::string commandStrings[3];
-
 		~DungeonEnemySlug();
 		ivec2 position;
 		FACING_INDEX facing;
 		STATE state = INACTIVE;
 
-		std::vector<Command> commands;
-		int commandIndex = 0;
+		bool isDead = false;
+
 
 		Dungeon* dungeon;
 		Object* object;
 
 		void Update();
-		void NextCommand();
 
 		void UpdateVisuals(float delta);
 
@@ -61,13 +53,12 @@ namespace Crawl
 
 	static void to_json(ordered_json& j, const DungeonEnemySlug& object)
 	{
-		j = { {"position", object.position }, {"facing", object.facing }, {"commands", object.commands } };
+		j = { {"position", object.position }, {"facing", object.facing } };
 	}
 
 	static void from_json(const ordered_json& j, DungeonEnemySlug& object)
 	{
 		j.at("position").get_to(object.position);
 		j.at("facing").get_to(object.facing);
-		j.at("commands").get_to(object.commands);
 	}
 }

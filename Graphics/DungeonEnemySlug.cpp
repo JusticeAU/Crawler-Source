@@ -64,58 +64,6 @@ void Crawl::DungeonEnemySlug::Update()
 	}
 	else
 		LogUtils::Log("Slug is not on a path");
-
-
-
-	// Command system
-	/*Command nextCommand = commands[commandIndex];  
-	switch (nextCommand)
-	{
-	case Command::TURN_LEFT:
-	{
-		facing = dungeonRotate(facing, -1);
-		state = TURNING;
-		targetTurn = orientationEulers[facing];
-		turnCurrent = -0.0f;
-		NextCommand();
-		break;
-	}
-	case Command::TURN_RIGHT:
-	{
-		facing = dungeonRotate(facing, 1);
-		state = TURNING;
-		targetTurn = orientationEulers[facing];
-		turnCurrent = -0.0f;
-		NextCommand();
-		break;
-	}
-	case Command::WALK_FORWARD:
-	{
-		if (dungeon->HasLineOfSight(position, facing))
-		{
-			DungeonTile* tile = dungeon->GetTile(position + directions[facing]);
-			if (tile && !tile->occupied)
-			{
-				dungeon->GetTile(position)->occupied = false;
-				tile->occupied = true;
-				position += directions[facing];
-				NextCommand();
-				tile->occupied = true;
-				state = MOVING;
-				targetPosition = dungeonPosToObjectScale(position);
-				moveCurrent = -0.0f;
-			}
-		}
-		break;
-	}
-	}*/
-}
-
-void Crawl::DungeonEnemySlug::NextCommand()
-{
-	commandIndex += 1;
-	if (commandIndex > commands.size() - 1)
-		commandIndex = 0;
 }
 
 void Crawl::DungeonEnemySlug::UpdateVisuals(float delta)
@@ -170,5 +118,3 @@ void Crawl::DungeonEnemySlug::UpdateVisuals(float delta)
 	}
 	}
 }
-
-const std::string Crawl::DungeonEnemySlug::commandStrings[3] = { "Turn Left", "Turn Right", "Walk Forward" };

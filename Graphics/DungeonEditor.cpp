@@ -1072,42 +1072,6 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditSlug()
 		ImGui::EndCombo();
 	}
 
-	// Commands
-	/*
-	ImGui::Text("Commands");
-	for (int i = 0; i < selectedSlugEnemy->commands.size(); i++)
-	{
-		ImGui::PushID(i);
-		// Combo box for command
-		if (ImGui::BeginCombo("", DungeonEnemySlug::commandStrings[(int)selectedSlugEnemy->commands[i]].c_str()))
-		{
-			for (int ii = 0; ii < 3; ii++)
-			{
-				if (ImGui::Selectable(DungeonEnemySlug::commandStrings[ii].c_str()))
-				{
-					MarkUnsavedChanges();
-					selectedSlugEnemy->commands[i] = (DungeonEnemySlug::Command)ii;
-				}
-			}
-			ImGui::EndCombo();
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("Delete"))
-		{
-			selectedSlugEnemy->commands.erase(selectedSlugEnemy->commands.begin() + i);
-			i--;
-		}
-		// Delete button
-
-		ImGui::PopID();
-	}
-	// add button
-	if (ImGui::Button("Add Command"))
-	{
-		MarkUnsavedChanges();
-		selectedSlugEnemy->commands.emplace_back(DungeonEnemySlug::Command::WALK_FORWARD);
-	}
-	*/
 	if (ImGui::Button("Delete"))
 		ImGui::OpenPopup("delete_chaser_confirm");
 	if (ImGui::BeginPopupModal("delete_chaser_confirm"))
