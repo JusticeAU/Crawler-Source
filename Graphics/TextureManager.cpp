@@ -3,6 +3,7 @@
 #include <filesystem>
 #include "LogUtils.h"
 #include "FrameBuffer.h"
+#include "StringUtils.h"
 
 using std::vector;
 namespace fs = std::filesystem;
@@ -21,7 +22,7 @@ void TextureManager::Init()
 
 Texture* TextureManager::GetTexture(string name)
 {
-	auto texIt = s_instance->textures.find(name);
+	auto texIt = s_instance->textures.find(StringUtils::ToLower(name));
 	if (texIt == s_instance->textures.end())
 		return nullptr;
 	else
@@ -73,7 +74,7 @@ void TextureManager::LoadFromFile(const char* filename)
 {
 	Texture* texture = new Texture();
 	texture->LoadFromFile(filename);
-	textures.emplace(filename, texture);
+	textures.emplace(StringUtils::ToLower(filename), texture);
 }
 
 void TextureManager::AddFrameBuffer(const char* name, FrameBuffer* fb)

@@ -26,7 +26,7 @@ void ModelManager::Init()
 
 Model* ModelManager::GetModel(string name)
 {
-    auto iterator = s_instance->resources.find(name);
+    auto iterator = s_instance->resources.find(StringUtils::ToLower(name));
     if (iterator == s_instance->resources.end())
         return nullptr;
     else
@@ -35,7 +35,7 @@ Model* ModelManager::GetModel(string name)
 
 Animation* ModelManager::GetAnimation(string name)
 {
-	auto iterator = s_instance->animations.find(name);
+	auto iterator = s_instance->animations.find(StringUtils::ToLower(name));
 	if (iterator == s_instance->animations.end())
 		return nullptr;
 	else

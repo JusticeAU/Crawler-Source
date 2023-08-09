@@ -9,10 +9,12 @@
 #include "MaterialManager.h"
 #include "TextureManager.h"
 #include "ShaderManager.h"
-#include "LogUtils.h"
 #include <string>
 #include <filesystem>
 #include "serialisation.h"
+
+#include "LogUtils.h"
+#include "StringUtils.h"
 
 using std::string;
 namespace fs = std::filesystem;
@@ -410,7 +412,6 @@ void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)
 			ModelManager::s_instance->LoadFromFile(filepath.c_str(), Crawl::CRAWLER_TRANSFORM);
 			model = (ComponentModel*)Scene::s_instance->objects[1]->GetComponent(Component_Model);
 			renderer = (ComponentRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_Renderer);
-			//rendererSkinned = (ComponentSkinnedRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_SkinnedRenderer);
 			animator = (ComponentAnimator*)Scene::s_instance->objects[1]->GetComponent(Component_Animator);
 			model->model = ModelManager::GetModel(filepath);
 			model->modelName = filepath;
