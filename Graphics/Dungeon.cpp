@@ -1880,18 +1880,19 @@ void Crawl::Dungeon::Update()
 	for (auto& spikes : spikesPlates)
 	{
 		// check for pushable boxes at spikes
-		for (int i = 0; i < pushableBlocks.size(); i++)
+		if (!spikes->disabled)
 		{
-			if (pushableBlocks[i]->position == spikes->position)
+			for (int i = 0; i < pushableBlocks.size(); i++)
 			{
-				spikes->Disable();
-				pushableBlocks[i]->isDead = true;
-				break;
+				if (pushableBlocks[i]->position == spikes->position)
+				{
+					spikes->Disable();
+					pushableBlocks[i]->isDead = true;
+					break;
+				}
 			}
-		}
-
-		if(!spikes->disabled)
 			DamageAtPosition(spikes->position, spikes);
+		}
 	}
 
 	// All Sword Blocker Enemies Update
