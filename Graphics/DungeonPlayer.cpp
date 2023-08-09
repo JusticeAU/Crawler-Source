@@ -57,7 +57,6 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 				LogUtils::Log("You activated a checkpoint");
 				newCheckpoint->SetCheckpoint(this);
 			}
-
 		}
 
 		if (shouldSwitchWith) // fairly hacky
@@ -268,9 +267,10 @@ void Crawl::DungeonPlayer::Respawn()
 			Teleport(dungeon->defaultPlayerStartPosition);
 			Orient(dungeon->defaultPlayerStartOrientation);
 		}
-		hp = maxHp;
-		shouldSwitchWith = nullptr;
 	}
+
+	hp = maxHp;
+	shouldSwitchWith = nullptr;
 }
 
 void Crawl::DungeonPlayer::TakeDamage()
