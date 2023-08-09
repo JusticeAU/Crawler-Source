@@ -1,8 +1,7 @@
 #include "DungeonSpikes.h"
 #include "Dungeon.h"
 #include "Object.h"
-#include "ComponentRenderer.h"
-#include "MaterialManager.h"
+#include "Scene.h"
 
 Crawl::DungeonSpikes::~DungeonSpikes()
 {
@@ -14,5 +13,8 @@ void Crawl::DungeonSpikes::Disable()
 {
 	dungeon->GetTile(position)->occupied = false;
 	disabled = true;
-	((ComponentRenderer*)object->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/spikes_covered.material");
+	object->markedForDeletion = true;
+	object = Scene::CreateObject();
+	object->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_trap_spike_broken.object"));
+	object->SetLocalPosition(dungeonPosToObjectScale(position));
 }
