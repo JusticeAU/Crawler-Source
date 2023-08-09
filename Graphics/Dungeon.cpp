@@ -960,6 +960,16 @@ bool Crawl::Dungeon::IsPushableBlockAtPosition(ivec2 position)
 	return false;
 }
 
+Crawl::DungeonPushableBlock* Crawl::Dungeon::GetPushableBlockAtPosition(ivec2 position)
+{
+	for (int i = 0; i < pushableBlocks.size(); i++)
+	{
+		if (pushableBlocks[i]->position == position) return pushableBlocks[i];
+	}
+
+	return nullptr;
+}
+
 Crawl::DungeonTransporter* Crawl::Dungeon::GetTransporter(string transporterName)
 {
 	for (auto& transporter : transporterPlates)

@@ -4,6 +4,7 @@
 #include "Dungeon.h"
 #include "DungeonPlayer.h"
 #include "DungeonMirror.h"
+#include "DungeonPushableBlock.h"
 #include "Object.h"
 #include "LogUtils.h"
 
@@ -40,6 +41,19 @@ void Crawl::DungeonEnemySwitcher::Update()
 				}
 				else
 					dungeon->player->SetShouldSwitchWith(this);
+			}
+			else if (dungeon->IsPushableBlockAtPosition(tile->position))
+			{
+				LogUtils::Log("Swapping with block");
+				DungeonPushableBlock* block = dungeon->GetPushableBlockAtPosition(tile->position);
+				ivec2 newPos = block->position;
+				block->position = position;
+				position = newPos;
+				object->SetLocalPosition(dungeonPosToObjectScale(position));
+				block->object->SetLocalPosition(dungeonPosToObjectScale(block->position));
+				block->targetPosition = dungeonPosToObjectScale(block->position);
+				block->oldPosition = dungeonPosToObjectScale(block->position);
+				return;
 			}
 			else if (dungeon->GetMirrorAt(tile->position))
 			{
