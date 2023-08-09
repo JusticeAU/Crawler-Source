@@ -44,6 +44,7 @@ void Crawl::DungeonEnemySwitcher::Update()
 			}
 			else if (dungeon->IsPushableBlockAtPosition(tile->position))
 			{
+				// This could use a big ol tidy and clarification
 				LogUtils::Log("Swapping with block");
 				DungeonPushableBlock* block = dungeon->GetPushableBlockAtPosition(tile->position);
 				ivec2 newPos = block->position;

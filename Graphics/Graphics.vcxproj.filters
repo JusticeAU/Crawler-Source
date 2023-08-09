@@ -320,6 +320,9 @@
     <ClCompile Include="DungeonEnemySlugPath.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
+    <ClCompile Include="DungeonDecoration.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -570,6 +573,9 @@
     </ClInclude>
     <ClInclude Include="StringUtils.h">
       <Filter>Source Files\StaticUtility</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonDecoration.h">
+      <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

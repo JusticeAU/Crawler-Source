@@ -14,7 +14,7 @@
 #include "DungeonCheckpoint.h"
 #include "DungeonMirror.h"
 #include "DungeonEnemySlug.h"
-
+#include "DungeonDecoration.h"
 
 #include "Object.h"
 #include "Input.h"
@@ -39,6 +39,7 @@ void Crawl::DungeonEditor::Activate()
 {
 	Scene::ChangeScene("Dungeon");
 	Scene::SetCameraIndex(0);
+	RefreshAvailableDecorations();
 
 	// It's possible that gameplay took us in to another dungeon, and this, that is the one that should now be loaded.
 	dungeonFileName = dungeon->dungeonFileName;
@@ -503,6 +504,13 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		selectedTileOccupied = true;
 	}
 	if (tileOccupied) ImGui::EndDisabled();
+	if (ImGui::Button("Decoration"))
+	{
+		MarkUnsavedChanges();
+		selectedTileDecoration = dungeon->CreateDecoration(selectedTile->position, NORTH_INDEX);
+		selectedTileDecorations.push_back(selectedTileDecoration);
+		selectedDecorationWindowOpen = true;
+	}
 
 	ImGui::PopID();
 	// Entity List
@@ -610,6 +618,20 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	{
 		if (ImGui::Selectable("Mirror")) selectedMirrorWindowOpen = true;
 	}
+	for (int i = 0; i < selectedTileDecorations.size(); i++)
+	{
+		ImGui::PushID(i);
+		string decoName = "Decoration (";
+		decoName += selectedTileDecorations[i]->modelName;
+		decoName += ")";
+		if (ImGui::Selectable(decoName.c_str()))
+		{
+			selectedTileDecoration = selectedTileDecorations[i];
+			selectedDecorationWindowOpen = true;
+		}
+		ImGui::PopID();
+	}
+
 	ImGui::Unindent();
 	ImGui::PopID();
 
@@ -638,6 +660,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		DrawGUIModeTileEditSwitcher();
 	if (selectedMirrorWindowOpen)
 		DrawGUIModeTileEditMirror();
+	if (selectedDecorationWindowOpen)
+		DrawGUIModeTileEditDecoration();
 	
 	ImGui::PopID();
 }
@@ -1094,6 +1118,73 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditSlug()
 
 	ImGui::End();
 }
+void Crawl::DungeonEditor::DrawGUIModeTileEditDecoration()
+{
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Edit Decoration", &selectedDecorationWindowOpen);
+
+	if (ImGui::BeginCombo("Select Decoration", selectedTileDecoration->modelName.c_str()))
+	{
+		for (auto& path : decorations)
+		{
+			bool selected = selectedTileDecoration->modelName.c_str() == path.c_str();
+			if (ImGui::Selectable(path.c_str(), selected))
+			{
+				MarkUnsavedChanges();
+				selectedTileDecoration->modelName = path;
+				selectedTileDecoration->LoadDecoration();
+			}
+		}
+		ImGui::EndCombo();
+	}
+
+	if (ImGui::BeginCombo("Forward", orientationNames[selectedTileDecoration->facing].c_str()))
+	{
+		int oldOrientation = selectedTileDecoration->facing;
+		for (int i = 0; i < 4; i++)
+			if (ImGui::Selectable(orientationNames[i].c_str()))
+			{
+				selectedTileDecoration->facing = (FACING_INDEX)i;
+				if (selectedTileDecoration->facing != oldOrientation)
+				{
+					MarkUnsavedChanges();
+					selectedTileDecoration->object->SetLocalRotationZ(orientationEulersReversed[i]);
+				}
+			}
+		ImGui::EndCombo();
+	}
+
+	if (ImGui::DragFloat3("XYZ", &selectedTileDecoration->localPosition.x,0.1f, -5, 5, "%.3f", ImGuiSliderFlags_AlwaysClamp))
+	{
+		MarkUnsavedChanges();
+		selectedTileDecoration->UpdateTransform();
+	}
+
+	if (ImGui::Button("Delete"))
+		ImGui::OpenPopup("delete_decoration_confirm");
+
+
+	if (ImGui::BeginPopupModal("delete_decoration_confirm"))
+	{
+		ImGui::Text("Are you sure you want to delete the decoration?");
+		if (ImGui::Button("Yes"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemoveDecoration(selectedTileDecoration);
+			selectedTileDecoration = nullptr;
+			selectedDecorationWindowOpen = false;
+			RefreshSelectedTile();
+		}
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
+	ImGui::End();
+}
 void Crawl::DungeonEditor::DrawGUIModeTileEditSwitcher()
 {
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
@@ -1491,6 +1582,26 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 			selectedTileOccupied = true;
 		}
 	}
+
+	selectedTileDecorations.clear();
+	for (int i = 0; i < dungeon->decorations.size(); i++)
+	{
+		if (dungeon->decorations[i]->position == selectedTile->position)
+			selectedTileDecorations.push_back(dungeon->decorations[i]);
+	}
+}
+
+void Crawl::DungeonEditor::RefreshAvailableDecorations()
+{
+	decorations.clear();
+	string folder = "crawler/model/";
+	for (auto d : fs::recursive_directory_iterator(folder))
+	{
+		if (d.path().extension() == ".object")
+		{
+			if(d.path().string().find("decoration") != string::npos) decorations.push_back(d.path().generic_string());
+		}
+	}
 }
 
 int Crawl::DungeonEditor::GetNextAvailableLeverID()
@@ -1682,6 +1793,7 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedCheckpoint = nullptr;
 	selectedMirror = nullptr;
 	selectedSlugEnemy = nullptr;
+	selectedTileDecoration = nullptr;
 
 	selectedDoorWindowOpen = false;
 	selectedLeverWindowOpen = false;
@@ -1694,4 +1806,5 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedCheckpointWindowOpen = false;
 	selectedMirrorWindowOpen = false;
 	selectedSlugEnemyWindowOpen = false;
+	selectedDecorationWindowOpen = false;
 }

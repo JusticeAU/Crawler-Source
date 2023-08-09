@@ -31,6 +31,7 @@ namespace Crawl
 	class DungeonMirror;
 	class DungeonEnemySlug;
 	class DungeonEnemySlugPath;
+	class DungeonDecoration;
 
 	struct Column
 	{
@@ -132,6 +133,9 @@ namespace Crawl
 		void RemoveSlugPath(DungeonEnemySlugPath* slugPath);
 		bool IsSlugPath(ivec2 position);
 		DungeonEnemySlugPath* GetSlugPath(ivec2 position);
+
+		DungeonDecoration* CreateDecoration(ivec2 position, FACING_INDEX facing);
+		void RemoveDecoration(DungeonDecoration* decoration);
 	
 		void Save(std::string filename);
 		void Load(std::string filename);
@@ -216,6 +220,8 @@ namespace Crawl
 		std::vector<DungeonCheckpoint*> checkpoints;
 
 		std::vector<DungeonMirror*> mirrors;
+
+		std::vector<DungeonDecoration*> decorations;
 		
 		DungeonPlayer* player = nullptr;
 

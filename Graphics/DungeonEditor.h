@@ -44,6 +44,7 @@ namespace Crawl
 		void DrawGUIModeTileEditSwitcher();
 		void DrawGUIModeTileEditMirror();
 		void DrawGUIModeTileEditSlug();
+		void DrawGUIModeTileEditDecoration();
 
 
 		void DrawGUIModeDungeonProperties();
@@ -54,6 +55,7 @@ namespace Crawl
 		void UpdateModeSlugPathEdit();
 
 		void RefreshSelectedTile();
+		void RefreshAvailableDecorations();
 
 		int GetNextAvailableLeverID();
 		int GetNextAvailableDoorID();
@@ -113,19 +115,26 @@ namespace Crawl
 		DungeonTile* selectedTile = nullptr;
 		bool selectedTileOpenWalls[4] = { false, false, false, false };
 		bool selectedTileOccupied = false;
+
 		std::vector<DungeonDoor*> selectedTileDoors;
-		std::vector<DungeonInteractableLever*> selectedTileLevers;
 		DungeonDoor* selectedDoor = nullptr;
 		bool selectedDoorWindowOpen = false;
+
+		std::vector<DungeonInteractableLever*> selectedTileLevers;
 		DungeonInteractableLever* selectedLever = nullptr;
 		bool selectedLeverWindowOpen = false;
+
 		DungeonActivatorPlate* selectedActivatorPlate = nullptr;
 		bool selectedActivatorPlateWindowOpen = false;
+
 		DungeonTransporter* selectedTransporter = nullptr;
 		bool selectedTransporterWindowOpen = false;
+
 		DungeonCheckpoint* selectedCheckpoint = nullptr;
 		bool selectedCheckpointWindowOpen = false;
+
 		bool selectedHasSpikes = false;
+
 		bool selectedHasBlock = false;
 
 		std::vector<DungeonShootLaser*> selectedTileShootLasers;
@@ -146,6 +155,11 @@ namespace Crawl
 
 		DungeonMirror* selectedMirror = nullptr;
 		bool selectedMirrorWindowOpen = false;
+
+		std::vector<DungeonDecoration*> selectedTileDecorations;
+		DungeonDecoration* selectedTileDecoration = nullptr;
+		bool selectedDecorationWindowOpen = false;
+		std::vector<string> decorations;
 
 		bool unsavedChanges = false;
 		bool shouldConfirmSaveBeforeLoad = false;

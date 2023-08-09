@@ -18,6 +18,7 @@
 #include "DungeonMirror.h"
 #include "DungeonEnemySlug.h"
 #include "DungeonEnemySlugPath.h"
+#include "DungeonDecoration.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
@@ -32,9 +33,6 @@
 Crawl::Dungeon::Dungeon()
 {
 	wallVariantPaths.push_back("crawler/model/tile_wall_1.object");
-	//wallVariantPaths.push_back("crawler/model/tile_wall1_blockout/tile_wall1_blockout.object");
-	//wallVariantPaths.push_back("crawler/model/tile_wall1_blockout/tile_wall1_blockout.object");
-
 	tilesParentObject = Scene::CreateObject("Tiles");
 
 	InitialiseTileMap();
@@ -1394,6 +1392,32 @@ void Crawl::Dungeon::RemoveSlugPath(DungeonEnemySlugPath* slugPath)
 	return;
 }
 
+Crawl::DungeonDecoration* Crawl::Dungeon::CreateDecoration(ivec2 position, FACING_INDEX facing)
+{
+	DungeonDecoration* decoration = new DungeonDecoration();
+	decoration->position = position;
+	decoration->facing = facing;
+	decoration->object = Scene::CreateObject();
+	decoration->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/decoration.object"));
+	decoration->object->SetLocalPosition(dungeonPosToObjectScale(position));
+	decoration->object->SetLocalRotationZ(orientationEulersReversed[facing]);
+	decorations.push_back(decoration);
+	return decoration;
+}
+
+void Crawl::Dungeon::RemoveDecoration(DungeonDecoration* decoration)
+{
+	for (int i = 0; i < decorations.size(); i++)
+	{
+		if (decorations[i] == decoration)
+		{
+			delete decorations[i];
+			decorations.erase(decorations.begin() + i);
+			break;
+		}
+	}
+}
+
 void Crawl::Dungeon::Save(std::string filename)
 {
 	serialised = GetDungeonSerialised();
@@ -1511,6 +1535,11 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 	for (auto& mirror : mirrors)
 		mirrors_json.push_back(*mirror);
 	dungeon_serialised["mirrors"] = mirrors_json;
+
+	ordered_json decorations_json;
+	for (auto& decoration : decorations)
+		decorations_json.push_back(*decoration);
+	dungeon_serialised["decorations"] = decorations_json;
 
 	return dungeon_serialised;
 }
@@ -1679,6 +1708,16 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		DungeonMirror* newMirror = CreateMirror(mirror.position, mirror.facing);
 	}
 
+	auto& decorations_json = serialised["decorations"];
+	for (auto it = decorations_json.begin(); it != decorations_json.end(); it++)
+	{
+		DungeonDecoration decoration = it.value().get<Crawl::DungeonDecoration>();
+		DungeonDecoration* newDecoration = CreateDecoration(decoration.position, decoration.facing);
+		newDecoration->localPosition = decoration.localPosition;
+		newDecoration->modelName = decoration.modelName;
+		newDecoration->LoadDecoration();
+	}
+
 	BuildSceneFromDungeonLayout();
 }
 
@@ -1774,6 +1813,10 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 	for (auto& pillar : pillars)
 		pillar.second->markedForDeletion = true;
 	pillars.clear();
+
+	for (auto& decoration : decorations)
+		decoration->object->markedForDeletion = true;
+	decorations.clear();
 }
 
 Object* Crawl::Dungeon::GetTileTemplate(int mask)
