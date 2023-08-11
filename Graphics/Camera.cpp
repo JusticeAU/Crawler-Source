@@ -12,7 +12,8 @@ Camera::Camera(float aspect, string name)
 
 	this->name = name;
 	glm::ivec2 vp = Window::GetViewPortSize();
-	frameBuffer = new FrameBuffer(FrameBuffer::Type::CameraTarget);
+	frameBuffer = new FrameBuffer(FrameBuffer::Type::CameraTargetMSAA);
+	frameBufferBlit = new FrameBuffer(FrameBuffer::Type::CameraTargetBlit);
 
 	UpdateMatrix();
 	UpdateAudioListener();
@@ -96,9 +97,11 @@ void Camera::DrawGUI()
 
 glm::mat4 Camera::GetMatrix() { return matrix; }
 
-FrameBuffer* Camera::GetFrameBuffer()
+void Camera::BlitFrameBuffer()
 {
-	return frameBuffer;
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, frameBuffer->GetID());
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBufferBlit->GetID());
+	glBlitFramebuffer(0, 0, frameBuffer->GetWidth(), frameBuffer->GetHeight(), 0, 0, frameBufferBlit->GetWidth(), frameBufferBlit->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
 }
 
 vec3 Camera::GetRayFromNDC(vec2 NDC)

@@ -44,7 +44,7 @@ Scene::Scene()
 	lightGizmo->components.push_back(lightGizmoRenderer);
 
 	// Add editor camera to list of cameras and set our main camera to be it.
-	cameras.push_back(Camera::s_instance->GetFrameBuffer());
+	cameras.push_back(Camera::s_instance->GetFrameBufferBlit());
 	outputCameraFrameBuffer = cameras[0];
 
 	// Object picking dev - Might be able to refactor this to be something that gets attached to a camera. It needs to be used by both scene editor camera, but also 'in game' camera - not unreasonable for these to be seperate implementations though.
@@ -202,6 +202,8 @@ void Scene::RenderEditorCamera()
 		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), Component::DrawMode::Standard);
 
 	FrameBuffer::UnBindTarget();
+	Camera::s_instance->BlitFrameBuffer();
+
 }
 
 void Scene::DrawGizmos()
@@ -296,7 +298,6 @@ void Scene::DrawGUI()
 
 		ImGui::SameLine();
 		ImGui::InputText("Name", &sceneFilename);
-
 		ImGui::BeginDisabled();
 		int obj = selectedObjectID;
 		ImGui::InputInt("Selected Object", &obj);

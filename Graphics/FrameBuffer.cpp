@@ -1,5 +1,5 @@
 #include "FrameBuffer.h"
-#include "Texture.h"
+#include "TextureManager.h"
 #include "Window.h"
 
 using std::vector;
@@ -14,11 +14,39 @@ FrameBuffer::FrameBuffer(Type type)
 	glGenTextures(1, &m_depthID);
 
 	// Generate the texture
-	glBindTexture(GL_TEXTURE_2D, m_texID);
 	switch (type)
 	{
-	case Type::CameraTarget:
+	case Type::CameraTargetMSAA:
 	{
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_texID);
+		glm::ivec2 res = Window::GetViewPortSize();
+		m_width = res.x;
+		m_height = res.y;
+		m_isScreenBuffer = true;
+
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, m_MSAASamples, GL_RGBA, res.x, res.y, GL_TRUE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+		// Generate the depth stencil
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_depthID);
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, m_MSAASamples, GL_DEPTH_STENCIL, res.x, res.y, GL_TRUE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+		// Link
+		glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, m_texID, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D_MULTISAMPLE, m_depthID, 0);
+
+		// unbind.
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		break;
+	}
+	case Type::CameraTargetBlit:
+	{
+		glBindTexture(GL_TEXTURE_2D, m_texID);
 		glm::ivec2 res = Window::GetViewPortSize();
 		m_width = res.x;
 		m_height = res.y;
@@ -38,10 +66,15 @@ FrameBuffer::FrameBuffer(Type type)
 		glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_texID, 0);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthID, 0);
+
+		// unbind.
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		break;
 	}
 	case Type::PostProcess:
 	{
+		glBindTexture(GL_TEXTURE_2D, m_texID);
 		glm::ivec2 res = Window::GetViewPortSize();
 		m_width = res.x;
 		m_height = res.y;
@@ -54,10 +87,15 @@ FrameBuffer::FrameBuffer(Type type)
 		// Link
 		glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_texID, 0);
+
+		// unbind.
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		break;
 	}
 	case Type::ObjectPicker:
 	{
+		glBindTexture(GL_TEXTURE_2D, m_texID);
 		glm::ivec2 res = Window::GetViewPortSize();
 		m_width = res.x;
 		m_height = res.y;
@@ -84,10 +122,15 @@ FrameBuffer::FrameBuffer(Type type)
 		glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_texID, 0);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthID, 0);
+
+		// unbind.
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		break;
 	}
 	case Type::ShadowMap:
 	{
+		glBindTexture(GL_TEXTURE_2D, m_texID);
 		m_width = 4096;
 		m_height = 4096;
 
@@ -108,13 +151,13 @@ FrameBuffer::FrameBuffer(Type type)
 		// Tell OpenGL explicitly that we're not rendering any colour data.
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
+		
+		// unbind.
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		break;
 	}
 	}
-	
-	// unbind.
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	m_texture->texID = m_texID;
 }
@@ -135,7 +178,9 @@ void FrameBuffer::BindTarget()
 void FrameBuffer::BindTexture(int texture)
 {
 	glActiveTexture(GL_TEXTURE0 + texture);
-	if(m_type == Type::ShadowMap)
+	if(m_type == Type::CameraTargetMSAA)
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_texID);
+	else if(m_type == Type::ShadowMap)
 		glBindTexture(GL_TEXTURE_2D, m_depthID);
 	else
 		glBindTexture(GL_TEXTURE_2D, m_texID);
@@ -177,3 +222,11 @@ unsigned int FrameBuffer::GetObjectID(int x, int y)
 
 	return (unsigned int)pixel[0];
 }
+
+
+void FrameBuffer::SetMSAASampleLevels(int samples)
+{
+	m_MSAASamples = samples;
+}
+
+int FrameBuffer::m_MSAASamples = 4;

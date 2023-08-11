@@ -3,6 +3,7 @@
 
 #include "MeshManager.h"
 #include "TextureManager.h"
+#include "FrameBuffer.h"
 #include "ShaderManager.h"
 #include "MaterialManager.h"
 #include "ModelManager.h"
@@ -98,6 +99,8 @@ Application::Application()
 	// Add the scene camera to our framebuffer here
 	// This was originally in Scene constructor, but moving to scene instances caused this to conflict per scene.
 	TextureManager::s_instance->AddFrameBuffer(Camera::s_instance->name.c_str(), Camera::s_instance->GetFrameBuffer());
+	TextureManager::s_instance->AddFrameBuffer((Camera::s_instance->name + "Blit").c_str(), Camera::s_instance->GetFrameBufferBlit());
+
 
 	ShaderManager::Init();
 	
@@ -249,6 +252,29 @@ void Application::Update(float delta)
 	}
 	case Mode::Programming:
 	{
+		// Graphics Options - Abstract this as these options develop.
+		ImGui::SetNextWindowSize({ 300, 100 }, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos({ 700, 300 }, ImGuiCond_FirstUseEver);
+		ImGui::Begin("Graphics");
+		int newMSAASample = MSAASamples;
+		if (ImGui::InputInt("MSAA Samples", &newMSAASample))
+		{
+			if (newMSAASample > MSAASamples)
+				MSAASamples *= 2;
+			else
+				MSAASamples /= 2;
+
+			MSAASamples = glm::clamp(MSAASamples, 2, 16);
+			FrameBuffer::SetMSAASampleLevels(MSAASamples);
+			auto fbList = TextureManager::FrameBuffers();
+			for (auto fb : *fbList)
+			{
+				if (fb.second != nullptr && fb.second->GetType() == FrameBuffer::Type::CameraTargetMSAA)
+					fb.second->Resize();
+			}
+		}
+		ImGui::End();
+
 		camera->DrawGUI();
 		camera->Update(delta);
 		MeshManager::DrawGUI();

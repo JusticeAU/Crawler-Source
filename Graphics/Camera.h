@@ -23,7 +23,10 @@ public:
 	mat4 GetMatrix();
 	vec3 GetPosition() { return position; };
 	void SetAspect(float value) { aspect = value; UpdateMatrix(); }
-	FrameBuffer* GetFrameBuffer();
+	FrameBuffer* GetFrameBuffer() { return frameBuffer; };
+	FrameBuffer* GetFrameBufferBlit() { return frameBufferBlit; };
+	void BlitFrameBuffer();
+
 	AudioListener* GetAudioListener() { return &m_audioListener; }
 	vec3 GetRayFromNDC(vec2 NDC);
 
@@ -51,6 +54,8 @@ protected:
 	glm::mat4 matrix;
 
 	FrameBuffer* frameBuffer;
+	FrameBuffer* frameBufferBlit;
+
 
 	bool isAdjusting = false;
 

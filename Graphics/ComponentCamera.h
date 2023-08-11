@@ -54,6 +54,7 @@ protected:
 
 	// Store framebuffers for pre and post processing, we can access them as textures if we want, for debugging or whatever.
 	FrameBuffer* m_frameBufferRaw;
+	FrameBuffer* m_frameBufferBlit;
 	FrameBuffer* m_frameBufferProcessed;
 	
 	// Flag for if the matrix should be rebuild. Can be triggered by UI interaction. (parent object dirty transform is also checked)
