@@ -16,6 +16,8 @@ uniform sampler2D normalMap;
 uniform sampler2D metallicMap;
 uniform sampler2D roughnessMap;
 uniform sampler2D aoMap;
+uniform sampler2D emissiveMap;
+
 
 // lights
 const int MAX_LIGHTS = 4;
@@ -43,6 +45,7 @@ void main()
     float metallic  = texture(metallicMap, _TexCoords).r;
     float roughness = texture(roughnessMap, _TexCoords).r;
     float ao        = texture(aoMap, _TexCoords).r;
+	vec3 emissive	= texture(emissiveMap, _TexCoords).rgb;
 	
 	vec3 N = normalize(normal); 
 	vec3 V = normalize(cameraPosition - _WorldPos);
@@ -80,7 +83,7 @@ void main()
 	}
 	
 	vec3 ambient = vec3(0.03) * albedo * ao;
-	vec3 color   = ambient + Lo;
+	vec3 color   = ambient + Lo + emissive;
 	
 	// Gamma correct - Reinhard.
 	color = color / (color + vec3(1.0));

@@ -278,6 +278,17 @@ void ComponentRenderer::ApplyMaterials()
 			material->shader->SetIntUniform("aoMap", 8);
 		}
 
+		if (material->emissiveMap)
+		{
+			material->emissiveMap->Bind(9);
+			material->shader->SetIntUniform("emissiveMap", 9);
+		}
+		else
+		{
+			TextureManager::GetTexture("engine/texture/black1x1.tga")->Bind(9);
+			material->shader->SetIntUniform("emissiveMap", 9);
+		}
+
 	}
 }
 
