@@ -718,6 +718,11 @@ Object* Scene::DuplicateObject(Object* object, Object* newParent)
 	return o;
 }
 
+void Scene::SetClearColour()
+{
+	glClearColor(s_instance->clearColour.r, s_instance->clearColour.g, s_instance->clearColour.b, 1);
+}
+
 void Scene::SetClearColour(vec3 clearColour)
 {
 	s_instance->clearColour = clearColour;

@@ -25,12 +25,13 @@ public:
 	static void Init();
 
 	static Scene* NewScene(string name);
-	static void ChangeScene(string name) { s_instance = s_instances[name]; }
+	static void ChangeScene(string name) { s_instance = s_instances[name]; SetClearColour(); }
 
 	static Object* CreateObject(Object* parent = nullptr);
 	static Object* CreateObject(string name, Object * parent = nullptr);
 	static Object* DuplicateObject(Object* object, Object* newParent);
 	
+	static void SetClearColour();
 	static void SetClearColour(vec3 clearColour);
 	
 	static vec3 GetSunColour();
@@ -94,7 +95,7 @@ protected:
 protected:
 	string sceneSubfolder = "scenes/";
 
-	vec3 clearColour;
+	vec3 clearColour = { 0.25f, 0.25f, 0.25f };;
 	int objectCount = 0;
 
 	// Directional/SunLight

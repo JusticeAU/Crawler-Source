@@ -34,6 +34,9 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		hp -= 1;*/
 
 	Scene::s_instance->m_pointLights[0].position = object->GetWorldSpacePosition(); // hacky!!!
+	Scene::s_instance->m_pointLights[0].position.z += 1.6f;
+	Scene::s_instance->m_pointLights[0].position += dungeonPosToObjectScale(directions[facing]) * 0.2f;
+
 
 	if (state == IDLE)
 	{
