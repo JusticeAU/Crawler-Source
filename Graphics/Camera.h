@@ -25,6 +25,8 @@ public:
 	void SetAspect(float value) { aspect = value; UpdateMatrix(); }
 	FrameBuffer* GetFrameBuffer() { return frameBuffer; };
 	FrameBuffer* GetFrameBufferBlit() { return frameBufferBlit; };
+	FrameBuffer* GetFrameBufferProcessed() { return frameBufferProcessed; };
+
 	void BlitFrameBuffer();
 
 	AudioListener* GetAudioListener() { return &m_audioListener; }
@@ -55,6 +57,7 @@ protected:
 
 	FrameBuffer* frameBuffer;
 	FrameBuffer* frameBufferBlit;
+	FrameBuffer* frameBufferProcessed;
 
 
 	bool isAdjusting = false;

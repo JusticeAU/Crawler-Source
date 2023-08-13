@@ -9,16 +9,18 @@ class FrameBuffer
 public:
 	enum class Type
 	{
-		CameraTargetMSAA,	// rgba, depth/stencil buffer, viewport resolution, with MultiSampling
-		CameraTargetBlit,	// rgba, depth/stencil buffer, viewport resolution.
+		CameraTargetMultiSample,	// rgba, depth/stencil buffer, viewport resolution, with MultiSampling
+		CameraTargetSingleSample,	// rgba, depth/stencil buffer, viewport resolution.
 		PostProcess,	// same as above but no depth/stencil buffer
 		ObjectPicker,	// rgb32f, has depth buffer, viewport resolution.
-		ShadowMap
+		ShadowMap,
+		SSAOgBuffer,
+		SSAOColourBuffer
 	};
 
 public:
 	FrameBuffer(Type type);
-	
+
 	~FrameBuffer();
 
 	FrameBuffer(const FrameBuffer&) = delete;
@@ -26,7 +28,14 @@ public:
 
 	void BindTarget();
 	static void UnBindTarget() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
+
 	void BindTexture(int texture);
+	void BindDepth(int texture);
+	void BindGPosition(int texture);
+	void BindGNormal(int texture);
+	void BindGAlbedo(int texture);
+	void BindRBODepth(int texture);
+
 	static void UnBindTexture(int texture);
 	static void SetMSAASampleLevels(int samples);
 
@@ -41,15 +50,24 @@ public:
 
 
 	const bool isScreenBuffer() { return m_isScreenBuffer; }
+	const bool isPrimaryTarget() { return m_primaryTarget; }
+	void MakePrimaryTarget() { m_primaryTarget = true; }
 
 	void Resize(); // Resizes to view port size
 
 	unsigned int GetObjectID(int x, int y);
 protected:
+	bool m_primaryTarget = false; // if true MSAA being true or false will decide what FBO type this target gets and how it behaves in render passes.
 	Type m_type;
 	GLuint m_fbID;
 	GLuint m_texID;
 	GLuint m_depthID;
+	// SSAO bBuffer stuff
+	GLuint m_gPosition;
+	GLuint m_gNormal;
+	GLuint m_gAlbedo;
+	GLuint m_rboDepth;
+
 	int m_width = 0;
 	int m_height = 0;
 	Texture* m_texture;

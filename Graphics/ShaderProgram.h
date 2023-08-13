@@ -15,7 +15,8 @@ public:
 
 	void SetFloatUniform(std::string variableName, float value);
 	void SetFloat3ArrayUniform(std::string arrayName, int elements, const glm::vec3* firstValue);
-	void SetVectorUniform(std::string variableName, glm::vec3 value);
+	void SetVector2Uniform(std::string variableName, glm::vec2 value);
+	void SetVector3Uniform(std::string variableName, glm::vec3 value);
 	void SetMatrixUniform(std::string variableName, glm::mat4 value);
 	void SetMatrixArrayUniform(std::string variableName, int elements, const glm::mat4* firstValue);
 	void SetIntUniform(std::string variableName, int value);

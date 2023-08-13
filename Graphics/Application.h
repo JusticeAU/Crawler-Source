@@ -43,7 +43,4 @@ public:
 	// Dev stuff
 	Crawl::DungeonEditor* dungeonEditor = nullptr;
 	Crawl::ArtTester* artTester = nullptr;
-
-	int MSAASamples = 4;
-
 };

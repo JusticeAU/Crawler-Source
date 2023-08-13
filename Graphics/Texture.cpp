@@ -1,6 +1,7 @@
 #include "Texture.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#include "Window.h"
 
 Texture::Texture() : texID(0)
 {
@@ -39,4 +40,35 @@ void Texture::Bind(unsigned int slot)
 {
 	glActiveTexture(GL_TEXTURE0 + slot);
 	glBindTexture(GL_TEXTURE_2D, texID);
+}
+
+//void Texture::CreateSSAOColourBuffer()
+//{
+//	name = "SSAO Colour Buffer";
+//	glm::ivec2 size = Window::GetViewPortSize();
+//	glGenTextures(1, &texID);
+//	glBindTexture(GL_TEXTURE_2D, texID);
+//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, size.x, size.y, 0, GL_RGBA, GL_FLOAT, NULL);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//}
+//
+//void Texture::ResizeSSAColourBuffer()
+//{
+//	glDeleteTextures(1, &texID);
+//	CreateSSAOColourBuffer();
+//}
+
+void Texture::CreateSSAONoiseTexture(glm::vec3* noiseTexData)
+{
+	name = "SSAO Noise Texture";
+	glGenTextures(1, &texID);
+	glBindTexture(GL_TEXTURE_2D, texID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4, 4, 0, GL_RGB, GL_FLOAT, noiseTexData);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }

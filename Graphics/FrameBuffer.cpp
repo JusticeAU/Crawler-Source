@@ -1,6 +1,8 @@
 #include "FrameBuffer.h"
 #include "TextureManager.h"
 #include "Window.h"
+#include "Scene.h"
+#include "LogUtils.h"
 
 using std::vector;
 
@@ -9,15 +11,15 @@ FrameBuffer::FrameBuffer(Type type)
 	m_type = type;
 	m_texture = new Texture();
 	// generate frame buffer, texture buffer and depth buffer.
-	glGenFramebuffers(1, &m_fbID);
-	glGenTextures(1, &m_texID);
-	glGenTextures(1, &m_depthID);
 
 	// Generate the texture
 	switch (type)
 	{
-	case Type::CameraTargetMSAA:
+	case Type::CameraTargetMultiSample:
 	{
+		glGenFramebuffers(1, &m_fbID);
+		glGenTextures(1, &m_texID);
+		glGenTextures(1, &m_depthID);
 		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_texID);
 		glm::ivec2 res = Window::GetViewPortSize();
 		m_width = res.x;
@@ -44,8 +46,11 @@ FrameBuffer::FrameBuffer(Type type)
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		break;
 	}
-	case Type::CameraTargetBlit:
+	case Type::CameraTargetSingleSample:
 	{
+		glGenFramebuffers(1, &m_fbID);
+		glGenTextures(1, &m_texID);
+		glGenTextures(1, &m_depthID);
 		glBindTexture(GL_TEXTURE_2D, m_texID);
 		glm::ivec2 res = Window::GetViewPortSize();
 		m_width = res.x;
@@ -74,6 +79,9 @@ FrameBuffer::FrameBuffer(Type type)
 	}
 	case Type::PostProcess:
 	{
+		glGenFramebuffers(1, &m_fbID);
+		glGenTextures(1, &m_texID);
+		glGenTextures(1, &m_depthID);
 		glBindTexture(GL_TEXTURE_2D, m_texID);
 		glm::ivec2 res = Window::GetViewPortSize();
 		m_width = res.x;
@@ -95,6 +103,9 @@ FrameBuffer::FrameBuffer(Type type)
 	}
 	case Type::ObjectPicker:
 	{
+		glGenFramebuffers(1, &m_fbID);
+		glGenTextures(1, &m_texID);
+		glGenTextures(1, &m_depthID);
 		glBindTexture(GL_TEXTURE_2D, m_texID);
 		glm::ivec2 res = Window::GetViewPortSize();
 		m_width = res.x;
@@ -130,6 +141,9 @@ FrameBuffer::FrameBuffer(Type type)
 	}
 	case Type::ShadowMap:
 	{
+		glGenFramebuffers(1, &m_fbID);
+		glGenTextures(1, &m_texID);
+		glGenTextures(1, &m_depthID);
 		glBindTexture(GL_TEXTURE_2D, m_texID);
 		m_width = 4096;
 		m_height = 4096;
@@ -157,6 +171,75 @@ FrameBuffer::FrameBuffer(Type type)
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		break;
 	}
+	case Type::SSAOgBuffer:
+	{
+		glm::ivec2 res = Window::GetViewPortSize();
+		m_width = res.x;
+		m_height = res.y;
+		m_isScreenBuffer = true;
+
+		glGenFramebuffers(1, &m_fbID);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
+		// position color buffer
+		glGenTextures(1, &m_gPosition);
+		glBindTexture(GL_TEXTURE_2D, m_gPosition);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_gPosition, 0);
+		// normal color buffer
+		glGenTextures(1, &m_gNormal);
+		glBindTexture(GL_TEXTURE_2D, m_gNormal);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_width, m_height, 0, GL_RGBA, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_gNormal, 0);
+		// color + specular color buffer
+		glGenTextures(1, &m_gAlbedo);
+		glBindTexture(GL_TEXTURE_2D, m_gAlbedo);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_gAlbedo, 0);
+		// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+		unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+		glDrawBuffers(3, attachments);
+		// create and attach depth buffer (renderbuffer)
+		glGenRenderbuffers(1, &m_rboDepth);
+		glBindRenderbuffer(GL_RENDERBUFFER, m_rboDepth);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_width, m_height);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rboDepth);
+		// finally check if framebuffer is complete
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			LogUtils::Log("Framebuffer not complete!");
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		break;
+	}
+	case Type::SSAOColourBuffer:
+	{
+		glm::ivec2 res = Window::GetViewPortSize();
+		m_width = res.x;
+		m_height = res.y;
+		m_isScreenBuffer = true;
+
+		glGenFramebuffers(1, &m_fbID);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
+
+		glGenTextures(1, &m_texID);
+		glBindTexture(GL_TEXTURE_2D, m_texID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, m_width, m_height, 0, GL_RED, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		
+		// clamp to edge to avoid weird behaviour at edge of screen
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texID, 0);
+		break;
+	}
 	}
 
 	m_texture->texID = m_texID;
@@ -178,12 +261,42 @@ void FrameBuffer::BindTarget()
 void FrameBuffer::BindTexture(int texture)
 {
 	glActiveTexture(GL_TEXTURE0 + texture);
-	if(m_type == Type::CameraTargetMSAA)
+	if(m_type == Type::CameraTargetMultiSample)
 		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_texID);
 	else if(m_type == Type::ShadowMap)
 		glBindTexture(GL_TEXTURE_2D, m_depthID);
 	else
 		glBindTexture(GL_TEXTURE_2D, m_texID);
+}
+
+void FrameBuffer::BindDepth(int texture)
+{
+	glActiveTexture(GL_TEXTURE0 + texture);
+	glBindTexture(GL_TEXTURE_2D, m_depthID);
+}
+
+void FrameBuffer::BindGPosition(int texture)
+{
+	glActiveTexture(GL_TEXTURE0 + texture);
+	glBindTexture(GL_TEXTURE_2D, m_gPosition);
+}
+
+void FrameBuffer::BindGNormal(int texture)
+{
+	glActiveTexture(GL_TEXTURE0 + texture);
+	glBindTexture(GL_TEXTURE_2D, m_gNormal);
+}
+
+void FrameBuffer::BindGAlbedo(int texture)
+{
+	glActiveTexture(GL_TEXTURE0 + texture);
+	glBindTexture(GL_TEXTURE_2D, m_gAlbedo);
+}
+
+void FrameBuffer::BindRBODepth(int texture)
+{
+	glActiveTexture(GL_TEXTURE0 + texture);
+	glBindTexture(GL_TEXTURE_2D, m_rboDepth);
 }
 
 void FrameBuffer::UnBindTexture(int texture)
@@ -194,13 +307,24 @@ void FrameBuffer::UnBindTexture(int texture)
 
 void FrameBuffer::Resize()
 {
+	if (m_primaryTarget)
+		m_type = Scene::s_instance->MSAAEnabled ? Type::CameraTargetMultiSample : Type::CameraTargetSingleSample;
+
 	FrameBuffer* newFB = new FrameBuffer(m_type);
 	glDeleteFramebuffers(1, &m_fbID);
 	glDeleteTextures(1, &m_texID);
 	glDeleteTextures(1, &m_depthID);
+	glDeleteTextures(1, &m_gPosition);
+	glDeleteTextures(1, &m_gAlbedo);
+	glDeleteTextures(1, &m_gNormal);
 	m_fbID = newFB->m_fbID;
 	m_texID = newFB->m_texID;
 	m_depthID = newFB->m_depthID;
+	m_gPosition = newFB->m_gPosition;
+	m_gAlbedo = newFB->m_gAlbedo;
+	m_gNormal = newFB->m_gNormal;
+
+	
 	m_width = newFB->m_width;
 	m_height = newFB->m_height;
 
@@ -222,7 +346,6 @@ unsigned int FrameBuffer::GetObjectID(int x, int y)
 
 	return (unsigned int)pixel[0];
 }
-
 
 void FrameBuffer::SetMSAASampleLevels(int samples)
 {

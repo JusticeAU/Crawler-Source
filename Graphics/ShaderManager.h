@@ -15,6 +15,7 @@ public:
 
 	static ShaderProgram* GetShaderProgram(string name);
 	static void DrawGUI();
+	static void RecompileAllShaderPrograms();
 	static ShaderManager* s_instance;
 	static const map<string, ShaderProgram*>* ShaderPrograms() { return &s_instance->shaderPrograms; }
 	static int GetPostProcessShaderCount() { return (int)s_instance->m_postProcessShaderNames.size(); }
@@ -28,7 +29,6 @@ protected:
 
 	void LoadAllFiles();
 
-	void RecompileAllShaderPrograms();
 	vector<string> m_postProcessShaderNames;
 };
 

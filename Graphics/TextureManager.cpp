@@ -47,11 +47,15 @@ void TextureManager::DrawGUI()
 	ImGui::BeginDisabled();
 	int texCount = (int)s_instance->textures.size();
 	ImGui::DragInt("Texture Count", &texCount);
+	ImGui::EndDisabled();
 	for (auto t : s_instance->textures)
 	{
-		ImGui::Text(t.first.c_str());
+		if (ImGui::Selectable(t.first.c_str()))
+		{
+			s_instance->selectedTexture = t.second;
+			s_instance->selectedTextureWindowOpen = true;
+		}
 	}
-	ImGui::EndDisabled();
 	ImGui::End();
 
 	// buffers
@@ -68,6 +72,24 @@ void TextureManager::DrawGUI()
 	}
 	ImGui::EndDisabled();
 	ImGui::End();
+}
+
+void TextureManager::DrawTexturePreview()
+{
+	if (s_instance->selectedTextureWindowOpen)
+	{
+		ImGui::Begin("Texture preview", &s_instance->selectedTextureWindowOpen);
+		ImGui::Image((ImTextureID)(s_instance->selectedTexture->texID), { 1600,900 }, { 0,1 }, { 1,0 });
+	}
+}
+
+void TextureManager::SetPreviewTexture(string textureName)
+{
+	s_instance->selectedTexture = GetTexture(textureName);
+	if (s_instance->selectedTexture != nullptr)
+	{
+		s_instance->selectedTextureWindowOpen = true;
+	}
 }
 
 void TextureManager::LoadFromFile(const char* filename)
@@ -92,7 +114,7 @@ void TextureManager::AddFrameBuffer(const char* name, FrameBuffer* fb)
 	}
 
 	frameBuffers.emplace(name, fb);
-	textures.emplace(texName, fb->GetTexture());
+	textures.emplace(StringUtils::ToLower(texName), fb->GetTexture());
 }
 
 void TextureManager::RemoveFrameBuffer(const char* name)
@@ -105,6 +127,15 @@ void TextureManager::RemoveFrameBuffer(const char* name)
 	{
 		frameBuffers.erase(existingFB);
 		textures.erase(texName);
+	}
+}
+
+void TextureManager::RefreshFrameBuffers()
+{
+	for (auto& fb : s_instance->frameBuffers)
+	{
+		if (fb.second != nullptr && fb.second->isScreenBuffer())
+			fb.second->Resize();
 	}
 }
 

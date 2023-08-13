@@ -56,7 +56,7 @@ void ComponentSkinnedRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				// Positions and Rotations
 				shader->SetMatrixUniform("pvmMatrix", pvm);
 				shader->SetMatrixUniform("mMatrix", componentParent->transform);
-				shader->SetVectorUniform("cameraPosition", position);
+				shader->SetVector3Uniform("cameraPosition", position);
 				BindBoneTransform();
 				DrawModel();
 				break;
@@ -70,7 +70,7 @@ void ComponentSkinnedRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				// Positions and Rotations
 				shader->SetMatrixUniform("pvmMatrix", pvm);
 				shader->SetMatrixUniform("mMatrix", componentParent->transform);
-				shader->SetVectorUniform("cameraPosition", position);
+				shader->SetVector3Uniform("cameraPosition", position);
 				BindBoneTransform();
 				DrawModel();
 				break;

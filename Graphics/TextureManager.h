@@ -18,7 +18,11 @@ public:
 	static FrameBuffer* GetFrameBuffer(string name);
 
 	static void DrawGUI();
+	static void DrawTexturePreview();
+	static void SetPreviewTexture(string textureName);
 	static TextureManager* s_instance;
+	static void AddTexture(Texture* texture) { s_instance->textures.emplace(texture->name, texture); }
+	
 	static const map<string, Texture*>* Textures() { return &s_instance->textures; }
 	static const map<string, FrameBuffer*>* FrameBuffers() { return &s_instance->frameBuffers; }
 
@@ -27,10 +31,16 @@ public:
 	
 	void AddFrameBuffer(const char* name, FrameBuffer* fb);
 	void RemoveFrameBuffer(const char* name);
+
+	static void RefreshFrameBuffers();
+
 protected:
 	TextureManager();
 	map<string, Texture*> textures;
 	map<string, FrameBuffer*> frameBuffers;
+
+	Texture* selectedTexture = nullptr;
+	bool selectedTextureWindowOpen = false;
 
 };
 

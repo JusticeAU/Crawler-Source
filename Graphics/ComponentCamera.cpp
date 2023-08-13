@@ -21,12 +21,13 @@ ComponentCamera::ComponentCamera(Object* parent) : Component("Camera", Component
 	
 	// Initilise framebuffers. We create two initially. 1 to render the scene to, then a 2nd for the final post processing effects to land to.
 	// Raw framebuffer to render to, with MSAA
-	m_frameBufferRaw = new FrameBuffer(FrameBuffer::Type::CameraTargetMSAA);
+	m_frameBufferRaw = new FrameBuffer(FrameBuffer::Type::CameraTargetMultiSample);
+	m_frameBufferRaw->MakePrimaryTarget();
 	string FbName = Scene::s_instance->sceneName + componentParent->objectName;
 	TextureManager::s_instance->AddFrameBuffer(FbName.c_str(), m_frameBufferRaw); // add the texture to the manager so we can bind it to meshes and stuff.
 	
 	// Intermediarely framebuffer to blit to, without MSAA, to use in post processing
-	m_frameBufferBlit = new FrameBuffer(FrameBuffer::Type::CameraTargetBlit);
+	m_frameBufferBlit = new FrameBuffer(FrameBuffer::Type::CameraTargetSingleSample);
 	string BlitName = FbName + "_Blit";
 	TextureManager::s_instance->AddFrameBuffer(BlitName.c_str(), m_frameBufferBlit); // add the texture to the manager so we can bind it to meshes and stuff.
 	
@@ -211,13 +212,20 @@ void ComponentCamera::SetAsRenderTarget()
 // If there are any post process effects applied, they are processed here. Regardless of if there are effects or not, the frame buffer is transfered from Raw to Processed.
 void ComponentCamera::RunPostProcess()
 {
-	// blit it to a non-multisampled FBO for texture attachment compatiability.
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_frameBufferRaw->GetID());
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_frameBufferBlit->GetID());
-	glBlitFramebuffer(0, 0, m_frameBufferRaw->GetWidth(), m_frameBufferRaw->GetHeight(), 0, 0, m_frameBufferBlit->GetWidth(), m_frameBufferBlit->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	if (Scene::s_instance->MSAAEnabled)
+	{
+		// blit it to a non-multisampled FBO for texture attachment compatiability.
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_frameBufferRaw->GetID());
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_frameBufferBlit->GetID());
+		glBlitFramebuffer(0, 0, m_frameBufferRaw->GetWidth(), m_frameBufferRaw->GetHeight(), 0, 0, m_frameBufferBlit->GetWidth(), m_frameBufferBlit->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-	// bind output of first pass (raw render with no processing)
-	m_frameBufferBlit->BindTexture(20);
+		// bind output of first pass (raw render with no processing)
+		m_frameBufferBlit->BindTexture(20);
+	}
+	else
+		m_frameBufferRaw->BindTexture(20);
+
+	Scene::ssao_ssaoBlurFBO->BindTexture(21);
 	// loop through post processing stack
 	for (auto postProcess : m_postProcessStack)
 	{

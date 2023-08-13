@@ -32,6 +32,7 @@ void PostProcess::Process()
 
 	m_shader->Bind();
 	m_shader->SetIntUniform("frame", m_textureBindPoint); // previous post process step would have bound the texture.
+	m_shader->SetIntUniform("SSAO", 21); // previous post process step would have bound the texture.
 
 	// Draw the frame quad
 	glBindVertexArray(s_frame->vao);
@@ -66,8 +67,8 @@ void PostProcess::PassThrough(ShaderProgram* shader)
 	}
 	else
 	{
-		shader->Bind();
-		shader->SetIntUniform("frame", 20);
+		//shader->Bind();
+		//shader->SetIntUniform("frame", 20);
 	}
 	
 	// Draw the frame quad

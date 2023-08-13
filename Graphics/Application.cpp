@@ -100,6 +100,8 @@ Application::Application()
 	// This was originally in Scene constructor, but moving to scene instances caused this to conflict per scene.
 	TextureManager::s_instance->AddFrameBuffer(Camera::s_instance->name.c_str(), Camera::s_instance->GetFrameBuffer());
 	TextureManager::s_instance->AddFrameBuffer((Camera::s_instance->name + "Blit").c_str(), Camera::s_instance->GetFrameBufferBlit());
+	TextureManager::s_instance->AddFrameBuffer((Camera::s_instance->name + "Processed").c_str(), Camera::s_instance->GetFrameBufferProcessed());
+
 
 
 	ShaderManager::Init();
@@ -128,7 +130,11 @@ Application::Application()
 	dungeon = new Crawl::Dungeon();
 	dungeonPlayer = new Crawl::DungeonPlayer();
 	dungeon->SetPlayer(dungeonPlayer);
-	dungeonPlayer->SetDungeon(dungeon);	
+	dungeonPlayer->SetDungeon(dungeon);
+
+
+	//SSAO Dev
+	TextureManager::SetPreviewTexture("framebuffers/SSAOBlur");
 }
 
 Application::~Application()
@@ -145,20 +151,16 @@ Application::~Application()
 void Application::LaunchArgument(char* arg)
 {
 	std::string argument = arg;
-	if (argument == "design" || argument == "art")
+	if (argument == "design" || argument == "art" || argument == "dev")
 	{
 		developerMode = true;
 
-		dungeonEditor = new Crawl::DungeonEditor();
-		dungeonEditor->SetDungeon(dungeon);
-
-		Scene* art = Scene::NewScene("CrawlArtTest");
-		Scene::s_instance = art;
-		art->LoadJSON("crawler/scene/test_art.scene");
-		artTester = new Crawl::ArtTester();
 		
 		if (argument == "design")
 		{
+			dungeonEditor = new Crawl::DungeonEditor();
+			dungeonEditor->SetDungeon(dungeon);
+
 			s_mode = Mode::Design;
 			Scene::ChangeScene("Dungeon");
 			dungeonEditor->SetDungeon(dungeon);
@@ -167,6 +169,11 @@ void Application::LaunchArgument(char* arg)
 		}
 		else if (argument == "art")
 		{
+			Scene* art = Scene::NewScene("CrawlArtTest");
+			Scene::s_instance = art;
+			art->LoadJSON("crawler/scene/test_art.scene");
+			artTester = new Crawl::ArtTester();
+
 			s_mode = Mode::Art;
 			artTester->Activate();
 		}
@@ -177,8 +184,8 @@ void Application::InitGame()
 {
 	dungeon->Load("crawler/dungeon/start.dungeon");
 	Scene::SetCameraIndex(1);
-	if (!developerMode)
-		dungeonPlayer->Respawn();
+	/*if (!developerMode)
+		dungeonPlayer->Respawn();*/
 }
 
 void Application::Run()
@@ -220,6 +227,7 @@ void Application::Run()
 
 void Application::Update(float delta)
 {
+	//TextureManager::DrawTexturePreview();
 	switch (s_mode)
 	{
 	case Mode::Game:
@@ -252,29 +260,6 @@ void Application::Update(float delta)
 	}
 	case Mode::Programming:
 	{
-		// Graphics Options - Abstract this as these options develop.
-		ImGui::SetNextWindowSize({ 300, 100 }, ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowPos({ 700, 300 }, ImGuiCond_FirstUseEver);
-		ImGui::Begin("Graphics");
-		int newMSAASample = MSAASamples;
-		if (ImGui::InputInt("MSAA Samples", &newMSAASample))
-		{
-			if (newMSAASample > MSAASamples)
-				MSAASamples *= 2;
-			else
-				MSAASamples /= 2;
-
-			MSAASamples = glm::clamp(MSAASamples, 2, 16);
-			FrameBuffer::SetMSAASampleLevels(MSAASamples);
-			auto fbList = TextureManager::FrameBuffers();
-			for (auto fb : *fbList)
-			{
-				if (fb.second != nullptr && fb.second->GetType() == FrameBuffer::Type::CameraTargetMSAA)
-					fb.second->Resize();
-			}
-		}
-		ImGui::End();
-
 		camera->DrawGUI();
 		camera->Update(delta);
 		MeshManager::DrawGUI();
@@ -284,6 +269,7 @@ void Application::Update(float delta)
 		ModelManager::DrawGUI();
 		AudioManager::DrawGUI();
 		Scene::s_instance->DrawGUI();
+		Scene::s_instance->DrawGraphicsGUI();
 		break;
 	}
 
@@ -293,7 +279,7 @@ void Application::Update(float delta)
 
 	if (developerMode)
 	{
-		if (dungeonEditor->requestedGameMode)
+		if (dungeonEditor != nullptr && dungeonEditor->requestedGameMode)
 		{
 			s_mode = Mode::Game;
 			Scene::ChangeScene("Dungeon");
@@ -301,7 +287,7 @@ void Application::Update(float delta)
 			dungeonEditor->requestedGameMode = false;
 		}
 
-		if (s_mode == Mode::Game && Input::Keyboard(GLFW_KEY_ESCAPE).Down())
+		if (dungeonEditor != nullptr && s_mode == Mode::Game && Input::Keyboard(GLFW_KEY_ESCAPE).Down())
 		{
 			s_mode = Mode::Design;
 			dungeonEditor->Activate();
@@ -324,7 +310,6 @@ void Application::Update(float delta)
 
 	Scene::s_instance->Update(delta);
 	Scene::s_instance->Render();
-	Scene::s_instance->DrawGizmos();
 	Scene::s_instance->DrawCameraToBackBuffer();
 	Scene::s_instance->CleanUp();
 }

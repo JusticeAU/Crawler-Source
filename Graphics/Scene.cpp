@@ -16,6 +16,7 @@
 
 #include "Camera.h"
 
+#include "MathUtils.h"
 #include "LogUtils.h"
 #include "PostProcess.h"
 
@@ -23,6 +24,7 @@
 
 #include <fstream>
 #include <filesystem>
+#include <random>
 namespace fs = std::filesystem;
 
 Scene::Scene()
@@ -34,17 +36,17 @@ Scene::Scene()
 	// Create our Light Gizmo for rendering - this will move to a ComponentLight and be handled there.
 	lightGizmo = new Object(-1, "Light Gizmo");
 	ComponentModel* lightGizmoModelComponent = new ComponentModel(lightGizmo);
-	lightGizmoModelComponent->model = ModelManager::GetModel("engine/models/Gizmos/bulb.fbx");
+	lightGizmoModelComponent->model = ModelManager::GetModel("engine/model/Gizmos/bulb.fbx");
 	lightGizmo->components.push_back(lightGizmoModelComponent);
 	ComponentRenderer* lightGizmoRenderer = new ComponentRenderer(lightGizmo);
 	gizmoShader = ShaderManager::GetShaderProgram("engine/shader/gizmoShader");
 	lightGizmoRenderer->model = lightGizmoModelComponent->model;
 	lightGizmoRenderer->materialArray.resize(1);
-	lightGizmoRenderer->materialArray[0] = MaterialManager::GetMaterial("engine/models/materials/Gizmos.material");
+	lightGizmoRenderer->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/Gizmos.material");
 	lightGizmo->components.push_back(lightGizmoRenderer);
 
 	// Add editor camera to list of cameras and set our main camera to be it.
-	cameras.push_back(Camera::s_instance->GetFrameBufferBlit());
+	cameras.push_back(Camera::s_instance->GetFrameBufferProcessed());
 	outputCameraFrameBuffer = cameras[0];
 
 	// Object picking dev - Might be able to refactor this to be something that gets attached to a camera. It needs to be used by both scene editor camera, but also 'in game' camera - not unreasonable for these to be seperate implementations though.
@@ -58,6 +60,52 @@ Scene::Scene()
 	shadowMap = new FrameBuffer(FrameBuffer::Type::ShadowMap);
 	shadowMapDevOutput = new FrameBuffer(FrameBuffer::Type::PostProcess);
 	depthMapOutputShader = ShaderManager::GetShaderProgram("engine/shader/zzShadowMapDev");
+
+	// SSAO Dev
+	if (ssao_gBuffer == nullptr)
+	{
+		// Initialise the buffers
+		ssao_gBuffer = new FrameBuffer(FrameBuffer::Type::SSAOgBuffer);
+		TextureManager::s_instance->AddFrameBuffer("gBuffer", ssao_gBuffer);
+		ssao_ssaoFBO = new FrameBuffer(FrameBuffer::Type::SSAOColourBuffer);
+		TextureManager::s_instance->AddFrameBuffer("SSAO", ssao_ssaoFBO);
+		ssao_ssaoBlurFBO = new FrameBuffer(FrameBuffer::Type::SSAOColourBuffer);
+		TextureManager::s_instance->AddFrameBuffer("SSAOBlur", ssao_ssaoBlurFBO);
+		// Generate the kernel - https://learnopengl.com/Advanced-Lighting/SSAO
+		// Both from <random>
+		std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // random floats between [0.0, 1.0]
+		std::default_random_engine generator;
+		unsigned int kernalSize = 64;
+		ssaoKernel.reserve(kernalSize);
+		for (unsigned int i = 0; i < kernalSize; ++i)
+		{
+			glm::vec3 sample(
+				randomFloats(generator) * 2.0 - 1.0,
+				randomFloats(generator) * 2.0 - 1.0,
+				randomFloats(generator)
+			);
+			sample = glm::normalize(sample);
+			sample *= randomFloats(generator);
+			float scale = (float)i / (float)kernalSize;
+			scale = MathUtils::Lerp(0.1f, 1.0f, scale * scale);
+			sample *= scale;
+			ssaoKernel.push_back(sample);
+			//LogUtils::Log(to_string(sample.x) + " " + to_string(sample.y) + " " + to_string(sample.z));
+		}
+
+		// Generate SSAO Noise
+		for (unsigned int i = 0; i < 16; i++)
+		{
+			glm::vec3 noise(
+				randomFloats(generator) * 2.0 - 1.0,
+				randomFloats(generator) * 2.0 - 1.0,
+				0.0f);
+			ssaoNoise.push_back(noise);
+		}
+		ssao_noiseTexture = new Texture();
+		ssao_noiseTexture->CreateSSAONoiseTexture(ssaoNoise.data());
+		TextureManager::AddTexture(ssao_noiseTexture);
+	}
 }
 Scene::~Scene()
 {
@@ -118,17 +166,19 @@ void Scene::UpdateInputs()
 
 void Scene::Render()
 {
-	float startTime = glfwGetTime();
-
 	//RenderShadowMaps();
-	RenderSceneCameras();
 	if (requestedObjectSelection)
 		RenderObjectPicking();
-	RenderEditorCamera();
+	if(cameraIndex != 0)
+		RenderSceneCameras();
+	else
+		RenderEditorCamera();
+	if(drawGizmos)
+		DrawGizmos();
 
-	float endTime = glfwGetTime();
-
-	renderTime = endTime - startTime;
+	double endTime = glfwGetTime();
+	renderTime = endTime - lastRenderTimeStamp;
+	lastRenderTimeStamp = endTime;
 }
 void Scene::RenderShadowMaps()
 {
@@ -148,22 +198,84 @@ void Scene::RenderShadowMaps()
 void Scene::RenderSceneCameras()
 {
 	// Bind recently rendered shadowmap.
-	shadowMap->BindTexture(20);
-	shadowMapDevOutput->BindTarget();
-	PostProcess::PassThrough(depthMapOutputShader);
+	//shadowMap->BindTexture(20);
+	//shadowMapDevOutput->BindTarget();
+	//PostProcess::PassThrough(depthMapOutputShader);
 
-	shadowMap->BindTexture(5);
+	//shadowMap->BindTexture(5);
 	// for each camera in each object, draw to that cameras frame buffer
-	for (auto& c : componentCameras)
+
+	ComponentCamera* c = componentCameras[cameraIndex - 1];
+	c->UpdateViewProjectionMatrix();
+	vec3 cameraPosition = c->GetWorldSpacePosition();
+
+	if (ssao_enabled)
 	{
-		c->SetAsRenderTarget();
-		c->UpdateViewProjectionMatrix();
+		// Build G Buffer for SSAO with a Geomerty Pass.
+		ssao_gBuffer->BindTarget();
+		ShaderProgram* ssaoGeoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOGeometryPass");
+		ssaoGeoShader->Bind();
+		ssaoGeoShader->SetMatrixUniform("view", c->GetViewMatrix());
+		ssaoGeoShader->SetMatrixUniform("projection", c->GetProjectionMatrix());
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		vec3 cameraPosition = c->GetWorldSpacePosition();
+
+		// bind the shader for it - just use static for now but will need something for skinned.
+		glDisable(GL_BLEND);
 		for (auto& o : objects)
-			o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::Standard);
-		c->RunPostProcess();
+			o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::SSAOgBuffer);
+		glEnable(GL_BLEND);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		// Do the SSAO pass
+		ssao_ssaoFBO->BindTarget();
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		ShaderProgram* ssaoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOTermPass");
+		ssaoShader->Bind();
+		ssaoShader->SetFloatUniform("radius", ssao_radius);
+		ssaoShader->SetFloatUniform("bias", ssao_bias);
+		vec2 screenSize = Window::GetViewPortSize();
+		ssaoShader->SetVector2Uniform("screenSize", screenSize);
+
+		glDisable(GL_BLEND);
+		ssaoShader->SetIntUniform("gPosition", 0);
+		ssaoShader->SetIntUniform("gNormal", 1);
+		ssaoShader->SetIntUniform("texNoise", 2);
+
+		ssaoShader->SetFloat3ArrayUniform("samples", 64, ssaoKernel.data());
+		ssaoShader->SetMatrixUniform("projection", c->GetProjectionMatrix());
+		ssao_gBuffer->BindGPosition(0);
+		ssao_gBuffer->BindGNormal(1);
+		ssao_noiseTexture->Bind(2);
+		PostProcess::PassThrough(ssaoShader);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		FrameBuffer::UnBindTexture(0);
+		FrameBuffer::UnBindTexture(1);
+		FrameBuffer::UnBindTexture(2);
+
+		// Do the SSAO Blur Pass
+		ssao_ssaoBlurFBO->BindTarget();
+		ShaderProgram* ssaoBlur = ShaderManager::GetShaderProgram("engine/shader/SSAOBlurPass");
+		ssaoBlur->Bind();
+		ssaoBlur->SetIntUniform("ssaoInput", 0);
+		ssao_ssaoFBO->BindTexture(0);
+
+		PostProcess::PassThrough(ssaoBlur);
+		FrameBuffer::UnBindTexture(0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		// Draw
+
+		glEnable(GL_BLEND);
 	}
+
+	// Do normal render pass
+	c->SetAsRenderTarget();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	for (auto& o : objects)
+		o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::Standard);
+	c->RunPostProcess();
 }
 void Scene::RenderObjectPicking()
 {
@@ -194,28 +306,132 @@ void Scene::RenderObjectPicking()
 }
 void Scene::RenderEditorCamera()
 {
-	// then draw the scene using the Camera class "Editor Camera"
+	if (ssao_enabled)
+	{
+		// Build G Buffer for SSAO with a Geomerty Pass.
+		ssao_gBuffer->BindTarget();
+		ShaderProgram* ssaoGeoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOGeometryPass");
+		ssaoGeoShader->Bind();
+		ssaoGeoShader->SetMatrixUniform("view", Camera::s_instance->GetView());
+		ssaoGeoShader->SetMatrixUniform("projection", Camera::s_instance->GetProjection());
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		vec3 cameraPosition = Camera::s_instance->GetPosition();
+		// bind the shader for it - just use static for now but will need something for skinned.
+		glDisable(GL_BLEND);
+		for (auto& o : objects)
+			o->Draw(Camera::s_instance->GetMatrix(), cameraPosition, Component::DrawMode::SSAOgBuffer);
+		glEnable(GL_BLEND);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		// Do the SSAO pass
+		ssao_ssaoFBO->BindTarget();
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		ShaderProgram* ssaoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOTermPass");
+		ssaoShader->Bind();
+		ssaoShader->SetFloatUniform("radius", ssao_radius);
+		ssaoShader->SetFloatUniform("bias", ssao_bias);
+		vec2 screenSize = Window::GetViewPortSize();
+		ssaoShader->SetVector2Uniform("screenSize", screenSize);
+
+		glDisable(GL_BLEND);
+		ssaoShader->SetIntUniform("gPosition", 0);
+		ssaoShader->SetIntUniform("gNormal", 1);
+		ssaoShader->SetIntUniform("texNoise", 2);
+
+		ssaoShader->SetFloat3ArrayUniform("samples", 64, ssaoKernel.data());
+		ssaoShader->SetMatrixUniform("projection", Camera::s_instance->GetProjection());
+		ssao_gBuffer->BindGPosition(0);
+		ssao_gBuffer->BindGNormal(1);
+		ssao_noiseTexture->Bind(2);
+		PostProcess::PassThrough(ssaoShader);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		FrameBuffer::UnBindTexture(0);
+		FrameBuffer::UnBindTexture(1);
+		FrameBuffer::UnBindTexture(2);
+
+		// Do the SSAO Blur Pass
+		ssao_ssaoBlurFBO->BindTarget();
+		ShaderProgram* ssaoBlur = ShaderManager::GetShaderProgram("engine/shader/SSAOBlurPass");
+		ssaoBlur->Bind();
+		ssaoBlur->SetIntUniform("ssaoInput", 0);
+		ssao_ssaoFBO->BindTexture(0);
+
+		PostProcess::PassThrough(ssaoBlur);
+		FrameBuffer::UnBindTexture(0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		// Draw
+
+		glEnable(GL_BLEND);
+
+	}
 	Camera::s_instance->GetFrameBuffer()->BindTarget();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	for (auto& o : objects)
 		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), Component::DrawMode::Standard);
-
 	FrameBuffer::UnBindTarget();
-	Camera::s_instance->BlitFrameBuffer();
 
+	FrameBuffer* editorReadFBO;
+	if (MSAAEnabled)
+	{
+		// blit it to a non-multisampled FBO for texture attachment compatiability.
+		FrameBuffer* editorFBO = Camera::s_instance->GetFrameBuffer();
+		editorReadFBO = Camera::s_instance->GetFrameBufferBlit();
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, editorFBO->GetID());
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, editorReadFBO->GetID());
+		glBlitFramebuffer(0, 0, editorFBO->GetWidth(), editorFBO->GetHeight(), 0, 0, editorReadFBO->GetWidth(), editorReadFBO->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	}
+	else
+		editorReadFBO = Camera::s_instance->GetFrameBuffer();
+
+	if (ssao_enabled)
+	{
+		// draw combine with SSAO texture
+		Camera::s_instance->GetFrameBufferProcessed()->BindTarget();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glDisable(GL_DEPTH_TEST);
+		ShaderProgram* ssao = ShaderManager::GetShaderProgram("engine/shader/postProcess/SSAO");
+		ssao->Bind();
+		editorReadFBO->BindTexture(20);
+		ssao_ssaoBlurFBO->BindTexture(21);
+		ssao->SetIntUniform("frame", 20);
+		ssao->SetIntUniform("SSAO", 21);
+
+		PostProcess::PassThrough(ssao);
+		FrameBuffer::UnBindTarget();
+		FrameBuffer::UnBindTexture(20);
+		FrameBuffer::UnBindTexture(21);
+		glEnable(GL_DEPTH_TEST);
+	}
+	else
+	{
+		FrameBuffer* editorFBO = Camera::s_instance->GetFrameBuffer();
+		FrameBuffer* editorProcessedFBO = Camera::s_instance->GetFrameBufferProcessed();
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, editorFBO->GetID());
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, editorProcessedFBO->GetID());
+		glBlitFramebuffer(0, 0, editorFBO->GetWidth(), editorFBO->GetHeight(), 0, 0, editorProcessedFBO->GetWidth(), editorProcessedFBO->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	}
 }
 
 void Scene::DrawGizmos()
 {
 	// render light gizmos only to main 'editor' camera
 	// quick wireframe rendering. Will later set up something that renders a quad billboard at the location or something.
-	Camera::s_instance->GetFrameBuffer()->BindTarget();
+	Camera::s_instance->GetFrameBufferProcessed()->BindTarget();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	gizmoShader->Bind();
 	for (auto &light : m_pointLights)
 	{
-		gizmoShader->SetVectorUniform("gizmoColour", light.colour);
+		gizmoShader->SetVector3Uniform("gizmoColour", light.colour);
 
 		vec3 localPosition, localRotation, localScale;
 		localPosition = light.position;
@@ -226,19 +442,21 @@ void Scene::DrawGizmos()
 	}
 
 	// Draw cameras (from gizmo list, all gizmos should move to here)
-	gizmoShader->SetVectorUniform("gizmoColour", { 1,1,1 });
+	gizmoShader->SetVector3Uniform("gizmoColour", { 1,1,1 });
 	for (auto &o : gizmos)
 	{
 		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), Component::DrawMode::Standard);
 	}
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	Camera::s_instance->BlitFrameBuffer();
 	FrameBuffer::UnBindTarget();
 }
 void Scene::DrawCameraToBackBuffer()
 {
 	outputCameraFrameBuffer->BindTexture(20);
 	PostProcess::PassThrough();
+	FrameBuffer::UnBindTexture(20);
 }
 void Scene::DrawGUI()
 {	
@@ -250,11 +468,6 @@ void Scene::DrawGUI()
 	{
 		ImGui::Begin("Shadow Map Dev");
 		ImGui::PushID(6969);
-
-		ImGui::BeginDisabled();
-		ImGui::InputFloat("Render Time", &renderTime, 0, 0, "%0.6f");
-		ImGui::EndDisabled();
-
 		ImGui::DragFloat("Ortho Near", &orthoNear);
 		ImGui::DragFloat("Ortho Far", &orthoFar);
 		ImGui::DragFloat("Ortho Left", &orthoLeft);
@@ -305,6 +518,8 @@ void Scene::DrawGUI()
 
 		if (ImGui::InputInt("Camera Number", &cameraIndex, 1))
 			SetCameraIndex(cameraIndex);
+
+		ImGui::Checkbox("Draw Gizmos", &drawGizmos);
 
 		float clearCol[3] = { clearColour.r, clearColour.g, clearColour.b, };
 		if (ImGui::ColorEdit3("Clear Colour", clearCol))
@@ -374,6 +589,76 @@ void Scene::DrawGUI()
 			Scene::s_instance->drawn3DGizmo = true;
 		}
 	}
+}
+
+void Scene::DrawGraphicsGUI()
+{
+	// Graphics Options - Abstract this as these options develop.
+	ImGui::SetNextWindowSize({ 500, 300 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos({ 1700, 300 }, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Graphics");
+	ImGui::BeginDisabled();
+	ImGui::InputFloat("Render Time", &renderTime, 0, 0, "%0.6f");
+	ImGui::EndDisabled();
+	if (ImGui::Checkbox("MSAA Enabled", &MSAAEnabled))
+		TextureManager::RefreshFrameBuffers();
+	int newMSAASample = MSAASamples;
+	if (ImGui::InputInt("MSAA Samples", &newMSAASample))
+	{
+		if (newMSAASample > MSAASamples)
+			MSAASamples *= 2;
+		else
+			MSAASamples /= 2;
+
+		MSAASamples = glm::clamp(MSAASamples, 2, 16);
+		FrameBuffer::SetMSAASampleLevels(MSAASamples);
+		TextureManager::RefreshFrameBuffers();
+	}
+
+	if (ImGui::Checkbox("SSAO Enabled", &ssao_enabled))
+	{
+		if (!ssao_enabled)
+		{
+			for (auto& c : componentCameras)
+			{
+				for (int i = 0; i < c->m_postProcessStack.size(); i++)
+				{
+					if (c->m_postProcessStack[i]->GetShaderName() == "engine/shader/postProcess/SSAO")
+					{
+						delete c->m_postProcessStack[i];
+						c->m_postProcessStack.erase(c->m_postProcessStack.begin() + i);
+						break;
+					}
+				}
+			}
+		}
+		else
+		{
+			for (auto& c : componentCameras)
+			{
+				string ppName = "engine/shader/postProcess/SSAO";
+				PostProcess* pp = new PostProcess(c->GetComponentParentObject()->objectName + "_PP_" + ppName);
+				pp->SetShader(ShaderManager::GetShaderProgram(ppName));
+				pp->SetShaderName(ppName);
+				c->m_postProcessStack.push_back(pp);
+			}
+		}
+	}
+
+	ImGui::DragFloat("SSAO Radius", &ssao_radius, 0.01);
+	ImGui::SameLine();
+	if (ImGui::Button("Reset Radius"))
+		ssao_radius = 0.5f;
+	ImGui::DragFloat("SSAO Bias", &ssao_bias,0.01);
+	ImGui::SameLine();
+	if (ImGui::Button("Reset Bias"))
+		ssao_bias = 0.025f;
+
+	ImGui::Text("");
+	if (ImGui::Button("Reload Shaders"))
+		ShaderManager::RecompileAllShaderPrograms();
+
+	ImGui::End();
 }
 
 // This will destroy all objects (and their children) marked for deletion.
@@ -615,3 +900,12 @@ mat4 Scene::GetLightSpaceMatrix()
 Scene* Scene::s_instance = nullptr;
 FrameBuffer* Scene::objectPickBuffer = nullptr;
 unordered_map<string, Scene*> Scene::s_instances;
+
+// SSAO Dev
+std::vector<glm::vec3> Scene::ssaoKernel;
+std::vector<glm::vec3> Scene::ssaoNoise;
+Texture* Scene::ssao_noiseTexture = nullptr;
+
+FrameBuffer* Scene::ssao_gBuffer = nullptr;;
+FrameBuffer* Scene::ssao_ssaoFBO = nullptr;
+FrameBuffer* Scene::ssao_ssaoBlurFBO = nullptr;

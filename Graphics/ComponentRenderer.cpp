@@ -77,7 +77,7 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				// Positions and Rotations
 				shader->SetMatrixUniform("pvmMatrix", pvm);
 				shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
-				shader->SetVectorUniform("cameraPosition", position);
+				shader->SetVector3Uniform("cameraPosition", position);
 				
 				shader->SetIntUniform("objectID", componentParent->id);
 				if (isAnimated)
@@ -97,7 +97,16 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				// Positions and Rotations
 				shader->SetMatrixUniform("pvmMatrix", pvm);
 				shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
-				shader->SetVectorUniform("cameraPosition", position);
+				shader->SetVector3Uniform("cameraPosition", position);
+				if (isAnimated)
+					BindBoneTransform();
+				DrawModel();
+				break;
+			}
+			case DrawMode::SSAOgBuffer:
+			{
+				ShaderProgram* ssaoGeoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOGeometryPass");
+				ssaoGeoShader->SetMatrixUniform("model", componentParent->transform * model->modelTransform);
 				if (isAnimated)
 					BindBoneTransform();
 				DrawModel();
@@ -199,7 +208,7 @@ void ComponentRenderer::BindMatricies(mat4 pv, vec3 position)
 	// Positions and Rotations
 	material->shader->SetMatrixUniform("pvmMatrix", pvm);
 	material->shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
-	material->shader->SetVectorUniform("cameraPosition", position);
+	material->shader->SetVector3Uniform("cameraPosition", position);
 	material->shader->SetMatrixUniform("lightSpaceMatrix", Scene::GetLightSpaceMatrix());
 }
 
@@ -210,9 +219,9 @@ void ComponentRenderer::SetUniforms()
 	// Likely part of a material system.
 
 	// Lighting
-	material->shader->SetVectorUniform("ambientLightColour", Scene::GetAmbientLightColour());
-	material->shader->SetVectorUniform("sunLightDirection", glm::normalize(Scene::GetSunDirection()));
-	material->shader->SetVectorUniform("sunLightColour", Scene::GetSunColour());
+	material->shader->SetVector3Uniform("ambientLightColour", Scene::GetAmbientLightColour());
+	material->shader->SetVector3Uniform("sunLightDirection", glm::normalize(Scene::GetSunDirection()));
+	material->shader->SetVector3Uniform("sunLightColour", Scene::GetSunColour());
 	// Point Lights
 	int numLights = Scene::GetNumPointLights();
 	material->shader->SetIntUniform("numLights", numLights);
@@ -230,9 +239,9 @@ void ComponentRenderer::ApplyMaterials()
 	// Material Uniforms
 	if (material)
 	{
-		material->shader->SetVectorUniform("Ka", material->Ka);
-		material->shader->SetVectorUniform("Kd", material->Kd);
-		material->shader->SetVectorUniform("Ks", material->Ks);
+		material->shader->SetVector3Uniform("Ka", material->Ka);
+		material->shader->SetVector3Uniform("Kd", material->Kd);
+		material->shader->SetVector3Uniform("Ks", material->Ks);
 		material->shader->SetFloatUniform("specularPower", material->specularPower);
 
 		if (material->mapKd)

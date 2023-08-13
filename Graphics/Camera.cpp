@@ -12,8 +12,10 @@ Camera::Camera(float aspect, string name)
 
 	this->name = name;
 	glm::ivec2 vp = Window::GetViewPortSize();
-	frameBuffer = new FrameBuffer(FrameBuffer::Type::CameraTargetMSAA);
-	frameBufferBlit = new FrameBuffer(FrameBuffer::Type::CameraTargetBlit);
+	frameBuffer = new FrameBuffer(FrameBuffer::Type::CameraTargetMultiSample);
+	frameBuffer->MakePrimaryTarget();
+	frameBufferBlit = new FrameBuffer(FrameBuffer::Type::CameraTargetSingleSample);
+	frameBufferProcessed = new FrameBuffer(FrameBuffer::Type::PostProcess);
 
 	UpdateMatrix();
 	UpdateAudioListener();

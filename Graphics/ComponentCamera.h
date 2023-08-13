@@ -31,6 +31,8 @@ public:
 
 	const vec3 GetWorldSpacePosition() { return componentParent->GetWorldSpacePosition(); }
 	const mat4 GetViewProjectionMatrix() { return matrix; }
+	const mat4 GetProjectionMatrix() { return projection; }
+	const mat4 GetViewMatrix() { return view; }
 
 	AudioListener* GetAudioListener() { return &m_audioListener; }
 

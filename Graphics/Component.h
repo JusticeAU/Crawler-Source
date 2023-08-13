@@ -32,7 +32,9 @@ public:
 	{
 		Standard,
 		ObjectPicking,
-		ShadowMapping
+		ShadowMapping,
+		SSAOgBuffer,
+		SSAOColourPass
 	};
 	virtual ~Component() {};
 

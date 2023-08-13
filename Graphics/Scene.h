@@ -63,6 +63,7 @@ public:
 	
 	vector<Object*> objects;
 	vector<Object*> gizmos;
+	bool drawGizmos = true;
 	vector<ComponentCamera*> componentCameras;
 
 	string GetSceneName() { return s_instance->sceneName; };
@@ -72,6 +73,7 @@ public:
 	void DrawGizmos();
 	void DrawCameraToBackBuffer();
 	void DrawGUI();
+	void DrawGraphicsGUI();
 	void CleanUp();
 
 	void SaveJSON();
@@ -147,7 +149,31 @@ protected:
 	FrameBuffer* shadowMapDevOutput;
 	ShaderProgram* depthMapOutputShader;
 
+	float lastRenderTimeStamp;
 	float renderTime;
+
+	// Graphics
+	// MSAA
+public:
+	bool MSAAEnabled = true;
+	int MSAASamples = 4;
+
+	// SSAO Dev
+	bool ssao_enabled = true;
+	int ssao_kernelSize = 64;
+	float ssao_radius = 0.5f;
+	float ssao_bias = 0.025f;
+public:
+	static FrameBuffer* ssao_gBuffer;
+	static FrameBuffer* ssao_ssaoFBO;
+	static FrameBuffer* ssao_ssaoBlurFBO;
+protected:
+	static Texture* ssao_noiseTexture;
+
+
+	static std::vector<glm::vec3> ssaoKernel;
+	static std::vector<glm::vec3> ssaoNoise;
+
 public:
 	static glm::mat4 GetLightSpaceMatrix();
 

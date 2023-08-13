@@ -12,10 +12,5 @@ void WindowResizeCallback(GLFWwindow* window, int width, int height)
 	glViewport(0, 0, width, height);								// Update GL viewport size.
 	Window::SetViewPortSize({width, height});				// Update our cached size for it
 	Camera::s_instance->SetAspect(width / (float)height);			// update aspect ratio of our 'editor' camera only (not in world cameras, thats a TO DO / should i even?)
-	auto fbList = TextureManager::FrameBuffers();					// Update texture resolution of all framebuffers markeed as 'ScreenBuffers' - i.e. should be displayed directly to screen. keep them crisp.
-	for (auto fb : *fbList)
-	{
-		if (fb.second != nullptr && fb.second->isScreenBuffer())
-			fb.second->Resize();
-	}
+	TextureManager::RefreshFrameBuffers();
 }

@@ -46,6 +46,7 @@ void ShaderManager::DrawGUI()
 	ImGui::End();
 }
 
+
 void ShaderManager::LoadFromFile(string filename)
 {
 	// right now shaderes are hardcoded to be a vertex and fragment shader, with assumed matching names.
@@ -78,7 +79,7 @@ void ShaderManager::LoadAllFiles()
 
 void ShaderManager::RecompileAllShaderPrograms()
 {
-	for (auto shaderprogram : shaderPrograms)
+	for (auto shaderprogram : s_instance->shaderPrograms)
 	{
 		if(shaderprogram.second)
 			shaderprogram.second->Reload();

@@ -9,7 +9,7 @@ int main(int argc, char * argv[])
 	if (argc > 1)
 		app->LaunchArgument(argv[1]);
 	
-	if(!app->developerMode)
+	if(app->s_mode == Application::Mode::Game)
 		app->InitGame();
 	
 	app->Run();
