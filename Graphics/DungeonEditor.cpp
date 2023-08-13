@@ -1311,6 +1311,29 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 		MarkUnsavedChanges();
 
 
+	if (ImGui::Button("Beauty Scene Quick Config"))
+	{
+		while (Scene::s_instance->m_pointLights.size() < 3)
+			Scene::s_instance->m_pointLights.push_back(Light());;
+
+		Scene::s_instance->m_pointLights[1].colour = { .4765625, .8984375, .8984375 };
+		Scene::s_instance->m_pointLights[1].position = { 7.14, -2.010, 1.220 };
+		Scene::s_instance->m_pointLights[1].intensity = 6.370;
+
+		Scene::s_instance->m_pointLights[2].colour = { 1, 1, 1 };
+		Scene::s_instance->m_pointLights[2].position = { -1.10, -2.930, 2.70 };
+		Scene::s_instance->m_pointLights[2].intensity = 3.2;
+
+		Scene::s_instance->drawGizmos = false;
+
+		Camera::s_instance->position = { -2.970f, 1.447f, 1.694f };
+		Camera::s_instance->m_horizontal = -40.2f;
+		Camera::s_instance->m_vertical = -2.7f;
+		Camera::s_instance->UpdateMatrix();
+
+		dungeon->player->Respawn();
+	}
+
 }
 
 void Crawl::DungeonEditor::Update()

@@ -21,6 +21,7 @@ public:
 	mat4 GetView() { return view; }
 	mat4 GetProjection() { return projection; }
 	mat4 GetMatrix();
+	void UpdateMatrix();
 	vec3 GetPosition() { return position; };
 	void SetAspect(float value) { aspect = value; UpdateMatrix(); }
 	FrameBuffer* GetFrameBuffer() { return frameBuffer; };
@@ -61,8 +62,6 @@ protected:
 
 
 	bool isAdjusting = false;
-
-	void UpdateMatrix();
 	void UpdateAudioListener();
 	void SetFramebuffer(FrameBuffer* fb) { frameBuffer = fb; };
 };
