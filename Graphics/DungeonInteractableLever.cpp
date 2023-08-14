@@ -28,7 +28,8 @@ void Crawl::DungeonInteractableLever::Toggle()
 		}
 	}
 
-	dungeon->DoActivate(activateID, status);
+	//dungeon->DoActivate(activateID, status);
+	dungeon->DoActivate(activateID);
 }
 
 void Crawl::DungeonInteractableLever::SetID(unsigned int newID)
@@ -37,15 +38,15 @@ void Crawl::DungeonInteractableLever::SetID(unsigned int newID)
 	object->children[0]->children[0]->id = newID;
 }
 
-void Crawl::DungeonInteractableLever::Prime()
-{
-	if (object)
-	{
-		object->localPosition.z = wallHeightOn;
-		object->dirtyTransform = true;
-	}
-	dungeon->DoActivate(activateID, status);
-}
+//void Crawl::DungeonInteractableLever::Prime()
+//{
+//	if (object)
+//	{
+//		object->localPosition.z = wallHeightOn;
+//		object->dirtyTransform = true;
+//	}
+//	dungeon->DoActivate(activateID, status);
+//}
 
 const float Crawl::DungeonInteractableLever::wallHeightOn = 1.25f;
 const float Crawl::DungeonInteractableLever::wallHeightOff = 1.50f;

@@ -25,14 +25,13 @@ namespace Crawl
 		
 		unsigned int power = 0;
 		bool open = false;
-		bool startOpen = false;
 		
 		Object* object = nullptr;
 	};
 
 	static void to_json(ordered_json& j, const DungeonDoor& door)
 	{
-		j = { {"position", door.position}, {"id", door.id}, {"orientation", door.orientation}, {"open", door.startOpen} };
+		j = { {"position", door.position}, {"id", door.id}, {"orientation", door.orientation}, {"open", door.open} };
 	}
 
 	static void from_json(const ordered_json& j, DungeonDoor& door)
@@ -40,6 +39,6 @@ namespace Crawl
 		j.at("position").get_to(door.position);
 		j.at("id").get_to(door.id);
 		j.at("orientation").get_to(door.orientation);
-		j.at("open").get_to(door.startOpen);
+		j.at("open").get_to(door.open);
 	}
 }

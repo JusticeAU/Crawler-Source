@@ -691,12 +691,10 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
 		ImGui::EndCombo();
 	}
 
-	if(ImGui::Checkbox("Starts Open", &selectedDoor->startOpen))
-		MarkUnsavedChanges();
-
-	if (ImGui::Checkbox("Is Open", &selectedDoor->open))
+	bool open = selectedDoor->open;
+	if (ImGui::Checkbox("Is Open", &open))
 	{
-		selectedDoor->open = !selectedDoor->open;
+		MarkUnsavedChanges();
 		selectedDoor->Toggle(); // this could go out of sync.
 	}
 

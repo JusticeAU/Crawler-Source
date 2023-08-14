@@ -505,8 +505,8 @@ Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, uns
 	lever->SetID(id);
 	lever->activateID = doorID;
 	interactables.push_back(lever);
-	if (lever->status)
-		lever->Prime();
+	/*if (lever->status)
+		lever->Prime();*/
 
 	return lever;
 }
@@ -533,6 +533,7 @@ void Crawl::Dungeon::DoActivate(unsigned int id)
 	}
 }
 
+// This method is not currently and should not be used.
 void Crawl::Dungeon::DoActivate(unsigned int id, bool on)
 {
 	for (int i = 0; i < activatable.size(); i++)
@@ -788,14 +789,13 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 	return false;
 }
 
-Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int directionIndex, unsigned int id, bool startOpen)
+Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int directionIndex, unsigned int id, bool open)
 {
 	DungeonDoor* door = new DungeonDoor();
 	door->position = position;
 	door->orientation = directionIndex;
 	door->id = id;
-	door->startOpen = startOpen;
-	door->open = startOpen;
+	door->open = open;
 
 	ordered_json door_objectJSON = ReadJSONFromDisk("crawler/object/interactable_door.object");
 	Object* door_object = Scene::CreateObject();
@@ -1603,7 +1603,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	for (auto it = doors_json.begin(); it != doors_json.end(); it++)
 	{
 		DungeonDoor door = it.value().get<Crawl::DungeonDoor>();
-		CreateDoor(door.position, door.orientation, door.id, door.startOpen);
+		CreateDoor(door.position, door.orientation, door.id, door.open);
 	}
 
 	auto& levers_json = serialised["levers"];

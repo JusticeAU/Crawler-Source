@@ -27,14 +27,14 @@ void Crawl::DungeonDoor::Toggle(bool on)
 
 void Crawl::DungeonDoor::Update()
 {
-	bool oldState = open;
+	/*bool oldState = open;
 	if (power > 0 && !open)
 		open = true;
 	if (power == 0 && open)
 		open = false;
 
 	if(oldState != open)
-		UpdateTransforms();
+		UpdateTransforms();*/
 }
 
 void Crawl::DungeonDoor::UpdateTransforms()

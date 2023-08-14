@@ -15,7 +15,7 @@ namespace Crawl
 		void Toggle() override;
 		void SetID(unsigned int newID);
 
-		void Prime();
+		//void Prime();
 
 		static const float wallHeightOff;
 		static const float wallHeightOn;
