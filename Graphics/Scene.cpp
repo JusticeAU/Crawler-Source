@@ -179,6 +179,10 @@ void Scene::Render()
 	double endTime = glfwGetTime();
 	renderTime = endTime - lastRenderTimeStamp;
 	lastRenderTimeStamp = endTime;
+	samples[sampleIndex] = renderTime;
+	sampleIndex++;
+	if (sampleIndex == 100)
+		sampleIndex = 0;
 }
 void Scene::RenderShadowMaps()
 {
@@ -594,11 +598,17 @@ void Scene::DrawGUI()
 void Scene::DrawGraphicsGUI()
 {
 	// Graphics Options - Abstract this as these options develop.
-	ImGui::SetNextWindowSize({ 500, 300 }, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowPos({ 1700, 300 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 315, 350 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos({ 1200, 300 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Graphics");
 	ImGui::BeginDisabled();
-	ImGui::InputFloat("Render Time", &renderTime, 0, 0, "%0.6f");
+	float averageRenderTime = 0.0f;
+	for (int i = 0; i < 100; i++)
+		averageRenderTime += samples[i];
+	averageRenderTime /= 100;
+	averageRenderTime *= 1000;
+	ImGui::InputFloat("MS Average", &averageRenderTime, 0, 0, "%0.6f");
+	ImGui::PlotLines("", samples, 100, 0, "0 to 0.1s", 0, 0.1, {300,100});
 	ImGui::EndDisabled();
 	if (ImGui::Checkbox("MSAA Enabled", &MSAAEnabled))
 		TextureManager::RefreshFrameBuffers();
@@ -645,15 +655,20 @@ void Scene::DrawGraphicsGUI()
 		}
 	}
 
-	ImGui::DragFloat("SSAO Radius", &ssao_radius, 0.01);
+	ImGui::PushID("Radius");
+	ImGui::Text("SSAO Radius");
+	ImGui::DragFloat("", &ssao_radius, 0.01);
 	ImGui::SameLine();
 	if (ImGui::Button("Reset Radius"))
 		ssao_radius = 0.5f;
-	ImGui::DragFloat("SSAO Bias", &ssao_bias,0.01);
+	ImGui::PopID();
+	ImGui::PushID("Bias");
+	ImGui::Text("SSAO Bias");
+	ImGui::DragFloat("", &ssao_bias,0.01);
 	ImGui::SameLine();
 	if (ImGui::Button("Reset Bias"))
 		ssao_bias = 0.025f;
-
+	ImGui::PopID();
 	ImGui::Text("");
 	if (ImGui::Button("Reload Shaders"))
 		ShaderManager::RecompileAllShaderPrograms();

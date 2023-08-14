@@ -152,6 +152,8 @@ protected:
 
 	float lastRenderTimeStamp;
 	float renderTime;
+	float samples[100];
+	int sampleIndex = 0;
 
 	// Graphics
 	// MSAA

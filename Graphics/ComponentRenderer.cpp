@@ -276,6 +276,12 @@ void ComponentRenderer::ApplyMaterials()
 			material->metallicMap->Bind(6);
 			material->shader->SetIntUniform("metallicMap", 6);
 		}
+		else
+		{
+			TextureManager::GetTexture("engine/texture/black1x1.tga")->Bind(6);
+			material->shader->SetIntUniform("metallicMap", 6);
+		}
+
 		if (material->roughnessMap)
 		{
 			material->roughnessMap->Bind(7);
@@ -284,6 +290,11 @@ void ComponentRenderer::ApplyMaterials()
 		if (material->aoMap)
 		{
 			material->aoMap->Bind(8);
+			material->shader->SetIntUniform("aoMap", 8);
+		}
+		else
+		{
+			TextureManager::GetTexture("engine/texture/white1x1.tga")->Bind(8);
 			material->shader->SetIntUniform("aoMap", 8);
 		}
 

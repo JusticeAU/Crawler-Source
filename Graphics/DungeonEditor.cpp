@@ -1318,9 +1318,9 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 		Scene::s_instance->m_pointLights[1].position = { 7.14, -2.010, 1.220 };
 		Scene::s_instance->m_pointLights[1].intensity = 6.370;
 
-		Scene::s_instance->m_pointLights[2].colour = { 1, 0.6, 0.36 };
+		Scene::s_instance->m_pointLights[2].colour = { .93, 0.26, 0.06 };
 		Scene::s_instance->m_pointLights[2].position = { -0.010, -3.930, 2.50 };
-		Scene::s_instance->m_pointLights[2].intensity = 1.7;
+		Scene::s_instance->m_pointLights[2].intensity = 5.7;
 
 		Scene::s_instance->drawGizmos = false;
 
