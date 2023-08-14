@@ -113,6 +113,8 @@ void ModelManager::LoadFromFile(const char* filename, mat4 transformOverride)
 
 	for (unsigned int i = 0; i < scene->mNumMeshes; i++)
 	{
+		if (!scene->mMeshes[i]->HasNormals())
+			continue;
 		aiMesh* inMesh = scene->mMeshes[i];
 		if (inMesh->mNumBones > 0)
 		{
