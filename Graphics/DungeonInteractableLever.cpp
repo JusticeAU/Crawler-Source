@@ -11,6 +11,20 @@ Crawl::DungeonInteractableLever::~DungeonInteractableLever()
 void Crawl::DungeonInteractableLever::Toggle()
 {
 	status = !status;
+	UpdateTransform();
+
+	//dungeon->DoActivate(activateID, status);
+	dungeon->DoActivate(activateID);
+}
+
+void Crawl::DungeonInteractableLever::SetID(unsigned int newID)
+{
+	id = newID;
+	object->children[0]->children[0]->id = newID;
+}
+
+void Crawl::DungeonInteractableLever::UpdateTransform()
+{
 	if (status)
 	{
 		if (object)
@@ -27,15 +41,6 @@ void Crawl::DungeonInteractableLever::Toggle()
 			object->dirtyTransform = true;
 		}
 	}
-
-	//dungeon->DoActivate(activateID, status);
-	dungeon->DoActivate(activateID);
-}
-
-void Crawl::DungeonInteractableLever::SetID(unsigned int newID)
-{
-	id = newID;
-	object->children[0]->children[0]->id = newID;
 }
 
 //void Crawl::DungeonInteractableLever::Prime()

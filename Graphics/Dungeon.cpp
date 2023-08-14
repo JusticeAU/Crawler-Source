@@ -474,8 +474,11 @@ bool Crawl::Dungeon::DoInteractable(unsigned int id)
 		{
 			if (interactables[i]->position == player->GetPosition())
 			{
-				interactables[i]->Toggle();
-				didInteract = true;
+				if (interactables[i]->orientation == player->GetOrientation())
+				{
+					interactables[i]->Toggle();
+					didInteract = true;
+				}
 			}
 		}
 	}
@@ -504,8 +507,9 @@ Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, uns
 	lever_object->SetLocalRotationZ(orientationEulers[directionIndex]);
 	lever->SetID(id);
 	lever->activateID = doorID;
+	lever->UpdateTransform();
 	interactables.push_back(lever);
-	/*if (lever->status)
+	/*if (lever->status) // Removed because we're not using this 'power' method currently.
 		lever->Prime();*/
 
 	return lever;

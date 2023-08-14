@@ -14,6 +14,7 @@ namespace Crawl
 		~DungeonInteractableLever();
 		void Toggle() override;
 		void SetID(unsigned int newID);
+		void UpdateTransform();
 
 		//void Prime();
 
