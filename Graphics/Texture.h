@@ -16,15 +16,15 @@ public:
 
 	void LoadFromFile(string filename);
 	void Load();
+	void Reference() { references++; };
+	void Unreference() { references--; };
 	void Bind(unsigned int slot);
-
-	/*void CreateSSAOColourBuffer();
-	void ResizeSSAColourBuffer();*/
 
 	void CreateSSAONoiseTexture(glm::vec3* noiseTexData);
 
 public:
 	bool loaded = false;
+	int references = 0;
 	string name;
 	GLuint texID;
 };

@@ -13,10 +13,15 @@ class Material
 {
 public:
 	void DrawGUI();
-	void Load();
+	void ReferenceTextures();
+	void UnreferenceTextures();
+	void LoadTextures();
+	void Reference();
+	void Unreference();
 	void SaveToFile();
 
 	bool loaded = false;
+	int references = 0;
 	string name;
 	string filePath;
 

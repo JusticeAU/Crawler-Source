@@ -15,6 +15,9 @@ public:
 	static void Init();
 
 	static Texture* GetTexture(string name);
+	static bool ReferenceTexture(string name);
+	static bool UnreferenceTexture(string name);
+
 	static FrameBuffer* GetFrameBuffer(string name);
 
 	static void DrawGUI();
@@ -29,6 +32,8 @@ public:
 	static void FindAllFiles(string folder);
 	static void PreloadAllFiles();
 	void CreateTextureFromFile(const char* filename);
+
+	static void ListUnreferencedTextures();
 	
 	void AddFrameBuffer(const char* name, FrameBuffer* fb);
 	void RemoveFrameBuffer(const char* name);

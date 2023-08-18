@@ -497,7 +497,7 @@ void Scene::DrawGUI()
 		{
 			ImGui::SameLine();
 			ImGui::SeparatorText("Scene Name");
-			for (auto d : fs::recursive_directory_iterator("scenes"))
+			for (auto d : fs::recursive_directory_iterator("engine/scene"))
 			{
 				if (d.path().has_extension() && d.path().extension() == ".scene")
 				{

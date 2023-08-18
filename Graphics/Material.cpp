@@ -242,7 +242,45 @@ void Material::DrawGUI()
 		SaveToFile();
 }
 
-void Material::Load()
+void Material::ReferenceTextures()
+{
+	if (!isPBR)
+	{
+		if (mapKdName != "") TextureManager::ReferenceTexture(mapKdName);
+		if (mapKsName != "") TextureManager::ReferenceTexture(mapKsName);
+		if (mapBumpName != "") TextureManager::ReferenceTexture(mapBumpName);
+	}
+	else
+	{
+		if (albedoMapName != "") TextureManager::ReferenceTexture(albedoMapName);
+		if (normalMapName != "") TextureManager::ReferenceTexture(normalMapName);
+		if (metallicMapName != "") TextureManager::ReferenceTexture(metallicMapName);
+		if (roughnessMapName != "") TextureManager::ReferenceTexture(roughnessMapName);
+		if (aoMapName != "") TextureManager::ReferenceTexture(aoMapName);
+		if (emissiveMapName != "") TextureManager::ReferenceTexture(emissiveMapName);
+	}
+}
+
+void Material::UnreferenceTextures()
+{
+	if (!isPBR)
+	{
+		if (mapKdName != "") TextureManager::UnreferenceTexture(mapKdName);
+		if (mapKsName != "") TextureManager::UnreferenceTexture(mapKsName);
+		if (mapBumpName != "") TextureManager::UnreferenceTexture(mapBumpName);
+	}
+	else
+	{
+		if (albedoMapName != "") TextureManager::UnreferenceTexture(albedoMapName);
+		if (normalMapName != "") TextureManager::UnreferenceTexture(normalMapName);
+		if (metallicMapName != "") TextureManager::UnreferenceTexture(metallicMapName);
+		if (roughnessMapName != "") TextureManager::UnreferenceTexture(roughnessMapName);
+		if (aoMapName != "") TextureManager::UnreferenceTexture(aoMapName);
+		if (emissiveMapName != "") TextureManager::UnreferenceTexture(emissiveMapName);
+	}
+}
+
+void Material::LoadTextures()
 {
 	if (shaderName != "") shader = ShaderManager::GetShaderProgram(shaderName);
 	if (shaderSkinnedName != "") shaderSkinned = ShaderManager::GetShaderProgram(shaderSkinnedName);
@@ -262,6 +300,18 @@ void Material::Load()
 		if (emissiveMapName != "") emissiveMap = TextureManager::GetTexture(emissiveMapName);
 	}
 	loaded = true;
+}
+
+void Material::Reference()
+{
+	references++;
+	ReferenceTextures();
+}
+
+void Material::Unreference()
+{
+	references--;
+	UnreferenceTextures();
 }
 
 void Material::SaveToFile()

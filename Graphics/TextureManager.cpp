@@ -33,6 +33,38 @@ Texture* TextureManager::GetTexture(string name)
 	}
 }
 
+bool TextureManager::ReferenceTexture(string name)
+{
+	auto texIt = s_instance->textures.find(StringUtils::ToLower(name));
+	if (texIt == s_instance->textures.end())
+	{
+		LogUtils::Log("Error: Texture does not exist:" + name);
+		return false;
+	}
+	else
+	{
+		if (texIt->second != nullptr)
+			texIt->second->Reference();
+		return true;
+	}
+}
+
+bool TextureManager::UnreferenceTexture(string name)
+{
+	auto texIt = s_instance->textures.find(StringUtils::ToLower(name));
+	if (texIt == s_instance->textures.end())
+	{
+		LogUtils::Log("Error: Texture does not exist:" + name);
+		return false;
+	}
+	else
+	{
+		if (texIt->second != nullptr)
+			texIt->second->Unreference();
+		return true;
+	}
+}
+
 FrameBuffer* TextureManager::GetFrameBuffer(string name)
 {
 	auto fbIt = s_instance->frameBuffers.find(name);
@@ -47,22 +79,22 @@ void TextureManager::DrawGUI()
 	ImGui::SetNextWindowPos({ 800, 40 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize({ 400, 860 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
-	ImGui::Begin("Textures", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+	ImGui::Begin("Textures", nullptr);
+	if (ImGui::Button("Output Unreferenced Textures"))
+		ListUnreferencedTextures();
 	ImGui::BeginDisabled();
 	int texCount = (int)s_instance->textures.size();
 	ImGui::DragInt("Texture Count", &texCount);
 	ImGui::EndDisabled();
 	for (auto t : s_instance->textures)
 	{
-		if (t.second != nullptr && !t.second->loaded)
-			ImGui::BeginDisabled();
-		if (ImGui::Selectable(t.first.c_str()))
+		string name = t.first;
+		if (t.second != nullptr) name += " (refs: " + std::to_string(t.second->references) + ")";
+		if (ImGui::Selectable(name.c_str()))
 		{
-			s_instance->selectedTexture = t.second;
+			s_instance->selectedTexture = GetTexture(t.first); // Run it through the getter to ensure its loaded.
 			s_instance->selectedTextureWindowOpen = true;
 		}
-		if (t.second != nullptr && !t.second->loaded)
-			ImGui::EndDisabled();
 	}
 	ImGui::End();
 
@@ -104,6 +136,16 @@ void TextureManager::CreateTextureFromFile(const char* filename)
 {
 	Texture* texture = new Texture(filename);
 	textures.emplace(StringUtils::ToLower(filename), texture);
+}
+
+void TextureManager::ListUnreferencedTextures()
+{
+	LogUtils::Log("Unreferenced Textures:");
+	for (auto& texture : s_instance->textures)
+	{
+		if (texture.second != nullptr && texture.second->references < 1)
+			LogUtils::Log(texture.first);
+	}
 }
 
 void TextureManager::PreloadAllFiles()
