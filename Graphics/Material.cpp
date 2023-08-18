@@ -242,6 +242,28 @@ void Material::DrawGUI()
 		SaveToFile();
 }
 
+void Material::Load()
+{
+	if (shaderName != "") shader = ShaderManager::GetShaderProgram(shaderName);
+	if (shaderSkinnedName != "") shaderSkinned = ShaderManager::GetShaderProgram(shaderSkinnedName);
+	if (!isPBR)
+	{
+		if (mapKdName != "") mapKd = TextureManager::GetTexture(mapKdName);
+		if (mapKsName != "") mapKs = TextureManager::GetTexture(mapKsName);
+		if (mapBumpName != "") mapBump = TextureManager::GetTexture(mapBumpName);
+	}
+	else
+	{
+		if (albedoMapName != "") albedoMap = TextureManager::GetTexture(albedoMapName);
+		if (normalMapName != "") normalMap = TextureManager::GetTexture(normalMapName);
+		if (metallicMapName != "") metallicMap = TextureManager::GetTexture(metallicMapName);
+		if (roughnessMapName != "") roughnessMap = TextureManager::GetTexture(roughnessMapName);
+		if (aoMapName != "") aoMap = TextureManager::GetTexture(aoMapName);
+		if (emissiveMapName != "") emissiveMap = TextureManager::GetTexture(emissiveMapName);
+	}
+	loaded = true;
+}
+
 void Material::SaveToFile()
 {
 	ordered_json output = *this;
@@ -276,82 +298,24 @@ void to_json(nlohmann::ordered_json& j, const Material& mat)
 }
 void from_json(const nlohmann::ordered_json& j, Material& mat)
 {
-	if (j.contains("shader"))
-	{
-		j.at("shader").get_to(mat.shaderName);
-		mat.shader = ShaderManager::GetShaderProgram(mat.shaderName);
-	}
-	if (j.contains("shaderSkinned"))
-	{
-		j.at("shaderSkinned").get_to(mat.shaderSkinnedName);
-		mat.shaderSkinned = ShaderManager::GetShaderProgram(mat.shaderSkinnedName);
-	}
+	if (j.contains("shader"))			j.at("shader").get_to(mat.shaderName);
+	if (j.contains("shaderSkinned"))	j.at("shaderSkinned").get_to(mat.shaderSkinnedName);
 
-	if (j.contains("isPBR"))
-	{
-		j.at("isPBR").get_to(mat.isPBR);
-	}
+	if (j.contains("isPBR"))			j.at("isPBR").get_to(mat.isPBR);
 
-	if(j.contains("Ka"))
-		j.at("Ka").get_to(mat.Ka);
-	if (j.contains("Kd"))
-		j.at("Kd").get_to(mat.Kd);
-	if (j.contains("Ks"))
-		j.at("Ks").get_to(mat.Ks);
-	if (j.contains("Ns"))
-		j.at("Ns").get_to(mat.specularPower);
+	if (j.contains("Ka"))				j.at("Ka").get_to(mat.Ka);
+	if (j.contains("Kd"))				j.at("Kd").get_to(mat.Kd);
+	if (j.contains("Ks"))				j.at("Ks").get_to(mat.Ks);
+	if (j.contains("Ns"))				j.at("Ns").get_to(mat.specularPower);
 
-	if (j.contains("map_Kd"))
-	{
-		j.at("map_Kd").get_to(mat.mapKdName);
-		mat.mapKd = TextureManager::GetTexture(mat.mapKdName);
-	}
+	if (j.contains("map_Kd"))			j.at("map_Kd").get_to(mat.mapKdName);
+	if (j.contains("map_Ks"))			j.at("map_Ks").get_to(mat.mapKsName);
+	if (j.contains("bump"))				j.at("bump").get_to(mat.mapBumpName);
 
-	if (j.contains("map_Ks"))
-	{
-		j.at("map_Ks").get_to(mat.mapKsName);
-		mat.mapKs = TextureManager::GetTexture(mat.mapKsName);
-	}
-
-	if (j.contains("bump"))
-	{
-		j.at("bump").get_to(mat.mapBumpName);
-		mat.mapBump = TextureManager::GetTexture(mat.mapBumpName);
-	}
-
-	if (j.contains("albedoMap"))
-	{
-		j.at("albedoMap").get_to(mat.albedoMapName);
-		mat.albedoMap = TextureManager::GetTexture(mat.albedoMapName);
-	}
-
-	if (j.contains("normalMap"))
-	{
-		j.at("normalMap").get_to(mat.normalMapName);
-		mat.normalMap = TextureManager::GetTexture(mat.normalMapName);
-	}
-
-	if (j.contains("metallicMap"))
-	{
-		j.at("metallicMap").get_to(mat.metallicMapName);
-		mat.metallicMap = TextureManager::GetTexture(mat.metallicMapName);
-	}
-
-	if (j.contains("roughnessMap"))
-	{
-		j.at("roughnessMap").get_to(mat.roughnessMapName);
-		mat.roughnessMap = TextureManager::GetTexture(mat.roughnessMapName);
-	}
-
-	if (j.contains("aoMap"))
-	{
-		j.at("aoMap").get_to(mat.aoMapName);
-		mat.aoMap = TextureManager::GetTexture(mat.aoMapName);
-	}
-
-	if (j.contains("emissiveMap"))
-	{
-		j.at("emissiveMap").get_to(mat.emissiveMapName);
-		mat.emissiveMap = TextureManager::GetTexture(mat.emissiveMapName);
-	}
+	if (j.contains("albedoMap"))		j.at("albedoMap").get_to(mat.albedoMapName);
+	if (j.contains("normalMap"))		j.at("normalMap").get_to(mat.normalMapName);
+	if (j.contains("metallicMap"))		j.at("metallicMap").get_to(mat.metallicMapName);
+	if (j.contains("roughnessMap"))		j.at("roughnessMap").get_to(mat.roughnessMapName);
+	if (j.contains("aoMap"))			j.at("aoMap").get_to(mat.aoMapName);
+	if (j.contains("emissiveMap"))		j.at("emissiveMap").get_to(mat.emissiveMapName);
 }

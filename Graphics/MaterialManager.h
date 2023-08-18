@@ -14,7 +14,8 @@ public:
 	MaterialManager& operator=(const MaterialManager& other) = delete;
 
 	static void Init();
-	static void LoadAllFiles(string folder);
+	static void FindAllFiles(string folder);
+	static void PreloadAllFiles();
 
 	static Material* GetMaterial(string name);
 	static void DrawGUI();

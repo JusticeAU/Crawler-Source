@@ -487,7 +487,7 @@ void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)
 			}
 
 			// load texture
-			TextureManager::s_instance->LoadFromFile(paths[i]);
+			TextureManager::s_instance->CreateTextureFromFile(paths[i]);
 			// assign in to the map
 			if (mapName == "albedo")
 			{

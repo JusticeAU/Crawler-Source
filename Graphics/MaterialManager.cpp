@@ -28,7 +28,11 @@ Material* MaterialManager::GetMaterial(string name)
 	if (matIt == s_instance->materials.end())
 		return nullptr;
 	else
+	{
+		if (matIt->second != nullptr && !matIt->second->loaded)
+			matIt->second->Load();
 		return matIt->second;
+	}
 }
 
 void MaterialManager::DrawGUI()
@@ -93,7 +97,7 @@ void MaterialManager::LoadFromFile(const char* filename)
 
 	materials.emplace(filename, material);
 }
-void MaterialManager::LoadAllFiles(string folder)
+void MaterialManager::FindAllFiles(string folder)
 {
 	LogUtils::Log("Loading Materials");
 	for (auto d : fs::recursive_directory_iterator(folder))
@@ -105,6 +109,15 @@ void MaterialManager::LoadAllFiles(string folder)
 			s_instance->LoadFromFile(d.path().generic_string().c_str());
 		}
 
+	}
+}
+
+void MaterialManager::PreloadAllFiles()
+{
+	for (auto& material : s_instance->materials)
+	{
+		if (material.second != nullptr && !material.second->loaded)
+			material.second->Load();
 	}
 }
 

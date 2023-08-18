@@ -94,8 +94,8 @@ Application::Application()
 	MeshManager::Init();
 	
 	TextureManager::Init();
-	TextureManager::LoadAllFiles(engineFolder);
-	TextureManager::LoadAllFiles(gameFolder);
+	TextureManager::FindAllFiles(engineFolder);
+	TextureManager::FindAllFiles(gameFolder);
 	// Add the scene camera to our framebuffer here
 	// This was originally in Scene constructor, but moving to scene instances caused this to conflict per scene.
 	TextureManager::s_instance->AddFrameBuffer(Camera::s_instance->name.c_str(), Camera::s_instance->GetFrameBuffer());
@@ -107,8 +107,8 @@ Application::Application()
 	ShaderManager::Init();
 	
 	MaterialManager::Init(); // Must be initialised AFTER Texture Manager
-	MaterialManager::LoadAllFiles(engineFolder);
-	MaterialManager::LoadAllFiles(gameFolder);
+	MaterialManager::FindAllFiles(engineFolder);
+	MaterialManager::FindAllFiles(gameFolder);
 	
 	ModelManager::Init(); // Must be initialised after mesh manager
 	ModelManager::LoadAllFiles(engineFolder);
@@ -182,6 +182,7 @@ void Application::LaunchArgument(char* arg)
 
 void Application::InitGame()
 {
+	MaterialManager::PreloadAllFiles();
 	dungeon->Load("crawler/dungeon/start.dungeon");
 	Scene::SetCameraIndex(1);
 	/*if (!developerMode)

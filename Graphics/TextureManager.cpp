@@ -26,7 +26,11 @@ Texture* TextureManager::GetTexture(string name)
 	if (texIt == s_instance->textures.end())
 		return nullptr;
 	else
+	{
+		if (texIt->second != nullptr && !texIt->second->loaded)
+			texIt->second->Load();
 		return texIt->second;
+	}
 }
 
 FrameBuffer* TextureManager::GetFrameBuffer(string name)
@@ -50,11 +54,15 @@ void TextureManager::DrawGUI()
 	ImGui::EndDisabled();
 	for (auto t : s_instance->textures)
 	{
+		if (t.second != nullptr && !t.second->loaded)
+			ImGui::BeginDisabled();
 		if (ImGui::Selectable(t.first.c_str()))
 		{
 			s_instance->selectedTexture = t.second;
 			s_instance->selectedTextureWindowOpen = true;
 		}
+		if (t.second != nullptr && !t.second->loaded)
+			ImGui::EndDisabled();
 	}
 	ImGui::End();
 
@@ -92,11 +100,19 @@ void TextureManager::SetPreviewTexture(string textureName)
 	}
 }
 
-void TextureManager::LoadFromFile(const char* filename)
+void TextureManager::CreateTextureFromFile(const char* filename)
 {
-	Texture* texture = new Texture();
-	texture->LoadFromFile(filename);
+	Texture* texture = new Texture(filename);
 	textures.emplace(StringUtils::ToLower(filename), texture);
+}
+
+void TextureManager::PreloadAllFiles()
+{
+	for (auto& texture : s_instance->textures)
+	{
+		if (texture.second != nullptr && !texture.second->loaded)
+			texture.second->Load();
+	}
 }
 
 void TextureManager::AddFrameBuffer(const char* name, FrameBuffer* fb)
@@ -139,16 +155,14 @@ void TextureManager::RefreshFrameBuffers()
 	}
 }
 
-void TextureManager::LoadAllFiles(string folder)
+void TextureManager::FindAllFiles(string folder)
 {
 	LogUtils::Log("Loading Textures");
 	for (auto d : fs::recursive_directory_iterator(folder))
 	{
 		if (d.path().extension() == ".tga" || d.path().extension() == ".png" || d.path().extension() == ".jpg" || d.path().extension() == ".jpeg" || d.path().extension() == ".bmp")
 		{
-			string output = "Loading: " + d.path().generic_string();
-			LogUtils::Log(output.c_str());
-			s_instance->LoadFromFile(d.path().generic_string().c_str());
+			s_instance->CreateTextureFromFile(d.path().generic_string().c_str());
 		}
 
 	}

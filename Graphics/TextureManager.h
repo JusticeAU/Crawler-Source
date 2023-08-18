@@ -26,8 +26,9 @@ public:
 	static const map<string, Texture*>* Textures() { return &s_instance->textures; }
 	static const map<string, FrameBuffer*>* FrameBuffers() { return &s_instance->frameBuffers; }
 
-	static void LoadAllFiles(string folder);
-	void LoadFromFile(const char* filename);
+	static void FindAllFiles(string folder);
+	static void PreloadAllFiles();
+	void CreateTextureFromFile(const char* filename);
 	
 	void AddFrameBuffer(const char* name, FrameBuffer* fb);
 	void RemoveFrameBuffer(const char* name);

@@ -13,8 +13,10 @@ class Material
 {
 public:
 	void DrawGUI();
+	void Load();
 	void SaveToFile();
 
+	bool loaded = false;
 	string name;
 	string filePath;
 

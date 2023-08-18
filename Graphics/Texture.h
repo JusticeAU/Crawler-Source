@@ -8,12 +8,14 @@ class Texture
 {
 public:
 	Texture();
+	Texture(string filename);
 	~Texture();
 
 	Texture(Texture const& other) = delete;
 	Texture& operator=(Texture const& other) = delete;
 
 	void LoadFromFile(string filename);
+	void Load();
 	void Bind(unsigned int slot);
 
 	/*void CreateSSAOColourBuffer();
@@ -22,6 +24,7 @@ public:
 	void CreateSSAONoiseTexture(glm::vec3* noiseTexData);
 
 public:
+	bool loaded = false;
 	string name;
 	GLuint texID;
 };
