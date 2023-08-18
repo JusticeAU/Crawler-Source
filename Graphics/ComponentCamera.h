@@ -16,7 +16,7 @@ using std::vector;
 class ComponentCamera : public Component
 {
 public:
-	ComponentCamera(Object* parent);
+	ComponentCamera(Object* parent, bool noGizmo = false);
 	ComponentCamera(Object* parent, ordered_json j);
 
 	~ComponentCamera();
@@ -34,11 +34,16 @@ public:
 	const mat4 GetProjectionMatrix() { return projection; }
 	const mat4 GetViewMatrix() { return view; }
 
+	const vec3 GetRayFromNDC(glm::vec2 NDC);
+
+	void SetAspect(float aspect);
 	AudioListener* GetAudioListener() { return &m_audioListener; }
 
 	void SetAsRenderTarget();
 	// Runs the post processing stack. This is also required to run to transfer the frame from the Raw to Processed Framebuffer, regardless of if there is a stack or not.
 	void RunPostProcess();
+
+	FrameBuffer* GetFrameBufferProcessed() { return m_frameBufferProcessed; }
 
 	float nearClip = 0.1f;
 	float farClip = 2000.0f;

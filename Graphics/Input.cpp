@@ -31,6 +31,7 @@ void Input::Update()
 			b.second.Update(s_instance->m_window, b.first);
 	}
 
+	
 	s_instance->m_lastMousePosition = s_instance->m_mousePosition;
 	double mouseX, mouseY;
 	glfwGetCursorPos(s_instance->m_window, &mouseX, &mouseY);

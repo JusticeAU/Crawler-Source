@@ -9,8 +9,8 @@
 #include "ModelManager.h"
 #include "AudioManager.h"
 #include "Scene.h"
+#include "SceneEditorCamera.h"
 #include "Input.h"
-#include "Camera.h"
 
 #include "MathUtils.h"
 #include "FileUtils.h"
@@ -82,8 +82,6 @@ Application::Application()
 	float aspect;
 	int width, height;
 	glfwGetWindowSize(window->GetGLFWwindow(), &width, &height);
-	aspect = width / (float)height;
-	camera = new Camera(aspect, "Main Camera");
 
 	// Create input system.
 	Input::Init(window->GetGLFWwindow());
@@ -96,13 +94,6 @@ Application::Application()
 	TextureManager::Init();
 	TextureManager::FindAllFiles(engineFolder);
 	TextureManager::FindAllFiles(gameFolder);
-	// Add the scene camera to our framebuffer here
-	// This was originally in Scene constructor, but moving to scene instances caused this to conflict per scene.
-	TextureManager::s_instance->AddFrameBuffer(Camera::s_instance->name.c_str(), Camera::s_instance->GetFrameBuffer());
-	TextureManager::s_instance->AddFrameBuffer((Camera::s_instance->name + "Blit").c_str(), Camera::s_instance->GetFrameBufferBlit());
-	TextureManager::s_instance->AddFrameBuffer((Camera::s_instance->name + "Processed").c_str(), Camera::s_instance->GetFrameBufferProcessed());
-
-
 
 	ShaderManager::Init();
 	
@@ -115,14 +106,10 @@ Application::Application()
 	// CRAWLERCONFIG - Convert from Y up to Z up and scale down by factor of 100
 	ModelManager::LoadAllFiles(gameFolder, Crawl::CRAWLER_TRANSFORM);
 
-	//Scene::Init();
 	ComponentFactory::Init();
 	AudioManager::Init();
 	AudioManager::LoadAllFiles(engineFolder);
 	AudioManager::LoadAllFiles(gameFolder);
-
-	AudioManager::SetAudioListener(camera->GetAudioListener());
-
 	// Load Crawl Game Dependencies
 	Scene* scene = Scene::NewScene("Dungeon");
 	Scene::s_instance = scene;
@@ -154,7 +141,7 @@ void Application::LaunchArgument(char* arg)
 	if (argument == "design" || argument == "art" || argument == "dev")
 	{
 		developerMode = true;
-
+		Scene::CreateSceneEditorCamera();
 		
 		if (argument == "design")
 		{
@@ -174,6 +161,10 @@ void Application::LaunchArgument(char* arg)
 			art->LoadJSON("crawler/scene/test_art.scene");
 			artTester = new Crawl::ArtTester();
 
+			Scene::s_editorCamera->object->SetLocalPosition({ -2.45, -3.75, 2.75 });
+			Scene::s_editorCamera->object->SetLocalRotationZ({ -30 });
+			Scene::s_editorCamera->object->SetLocalRotationX({ -20 });
+			Scene::s_editorCamera->moveSpeed = 5.0f;
 			s_mode = Mode::Art;
 			artTester->Activate();
 		}
@@ -184,7 +175,7 @@ void Application::InitGame()
 {
 	MaterialManager::PreloadAllFiles();
 	dungeon->Load("crawler/dungeon/start.dungeon");
-	Scene::SetCameraIndex(1);
+	Scene::SetCameraByName("Player Camera");
 	/*if (!developerMode)
 		dungeonPlayer->Respawn();*/
 }
@@ -228,7 +219,6 @@ void Application::Run()
 
 void Application::Update(float delta)
 {
-	//TextureManager::DrawTexturePreview();
 	switch (s_mode)
 	{
 	case Mode::Game:
@@ -241,28 +231,25 @@ void Application::Update(float delta)
 	}
 	case Mode::Design:
 	{
-		camera->DrawGUI();
-		camera->Update(delta);
+		Scene::s_editorCamera->Update(delta);
+		Scene::s_editorCamera->DrawGUI();
 		dungeonEditor->Update();
 		dungeonEditor->DrawGUI();
 		break;
 	}
 	case Mode::Art:
 	{
-		artTester->Update(delta);
-		artTester->DrawGUI();
-
 		if (Scene::GetCameraIndex() == 0)
 		{
-			camera->DrawGUI();
-			camera->Update(delta);
+			Scene::s_editorCamera->Update(delta);
+			Scene::s_editorCamera->DrawGUI();
 		}
+		artTester->Update(delta);
+		artTester->DrawGUI();
 		break;
 	}
 	case Mode::Programming:
 	{
-		camera->DrawGUI();
-		camera->Update(delta);
 		MeshManager::DrawGUI();
 		TextureManager::DrawGUI();
 		ShaderManager::DrawGUI();
@@ -271,6 +258,8 @@ void Application::Update(float delta)
 		AudioManager::DrawGUI();
 		Scene::s_instance->DrawGUI();
 		Scene::s_instance->DrawGraphicsGUI();
+		Scene::s_editorCamera->Update(delta);
+		Scene::s_editorCamera->DrawGUI();
 		break;
 	}
 
@@ -284,7 +273,7 @@ void Application::Update(float delta)
 		{
 			s_mode = Mode::Game;
 			Scene::ChangeScene("Dungeon");
-			Scene::SetCameraIndex(1);
+			Scene::SetCameraByName("Player Camera");
 			dungeonEditor->requestedGameMode = false;
 		}
 
@@ -304,6 +293,8 @@ void Application::Update(float delta)
 				s_mode = Mode::Programming;
 			}
 		}
+
+		Scene::s_instance->UpdateSceneEditorCamera(delta);
 	}
 
 

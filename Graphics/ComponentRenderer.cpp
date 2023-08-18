@@ -1,7 +1,6 @@
 #include "ComponentRenderer.h"
 #include "ComponentModel.h"
 #include "Scene.h"
-#include "Camera.h"
 #include "Model.h"
 
 #include "TextureManager.h"

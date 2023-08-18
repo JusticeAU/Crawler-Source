@@ -70,9 +70,6 @@
     <ClCompile Include="Application.cpp">
       <Filter>Source Files\Application</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
-      <Filter>Source Files\Application</Filter>
-    </ClCompile>
     <ClCompile Include="..\imgui\imgui.cpp">
       <Filter>Libraries\ImGui</Filter>
     </ClCompile>
@@ -323,6 +320,9 @@
     <ClCompile Include="DungeonDecoration.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
+    <ClCompile Include="SceneEditorCamera.cpp">
+      <Filter>Source Files\Application\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -345,9 +345,6 @@
     </ClInclude>
     <ClInclude Include="LogUtils.h">
       <Filter>Source Files\StaticUtility</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Source Files\Application</Filter>
     </ClInclude>
     <ClInclude Include="..\imgui\imconfig.h">
       <Filter>Libraries\ImGui</Filter>
@@ -576,6 +573,9 @@
     </ClInclude>
     <ClInclude Include="DungeonDecoration.h">
       <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneEditorCamera.h">
+      <Filter>Source Files\Application\Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

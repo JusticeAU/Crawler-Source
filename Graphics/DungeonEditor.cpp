@@ -18,13 +18,14 @@
 
 #include "Object.h"
 #include "Input.h"
-#include "Camera.h"
 #include "Scene.h"
+#include "SceneEditorCamera.h"
 #include <filesystem>
 namespace fs = std::filesystem;
 
 #include "ComponentModel.h"
 #include "ComponentRenderer.h"
+#include "ComponentCamera.h"
 
 #include "LogUtils.h"
 
@@ -38,7 +39,7 @@ Crawl::DungeonEditor::DungeonEditor()
 void Crawl::DungeonEditor::Activate()
 {
 	Scene::ChangeScene("Dungeon");
-	Scene::SetCameraIndex(0);
+	Scene::SetCameraByName();
 	RefreshAvailableDecorations();
 
 	// It's possible that gameplay took us in to another dungeon, and this, that is the one that should now be loaded.
@@ -1324,10 +1325,9 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 
 		Scene::s_instance->drawGizmos = false;
 
-		Camera::s_instance->position = { -2.970f, 1.447f, 1.694f };
-		Camera::s_instance->m_horizontal = -40.2f;
-		Camera::s_instance->m_vertical = -2.7f;
-		Camera::s_instance->UpdateMatrix();
+		Scene::s_editorCamera->object->SetLocalPosition({ -2.970f, 1.447f, 1.694f });
+		Scene::s_editorCamera->object->SetLocalRotationZ(-130.2f);
+		Scene::s_editorCamera->object->SetLocalRotationX(-2.7f);
 
 		dungeon->player->Respawn();
 	}
@@ -1669,8 +1669,8 @@ glm::ivec2 Crawl::DungeonEditor::GetMousePosOnGrid()
 {
 	// Do the math to figure out where we're pointing
 	vec2 NDC = Input::GetMousePosNDC();
-	vec3 rayStart = Camera::s_instance->position;
-	vec3 rayDir = Camera::s_instance->GetRayFromNDC(NDC);
+	vec3 rayStart = Scene::s_editorCamera->object->GetWorldSpacePosition();
+	vec3 rayDir = Scene::s_editorCamera->camera->GetRayFromNDC(NDC);
 	float scale = rayStart.z / rayDir.z;
 	vec3 groundPos = rayStart - (rayDir * scale);
 

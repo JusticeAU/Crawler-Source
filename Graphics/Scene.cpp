@@ -1,10 +1,13 @@
 #include "Scene.h"
+#include "SceneEditorCamera.h"
+
 #include "FileUtils.h"
 #include "ModelManager.h"
 #include "Model.h"
 #include "ComponentModel.h"
 #include "ComponentRenderer.h"
 #include "ComponentCamera.h"
+#include "ComponentFactory.h"
 #include "ShaderManager.h"
 #include "MaterialManager.h"
 #include "AudioManager.h"
@@ -14,11 +17,11 @@
 #include "Window.h"
 #include "MeshManager.h"
 
-#include "Camera.h"
-
 #include "MathUtils.h"
 #include "LogUtils.h"
 #include "PostProcess.h"
+
+#include "Input.h"
 
 #include "serialisation.h"
 
@@ -46,8 +49,8 @@ Scene::Scene()
 	lightGizmo->components.push_back(lightGizmoRenderer);
 
 	// Add editor camera to list of cameras and set our main camera to be it.
-	cameras.push_back(Camera::s_instance->GetFrameBufferProcessed());
-	outputCameraFrameBuffer = cameras[0];
+	//cameras.push_back(Camera::s_instance->GetFrameBufferProcessed());
+	//outputCameraFrameBuffer = cameras[0];
 
 	// Object picking dev - Might be able to refactor this to be something that gets attached to a camera. It needs to be used by both scene editor camera, but also 'in game' camera - not unreasonable for these to be seperate implementations though.
 	if (objectPickBuffer == nullptr)
@@ -132,6 +135,12 @@ Scene* Scene::NewScene(string name)
 	return scene;
 }
 
+void Scene::CreateSceneEditorCamera()
+{
+	s_editorCamera = new SceneEditorCamera();
+	s_instance->outputCameraFrameBuffer = s_editorCamera->camera->GetFrameBufferProcessed();
+}
+
 void Scene::Update(float deltaTime)
 {
 	UpdateInputs();
@@ -147,6 +156,10 @@ void Scene::Update(float deltaTime)
 		m_pointLightPositions[i] = m_pointLights[i].position;
 	}
 
+}
+void Scene::UpdateSceneEditorCamera(float deltaTime)
+{
+	
 }
 void Scene::UpdateInputs()
 {
@@ -169,10 +182,7 @@ void Scene::Render()
 	//RenderShadowMaps();
 	if (requestedObjectSelection)
 		RenderObjectPicking();
-	if(cameraIndex != 0)
-		RenderSceneCameras();
-	else
-		RenderEditorCamera();
+	RenderSceneCameras();
 	if(drawGizmos)
 		DrawGizmos();
 
@@ -190,9 +200,10 @@ void Scene::RenderShadowMaps()
 	glClear(GL_DEPTH_BUFFER_BIT);
 	// Generate shadow map VPM and camera pos
 	lightProjection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, orthoNear, orthoFar);
-	lightView = glm::lookAt(Camera::s_instance->GetPosition(),
+	// What in christ am I doing here? commented out till i come back to shadow mapping.
+	/*lightView = glm::lookAt(Camera::s_instance->GetPosition(),
 		Camera::s_instance->GetPosition() + Scene::GetSunDirection(),
-		glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::vec3(0.0f, 1.0f, 0.0f));*/
 	lightSpaceMatrix = lightProjection * lightView;
 	for (auto& o : objects)
 		o->Draw(lightSpaceMatrix, { 0,0,0 }, Component::DrawMode::ShadowMapping);
@@ -209,7 +220,7 @@ void Scene::RenderSceneCameras()
 	//shadowMap->BindTexture(5);
 	// for each camera in each object, draw to that cameras frame buffer
 
-	ComponentCamera* c = componentCameras[cameraIndex - 1];
+	ComponentCamera* c = cameraIndex == 0 ? Scene::s_editorCamera->camera : componentCameras[cameraIndex-1];
 	c->UpdateViewProjectionMatrix();
 	vec3 cameraPosition = c->GetWorldSpacePosition();
 
@@ -281,17 +292,18 @@ void Scene::RenderSceneCameras()
 		o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::Standard);
 	c->RunPostProcess();
 }
+
 void Scene::RenderObjectPicking()
 {
 	objectPickBuffer->BindTarget();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+
 	glm::mat4 vpm;
 	glm::vec3 position;
 	if (cameraIndex == 0)
 	{
-		vpm = Camera::s_instance->GetMatrix();
-		position = Camera::s_instance->GetPosition();
+		vpm = Scene::s_editorCamera->camera->GetViewProjectionMatrix();
+		position = Scene::s_editorCamera->object->GetWorldSpacePosition();
 	}
 	else
 	{
@@ -302,135 +314,17 @@ void Scene::RenderObjectPicking()
 	for (auto& o : objects)
 		o->Draw(vpm, position, Component::DrawMode::ObjectPicking);
 
-	//SetSelectedObject(objectPickBuffer->GetObjectID(requestedSelectionPosition.x, requestedSelectionPosition.y)); // old method for transform gizmo
 	requestedSelectionPosition = Input::GetMousePosPixel();
 	objectPickedID = objectPickBuffer->GetObjectID(requestedSelectionPosition.x, requestedSelectionPosition.y);
 	std::cout << objectPickedID << std::endl;
 	requestedObjectSelection = false;
-}
-void Scene::RenderEditorCamera()
-{
-	if (ssao_enabled)
-	{
-		// Build G Buffer for SSAO with a Geomerty Pass.
-		ssao_gBuffer->BindTarget();
-		ShaderProgram* ssaoGeoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOGeometryPass");
-		ssaoGeoShader->Bind();
-		ssaoGeoShader->SetMatrixUniform("view", Camera::s_instance->GetView());
-		ssaoGeoShader->SetMatrixUniform("projection", Camera::s_instance->GetProjection());
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		vec3 cameraPosition = Camera::s_instance->GetPosition();
-		// bind the shader for it - just use static for now but will need something for skinned.
-		glDisable(GL_BLEND);
-		for (auto& o : objects)
-			o->Draw(Camera::s_instance->GetMatrix(), cameraPosition, Component::DrawMode::SSAOgBuffer);
-		glEnable(GL_BLEND);
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		// Do the SSAO pass
-		ssao_ssaoFBO->BindTarget();
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		ShaderProgram* ssaoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOTermPass");
-		ssaoShader->Bind();
-		ssaoShader->SetFloatUniform("radius", ssao_radius);
-		ssaoShader->SetFloatUniform("bias", ssao_bias);
-		vec2 screenSize = Window::GetViewPortSize();
-		ssaoShader->SetVector2Uniform("screenSize", screenSize);
-
-		glDisable(GL_BLEND);
-		ssaoShader->SetIntUniform("gPosition", 0);
-		ssaoShader->SetIntUniform("gNormal", 1);
-		ssaoShader->SetIntUniform("texNoise", 2);
-
-		ssaoShader->SetFloat3ArrayUniform("samples", 64, ssaoKernel.data());
-		ssaoShader->SetMatrixUniform("projection", Camera::s_instance->GetProjection());
-		ssao_gBuffer->BindGPosition(0);
-		ssao_gBuffer->BindGNormal(1);
-		ssao_noiseTexture->Bind(2);
-		PostProcess::PassThrough(ssaoShader);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		FrameBuffer::UnBindTexture(0);
-		FrameBuffer::UnBindTexture(1);
-		FrameBuffer::UnBindTexture(2);
-
-		// Do the SSAO Blur Pass
-		ssao_ssaoBlurFBO->BindTarget();
-		ShaderProgram* ssaoBlur = ShaderManager::GetShaderProgram("engine/shader/SSAOBlurPass");
-		ssaoBlur->Bind();
-		ssaoBlur->SetIntUniform("ssaoInput", 0);
-		ssao_ssaoFBO->BindTexture(0);
-
-		PostProcess::PassThrough(ssaoBlur);
-		FrameBuffer::UnBindTexture(0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		// Draw
-
-		glEnable(GL_BLEND);
-
-	}
-	Camera::s_instance->GetFrameBuffer()->BindTarget();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	for (auto& o : objects)
-		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), Component::DrawMode::Standard);
-	FrameBuffer::UnBindTarget();
-
-	FrameBuffer* editorReadFBO;
-	if (MSAAEnabled)
-	{
-		// blit it to a non-multisampled FBO for texture attachment compatiability.
-		FrameBuffer* editorFBO = Camera::s_instance->GetFrameBuffer();
-		editorReadFBO = Camera::s_instance->GetFrameBufferBlit();
-
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, editorFBO->GetID());
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, editorReadFBO->GetID());
-		glBlitFramebuffer(0, 0, editorFBO->GetWidth(), editorFBO->GetHeight(), 0, 0, editorReadFBO->GetWidth(), editorReadFBO->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	}
-	else
-		editorReadFBO = Camera::s_instance->GetFrameBuffer();
-
-	if (ssao_enabled)
-	{
-		// draw combine with SSAO texture
-		Camera::s_instance->GetFrameBufferProcessed()->BindTarget();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glDisable(GL_DEPTH_TEST);
-		ShaderProgram* ssao = ShaderManager::GetShaderProgram("engine/shader/postProcess/SSAO");
-		ssao->Bind();
-		editorReadFBO->BindTexture(20);
-		ssao_ssaoBlurFBO->BindTexture(21);
-		ssao->SetIntUniform("frame", 20);
-		ssao->SetIntUniform("SSAO", 21);
-
-		PostProcess::PassThrough(ssao);
-		FrameBuffer::UnBindTarget();
-		FrameBuffer::UnBindTexture(20);
-		FrameBuffer::UnBindTexture(21);
-		glEnable(GL_DEPTH_TEST);
-	}
-	else
-	{
-		FrameBuffer* editorFBO = Camera::s_instance->GetFrameBuffer();
-		FrameBuffer* editorProcessedFBO = Camera::s_instance->GetFrameBufferProcessed();
-
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, editorFBO->GetID());
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, editorProcessedFBO->GetID());
-		glBlitFramebuffer(0, 0, editorFBO->GetWidth(), editorFBO->GetHeight(), 0, 0, editorProcessedFBO->GetWidth(), editorProcessedFBO->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-	}
 }
 
 void Scene::DrawGizmos()
 {
 	// render light gizmos only to main 'editor' camera
 	// quick wireframe rendering. Will later set up something that renders a quad billboard at the location or something.
-	Camera::s_instance->GetFrameBufferProcessed()->BindTarget();
+	s_editorCamera->camera->GetFrameBufferProcessed()->BindTarget();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	gizmoShader->Bind();
 	for (auto &light : m_pointLights)
@@ -440,20 +334,22 @@ void Scene::DrawGizmos()
 		vec3 localPosition, localRotation, localScale;
 		localPosition = light.position;
 		localScale = { 0.2f, 0.2f, 0.2f, };
-		localRotation = { 0, 0, 0 };
+		localRotation = { 90, 0, 0 };
 		ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&localRotation, (float*)&localScale, (float*)&lightGizmo->transform);
-		lightGizmo->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), Component::DrawMode::Standard);
+		lightGizmo->Draw(s_editorCamera->camera->GetViewProjectionMatrix(), s_editorCamera->object->GetWorldSpacePosition(), Component::DrawMode::Standard);
 	}
 
 	// Draw cameras (from gizmo list, all gizmos should move to here)
 	gizmoShader->SetVector3Uniform("gizmoColour", { 1,1,1 });
 	for (auto &o : gizmos)
 	{
-		o->Draw(Camera::s_instance->GetMatrix(), Camera::s_instance->GetPosition(), Component::DrawMode::Standard);
+		if (o == Scene::s_editorCamera->object)
+			continue;
+
+		o->Draw(s_editorCamera->camera->GetViewProjectionMatrix(), s_editorCamera->object->GetWorldSpacePosition(), Component::DrawMode::Standard);
 	}
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	Camera::s_instance->BlitFrameBuffer();
 	FrameBuffer::UnBindTarget();
 }
 void Scene::DrawCameraToBackBuffer()
@@ -581,17 +477,17 @@ void Scene::DrawGUI()
 
 		ImGui::End();
 
-		if (Scene::GetSelectedObject() > 0)
-		{
-			// Draw Guizmo - very simple implementation - TODO have a 'selected object' context and mousewheel scroll through translate, rotate, scale options - rotate will need to be reworked.
-			ImGuizmo::SetRect(0, 0, Window::GetViewPortSize().x, Window::GetViewPortSize().y);
-			mat4 view, projection;
-			view = Camera::s_instance->GetView();
-			projection = Camera::s_instance->GetProjection();
-			if (ImGuizmo::Manipulate((float*)&view, (float*)&projection, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, (float*)&s_instance->selectedObject->localTransform))
-				s_instance->selectedObject->dirtyTransform = true;
-			Scene::s_instance->drawn3DGizmo = true;
-		}
+		//if (Scene::GetSelectedObject() > 0)
+		//{
+		//	// Draw Guizmo - very simple implementation - TODO have a 'selected object' context and mousewheel scroll through translate, rotate, scale options - rotate will need to be reworked.
+		//	ImGuizmo::SetRect(0, 0, Window::GetViewPortSize().x, Window::GetViewPortSize().y);
+		//	mat4 view, projection;
+		//	view = Camera::s_instance->GetView();
+		//	projection = Camera::s_instance->GetProjection();
+		//	if (ImGuizmo::Manipulate((float*)&view, (float*)&projection, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, (float*)&s_instance->selectedObject->localTransform))
+		//		s_instance->selectedObject->dirtyTransform = true;
+		//	Scene::s_instance->drawn3DGizmo = true;
+		//}
 	}
 }
 
@@ -629,6 +525,16 @@ void Scene::DrawGraphicsGUI()
 	{
 		if (!ssao_enabled)
 		{
+			for (int i = 0; i < Scene::s_editorCamera->camera->m_postProcessStack.size(); i++)
+			{
+				if (Scene::s_editorCamera->camera->m_postProcessStack[i]->GetShaderName() == "engine/shader/postProcess/SSAO")
+				{
+					delete Scene::s_editorCamera->camera->m_postProcessStack[i];
+					Scene::s_editorCamera->camera->m_postProcessStack.erase(Scene::s_editorCamera->camera->m_postProcessStack.begin() + i);
+					break;
+				}
+			}
+
 			for (auto& c : componentCameras)
 			{
 				for (int i = 0; i < c->m_postProcessStack.size(); i++)
@@ -644,10 +550,18 @@ void Scene::DrawGraphicsGUI()
 		}
 		else
 		{
+			// Add to Scene Camera
+			string ppName = "engine/shader/postProcess/SSAO";
+			PostProcess* pp = new PostProcess(Scene::s_editorCamera->camera->GetComponentParentObject()->objectName + "_PP_" + ppName);
+			pp->SetShader(ShaderManager::GetShaderProgram(ppName));
+			pp->SetShaderName(ppName);
+			Scene::s_editorCamera->camera->m_postProcessStack.push_back(pp);
+
+			// Add to component Camaras in scene
 			for (auto& c : componentCameras)
 			{
-				string ppName = "engine/shader/postProcess/SSAO";
-				PostProcess* pp = new PostProcess(c->GetComponentParentObject()->objectName + "_PP_" + ppName);
+				ppName = "engine/shader/postProcess/SSAO";
+				pp = new PostProcess(c->GetComponentParentObject()->objectName + "_PP_" + ppName);
 				pp->SetShader(ShaderManager::GetShaderProgram(ppName));
 				pp->SetShaderName(ppName);
 				c->m_postProcessStack.push_back(pp);
@@ -674,6 +588,11 @@ void Scene::DrawGraphicsGUI()
 		ShaderManager::RecompileAllShaderPrograms();
 
 	ImGui::End();
+}
+
+void Scene::DrawCameraGUI()
+{
+	s_editorCamera->DrawGUI();
 }
 
 // This will destroy all objects (and their children) marked for deletion.
@@ -779,17 +698,36 @@ int Scene::GetNumPointLights()
 void Scene::SetCameraIndex(int index)
 {
 	s_instance->cameraIndex = index;
-	if (s_instance->cameraIndex > s_instance->cameras.size() - 1)
-		s_instance->cameraIndex = s_instance->cameras.size() - 1;
-	s_instance->outputCameraFrameBuffer = s_instance->cameras[s_instance->cameraIndex];
-
-
-	// This is fairly hacky. maybe the cameras should handle setting the audio listener themselves.
-	// Perhaps scenee camera and editor camera can become same thing and then audio manager can just look at camera::main or something
-	if (s_instance->cameraIndex == 0)
-		AudioManager::SetAudioListener(Camera::s_instance->GetAudioListener());
+	if (s_instance->cameraIndex > s_instance->cameras.size())
+		s_instance->cameraIndex = s_instance->cameras.size();
+	if (index == 0)
+	{
+		s_instance->outputCameraFrameBuffer = s_editorCamera->camera->GetFrameBufferProcessed();
+		AudioManager::SetAudioListener(s_editorCamera->camera->GetAudioListener());
+	}
 	else
+	{
+		s_instance->outputCameraFrameBuffer = s_instance->cameras[s_instance->cameraIndex - 1];
 		AudioManager::SetAudioListener(s_instance->componentCameras[s_instance->cameraIndex - 1]->GetAudioListener());
+	}
+}
+
+void Scene::SetCameraByName(string name)
+{
+	if (name == "Editor Camera")
+		SetCameraIndex(0);
+	else
+	{
+		for (int i = 0; i < s_instance->componentCameras.size(); i++)
+		{
+			if (s_instance->componentCameras[i]->GetComponentParentObject()->objectName == name)
+			{
+				SetCameraIndex(i + 1);
+				return;
+			}
+		}
+	}
+	LogUtils::Log("Error: Unable to find camera: " + name);
 }
 
 void Scene::SetSelectedObject(unsigned int selected)
@@ -918,6 +856,8 @@ mat4 Scene::GetLightSpaceMatrix()
 }
 
 Scene* Scene::s_instance = nullptr;
+SceneEditorCamera* Scene::s_editorCamera = nullptr;
+
 FrameBuffer* Scene::objectPickBuffer = nullptr;
 unordered_map<string, Scene*> Scene::s_instances;
 

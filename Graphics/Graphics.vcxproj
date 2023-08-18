@@ -201,7 +201,6 @@
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="DungeonArtTester.cpp" />
     <ClCompile Include="AudioManager.cpp" />
-    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentAnimationBlender.cpp" />
     <ClCompile Include="ComponentAnimator.cpp" />
@@ -245,6 +244,7 @@
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="PostProcess.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneEditorCamera.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="Application.cpp" />
@@ -274,7 +274,6 @@
     <ClInclude Include="DungeonArtTester.h" />
     <ClInclude Include="AudioListener.h" />
     <ClInclude Include="AudioManager.h" />
-    <ClInclude Include="Camera.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentAnimationBlender.h" />
     <ClInclude Include="ComponentAnimator.h" />
@@ -314,6 +313,7 @@
     <ClInclude Include="glfwCallbacks.h" />
     <ClInclude Include="glm2json.h" />
     <ClInclude Include="PostProcess.h" />
+    <ClInclude Include="SceneEditorCamera.h" />
     <ClInclude Include="serialisation.h" />
     <ClInclude Include="StringUtils.h" />
     <ClInclude Include="Window.h" />

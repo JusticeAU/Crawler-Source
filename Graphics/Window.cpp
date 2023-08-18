@@ -54,9 +54,15 @@ void Window::SetMouseCursorHidden(bool hidden)
 	showMouseCursor = !hidden;
 
 	if (showMouseCursor)
+	{
 		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, GLFW_FALSE); 
+	}
 	else
+	{
 		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE); // Enable raw mouse data rather than window pixel based.
+	}
 }
 
 Window* Window::s_instance = nullptr;

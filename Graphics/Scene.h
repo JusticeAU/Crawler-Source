@@ -18,6 +18,8 @@ class ComponentCamera;
 
 class PostProcess;
 
+class SceneEditorCamera;
+
 class Scene
 {
 public:
@@ -26,6 +28,7 @@ public:
 
 	static Scene* NewScene(string name);
 	static void ChangeScene(string name) { s_instance = s_instances[name]; SetClearColour(); }
+	static void CreateSceneEditorCamera();
 
 	static Object* CreateObject(Object* parent = nullptr);
 	static Object* CreateObject(string name, Object * parent = nullptr);
@@ -49,6 +52,7 @@ public:
 
 	static int GetCameraIndex() { return s_instance->cameraIndex; }
 	static void SetCameraIndex(int index);
+	static void SetCameraByName(string name = "Editor Camera");
 	static unsigned int GetSelectedObject() { return s_instance->selectedObjectID; }
 	static void SetSelectedObject(unsigned int selected);
 	static void RequestObjectSelection() { s_instance->requestedObjectSelection = true; };
@@ -64,17 +68,21 @@ public:
 	
 	vector<Object*> objects;
 	vector<Object*> gizmos;
-	bool drawGizmos = true;
+	
+	bool drawGizmos = false;
+	static SceneEditorCamera* s_editorCamera;
 	vector<ComponentCamera*> componentCameras;
 
 	string GetSceneName() { return s_instance->sceneName; };
 
 	void Update(float deltaTime);
+	void UpdateSceneEditorCamera(float deltaTime);
 	void Render();
 	void DrawGizmos();
 	void DrawCameraToBackBuffer();
 	void DrawGUI();
 	void DrawGraphicsGUI();
+	static void DrawCameraGUI();
 	void CleanUp();
 
 	void SaveJSON();

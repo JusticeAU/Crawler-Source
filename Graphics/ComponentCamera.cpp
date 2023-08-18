@@ -10,8 +10,9 @@
 #include "ComponentModel.h"
 #include "ComponentRenderer.h"
 #include "PostProcess.h"
+#include "Model.h"
 
-ComponentCamera::ComponentCamera(Object* parent) : Component("Camera", Component_Camera, parent)
+ComponentCamera::ComponentCamera(Object* parent, bool noGizmo) : Component("Camera", Component_Camera, parent)
 {
 	// Hold on to your seatbelt.
 	// Set base matrix.
@@ -38,20 +39,25 @@ ComponentCamera::ComponentCamera(Object* parent) : Component("Camera", Component
 
 
 	// In Scene Editor Camera Gizmo - It'd be nice to move some of this info out of here. Perhaps a Gizmo factory or something.
-	cameraGizmo = new Object(-1, "Camera Gizmo");
-	ComponentModel* componentModel = new ComponentModel(parent);
-	componentModel->model = ModelManager::GetModel("engine/model/Gizmos/camera.fbx");
-	cameraGizmo->components.push_back(componentModel);
+	if (!noGizmo)
+	{
+		cameraGizmo = new Object(-1, "Camera Gizmo");
+		ComponentModel* componentModel = new ComponentModel(parent);
+		componentModel->model = ModelManager::GetModel("engine/model/Gizmos/camera.fbx");
+		componentModel->model->modelTransform = glm::rotate(glm::scale(mat4(1),glm::vec3(0.4f)), glm::radians(90.0f), {1,0,0});
 
-	ComponentRenderer* componentRenderer = new ComponentRenderer(parent);
-	componentRenderer->model = ModelManager::GetModel("engine/model/Gizmos/camera.fbx");
-	componentRenderer->materialArray.resize(1);
-	componentRenderer->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/Gizmos.material");
+		cameraGizmo->components.push_back(componentModel);
+
+		ComponentRenderer* componentRenderer = new ComponentRenderer(parent);
+		componentRenderer->model = ModelManager::GetModel("engine/model/Gizmos/camera.fbx");
+		componentRenderer->materialArray.resize(1);
+		componentRenderer->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/Gizmos.material");
 
 
-	cameraGizmo->components.push_back(componentRenderer);
+		cameraGizmo->components.push_back(componentRenderer);
 
-	Scene::s_instance->gizmos.push_back(cameraGizmo); // the scene gizmo renderer needs to be aware of this component.
+		Scene::s_instance->gizmos.push_back(cameraGizmo); // the scene gizmo renderer needs to be aware of this component.
+	}
 	Scene::s_instance->componentCameras.push_back(this); // Must be added here so the scene can render all in-scene cameras before rendering itself.
 }
 
@@ -197,9 +203,33 @@ void ComponentCamera::DrawGUI()
 
 void ComponentCamera::UpdateViewProjectionMatrix()
 {
-	view = glm::inverse(componentParent->transform);
+	//view = glm::inverse(componentParent->transform);
+	vec3 position = componentParent->GetWorldSpacePosition();
+	view = glm::lookAt(position, position + componentParent->forward, componentParent->up);
 	projection = glm::perspective(glm::radians(fieldOfView), aspect, nearClip, farClip);
 	matrix = projection * view;
+}
+
+const vec3 ComponentCamera::GetRayFromNDC(glm::vec2 NDC)
+{
+	// convert to clip space
+	glm::vec4 clipSpace = { NDC.x, NDC.y, -1.0f, 1.0f };
+	// convert to eye space
+	glm::mat4 inverseProjection = glm::inverse(projection);
+	glm::vec4 eyeSpace = inverseProjection * clipSpace;
+	eyeSpace.z = -1.0f;  eyeSpace.w = 0.0f;
+	// convert to world space
+	glm::mat4 inverseView = glm::inverse(view);
+	glm::vec4 worldSpace = inverseView * eyeSpace;
+	vec3 mouseRay{ worldSpace.x, worldSpace.y, worldSpace.z };
+	mouseRay = glm::normalize(mouseRay);
+
+	return mouseRay;
+}
+
+void ComponentCamera::SetAspect(float aspect)
+{
+	this->aspect = aspect;
 }
 
 // binds the cameras base framebuffer, ready to render meshes to. This clears the color and depth buffer of the camera too.

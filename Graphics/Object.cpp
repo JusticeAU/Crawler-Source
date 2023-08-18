@@ -6,7 +6,6 @@
 
 #include "ShaderProgram.h"
 #include "UniformBuffer.h"
-#include "Camera.h"
 #include "Scene.h"
 #include "Model.h"
 
@@ -175,6 +174,10 @@ void Object::DrawGUI()
 
 			if(ImGui::DragFloat3("Scale", &localScale[0]))
 				dirtyTransform = true;
+
+			ImGui::DragFloat3("Forward", &forward[0]);
+			ImGui::DragFloat3("Up", &up[0]);
+			ImGui::DragFloat3("Right", &right[0]);
 		}
 
 		// Draw Components.
@@ -420,16 +423,27 @@ void Object::RefreshComponents()
 
 void Object::RecalculateTransforms()
 {
-	ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&localRotation, (float*)&localScale, (float*)&localTransform);
+	const glm::mat4 transformX = glm::rotate(glm::mat4(1.0f), glm::radians(localRotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+	const glm::mat4 transformY = glm::rotate(glm::mat4(1.0f), glm::radians(localRotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+	const glm::mat4 transformZ = glm::rotate(glm::mat4(1.0f), glm::radians(localRotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+	const glm::mat4 rotationMatrix = transformZ * transformX * transformY;
+	localTransform = glm::translate(glm::mat4(1.0f), localPosition) * rotationMatrix * glm::scale(glm::mat4(1.0f), localScale);
 
 	// Update world transform based on our parent.
 	if (parent)
 		transform = parent->transform * localTransform;
 	else
 		transform = localTransform;
+	
+	// Update
+	right = glm::normalize(glm::vec3(transform[0]));
+	forward = glm::normalize(glm::vec3(transform[1]));
+	up = glm::normalize(glm::vec3(transform[2]));
 
 	for (auto c : children)
 		c->RecalculateTransforms();
+
+	dirtyTransform = false;
 }
 
 Object* Object::FindObjectWithID(unsigned int id)

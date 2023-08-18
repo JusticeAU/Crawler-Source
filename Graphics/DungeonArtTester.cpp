@@ -49,7 +49,7 @@ void Crawl::ArtTester::Activate()
 {
 	glfwSetDropCallback(Window::GetWindow()->GetGLFWwindow(), &ModelDropCallback);
 	Scene::ChangeScene("CrawlArtTest");
-	Scene::SetCameraIndex(1);
+	Scene::SetCameraByName("Player Camera");
 	Refresh();
 
 }
@@ -98,9 +98,9 @@ void Crawl::ArtTester::DrawGUI()
 	if(ImGui::BeginCombo("Camera", Scene::GetCameraIndex() == 0 ? "Free" : "Player"))
 	{
 		if (ImGui::Selectable("Free"))
-			Scene::SetCameraIndex(0);
+			Scene::SetCameraByName();
 		if (ImGui::Selectable("Player"))
-			Scene::SetCameraIndex(1);
+			Scene::SetCameraByName("Player Camera");
 
 		ImGui::EndCombo();
 	}
