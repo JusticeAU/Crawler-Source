@@ -90,12 +90,12 @@ public:
 	void LoadJSON();
 	vector<FrameBuffer*> cameras;
 protected:
-	Scene();
+	Scene(string name);
 
 	void UpdateInputs();
 
 	void RenderShadowMaps();
-	void RenderSceneCameras();
+	void RenderActiveSceneCamera();
 	void RenderObjectPicking();
 	void RenderEditorCamera();
 
@@ -181,11 +181,13 @@ public:
 protected:
 	static Texture* ssao_noiseTexture;
 
-
 	static std::vector<glm::vec3> ssaoKernel;
 	static std::vector<glm::vec3> ssaoNoise;
 
 public:
 	static glm::mat4 GetLightSpaceMatrix();
 
+	FrameBuffer* m_frameBufferRaw;
+	FrameBuffer* m_frameBufferBlit;
+	FrameBuffer* m_frameBufferProcessed;
 };

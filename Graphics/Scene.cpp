@@ -30,7 +30,7 @@
 #include <random>
 namespace fs = std::filesystem;
 
-Scene::Scene()
+Scene::Scene(string name) : sceneName(name)
 {
 	// Create light pos and col arrays for sending to lit phong shader.
 	m_pointLightPositions = new vec3[MAX_LIGHTS];
@@ -109,6 +109,25 @@ Scene::Scene()
 		ssao_noiseTexture->CreateSSAONoiseTexture(ssaoNoise.data());
 		TextureManager::AddTexture(ssao_noiseTexture);
 	}
+
+	// Render Frame Buffers
+	// Initilise framebuffers. We create two initially. 1 to render the scene to, then a 2nd for the final post processing effects to land to.
+	// Raw FrameBuffer to render to, with MultiSampling.
+	m_frameBufferRaw = new FrameBuffer(FrameBuffer::Type::CameraTargetMultiSample);
+	m_frameBufferRaw->MakePrimaryTarget();
+	string FbName = sceneName + "FrameBuffer";
+	TextureManager::s_instance->AddFrameBuffer(FbName.c_str(), m_frameBufferRaw); // add the texture to the manager so we can bind it to meshes and stuff.
+
+	// Intermediary FrameBuffer to blit to, without MSAA, to use in post processing
+	m_frameBufferBlit = new FrameBuffer(FrameBuffer::Type::CameraTargetSingleSample);
+	string BlitName = FbName + "_Blit";
+	TextureManager::s_instance->AddFrameBuffer(BlitName.c_str(), m_frameBufferBlit); // add the texture to the manager so we can bind it to meshes and stuff.
+
+	// The final frame buffer after the post process of the camera has been performed.
+	m_frameBufferProcessed = new FrameBuffer(FrameBuffer::Type::PostProcess);
+	cameras.push_back(m_frameBufferProcessed);
+	string processedFBName = FbName + "_Processed";
+	TextureManager::s_instance->AddFrameBuffer(processedFBName.c_str(), m_frameBufferProcessed);
 }
 Scene::~Scene()
 {
@@ -129,8 +148,7 @@ void Scene::Init()
 
 Scene* Scene::NewScene(string name)
 {
-	Scene* scene = new Scene();
-	scene->sceneName = name;
+	Scene* scene = new Scene(name);
 	s_instances.emplace(name, scene);
 	return scene;
 }
@@ -138,7 +156,7 @@ Scene* Scene::NewScene(string name)
 void Scene::CreateSceneEditorCamera()
 {
 	s_editorCamera = new SceneEditorCamera();
-	s_instance->outputCameraFrameBuffer = s_editorCamera->camera->GetFrameBufferProcessed();
+	//s_instance->outputCameraFrameBuffer = s_editorCamera->camera->GetFrameBufferProcessed();
 }
 
 void Scene::Update(float deltaTime)
@@ -182,7 +200,7 @@ void Scene::Render()
 	//RenderShadowMaps();
 	if (requestedObjectSelection)
 		RenderObjectPicking();
-	RenderSceneCameras();
+	RenderActiveSceneCamera();
 	if(drawGizmos)
 		DrawGizmos();
 
@@ -210,7 +228,7 @@ void Scene::RenderShadowMaps()
 
 	FrameBuffer::UnBindTarget();
 }
-void Scene::RenderSceneCameras()
+void Scene::RenderActiveSceneCamera()
 {
 	// Bind recently rendered shadowmap.
 	//shadowMap->BindTexture(20);
@@ -286,10 +304,25 @@ void Scene::RenderSceneCameras()
 	}
 
 	// Do normal render pass
-	c->SetAsRenderTarget();
+	m_frameBufferRaw->BindTarget();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for (auto& o : objects)
 		o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::Standard);
+	
+	// If MSAA is enabled then we need to blit to a Single Sample surface before doing PostProcess.
+	if (Scene::s_instance->MSAAEnabled)
+	{
+		// blit it to a non-multisampled FBO for texture attachment compatiability.
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_frameBufferRaw->GetID());
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_frameBufferBlit->GetID());
+		glBlitFramebuffer(0, 0, m_frameBufferRaw->GetWidth(), m_frameBufferRaw->GetHeight(), 0, 0, m_frameBufferBlit->GetWidth(), m_frameBufferBlit->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+		// bind output of first pass (raw render with no processing)
+		m_frameBufferBlit->BindTexture(20);
+	}
+	else
+		m_frameBufferRaw->BindTexture(20);
+	
 	c->RunPostProcess();
 }
 
@@ -324,7 +357,7 @@ void Scene::DrawGizmos()
 {
 	// render light gizmos only to main 'editor' camera
 	// quick wireframe rendering. Will later set up something that renders a quad billboard at the location or something.
-	s_editorCamera->camera->GetFrameBufferProcessed()->BindTarget();
+	m_frameBufferProcessed->BindTarget();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	gizmoShader->Bind();
 	for (auto &light : m_pointLights)
@@ -354,7 +387,7 @@ void Scene::DrawGizmos()
 }
 void Scene::DrawCameraToBackBuffer()
 {
-	outputCameraFrameBuffer->BindTexture(20);
+	m_frameBufferProcessed->BindTexture(20);
 	PostProcess::PassThrough();
 	FrameBuffer::UnBindTexture(20);
 }
@@ -701,15 +734,9 @@ void Scene::SetCameraIndex(int index)
 	if (s_instance->cameraIndex > s_instance->cameras.size())
 		s_instance->cameraIndex = s_instance->cameras.size();
 	if (index == 0)
-	{
-		s_instance->outputCameraFrameBuffer = s_editorCamera->camera->GetFrameBufferProcessed();
 		AudioManager::SetAudioListener(s_editorCamera->camera->GetAudioListener());
-	}
 	else
-	{
-		s_instance->outputCameraFrameBuffer = s_instance->cameras[s_instance->cameraIndex - 1];
 		AudioManager::SetAudioListener(s_instance->componentCameras[s_instance->cameraIndex - 1]->GetAudioListener());
-	}
 }
 
 void Scene::SetCameraByName(string name)

@@ -245,6 +245,7 @@
     <ClCompile Include="PostProcess.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneEditorCamera.cpp" />
+    <ClCompile Include="SceneRenderer.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="Application.cpp" />
@@ -314,6 +315,7 @@
     <ClInclude Include="glm2json.h" />
     <ClInclude Include="PostProcess.h" />
     <ClInclude Include="SceneEditorCamera.h" />
+    <ClInclude Include="SceneRenderer.h" />
     <ClInclude Include="serialisation.h" />
     <ClInclude Include="StringUtils.h" />
     <ClInclude Include="Window.h" />

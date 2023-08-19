@@ -323,6 +323,9 @@
     <ClCompile Include="SceneEditorCamera.cpp">
       <Filter>Source Files\Application\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="SceneRenderer.cpp">
+      <Filter>Source Files\Application\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -575,6 +578,9 @@
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
     <ClInclude Include="SceneEditorCamera.h">
+      <Filter>Source Files\Application\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneRenderer.h">
       <Filter>Source Files\Application\Scene</Filter>
     </ClInclude>
   </ItemGroup>

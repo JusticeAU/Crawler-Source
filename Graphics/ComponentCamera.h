@@ -39,11 +39,8 @@ public:
 	void SetAspect(float aspect);
 	AudioListener* GetAudioListener() { return &m_audioListener; }
 
-	void SetAsRenderTarget();
 	// Runs the post processing stack. This is also required to run to transfer the frame from the Raw to Processed Framebuffer, regardless of if there is a stack or not.
 	void RunPostProcess();
-
-	FrameBuffer* GetFrameBufferProcessed() { return m_frameBufferProcessed; }
 
 	float nearClip = 0.1f;
 	float farClip = 2000.0f;
@@ -58,11 +55,6 @@ protected:
 
 	AudioListener m_audioListener;
 	void UpdateAudioListener();
-
-	// Store framebuffers for pre and post processing, we can access them as textures if we want, for debugging or whatever.
-	FrameBuffer* m_frameBufferRaw;
-	FrameBuffer* m_frameBufferBlit;
-	FrameBuffer* m_frameBufferProcessed;
 	
 	// Flag for if the matrix should be rebuild. Can be triggered by UI interaction. (parent object dirty transform is also checked)
 	bool dirtyConfig = true;
@@ -70,7 +62,7 @@ protected:
 	// dummy object to store info about rendering the Camera Gizmo. This should probably move in to some other UI handler or something. This component doesnt really need to be aware of its GUI context.
 	Object* cameraGizmo;
 
-	// Stores our postprocess containers. These camera renders its scene to the Raw framebuffer, then iterates over this list of post processing effects. Then renders to processed.
 public:
+	// Stores our postprocess containers. These camera renders its scene to the Raw framebuffer, then iterates over this list of post processing effects. Then renders to processed.
 	vector<PostProcess*> m_postProcessStack;
 };

@@ -19,24 +19,6 @@ ComponentCamera::ComponentCamera(Object* parent, bool noGizmo) : Component("Came
 	view = componentParent->transform;
 	projection = glm::perspective((float)3.14159 / 4, aspect, nearClip, farClip);
 	matrix = projection * view;
-	
-	// Initilise framebuffers. We create two initially. 1 to render the scene to, then a 2nd for the final post processing effects to land to.
-	// Raw framebuffer to render to, with MSAA
-	m_frameBufferRaw = new FrameBuffer(FrameBuffer::Type::CameraTargetMultiSample);
-	m_frameBufferRaw->MakePrimaryTarget();
-	string FbName = Scene::s_instance->sceneName + componentParent->objectName;
-	TextureManager::s_instance->AddFrameBuffer(FbName.c_str(), m_frameBufferRaw); // add the texture to the manager so we can bind it to meshes and stuff.
-	
-	// Intermediarely framebuffer to blit to, without MSAA, to use in post processing
-	m_frameBufferBlit = new FrameBuffer(FrameBuffer::Type::CameraTargetSingleSample);
-	string BlitName = FbName + "_Blit";
-	TextureManager::s_instance->AddFrameBuffer(BlitName.c_str(), m_frameBufferBlit); // add the texture to the manager so we can bind it to meshes and stuff.
-	
-	m_frameBufferProcessed = new FrameBuffer(FrameBuffer::Type::PostProcess);
-	Scene::s_instance->cameras.push_back(m_frameBufferProcessed);
-	string processedFBName = FbName + "_Processed";
-	TextureManager::s_instance->AddFrameBuffer(processedFBName.c_str(), m_frameBufferProcessed);
-
 
 	// In Scene Editor Camera Gizmo - It'd be nice to move some of this info out of here. Perhaps a Gizmo factory or something.
 	if (!noGizmo)
@@ -92,18 +74,6 @@ ComponentCamera::ComponentCamera(Object* parent, ordered_json j) : ComponentCame
 
 ComponentCamera::~ComponentCamera()
 {
-	// Remove self from scene camera list.
-	auto cameraIt = Scene::s_instance->cameras.begin();
-	while (cameraIt != Scene::s_instance->cameras.end())
-	{
-		if (*cameraIt == m_frameBufferProcessed)
-		{
-			Scene::s_instance->cameras.erase(cameraIt);
-			break;
-		}
-		cameraIt++;
-	}
-
 	// remove self from scene gizmo list.
 	auto gizmoIt = Scene::s_instance->gizmos.begin();
 	while (gizmoIt != Scene::s_instance->gizmos.end())
@@ -115,6 +85,7 @@ ComponentCamera::~ComponentCamera()
 		}
 		gizmoIt++;
 	}
+
 	// remove self from scene component camera list.
 	auto componentIt = Scene::s_instance->componentCameras.begin();
 	while (componentIt != Scene::s_instance->componentCameras.end())
@@ -131,15 +102,6 @@ ComponentCamera::~ComponentCamera()
 	{
 		delete pp;
 	}
-
-	// delete Raw and Processed FBs from manager, then from memory.
-	TextureManager::s_instance->RemoveFrameBuffer(componentParent->objectName.c_str());
-	delete m_frameBufferRaw;
-
-	string processedFBName = componentParent->objectName + "_Processed";
-	TextureManager::s_instance->RemoveFrameBuffer(processedFBName.c_str());
-	delete m_frameBufferProcessed;
-
 }
 
 void ComponentCamera::Update(float deltatime)
@@ -157,8 +119,6 @@ void ComponentCamera::DrawGUI()
 		dirtyConfig = true;
 	if (ImGui::SliderFloat("Aspect Ratio", &aspect,0, 3))
 		dirtyConfig = true;
-	glm::vec2 size = { 100,100 };
-	ImGui::Image((ImTextureID)(m_frameBufferProcessed->GetTexture()->texID), { 260,147 }, {0,1}, {1,0});
 	
 	if (ImGui::Button("Add Post Process Effect"))
 		ImGui::OpenPopup("popup_add_pp_effect");
@@ -203,7 +163,6 @@ void ComponentCamera::DrawGUI()
 
 void ComponentCamera::UpdateViewProjectionMatrix()
 {
-	//view = glm::inverse(componentParent->transform);
 	vec3 position = componentParent->GetWorldSpacePosition();
 	view = glm::lookAt(position, position + componentParent->forward, componentParent->up);
 	projection = glm::perspective(glm::radians(fieldOfView), aspect, nearClip, farClip);
@@ -232,29 +191,9 @@ void ComponentCamera::SetAspect(float aspect)
 	this->aspect = aspect;
 }
 
-// binds the cameras base framebuffer, ready to render meshes to. This clears the color and depth buffer of the camera too.
-void ComponentCamera::SetAsRenderTarget()
-{
-	m_frameBufferRaw->BindTarget();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
 // If there are any post process effects applied, they are processed here. Regardless of if there are effects or not, the frame buffer is transfered from Raw to Processed.
 void ComponentCamera::RunPostProcess()
 {
-	if (Scene::s_instance->MSAAEnabled)
-	{
-		// blit it to a non-multisampled FBO for texture attachment compatiability.
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_frameBufferRaw->GetID());
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_frameBufferBlit->GetID());
-		glBlitFramebuffer(0, 0, m_frameBufferRaw->GetWidth(), m_frameBufferRaw->GetHeight(), 0, 0, m_frameBufferBlit->GetWidth(), m_frameBufferBlit->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-		// bind output of first pass (raw render with no processing)
-		m_frameBufferBlit->BindTexture(20);
-	}
-	else
-		m_frameBufferRaw->BindTexture(20);
-
 	Scene::ssao_ssaoBlurFBO->BindTexture(21);
 	// loop through post processing stack
 	for (auto postProcess : m_postProcessStack)
@@ -265,7 +204,7 @@ void ComponentCamera::RunPostProcess()
 	}
 	//finally, take the output and send to the processed framebuffer
 	// either the raw render will be bound, or the last postprocess that ran (if any)
-	m_frameBufferProcessed->BindTarget();
+	Scene::s_instance->m_frameBufferProcessed->BindTarget();
 	PostProcess::PassThrough();
 	FrameBuffer::UnBindTarget();
 	FrameBuffer::UnBindTexture(20);
