@@ -1411,9 +1411,8 @@ void Crawl::DungeonEditor::UpdateModeTileEdit()
 		RefreshSelectedTile();
 	}
 
-
-
-	if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down())
+	// path finding dev stuff
+	/*if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down())
 	{
 		from = GetMousePosOnGrid();
 		to = dungeon->player->GetPosition();
@@ -1430,9 +1429,9 @@ void Crawl::DungeonEditor::UpdateModeTileEdit()
 			o->AddLocalPosition({ p->position.x * DUNGEON_GRID_SCALE, p->position.y * DUNGEON_GRID_SCALE, 0 });
 			pathFindObjects.push_back(o);
 		}
-	}
+	}*/
 
-	if (Input::Keyboard(GLFW_KEY_SPACE).Down())
+	/*if (Input::Keyboard(GLFW_KEY_SPACE).Down())
 	{
 		from = GetMousePosOnGrid();
 		to = dungeon->player->GetPosition();
@@ -1449,7 +1448,7 @@ void Crawl::DungeonEditor::UpdateModeTileEdit()
 			o->AddLocalPosition({ p->position.x * DUNGEON_GRID_SCALE, p->position.y * DUNGEON_GRID_SCALE, 0 });
 			pathFindObjects.push_back(o);
 		}
-	}
+	}*/
 }
 void Crawl::DungeonEditor::UpdateModeSlugPathEdit()
 {
@@ -1611,7 +1610,6 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 			selectedTileDecorations.push_back(dungeon->decorations[i]);
 	}
 }
-
 void Crawl::DungeonEditor::RefreshAvailableDecorations()
 {
 	decorations.clear();

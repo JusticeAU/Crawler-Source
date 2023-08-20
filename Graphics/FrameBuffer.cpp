@@ -2,6 +2,7 @@
 #include "TextureManager.h"
 #include "Window.h"
 #include "Scene.h"
+#include "SceneRenderer.h"
 #include "LogUtils.h"
 
 using std::vector;
@@ -310,7 +311,7 @@ void FrameBuffer::UnBindTexture(int texture)
 void FrameBuffer::Resize()
 {
 	if (m_primaryTarget)
-		m_type = Scene::s_instance->MSAAEnabled ? Type::CameraTargetMultiSample : Type::CameraTargetSingleSample;
+		m_type = SceneRenderer::msaaEnabled ? Type::CameraTargetMultiSample : Type::CameraTargetSingleSample;
 
 	FrameBuffer* newFB = new FrameBuffer(m_type);
 	glDeleteFramebuffers(1, &m_fbID);

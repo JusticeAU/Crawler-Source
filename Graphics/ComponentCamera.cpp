@@ -39,8 +39,8 @@ ComponentCamera::ComponentCamera(Object* parent, bool noGizmo) : Component("Came
 		cameraGizmo->components.push_back(componentRenderer);
 
 		Scene::s_instance->gizmos.push_back(cameraGizmo); // the scene gizmo renderer needs to be aware of this component.
+		Scene::s_instance->componentCameras.push_back(this); // Must be added here so the scene can render all in-scene cameras before rendering itself.
 	}
-	Scene::s_instance->componentCameras.push_back(this); // Must be added here so the scene can render all in-scene cameras before rendering itself.
 }
 
 ComponentCamera::ComponentCamera(Object* parent, ordered_json j) : ComponentCamera(parent)
@@ -192,9 +192,8 @@ void ComponentCamera::SetAspect(float aspect)
 }
 
 // If there are any post process effects applied, they are processed here. Regardless of if there are effects or not, the frame buffer is transfered from Raw to Processed.
-void ComponentCamera::RunPostProcess()
+void ComponentCamera::RunPostProcess(FrameBuffer* outBuffer)
 {
-	Scene::ssao_ssaoBlurFBO->BindTexture(21);
 	// loop through post processing stack
 	for (auto postProcess : m_postProcessStack)
 	{
@@ -204,7 +203,7 @@ void ComponentCamera::RunPostProcess()
 	}
 	//finally, take the output and send to the processed framebuffer
 	// either the raw render will be bound, or the last postprocess that ran (if any)
-	Scene::s_instance->m_frameBufferProcessed->BindTarget();
+	outBuffer->BindTarget();
 	PostProcess::PassThrough();
 	FrameBuffer::UnBindTarget();
 	FrameBuffer::UnBindTexture(20);

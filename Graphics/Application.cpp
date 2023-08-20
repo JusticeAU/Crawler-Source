@@ -10,6 +10,7 @@
 #include "AudioManager.h"
 #include "Scene.h"
 #include "SceneEditorCamera.h"
+#include "SceneRenderer.h"
 #include "Input.h"
 
 #include "MathUtils.h"
@@ -113,6 +114,7 @@ Application::Application()
 	// Load Crawl Game Dependencies
 	Scene* scene = Scene::NewScene("Dungeon");
 	Scene::s_instance = scene;
+	Scene::renderer = new SceneRenderer();
 
 	dungeon = new Crawl::Dungeon();
 	dungeonPlayer = new Crawl::DungeonPlayer();
@@ -239,7 +241,7 @@ void Application::Update(float delta)
 	}
 	case Mode::Art:
 	{
-		if (Scene::GetCameraIndex() == 0)
+		if (Scene::GetCameraIndex() == -1)
 		{
 			Scene::s_editorCamera->Update(delta);
 			Scene::s_editorCamera->DrawGUI();
@@ -257,7 +259,7 @@ void Application::Update(float delta)
 		ModelManager::DrawGUI();
 		AudioManager::DrawGUI();
 		Scene::s_instance->DrawGUI();
-		Scene::s_instance->DrawGraphicsGUI();
+		Scene::s_instance->renderer->DrawGUI();
 		Scene::s_editorCamera->Update(delta);
 		Scene::s_editorCamera->DrawGUI();
 		break;
@@ -293,8 +295,6 @@ void Application::Update(float delta)
 				s_mode = Mode::Programming;
 			}
 		}
-
-		Scene::s_instance->UpdateSceneEditorCamera(delta);
 	}
 
 
@@ -302,7 +302,6 @@ void Application::Update(float delta)
 
 	Scene::s_instance->Update(delta);
 	Scene::s_instance->Render();
-	Scene::s_instance->DrawCameraToBackBuffer();
 	Scene::s_instance->CleanUp();
 }
 

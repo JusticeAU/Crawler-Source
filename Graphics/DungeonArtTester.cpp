@@ -95,7 +95,7 @@ void Crawl::ArtTester::DrawGUI()
 	ImGui::SetNextWindowPos({ 0,0 });
 	ImGui::SetNextWindowSize({ 500, 600 });
 	ImGui::Begin("Crawl Art Test",0, ImGuiWindowFlags_NoMove);
-	if(ImGui::BeginCombo("Camera", Scene::GetCameraIndex() == 0 ? "Free" : "Player"))
+	if(ImGui::BeginCombo("Camera", Scene::GetCameraIndex() == -1 ? "Free" : "Player"))
 	{
 		if (ImGui::Selectable("Free"))
 			Scene::SetCameraByName();
@@ -105,7 +105,7 @@ void Crawl::ArtTester::DrawGUI()
 		ImGui::EndCombo();
 	}
 
-	if (Scene::GetCameraIndex() == 1)
+	if (Scene::GetCameraIndex() == 0)
 	{
 		if (ImGui::InputInt("Player Distance", &playerViewDistance, 1))
 		{

@@ -19,6 +19,7 @@ class ComponentCamera;
 class PostProcess;
 
 class SceneEditorCamera;
+class SceneRenderer;
 
 class Scene
 {
@@ -76,28 +77,16 @@ public:
 	string GetSceneName() { return s_instance->sceneName; };
 
 	void Update(float deltaTime);
-	void UpdateSceneEditorCamera(float deltaTime);
 	void Render();
-	void DrawGizmos();
-	void DrawCameraToBackBuffer();
 	void DrawGUI();
-	void DrawGraphicsGUI();
 	static void DrawCameraGUI();
 	void CleanUp();
 
 	void SaveJSON();
 	void LoadJSON(string sceneName);
 	void LoadJSON();
-	vector<FrameBuffer*> cameras;
 protected:
 	Scene(string name);
-
-	void UpdateInputs();
-
-	void RenderShadowMaps();
-	void RenderActiveSceneCamera();
-	void RenderObjectPicking();
-	void RenderEditorCamera();
 
 	string sceneFilename = "CrawlTest.scene";
 protected:
@@ -117,77 +106,26 @@ protected:
 	int MAX_LIGHTS = 4;
 public:
 	vector<Light> m_pointLights;
+	static SceneRenderer* renderer;
+	glm::mat4 lightSpaceMatrix; // Directional Light Shadow Mapping.
+
 protected:
 	glm::vec3* m_pointLightPositions;
 	glm::vec3* m_pointLightColours;
-
-	// This is for the 'editor' camera
-	FrameBuffer* outputCameraFrameBuffer;
 	
-	// selecting which camera ('s framebuffer) we're pushing to the backbuffer and rendering it
+	// selecting which camera we should render.
 	int cameraIndex = 0;
+	ComponentCamera* cameraCurrent = nullptr;
 
-	// Gizmo rendering
-	ShaderProgram* gizmoShader = nullptr;
-	Object* lightGizmo = nullptr; // reusable object to place the light bulb model and render it.
+public:
+	// Object Picking API
+	bool requestedObjectSelection = false;
+	glm::ivec2 requestedSelectionPosition = { 0,0 };
+	unsigned int objectPickedID = 0;
 
-	// Object picking buffer dev
-	static FrameBuffer* objectPickBuffer;
+	// Scene Editor Object Selection
 	unsigned int selectedObjectID = 0;
 	Object* selectedObject = nullptr;
 public:
-	unsigned int objectPickedID = 0;
-
-protected:
-	bool requestedObjectSelection = false;
-	glm::ivec2 requestedSelectionPosition = { 0,0 };
-
-	// Directional light shadow map
-	FrameBuffer* shadowMap;
-	float orthoLeft = -100.0f;
-	float orthoRight = 100.0f;
-	float orthoBottom = -100.0f;
-	float orthoTop = 100.0f;
-	float orthoFar = 120.0f;
-	float orthoNear = -120.0f;
-
-	glm::mat4 lightProjection;
-	glm::mat4 lightView;
-	glm::mat4 lightSpaceMatrix;
-
-	FrameBuffer* shadowMapDevOutput;
-	ShaderProgram* depthMapOutputShader;
-
-	float lastRenderTimeStamp;
-	float renderTime;
-	float samples[100];
-	int sampleIndex = 0;
-
-	// Graphics
-	// MSAA
-public:
-	bool MSAAEnabled = true;
-	int MSAASamples = 4;
-
-	// SSAO Dev
-	bool ssao_enabled = true;
-	int ssao_kernelSize = 64;
-	float ssao_radius = 0.5f;
-	float ssao_bias = 0.025f;
-public:
-	static FrameBuffer* ssao_gBuffer;
-	static FrameBuffer* ssao_ssaoFBO;
-	static FrameBuffer* ssao_ssaoBlurFBO;
-protected:
-	static Texture* ssao_noiseTexture;
-
-	static std::vector<glm::vec3> ssaoKernel;
-	static std::vector<glm::vec3> ssaoNoise;
-
-public:
 	static glm::mat4 GetLightSpaceMatrix();
-
-	FrameBuffer* m_frameBufferRaw;
-	FrameBuffer* m_frameBufferBlit;
-	FrameBuffer* m_frameBufferProcessed;
 };

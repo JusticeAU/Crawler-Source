@@ -29,15 +29,6 @@ Crawl::DungeonPlayer::DungeonPlayer()
 // Returns true if the player made a game-state changing action
 bool Crawl::DungeonPlayer::Update(float deltaTime)
 {
-	// damage player for testing
-	/*if (Input::Keyboard(GLFW_KEY_SPACE).Down())
-		hp -= 1;*/
-
-	Scene::s_instance->m_pointLights[0].position = object->GetWorldSpacePosition(); // hacky!!!
-	Scene::s_instance->m_pointLights[0].position.z += 1.6f;
-	Scene::s_instance->m_pointLights[0].position += dungeonPosToObjectScale(directions[facing]) * 0.2f;
-
-
 	if (state == IDLE)
 	{
 		if (Input::Keyboard(GLFW_KEY_R).Down())
@@ -223,6 +214,12 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		else
 			object->SetLocalRotationZ(MathUtils::Lerp(oldTurn, targetTurn, t));
 	}
+
+	// Update the position of the light on the player after we have moved.
+	object->RecalculateTransforms();
+	Scene::s_instance->m_pointLights[0].position = object->GetWorldSpacePosition(); // hacky!!!
+	Scene::s_instance->m_pointLights[0].position.z += 1.6f;
+	Scene::s_instance->m_pointLights[0].position += dungeonPosToObjectScale(directions[facing]) * 0.2f;
 
 	return false;
 }
