@@ -20,6 +20,9 @@
 #include "MaterialManager.h"
 
 
+bool SceneRenderer::msaaEnabled = true;
+bool SceneRenderer::ssaoEnabled = true;
+
 SceneRenderer::SceneRenderer()
 {
 	// Initialise the Render Buffers
@@ -116,17 +119,47 @@ SceneRenderer::SceneRenderer()
 void SceneRenderer::DrawGUI()
 {
 	// Graphics Options - Abstract this as these options develop.
-	ImGui::SetNextWindowSize({ 315, 350 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 315, 450 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowPos({ 1200, 300 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Graphics");
 	ImGui::BeginDisabled();
+	
+	float averageTotalRenderTime = 0.0f;
+	for (int i = 0; i < 100; i++)
+		averageTotalRenderTime += renderTotalSamples[i];
+	averageTotalRenderTime /= 100;
+	averageTotalRenderTime *= 1000;
+	ImGui::InputFloat("Total Render MS Average", &averageTotalRenderTime, 0, 0, "%0.6f");
+	ImGui::PlotLines("", renderTotalSamples, 100, 0, "0 to 0.1s", 0, 0.1, { 300,100 });
+
 	float averageRenderTime = 0.0f;
 	for (int i = 0; i < 100; i++)
-		averageRenderTime += samples[i];
+		averageRenderTime += renderPassSamples[i];
 	averageRenderTime /= 100;
 	averageRenderTime *= 1000;
-	ImGui::InputFloat("MS Average", &averageRenderTime, 0, 0, "%0.6f");
-	ImGui::PlotLines("", samples, 100, 0, "0 to 0.1s", 0, 0.1, { 300,100 });
+	ImGui::InputFloat("Render Pass MS Average", &averageRenderTime, 0, 0, "%0.6f");
+	
+	float averageSSAOGeo = 0.0f;
+	for (int i = 0; i < 100; i++)
+		averageSSAOGeo += ssaoGeoPassSamples[i];
+	averageSSAOGeo /= 100;
+	averageSSAOGeo *= 1000;
+	ImGui::InputFloat("SSAO Geo MS Average", &averageSSAOGeo, 0, 0, "%0.6f");
+	
+	float averageSSAOFilter = 0.0f;
+	for (int i = 0; i < 100; i++)
+		averageSSAOFilter += ssaoFilterPassSamples[i];
+	averageSSAOFilter /= 100;
+	averageSSAOFilter *= 1000;
+	ImGui::InputFloat("SSAO Filter MS Average", &averageSSAOFilter, 0, 0, "%0.6f");
+
+	float averageSSAOBlur = 0.0f;
+	for (int i = 0; i < 100; i++)
+		averageSSAOBlur += ssaoBlurPassSamples[i];
+	averageSSAOBlur /= 100;
+	averageSSAOBlur *= 1000;
+	ImGui::InputFloat("SSAO Filter MS Average", &averageSSAOBlur, 0, 0, "%0.6f");
+
 	ImGui::EndDisabled();
 	if (ImGui::Checkbox("MSAA Enabled", &msaaEnabled))
 		TextureManager::RefreshFrameBuffers();
@@ -230,6 +263,7 @@ void SceneRenderer::DrawShadowMappingGUI()
 
 void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 {
+	double renderStart = glfwGetTime();
 	// Shadow map dev stuff
 	// Bind recently rendered shadowmap.
 	//shadowMap->BindTexture(20);
@@ -245,22 +279,25 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	if (ssaoEnabled)
 	{
 		// Build G Buffer for SSAO with a Geomerty Pass.
+		double ssaoGeoPassStart = glfwGetTime();
 		ssaoGBuffer->BindTarget();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		ShaderProgram* ssaoGeoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOGeometryPass");
 		ssaoGeoShader->Bind();
 		ssaoGeoShader->SetMatrixUniform("view", c->GetViewMatrix());
 		ssaoGeoShader->SetMatrixUniform("projection", c->GetProjectionMatrix());
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// bind the shader for it - just use static for now but will need something for skinned.
+		// bind the shader for it
 		glDisable(GL_BLEND);
 		for (auto& o : scene->objects)
 			o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::SSAOgBuffer);
 		glEnable(GL_BLEND);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		ssaoGeoPassSamples[sampleIndex] = glfwGetTime() - ssaoGeoPassStart;
 
 		// Do the SSAO pass
+		double ssaoFilterPassStart = glfwGetTime();
 		ssaoFBO->BindTarget();
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -270,7 +307,7 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		ssaoShader->SetFloatUniform("bias", ssaoBias);
 		glm::vec2 screenSize = Window::GetViewPortSize();
 		ssaoShader->SetVector2Uniform("screenSize", screenSize);
-
+		
 		glDisable(GL_BLEND);
 		ssaoShader->SetIntUniform("gPosition", 0);
 		ssaoShader->SetIntUniform("gNormal", 1);
@@ -288,7 +325,10 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		FrameBuffer::UnBindTexture(1);
 		FrameBuffer::UnBindTexture(2);
 
+		ssaoFilterPassSamples[sampleIndex] = glfwGetTime() - ssaoFilterPassStart;
+
 		// Do the SSAO Blur Pass
+		double ssaoBlurPassStart = glfwGetTime();
 		ssaoBlurFBO->BindTarget();
 		ShaderProgram* ssaoBlur = ShaderManager::GetShaderProgram("engine/shader/SSAOBlurPass");
 		ssaoBlur->Bind();
@@ -298,12 +338,18 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		PostProcess::PassThrough(ssaoBlur);
 		FrameBuffer::UnBindTexture(0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		// Draw
-
 		glEnable(GL_BLEND);
+		ssaoBlurPassSamples[sampleIndex] = glfwGetTime() - ssaoBlurPassStart;
+	}
+	else
+	{
+		ssaoGeoPassSamples[sampleIndex] = 0.0f;
+		ssaoFilterPassSamples[sampleIndex] = 0.0f;
+		ssaoBlurPassSamples[sampleIndex] = 0.0f;
 	}
 
 	// Do normal render pass
+	double renderPassStart = glfwGetTime();
 	frameBufferRaw->BindTarget();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for (auto& o : scene->objects)
@@ -327,10 +373,9 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	c->RunPostProcess(frameBufferProcessed);
 
 	// Stats
-	double endTime = glfwGetTime();
-	renderTime = endTime - lastRenderTimeStamp;
-	lastRenderTimeStamp = endTime;
-	samples[sampleIndex] = renderTime;
+	renderPassSamples[sampleIndex] = glfwGetTime() - renderPassStart;
+	renderTotalSamples[sampleIndex] = glfwGetTime() - renderStart;
+	
 	sampleIndex++;
 	if (sampleIndex == 100)
 		sampleIndex = 0;
@@ -405,6 +450,3 @@ void SceneRenderer::DrawBackBuffer()
 	PostProcess::PassThrough();
 	FrameBuffer::UnBindTexture(20);
 }
-
-bool SceneRenderer::msaaEnabled = true;
-bool SceneRenderer::ssaoEnabled = true;

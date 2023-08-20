@@ -75,9 +75,14 @@ protected:
 	Object* lightGizmo = nullptr; // reusable object to place the light bulb model and render it.
 
 	// Stats
-	float lastRenderTimeStamp;
-	float renderTime;
-	float samples[100];
+	float renderTotalSamples[100];
+	float renderPassSamples[100];
+	float ssaoGeoPassSamples[100];
+	float ssaoFilterPassSamples[100];
+	float ssaoBlurPassSamples[100];
+
+
+
 	int sampleIndex = 0;
 };
 
