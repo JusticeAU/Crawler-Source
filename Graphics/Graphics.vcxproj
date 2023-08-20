@@ -210,7 +210,6 @@
     <ClCompile Include="ComponentFPSTest.cpp" />
     <ClCompile Include="ComponentModel.cpp" />
     <ClCompile Include="ComponentRenderer.cpp" />
-    <ClCompile Include="ComponentSkinnedRenderer.cpp" />
     <ClCompile Include="Dungeon.cpp" />
     <ClCompile Include="DungeonCheckpoint.cpp" />
     <ClCompile Include="DungeonDecoration.cpp" />
@@ -284,7 +283,6 @@
     <ClInclude Include="ComponentFPSTest.h" />
     <ClInclude Include="ComponentModel.h" />
     <ClInclude Include="ComponentRenderer.h" />
-    <ClInclude Include="ComponentSkinnedRenderer.h" />
     <ClInclude Include="Dungeon.h" />
     <ClInclude Include="DungeonCheckpoint.h" />
     <ClInclude Include="DungeonDecoration.h" />

@@ -25,7 +25,7 @@ Component* ComponentFactory::NewComponent(Object* parent, int componentIndex)
     case 2:
         return new ComponentRenderer(parent);
     case 3:
-        return new ComponentSkinnedRenderer(parent);
+        return nullptr;
     case 4:
         return nullptr;
     case 5:
@@ -57,7 +57,7 @@ Component* ComponentFactory::ReadComponentJSON(Object* parent, nlohmann::ordered
     }
     else if (type == "SkinnedRenderer")
     {
-        return new ComponentSkinnedRenderer(parent, j);
+        return new ComponentRenderer(parent, j); // Skinned Rendering functionality was moved in to the standard renderer
     }
     else if (type == "Animator")
     {

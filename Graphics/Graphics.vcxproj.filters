@@ -155,9 +155,6 @@
     <ClCompile Include="ComponentRenderer.cpp">
       <Filter>Source Files\Application\Scene\Components</Filter>
     </ClCompile>
-    <ClCompile Include="ComponentSkinnedRenderer.cpp">
-      <Filter>Source Files\Application\Scene\Components</Filter>
-    </ClCompile>
     <ClCompile Include="ComponentCamera.cpp">
       <Filter>Source Files\Application\Scene\Components</Filter>
     </ClCompile>
@@ -449,9 +446,6 @@
       <Filter>Source Files\Application\Scene\Components</Filter>
     </ClInclude>
     <ClInclude Include="ComponentRenderer.h">
-      <Filter>Source Files\Application\Scene\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="ComponentSkinnedRenderer.h">
       <Filter>Source Files\Application\Scene\Components</Filter>
     </ClInclude>
     <ClInclude Include="ComponentCamera.h">

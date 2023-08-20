@@ -2,7 +2,6 @@
 #include "ComponentModel.h"
 #include "ComponentAnimator.h"
 #include "ComponentRenderer.h"
-#include "ComponentSkinnedRenderer.h"
 #include "ComponentCamera.h"
 #include "ComponentFPSTest.h"
 #include "ComponentAnimationBlender.h"
