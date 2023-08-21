@@ -5,6 +5,7 @@
 #include "DungeonPlayer.h"
 #include "DungeonMirror.h"
 #include "DungeonPushableBlock.h"
+#include "DungeonEnemyChase.h"
 #include "Object.h"
 #include "LogUtils.h"
 
@@ -50,10 +51,33 @@ void Crawl::DungeonEnemySwitcher::Update()
 				ivec2 newPos = block->position;
 				block->position = position;
 				position = newPos;
+				facing = facingIndexesReversed[facing];
 				object->SetLocalPosition(dungeonPosToObjectScale(position));
+				object->SetLocalRotationZ(orientationEulers[facing]);
 				block->object->SetLocalPosition(dungeonPosToObjectScale(block->position));
 				block->targetPosition = dungeonPosToObjectScale(block->position);
 				block->oldPosition = dungeonPosToObjectScale(block->position);
+				return;
+			}
+			else if (dungeon->IsEnemyChaserAtPosition(tile->position))
+			{
+				// This could use a big ol tidy and clarification
+				LogUtils::Log("Swapping with Chaser");
+				DungeonEnemyChase* chaser = dungeon->GetEnemyChaseAtPosition(tile->position);
+				(tile->position);
+				ivec2 newPos = chaser->position;
+				chaser->position = position;
+				position = newPos;
+				FACING_INDEX chaserOldFacing = chaser->facing;
+				chaser->facing = facing;
+				facing = chaserOldFacing;
+
+				object->SetLocalPosition(dungeonPosToObjectScale(position));
+				object->SetLocalRotationZ(orientationEulers[facing]);
+				chaser->object->SetLocalPosition(dungeonPosToObjectScale(chaser->position));
+				chaser->object->SetLocalRotationZ(orientationEulers[chaser->facing]);
+				chaser->targetPosition = dungeonPosToObjectScale(chaser->position);
+				chaser->oldPosition = dungeonPosToObjectScale(chaser->position);
 				return;
 			}
 			else if (dungeon->GetMirrorAt(tile->position))

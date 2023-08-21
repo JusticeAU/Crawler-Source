@@ -112,6 +112,8 @@ namespace Crawl
 
 		DungeonEnemyChase* CreateEnemyChase(ivec2 position, FACING_INDEX direction);
 		void RemoveEnemyChase(DungeonEnemyChase* chaser);
+		bool IsEnemyChaserAtPosition(ivec2 position);
+		DungeonEnemyChase* GetEnemyChaseAtPosition(ivec2 position);
 
 		DungeonEnemySwitcher* CreateEnemySwitcher(ivec2 position, FACING_INDEX direction);
 		void RemoveEnemySwitcher(DungeonEnemySwitcher* switcher);

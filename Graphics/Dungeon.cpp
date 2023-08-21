@@ -1126,6 +1126,26 @@ void Crawl::Dungeon::RemoveEnemyChase(DungeonEnemyChase* chaser)
 	}
 }
 
+bool Crawl::Dungeon::IsEnemyChaserAtPosition(ivec2 position)
+{
+	for (int i = 0; i < chasers.size(); i++)
+	{
+		if (chasers[i]->position == position) return true;
+	}
+
+	return false;
+}
+
+Crawl::DungeonEnemyChase* Crawl::Dungeon::GetEnemyChaseAtPosition(ivec2 position)
+{
+	for (int i = 0; i < chasers.size(); i++)
+	{
+		if (chasers[i]->position == position) return chasers[i];
+	}
+
+	return nullptr;
+}
+
 Crawl::DungeonEnemySwitcher* Crawl::Dungeon::CreateEnemySwitcher(ivec2 position, FACING_INDEX facing)
 {
 	DungeonEnemySwitcher* switcher = new DungeonEnemySwitcher();
