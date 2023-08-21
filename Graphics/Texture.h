@@ -22,6 +22,8 @@ public:
 
 	void CreateSSAONoiseTexture(glm::vec3* noiseTexData);
 
+	static void RewriteTGAwithRLE(string from, string to);
+
 public:
 	bool loaded = false;
 	int references = 0;

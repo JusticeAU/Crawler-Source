@@ -307,7 +307,8 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 				stagingTextures.push_back(texturePath + newMaterialName + "_albedo.tga");
 				if(!preview)
 				{
-					fs::copy_file(savedMaterial.albedoMapName, texturePath + stagedName + "_" + savedMaterial.name + "_albedo.tga", fs::copy_options::overwrite_existing);
+					//fs::copy_file(savedMaterial.albedoMapName, texturePath + stagedName + "_" + savedMaterial.name + "_albedo.tga", fs::copy_options::overwrite_existing);
+					Texture::RewriteTGAwithRLE(savedMaterial.albedoMapName, texturePath + stagedName + "_" + savedMaterial.name + "_albedo.tga");
 					savedMaterial.albedoMapName = texturePath + newMaterialName + "_albedo.tga";
 				}
 			}
@@ -317,7 +318,8 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 				stagingTextures.push_back(texturePath + newMaterialName + "_normal.tga");
 				if (!preview)
 				{
-					fs::copy_file(savedMaterial.normalMapName, texturePath + stagedName + "_" + savedMaterial.name + "_normal.tga", fs::copy_options::overwrite_existing);
+					//fs::copy_file(savedMaterial.normalMapName, texturePath + stagedName + "_" + savedMaterial.name + "_normal.tga", fs::copy_options::overwrite_existing);
+					Texture::RewriteTGAwithRLE(savedMaterial.normalMapName, texturePath + stagedName + "_" + savedMaterial.name + "_normal.tga");
 					savedMaterial.normalMapName = texturePath + newMaterialName + "_normal.tga";
 				}
 			}
@@ -327,7 +329,8 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 				stagingTextures.push_back(texturePath + newMaterialName + "_metallic.tga");
 				if(!preview)
 				{
-					fs::copy_file(savedMaterial.metallicMapName, texturePath + stagedName + "_" + savedMaterial.name + "_metallic.tga", fs::copy_options::overwrite_existing);
+					//fs::copy_file(savedMaterial.metallicMapName, texturePath + stagedName + "_" + savedMaterial.name + "_metallic.tga", fs::copy_options::overwrite_existing);
+					Texture::RewriteTGAwithRLE(savedMaterial.metallicMapName, texturePath + stagedName + "_" + savedMaterial.name + "_metallic.tga");
 					savedMaterial.metallicMapName = texturePath + newMaterialName + "_metallic.tga";
 				}
 			}
@@ -337,7 +340,8 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 				stagingTextures.push_back(texturePath + newMaterialName + "_roughness.tga");
 				if(!preview)
 				{
-					fs::copy_file(savedMaterial.roughnessMapName, texturePath + stagedName + "_" + savedMaterial.name + "_roughness.tga", fs::copy_options::overwrite_existing);
+					//fs::copy_file(savedMaterial.roughnessMapName, texturePath + stagedName + "_" + savedMaterial.name + "_roughness.tga", fs::copy_options::overwrite_existing);
+					Texture::RewriteTGAwithRLE(savedMaterial.roughnessMapName, texturePath + stagedName + "_" + savedMaterial.name + "_roughness.tga");
 					savedMaterial.roughnessMapName = texturePath + newMaterialName + "_roughness.tga";
 				}
 			}
@@ -347,7 +351,8 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 				stagingTextures.push_back(texturePath + newMaterialName + "_ao.tga");
 				if (!preview)
 				{
-					fs::copy_file(savedMaterial.aoMapName, texturePath + stagedName + "_" + savedMaterial.name + "_ao.tga", fs::copy_options::overwrite_existing);
+					//fs::copy_file(savedMaterial.aoMapName, texturePath + stagedName + "_" + savedMaterial.name + "_ao.tga", fs::copy_options::overwrite_existing);
+					Texture::RewriteTGAwithRLE(savedMaterial.aoMapName, texturePath + stagedName + "_" + savedMaterial.name + "_ao.tga");
 					savedMaterial.aoMapName = texturePath + newMaterialName + "_ao.tga";
 				}
 			}
@@ -357,7 +362,8 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 				stagingTextures.push_back(texturePath + newMaterialName + "_emissive.tga");
 				if (!preview)
 				{
-					fs::copy_file(savedMaterial.emissiveMapName, texturePath + stagedName + "_" + savedMaterial.name + "_emissive.tga", fs::copy_options::overwrite_existing);
+					//fs::copy_file(savedMaterial.emissiveMapName, texturePath + stagedName + "_" + savedMaterial.name + "_emissive.tga", fs::copy_options::overwrite_existing);
+					Texture::RewriteTGAwithRLE(savedMaterial.emissiveMapName, texturePath + stagedName + "_" + savedMaterial.name + "_emissive.tga");
 					savedMaterial.emissiveMapName = texturePath + newMaterialName + "_emissive.tga";
 				}
 			}

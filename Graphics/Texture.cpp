@@ -1,6 +1,8 @@
 #include "Texture.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 #include "Window.h"
 #include "LogUtils.h"
 
@@ -91,4 +93,15 @@ void Texture::CreateSSAONoiseTexture(glm::vec3* noiseTexData)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+}
+
+void Texture::RewriteTGAwithRLE(string from, string to)
+{
+	// Load with stb_image
+	stbi_set_flip_vertically_on_load(false);
+	int width, height, channels;
+	unsigned char* data = stbi_load(from.c_str(), &width, &height, &channels, 0);
+	// Write it back out. Easy Peasy.	
+	stbi_write_tga(to.c_str(), width, height, channels, data);
+	stbi_image_free(data);
 }

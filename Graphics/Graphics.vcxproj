@@ -315,6 +315,7 @@
     <ClInclude Include="SceneEditorCamera.h" />
     <ClInclude Include="SceneRenderer.h" />
     <ClInclude Include="serialisation.h" />
+    <ClInclude Include="stb_image_write.h" />
     <ClInclude Include="StringUtils.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="Graphics.h" />
