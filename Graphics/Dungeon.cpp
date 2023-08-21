@@ -1462,6 +1462,8 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 	dungeon_serialised["playerCanPushBox"] = playerCanPushBox;
 	dungeon_serialised["playerInteractIsFree"] = playerInteractIsFree;
 	dungeon_serialised["switchersMustBeLookedAt"] = switchersMustBeLookedAt;
+	dungeon_serialised["playerCanPushMirror"] = playerCanPushMirror;
+
 
 	for (auto& x : tiles)
 	{
@@ -1566,12 +1568,17 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	if (serialised.contains("playerTurnIsFree"))
 		serialised.at("playerTurnIsFree").get_to(playerTurnIsFree);
 	else
-		playerTurnIsFree = true;
+		playerTurnIsFree = false;
+
+	if (serialised.contains("playerInteractIsFree"))
+		serialised.at("playerInteractIsFree").get_to(playerInteractIsFree);
+	else
+		playerInteractIsFree = false;
 
 	if (serialised.contains("playerHasKnife"))
 		serialised.at("playerHasKnife").get_to(playerHasKnife);
 	else
-		playerHasKnife = true;
+		playerHasKnife = false;
 
 	if (serialised.contains("playerCanKickBox"))
 		serialised.at("playerCanKickBox").get_to(playerCanKickBox);
@@ -1581,19 +1588,17 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	if (serialised.contains("playerCanPushBox"))
 		serialised.at("playerCanPushBox").get_to(playerCanPushBox);
 	else
-		playerHasKnife = true;
-
-	if (serialised.contains("playerInteractIsFree"))
-		serialised.at("playerInteractIsFree").get_to(playerInteractIsFree);
-	else
-		playerInteractIsFree = true;
+		playerCanPushBox = false;
 
 	if (serialised.contains("switchersMustBeLookedAt"))
 		serialised.at("switchersMustBeLookedAt").get_to(switchersMustBeLookedAt);
 	else
-		switchersMustBeLookedAt = true;
+		switchersMustBeLookedAt = false;
 
-
+	if (serialised.contains("playerCanPushMirror"))
+		serialised.at("playerCanPushMirror").get_to(playerCanPushMirror);
+	else
+		playerCanPushMirror = false;
 
 
 	auto& tiles_json = serialised["tiles"];

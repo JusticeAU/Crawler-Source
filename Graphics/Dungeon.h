@@ -196,7 +196,7 @@ namespace Crawl
 		bool playerTurnIsFree = true;
 		bool playerInteractIsFree = true;
 		bool switchersMustBeLookedAt = true;
-		bool playerCanPushMirror = true;
+		bool playerCanPushMirror = false;
 
 		std::vector<DungeonInteractableLever*> interactables;
 		std::vector<DungeonDoor*> activatable;
