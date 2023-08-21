@@ -1,5 +1,6 @@
 #include "DungeonPlayer.h"
 #include "Input.h"
+#include "Window.h"
 #include "Scene.h"
 #include "MathUtils.h"
 #include "LogUtils.h"
@@ -16,6 +17,7 @@ Crawl::DungeonPlayer::DungeonPlayer()
 	object->LoadFromJSON(ReadJSONFromDisk("crawler/object/player.object"));
 	object->children[2]->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/viewmodel_hands.object"));
 	animator = (ComponentAnimator*)object->children[2]->children[0]->GetComponent(Component_Animator);
+	objectView = object->children[0];
 	
 	// Hack the light in
 	Scene::s_instance->m_pointLights.push_back(Light());
@@ -77,7 +79,7 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 			}
 		}
 
-		if ((Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down() || Input::Mouse(1).Down()) && dungeon->playerHasKnife)
+		/*if ((Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down() || Input::Mouse(1).Down()) && dungeon->playerHasKnife)
 		{
 			if (dungeon->HasLineOfSight(position, facing))
 			{
@@ -85,6 +87,23 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 				dungeon->DamageAtPosition(position + directions[facing], this, true);
 				return true;
 			}
+		}*/
+
+		if (Input::Mouse(1).Down()) Window::GetWindow()->SetMouseCursorHidden(true);
+		if (Input::Mouse(1).Pressed())
+		{
+			vec2 mouseDelta = -Input::GetMouseDelta() * deltaTime * 8.0f;
+			objectView->AddLocalRotation({ mouseDelta.y, 0, mouseDelta.x });
+			objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -45.0f, 45.0f);
+			objectView->localRotation.z = glm::clamp(objectView->localRotation.z, -170.0f, 170.0f);
+		}
+		
+		if (Input::Mouse(1).Up()) Window::GetWindow()->SetMouseCursorHidden(false);
+		if (!Input::Mouse(1).Pressed())
+		{
+			vec3 currentRotation = objectView->localRotation;
+			currentRotation *= -0.1;
+			objectView->AddLocalRotation(currentRotation);
 		}
 
 		// Test Object Picking stuffo

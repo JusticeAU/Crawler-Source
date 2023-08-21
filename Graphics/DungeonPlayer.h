@@ -54,6 +54,7 @@ namespace Crawl
 		
 		Dungeon* dungeon;
 		Object* object;
+		Object* objectView;
 		ComponentAnimator* animator;
 
 		bool didMove = false;
