@@ -43,6 +43,9 @@ namespace Crawl
 		FACING_INDEX facing = EAST_INDEX;
 		
 		STATE state = IDLE;
+		float lookSpeed = 0.1f;
+		float lookMaxY = 45.0f;
+		float lookMaxZ = 170.0f;
 		float moveSpeed = 0.25f;
 		float moveCurrent = 0.0f;
 		glm::vec3 oldPosition;

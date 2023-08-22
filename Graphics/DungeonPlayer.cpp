@@ -70,15 +70,6 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		if (Input::Keyboard(GLFW_KEY_LEFT_ALT).Down())
 			return true;
 
-		if (Input::Keyboard(GLFW_KEY_SPACE).Down() && dungeon->playerCanKickBox)
-		{
-			if (dungeon->DoKick(position, facing))
-			{
-				animator->BlendToAnimation(animationNamePush, 0.1f);
-				return true;
-			}
-		}
-
 		/*if ((Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down() || Input::Mouse(1).Down()) && dungeon->playerHasKnife)
 		{
 			if (dungeon->HasLineOfSight(position, facing))
@@ -92,10 +83,11 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		if (Input::Mouse(1).Down()) Window::GetWindow()->SetMouseCursorHidden(true);
 		if (Input::Mouse(1).Pressed())
 		{
-			vec2 mouseDelta = -Input::GetMouseDelta() * deltaTime * 8.0f;
+			vec2 mouseDelta = -Input::GetMouseDelta() * lookSpeed;
 			objectView->AddLocalRotation({ mouseDelta.y, 0, mouseDelta.x });
-			objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -45.0f, 45.0f);
-			objectView->localRotation.z = glm::clamp(objectView->localRotation.z, -170.0f, 170.0f);
+			objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -lookMaxY, lookMaxY);
+			objectView->localRotation.z = glm::clamp(objectView->localRotation.z, -lookMaxZ, lookMaxZ);
+			return false;
 		}
 		
 		if (Input::Mouse(1).Up()) Window::GetWindow()->SetMouseCursorHidden(false);
@@ -104,6 +96,15 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 			vec3 currentRotation = objectView->localRotation;
 			currentRotation *= -0.1;
 			objectView->AddLocalRotation(currentRotation);
+		}
+
+		if (Input::Keyboard(GLFW_KEY_SPACE).Down() && dungeon->playerCanKickBox)
+		{
+			if (dungeon->DoKick(position, facing))
+			{
+				animator->BlendToAnimation(animationNamePush, 0.1f);
+				return true;
+			}
 		}
 
 		// Test Object Picking stuffo
