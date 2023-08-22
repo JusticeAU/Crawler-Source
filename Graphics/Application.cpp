@@ -285,7 +285,7 @@ void Application::Update(float delta)
 			dungeonEditor->Activate();
 		}
 
-		if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_F12).Down())
+		if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_F11).Down())
 		{
 			if (s_mode == Mode::Programming)
 				s_mode = s_modeOld;

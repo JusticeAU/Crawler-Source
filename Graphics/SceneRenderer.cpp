@@ -22,6 +22,8 @@
 
 bool SceneRenderer::msaaEnabled = true;
 bool SceneRenderer::ssaoEnabled = true;
+ComponentCamera* SceneRenderer::frustumCullingCamera = nullptr;
+float SceneRenderer::frustumCullingForgiveness = 5.0f;
 
 SceneRenderer::SceneRenderer()
 {
@@ -129,32 +131,54 @@ void SceneRenderer::DrawGUI()
 		averageTotalRenderTime += renderTotalSamples[i];
 	averageTotalRenderTime /= 100;
 	averageTotalRenderTime *= 1000;
-	ImGui::InputFloat("Total Render MS Average", &averageTotalRenderTime, 0, 0, "%0.6f");
+	ImGui::InputFloat("Render MS Average", &averageTotalRenderTime, 0, 0, "%0.6f");
 	ImGui::PlotLines("", renderTotalSamples, 100, 0, "0 to 0.1s", 0, 0.1, { 300,100 });
 
 	ImGui::EndDisabled();
-	if (ImGui::Checkbox("VSync Enabled", &vsyncEnabled))
+	if (ImGui::Checkbox("VSync", &vsyncEnabled))
 	{
 		if (vsyncEnabled) glfwSwapInterval(1);
 		else glfwSwapInterval(0);
 	}
 
-	if (ImGui::Checkbox("MSAA Enabled", &msaaEnabled))
-		TextureManager::RefreshFrameBuffers();
-	int newMSAASample = msaaSamples;
-	if (ImGui::InputInt("MSAA Samples", &newMSAASample))
+	if (ImGui::Checkbox("Frustum Culling", &frustumCullingEnabled))
 	{
-		if (newMSAASample > msaaSamples)
-			msaaSamples *= 2;
-		else
-			msaaSamples /= 2;
-
-		msaaSamples = glm::clamp(msaaSamples, 2, 16);
-		FrameBuffer::SetMSAASampleLevels(msaaSamples);
-		TextureManager::RefreshFrameBuffers();
+		if (!frustumCullingEnabled) frustumCullingCamera = nullptr;
+		else frustumCullingCamera = Scene::GetCameraByIndex(frustumCullingCameraIndex);
 	}
 
-	if (ImGui::Checkbox("SSAO Enabled", &ssaoEnabled))
+	if (frustumCullingEnabled)
+	{
+		ImGui::Indent();
+		if (ImGui::InputInt("Camera", &frustumCullingCameraIndex, 1))
+			SetCullingCamera(frustumCullingCameraIndex);
+
+		if (ImGui::DragFloat("Forgiveness", &frustumCullingForgiveness, 0.1f, -10, 10, "%0.1f"));
+		ImGui::Unindent();
+	}
+
+	if (ImGui::Checkbox("MSAA", &msaaEnabled))
+		TextureManager::RefreshFrameBuffers();
+	
+	if (msaaEnabled)
+	{
+		ImGui::Indent();
+		int newMSAASample = msaaSamples;
+		if (ImGui::InputInt("Samples", &newMSAASample))
+		{
+			if (newMSAASample > msaaSamples)
+				msaaSamples *= 2;
+			else
+				msaaSamples /= 2;
+
+			msaaSamples = glm::clamp(msaaSamples, 2, 16);
+			FrameBuffer::SetMSAASampleLevels(msaaSamples);
+			TextureManager::RefreshFrameBuffers();
+		}
+		ImGui::Unindent();
+	}
+
+	if (ImGui::Checkbox("SSAO", &ssaoEnabled))
 	{
 		if (!ssaoEnabled)
 		{
@@ -201,22 +225,27 @@ void SceneRenderer::DrawGUI()
 			}
 		}
 	}
+	if (ssaoEnabled)
+	{
+		ImGui::Indent();
+		ImGui::PushID("Radius");
+		ImGui::Text("Radius");
+		ImGui::DragFloat("", &ssaoRadius, 0.01);
+		ImGui::SameLine();
+		if (ImGui::Button("Reset"))
+			ssaoRadius = 0.5f;
+		ImGui::PopID();
+		ImGui::PushID("Bias");
+		ImGui::Text("Bias");
+		ImGui::DragFloat("", &ssaoBias, 0.01);
+		ImGui::SameLine();
+		if (ImGui::Button("Reset"))
+			ssaoBias = 0.025f;
+		ImGui::PopID();
+		ImGui::Text("");
+		ImGui::Unindent();
+	}
 
-	ImGui::PushID("Radius");
-	ImGui::Text("SSAO Radius");
-	ImGui::DragFloat("", &ssaoRadius, 0.01);
-	ImGui::SameLine();
-	if (ImGui::Button("Reset Radius"))
-		ssaoRadius = 0.5f;
-	ImGui::PopID();
-	ImGui::PushID("Bias");
-	ImGui::Text("SSAO Bias");
-	ImGui::DragFloat("", &ssaoBias, 0.01);
-	ImGui::SameLine();
-	if (ImGui::Button("Reset Bias"))
-		ssaoBias = 0.025f;
-	ImGui::PopID();
-	ImGui::Text("");
 	if (ImGui::Button("Reload Shaders"))
 		ShaderManager::RecompileAllShaderPrograms();
 
@@ -250,7 +279,14 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	//shadowMap->BindTexture(5);
 	// for each camera in each object, draw to that cameras frame buffer
 
+	// Update the camera VPM and also the culling frustum if being used.
 	c->UpdateViewProjectionMatrix();
+	if (frustumCullingCamera != nullptr)
+	{
+		if(c != frustumCullingCamera) frustumCullingCamera->UpdateViewProjectionMatrix();
+
+		frustumCullingCamera->UpdateFrustum();
+	}
 	vec3 cameraPosition = c->GetWorldSpacePosition();
 
 	if (ssaoEnabled)
@@ -412,4 +448,21 @@ void SceneRenderer::DrawBackBuffer()
 	frameBufferProcessed->BindTexture(20);
 	PostProcess::PassThrough();
 	FrameBuffer::UnBindTexture(20);
+}
+
+bool SceneRenderer::ShouldCull(vec3 position)
+{
+	return frustumCullingCamera->IsPointInFrustum(position, frustumCullingForgiveness);
+}
+
+
+void SceneRenderer::SetCullingCamera(int index)
+{
+	if (index < -1) index = -1;
+
+	if (index >= (int)Scene::s_instance->componentCameras.size()) // cast the sizet to an int so it can be compared with a negatively signed number
+		index = Scene::s_instance->componentCameras.size() - 1;
+
+	frustumCullingCameraIndex = index;
+	frustumCullingCamera = Scene::GetCameraByIndex(index);
 }

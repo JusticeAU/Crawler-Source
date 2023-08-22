@@ -21,15 +21,20 @@ public:
 	void DrawGUI();
 	void DrawShadowMappingGUI(); // not used right now.
 
-	void RenderScene(Scene* scene, ComponentCamera* camera);
+	void RenderScene(Scene* scene, ComponentCamera* cameraView);
 	void RenderSceneShadowMaps(Scene* scene, ComponentCamera* camera);
 	void RenderSceneObjectPick(Scene* scene, ComponentCamera* camera);
 	void RenderSceneGizmos(Scene* scene, ComponentCamera* camera);
 	void DrawBackBuffer();
+
+	static bool ShouldCull(vec3 position);
+	void SetCullingCamera(int sceneCameraIndex);
 	
 	// General Config
 	static bool msaaEnabled;
 	static bool ssaoEnabled;
+	static ComponentCamera* frustumCullingCamera;
+	static float frustumCullingForgiveness;
 
 protected:
 	// Render Buffers
@@ -39,6 +44,11 @@ protected:
 
 	// VSync
 	bool vsyncEnabled = true;
+
+	// Frustum Culling
+	bool frustumCullingEnabled = true;
+	int frustumCullingCameraIndex = -1;
+
 
 	// MSAA
 	int msaaSamples = 4;

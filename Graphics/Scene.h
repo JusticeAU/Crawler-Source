@@ -52,6 +52,8 @@ public:
 	static glm::vec3* GetPointLightColours() { return &s_instance->m_pointLightColours[0]; }
 
 	static int GetCameraIndex() { return s_instance->cameraIndex; }
+	static ComponentCamera* GetCameraByIndex(int index);
+	static ComponentCamera* GetCurrentCamera();
 	static void SetCameraIndex(int index);
 	static void SetCameraByName(string name = "Editor Camera");
 	static unsigned int GetSelectedObject() { return s_instance->selectedObjectID; }

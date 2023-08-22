@@ -319,6 +319,19 @@ int Scene::GetNumPointLights()
 	return (int)s_instance->m_pointLights.size();
 }
 
+ComponentCamera* Scene::GetCameraByIndex(int index)
+{
+	if (index == -1)
+		return s_editorCamera->camera;
+	else return s_instance->componentCameras[index];
+}
+
+ComponentCamera* Scene::GetCurrentCamera()
+{
+	if (s_instance->cameraIndex == -1) return s_editorCamera->camera;
+	else return s_instance->componentCameras[s_instance->cameraIndex];
+}
+
 // Index 0 will always be the editor camera.
 // Indicies above 1 will be in world cameras and we look at the componentCameras array for the scene and -1 index in to it at render time.
 void Scene::SetCameraIndex(int index)
@@ -331,6 +344,7 @@ void Scene::SetCameraIndex(int index)
 	if (index == -1) s_instance->cameraCurrent = s_editorCamera->camera;
 	else s_instance->cameraCurrent = s_instance->componentCameras[index];
 
+	renderer->SetCullingCamera(index);
 	AudioManager::SetAudioListener(s_instance->cameraCurrent->GetAudioListener());
 }
 

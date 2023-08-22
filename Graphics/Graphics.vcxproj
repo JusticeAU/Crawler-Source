@@ -312,6 +312,7 @@
     <ClInclude Include="glfwCallbacks.h" />
     <ClInclude Include="glm2json.h" />
     <ClInclude Include="PostProcess.h" />
+    <ClInclude Include="Primitives.h" />
     <ClInclude Include="SceneEditorCamera.h" />
     <ClInclude Include="SceneRenderer.h" />
     <ClInclude Include="serialisation.h" />

@@ -1,6 +1,7 @@
 #include "ComponentRenderer.h"
 #include "ComponentModel.h"
 #include "Scene.h"
+#include "SceneRenderer.h"
 #include "Model.h"
 
 #include "TextureManager.h"
@@ -14,6 +15,7 @@
 #include "FrameBuffer.h"
 
 #include "Window.h"
+#include "ComponentCamera.h";
 
 #include <string>
 #include "LogUtils.h"
@@ -37,6 +39,13 @@ ComponentRenderer::ComponentRenderer(Object* parent, nlohmann::ordered_json j) :
 
 void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 {
+	if (SceneRenderer::frustumCullingCamera)
+	{
+		vec3 modelPos = componentParent->GetWorldSpacePosition();
+		if(!SceneRenderer::ShouldCull(modelPos))
+			return;
+	}
+
 	if (model != nullptr && materialArray[0] != nullptr) // At minimum we need a model and a shader to draw something.
 	{
 		switch (mode)

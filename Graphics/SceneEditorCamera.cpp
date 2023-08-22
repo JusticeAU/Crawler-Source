@@ -4,6 +4,7 @@
 #include "AudioManager.h"
 #include "Scene.h"
 #include "ShaderManager.h"
+#include "Primitives.h"
 
 #include "Input.h"
 
@@ -67,6 +68,8 @@ void SceneEditorCamera::Update(float deltaTime)
 			object->AddLocalPosition(object->up * moveSpeed * deltaTime);
 		if (Input::Keyboard(GLFW_KEY_Q).Pressed())
 			object->AddLocalPosition(-object->up * moveSpeed * deltaTime);
+
+		camera->UpdateFrustum();
 	}
 	object->Update(deltaTime);
 }
@@ -81,6 +84,9 @@ void SceneEditorCamera::DrawGUI()
 		ImGui::SliderFloat("Look Speed", &lookSpeed, 0.01f, 0.5f);
 		ImGui::SliderFloat("Near Clip", &camera->nearClip, 0.001f, 5.0f);
 		ImGui::SliderFloat("Far Clip", &camera->farClip, 5.0f, 10000.0f);
+
+		ImGui::InputFloat3("Near Plane", &camera->frustum.nearFace.normal.x);
+		ImGui::DragFloat("Near Distance", &camera->frustum.nearFace.distance);
 
 		ImGui::Text("Controls:");
 		ImGui::Text("Right Click +");

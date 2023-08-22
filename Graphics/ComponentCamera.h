@@ -3,6 +3,7 @@
 #include "Graphics.h"
 #include "Object.h"
 #include "AudioListener.h"
+#include "Primitives.h"
 #include <string>
 #include <vector>
 
@@ -33,6 +34,9 @@ public:
 	const mat4 GetProjectionMatrix() { return projection; }
 	const mat4 GetViewMatrix() { return view; }
 
+	void UpdateFrustum();
+	bool IsPointInFrustum(vec3 point, float forgiveness = 0.0f);
+
 	const vec3 GetRayFromNDC(glm::vec2 NDC); // Returns a Vector pointing in to the scene from the camera near plane, from NDC.
 
 	void SetAspect(float aspect);
@@ -43,6 +47,7 @@ public:
 
 	float nearClip = 0.1f;
 	float farClip = 2000.0f;
+	CameraFrustum frustum;
 
 	float fieldOfView = 45;
 	float aspect = 16/(float)9;
@@ -50,6 +55,7 @@ protected:
 	glm::mat4 view;
 	glm::mat4 projection;
 	glm::mat4 matrix;
+
 
 	AudioListener m_audioListener;
 	void UpdateAudioListener();
