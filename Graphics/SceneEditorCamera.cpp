@@ -51,7 +51,7 @@ void SceneEditorCamera::Update(float deltaTime)
 		vec3 lookRotation = { 0,0,0 };
 		lookRotation.z = -mouseDelta.x;
 		lookRotation.x = -mouseDelta.y;
-		object->AddLocalRotation(lookRotation * lookSpeed * deltaTime);
+		object->AddLocalRotation(lookRotation * lookSpeed);
 
 		if (Input::Keyboard(GLFW_KEY_A).Pressed() || Input::Keyboard(GLFW_KEY_LEFT).Pressed())
 			object->AddLocalPosition(-object->right * moveSpeed * deltaTime);
@@ -78,7 +78,7 @@ void SceneEditorCamera::DrawGUI()
 		ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 		ImGui::Begin("Camera", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 		ImGui::SliderFloat("Move Speed", &moveSpeed, 0.1f, 50.0f);
-		ImGui::SliderFloat("Look Speed", &lookSpeed, 0.01f, 20.0f);
+		ImGui::SliderFloat("Look Speed", &lookSpeed, 0.01f, 0.5f);
 		ImGui::SliderFloat("Near Clip", &camera->nearClip, 0.001f, 5.0f);
 		ImGui::SliderFloat("Far Clip", &camera->farClip, 5.0f, 10000.0f);
 

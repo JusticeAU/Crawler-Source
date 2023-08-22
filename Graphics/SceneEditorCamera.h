@@ -17,5 +17,5 @@ public:
 
 	bool isAdjusting = false;
 	float moveSpeed = 15.0f;
-	float lookSpeed = 10.0f;
+	float lookSpeed = 0.1;
 };
