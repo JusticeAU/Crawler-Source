@@ -37,6 +37,9 @@ protected:
 	FrameBuffer* frameBufferBlit;
 	FrameBuffer* frameBufferProcessed;
 
+	// VSync
+	bool vsyncEnabled = true;
+
 	// MSAA
 	int msaaSamples = 4;
 
@@ -75,14 +78,8 @@ protected:
 	Object* lightGizmo = nullptr; // reusable object to place the light bulb model and render it.
 
 	// Stats
+	float renderLastFrameTime = 0.0f;
 	float renderTotalSamples[100];
-	float renderPassSamples[100];
-	float ssaoGeoPassSamples[100];
-	float ssaoFilterPassSamples[100];
-	float ssaoBlurPassSamples[100];
-
-
-
 	int sampleIndex = 0;
 };
 

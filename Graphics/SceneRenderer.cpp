@@ -132,35 +132,13 @@ void SceneRenderer::DrawGUI()
 	ImGui::InputFloat("Total Render MS Average", &averageTotalRenderTime, 0, 0, "%0.6f");
 	ImGui::PlotLines("", renderTotalSamples, 100, 0, "0 to 0.1s", 0, 0.1, { 300,100 });
 
-	float averageRenderTime = 0.0f;
-	for (int i = 0; i < 100; i++)
-		averageRenderTime += renderPassSamples[i];
-	averageRenderTime /= 100;
-	averageRenderTime *= 1000;
-	ImGui::InputFloat("Render Pass MS Average", &averageRenderTime, 0, 0, "%0.6f");
-	
-	float averageSSAOGeo = 0.0f;
-	for (int i = 0; i < 100; i++)
-		averageSSAOGeo += ssaoGeoPassSamples[i];
-	averageSSAOGeo /= 100;
-	averageSSAOGeo *= 1000;
-	ImGui::InputFloat("SSAO Geo MS Average", &averageSSAOGeo, 0, 0, "%0.6f");
-	
-	float averageSSAOFilter = 0.0f;
-	for (int i = 0; i < 100; i++)
-		averageSSAOFilter += ssaoFilterPassSamples[i];
-	averageSSAOFilter /= 100;
-	averageSSAOFilter *= 1000;
-	ImGui::InputFloat("SSAO Filter MS Average", &averageSSAOFilter, 0, 0, "%0.6f");
-
-	float averageSSAOBlur = 0.0f;
-	for (int i = 0; i < 100; i++)
-		averageSSAOBlur += ssaoBlurPassSamples[i];
-	averageSSAOBlur /= 100;
-	averageSSAOBlur *= 1000;
-	ImGui::InputFloat("SSAO Filter MS Average", &averageSSAOBlur, 0, 0, "%0.6f");
-
 	ImGui::EndDisabled();
+	if (ImGui::Checkbox("VSync Enabled", &vsyncEnabled))
+	{
+		if (vsyncEnabled) glfwSwapInterval(1);
+		else glfwSwapInterval(0);
+	}
+
 	if (ImGui::Checkbox("MSAA Enabled", &msaaEnabled))
 		TextureManager::RefreshFrameBuffers();
 	int newMSAASample = msaaSamples;
@@ -263,7 +241,6 @@ void SceneRenderer::DrawShadowMappingGUI()
 
 void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 {
-	double renderStart = glfwGetTime();
 	// Shadow map dev stuff
 	// Bind recently rendered shadowmap.
 	//shadowMap->BindTexture(20);
@@ -279,7 +256,6 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	if (ssaoEnabled)
 	{
 		// Build G Buffer for SSAO with a Geomerty Pass.
-		double ssaoGeoPassStart = glfwGetTime();
 		ssaoGBuffer->BindTarget();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		ShaderProgram* ssaoGeoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOGeometryPass");
@@ -294,10 +270,8 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		glEnable(GL_BLEND);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		ssaoGeoPassSamples[sampleIndex] = glfwGetTime() - ssaoGeoPassStart;
 
 		// Do the SSAO pass
-		double ssaoFilterPassStart = glfwGetTime();
 		ssaoFBO->BindTarget();
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -325,10 +299,7 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		FrameBuffer::UnBindTexture(1);
 		FrameBuffer::UnBindTexture(2);
 
-		ssaoFilterPassSamples[sampleIndex] = glfwGetTime() - ssaoFilterPassStart;
-
 		// Do the SSAO Blur Pass
-		double ssaoBlurPassStart = glfwGetTime();
 		ssaoBlurFBO->BindTarget();
 		ShaderProgram* ssaoBlur = ShaderManager::GetShaderProgram("engine/shader/SSAOBlurPass");
 		ssaoBlur->Bind();
@@ -339,17 +310,9 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		FrameBuffer::UnBindTexture(0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glEnable(GL_BLEND);
-		ssaoBlurPassSamples[sampleIndex] = glfwGetTime() - ssaoBlurPassStart;
-	}
-	else
-	{
-		ssaoGeoPassSamples[sampleIndex] = 0.0f;
-		ssaoFilterPassSamples[sampleIndex] = 0.0f;
-		ssaoBlurPassSamples[sampleIndex] = 0.0f;
 	}
 
 	// Do normal render pass
-	double renderPassStart = glfwGetTime();
 	frameBufferRaw->BindTarget();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for (auto& o : scene->objects)
@@ -373,8 +336,8 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	c->RunPostProcess(frameBufferProcessed);
 
 	// Stats
-	renderPassSamples[sampleIndex] = glfwGetTime() - renderPassStart;
-	renderTotalSamples[sampleIndex] = glfwGetTime() - renderStart;
+	renderTotalSamples[sampleIndex] = glfwGetTime() - renderLastFrameTime;
+	renderLastFrameTime = glfwGetTime();
 	
 	sampleIndex++;
 	if (sampleIndex == 100)

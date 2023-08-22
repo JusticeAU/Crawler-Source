@@ -51,7 +51,7 @@ Application::Application()
 	// Tell GLFW that the window we created is the one we should render to
 	LogUtils::Log("Linking GLFW Window to render target.");
 	glfwMakeContextCurrent(window->GetGLFWwindow());
-	//glfwSwapInterval(0); // Disable vsync
+	glfwSwapInterval(1); // Enable VSync
 
 	// Tell GLAD to load its OpenGL functions
 	LogUtils::Log("Loading GLAD OpenGL functions.");
