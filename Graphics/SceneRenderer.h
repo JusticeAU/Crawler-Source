@@ -54,15 +54,17 @@ protected:
 	int msaaSamples = 4;
 
 	// SSAO
-	int ssaoKernelSize = 64;
 	float ssaoRadius = 0.5f;
 	float ssaoBias = 0.025f;
+	int ssaoKernelTaps = 16;
 	FrameBuffer* ssaoGBuffer;
 	FrameBuffer* ssaoFBO;
 	FrameBuffer* ssaoBlurFBO;
 	Texture* ssaoNoiseTexture;
 	vector<glm::vec3> ssaoKernel;
 	vector<glm::vec3> ssaoNoise;
+	void ssaoGenerateKernel(int size);
+	void ssaoGenerateNoise();
 
 	// Shadow Mapping
 	// Directional light shadow map

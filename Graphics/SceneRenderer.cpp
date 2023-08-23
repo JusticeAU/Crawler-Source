@@ -56,38 +56,9 @@ SceneRenderer::SceneRenderer()
 	TextureManager::s_instance->AddFrameBuffer("SSAOBlur", ssaoBlurFBO);
 	// Generate the kernel - https://learnopengl.com/Advanced-Lighting/SSAO
 	// Both from <random>
-	std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // random floats between [0.0, 1.0]
-	std::default_random_engine generator;
-	unsigned int kernalSize = 64;
-	ssaoKernel.reserve(kernalSize);
-	for (unsigned int i = 0; i < kernalSize; ++i)
-	{
-		glm::vec3 sample(
-			randomFloats(generator) * 2.0 - 1.0,
-			randomFloats(generator) * 2.0 - 1.0,
-			randomFloats(generator)
-		);
-		sample = glm::normalize(sample);
-		sample *= randomFloats(generator);
-		float scale = (float)i / (float)kernalSize;
-		scale = MathUtils::Lerp(0.1f, 1.0f, scale * scale);
-		sample *= scale;
-		ssaoKernel.push_back(sample);
-		//LogUtils::Log(to_string(sample.x) + " " + to_string(sample.y) + " " + to_string(sample.z));
-	}
+	ssaoGenerateKernel(ssaoKernelTaps);
+	ssaoGenerateNoise();
 
-	// Generate SSAO Noise
-	for (unsigned int i = 0; i < 16; i++)
-	{
-		glm::vec3 noise(
-			randomFloats(generator) * 2.0 - 1.0,
-			randomFloats(generator) * 2.0 - 1.0,
-			0.0f);
-		ssaoNoise.push_back(noise);
-	}
-	ssaoNoiseTexture = new Texture();
-	ssaoNoiseTexture->CreateSSAONoiseTexture(ssaoNoise.data());
-	TextureManager::AddTexture(ssaoNoiseTexture);
 #pragma endregion
 
 	// Initialise Shadow Mapping
@@ -131,10 +102,11 @@ void SceneRenderer::DrawGUI()
 		averageTotalRenderTime += renderTotalSamples[i];
 	averageTotalRenderTime /= 100;
 	averageTotalRenderTime *= 1000;
-	ImGui::InputFloat("Render MS Average", &averageTotalRenderTime, 0, 0, "%0.6f");
+	ImGui::InputFloat("MS Average", &averageTotalRenderTime, 0, 0, "%0.6f");
 	ImGui::PlotLines("", renderTotalSamples, 100, 0, "0 to 0.1s", 0, 0.1, { 300,100 });
 
 	ImGui::EndDisabled();
+
 	if (ImGui::Checkbox("VSync", &vsyncEnabled))
 	{
 		if (vsyncEnabled) glfwSwapInterval(1);
@@ -241,6 +213,20 @@ void SceneRenderer::DrawGUI()
 		ImGui::SameLine();
 		if (ImGui::Button("Reset"))
 			ssaoBias = 0.025f;
+		ImGui::PushID("Kernel Taps");
+		ImGui::Text("Kernel Taps");
+		if (ImGui::InputInt("", &ssaoKernelTaps))
+		{
+			ssaoKernelTaps = glm::clamp(ssaoKernelTaps, 0, 64); // hardcoded as 64 as a max. matches the magic number in the frag shader.
+			ssaoGenerateKernel(ssaoKernelTaps);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Reset"))
+		{
+			ssaoKernelTaps = 64;
+			ssaoGenerateKernel(ssaoKernelTaps);
+		}
+
 		ImGui::PopID();
 		ImGui::Text("");
 		ImGui::Unindent();
@@ -317,13 +303,12 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		ssaoShader->SetFloatUniform("bias", ssaoBias);
 		glm::vec2 screenSize = Window::GetViewPortSize();
 		ssaoShader->SetVector2Uniform("screenSize", screenSize);
+		ssaoShader->SetIntUniform("kernelTaps", ssaoKernelTaps);
 		
 		glDisable(GL_BLEND);
 		ssaoShader->SetIntUniform("gPosition", 0);
 		ssaoShader->SetIntUniform("gNormal", 1);
 		ssaoShader->SetIntUniform("texNoise", 2);
-
-		ssaoShader->SetFloat3ArrayUniform("samples", 64, ssaoKernel.data());
 		ssaoShader->SetMatrixUniform("projection", c->GetProjectionMatrix());
 		ssaoGBuffer->BindGPosition(0);
 		ssaoGBuffer->BindGNormal(1);
@@ -455,7 +440,6 @@ bool SceneRenderer::ShouldCull(vec3 position)
 	return frustumCullingCamera->IsPointInFrustum(position, frustumCullingForgiveness);
 }
 
-
 void SceneRenderer::SetCullingCamera(int index)
 {
 	if (index < -1) index = -1;
@@ -465,4 +449,49 @@ void SceneRenderer::SetCullingCamera(int index)
 
 	frustumCullingCameraIndex = index;
 	frustumCullingCamera = Scene::GetCameraByIndex(index);
+}
+
+void SceneRenderer::ssaoGenerateKernel(int size)
+{
+	std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // random floats between [0.0, 1.0]
+	std::default_random_engine generator;
+	unsigned int kernalSize = size;
+	ssaoKernel.reserve(kernalSize);
+	for (unsigned int i = 0; i < kernalSize; ++i)
+	{
+		glm::vec3 sample(
+			randomFloats(generator) * 2.0 - 1.0,
+			randomFloats(generator) * 2.0 - 1.0,
+			randomFloats(generator)
+		);
+		sample = glm::normalize(sample);
+		sample *= randomFloats(generator);
+		float scale = (float)i / (float)kernalSize;
+		scale = MathUtils::Lerp(0.1f, 1.0f, scale * scale);
+		sample *= scale;
+		ssaoKernel.push_back(sample);
+		//LogUtils::Log(to_string(sample.x) + " " + to_string(sample.y) + " " + to_string(sample.z));
+	}
+	// Upload the Kernel
+	ShaderProgram* ssaoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOTermPass");
+	ssaoShader->Bind();
+	ssaoShader->SetFloat3ArrayUniform("samples", size, ssaoKernel.data());
+}
+
+void SceneRenderer::ssaoGenerateNoise()
+{
+	// Generate SSAO Noise
+	std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // random floats between [0.0, 1.0]
+	std::default_random_engine generator;
+	for (unsigned int i = 0; i < 16; i++)
+	{
+		glm::vec3 noise(
+			randomFloats(generator) * 2.0 - 1.0,
+			randomFloats(generator) * 2.0 - 1.0,
+			0.0f);
+		ssaoNoise.push_back(noise);
+	}
+	ssaoNoiseTexture = new Texture();
+	ssaoNoiseTexture->CreateSSAONoiseTexture(ssaoNoise.data());
+	TextureManager::AddTexture(ssaoNoiseTexture);
 }
