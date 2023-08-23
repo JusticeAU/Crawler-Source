@@ -140,8 +140,11 @@ namespace Crawl
 		void RemoveDecoration(DungeonDecoration* decoration);
 	
 		void Save(std::string filename);
+		void ClearDungeon();
+		void ResetDungeon();
 		void Load(std::string filename);
 		bool TestDungeonExists(std::string filename);
+		void SetDungeonNameFromFileName(string filename);
 
 		ordered_json GetDungeonSerialised();
 		void RebuildDungeonFromSerialised(ordered_json& serialised);

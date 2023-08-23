@@ -1444,19 +1444,41 @@ void Crawl::Dungeon::RemoveDecoration(DungeonDecoration* decoration)
 
 void Crawl::Dungeon::Save(std::string filename)
 {
+	SetDungeonNameFromFileName(filename);
 	serialised = GetDungeonSerialised();
 	WriteJSONToDisk(filename, serialised);
 }
 
+void Crawl::Dungeon::ClearDungeon()
+{
+	dungeonFileName = "";
+	dungeonFilePath = "";
+	defaultPlayerStartPosition = { 0,0 };
+	defaultPlayerStartOrientation = EAST_INDEX;		bool playerHasKnife = false;
+	playerCanKickBox = false;
+	playerCanPushBox = false;
+	playerTurnIsFree = true;
+	playerInteractIsFree = true;
+	switchersMustBeLookedAt = true;
+	playerCanPushMirror = false;
+	
+	serialised.clear();
+
+	DestroySceneFromDungeonLayout();
+}
+
+void Crawl::Dungeon::ResetDungeon()
+{
+	RebuildDungeonFromSerialised(serialised);
+	player->ClearCheckpoint();
+}
+
 void Crawl::Dungeon::Load(std::string filename)
 {
-	int lastSlash = filename.find_last_of('/');
-	int extensionStart = filename.find_last_of('.');
-	string name = filename.substr(lastSlash + 1, extensionStart - (lastSlash + 1));
-	dungeonFileName = name;
-	dungeonFilePath = filename;
+	ClearDungeon();
 
-	serialised.clear();
+	SetDungeonNameFromFileName(filename);
+
 	serialised = ReadJSONFromDisk(filename);
 	RebuildDungeonFromSerialised(serialised);
 }
@@ -1464,6 +1486,15 @@ void Crawl::Dungeon::Load(std::string filename)
 bool Crawl::Dungeon::TestDungeonExists(std::string filename)
 {
 	return FileUtils::CheckFileExists(filename);
+}
+
+void Crawl::Dungeon::SetDungeonNameFromFileName(string filename)
+{
+	int lastSlash = filename.find_last_of('/');
+	int extensionStart = filename.find_last_of('.');
+	string name = filename.substr(lastSlash + 1, extensionStart - (lastSlash + 1));
+	dungeonFileName = name;
+	dungeonFilePath = filename;
 }
 
 ordered_json Crawl::Dungeon::GetDungeonSerialised()
@@ -1573,7 +1604,6 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 {
 	DestroySceneFromDungeonLayout();
-	tiles.clear();
 
 	if (serialised.contains("defaultPosition"))
 		serialised.at("defaultPosition").get_to(defaultPlayerStartPosition);
@@ -1773,6 +1803,7 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 			tile->object->markedForDeletion = true;
 		}
 	}
+	tiles.clear();
 
 	for (int i = 0; i < interactables.size(); i++)
 		delete interactables[i];
@@ -2025,7 +2056,7 @@ void Crawl::Dungeon::Update()
 		DungeonTransporter* gotoTransporter = GetTransporter(TransporterToGoTo);
 
 		// Reset previous checkpoint
-		player->checkpointExists = false;
+		player->ClearCheckpoint();
 
 		// Set player Position
 		if (gotoTransporter)

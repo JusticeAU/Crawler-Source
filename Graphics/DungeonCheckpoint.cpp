@@ -16,10 +16,7 @@ void Crawl::DungeonCheckpoint::SetCheckpoint(DungeonPlayer* player)
 	if (activateSound != "")
 		AudioManager::PlaySound(activateSound);
 
-	player->checkpointSerialised = dungeon->GetDungeonSerialised();
-	player->checkpointPosition = position;
-	player->checkpointFacing = facing;
-	player->checkpointExists = true;
+	player->MakeCheckpoint();
 	activated = true;
 	SetActivatedMaterial();
 }

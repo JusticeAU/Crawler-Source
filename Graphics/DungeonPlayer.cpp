@@ -276,7 +276,7 @@ void Crawl::DungeonPlayer::Respawn()
 	}
 	else
 	{
-		dungeon->RebuildDungeonFromSerialised(dungeon->serialised);
+		dungeon->ResetDungeon();
 		if (hasRespawnLocation)
 		{
 			Teleport(respawnPosition);
@@ -291,6 +291,20 @@ void Crawl::DungeonPlayer::Respawn()
 
 	hp = maxHp;
 	shouldSwitchWith = nullptr;
+}
+
+void Crawl::DungeonPlayer::MakeCheckpoint()
+{
+	checkpointSerialised = dungeon->GetDungeonSerialised();
+	checkpointPosition = position;
+	checkpointFacing = facing;
+	checkpointExists = true;
+}
+
+void Crawl::DungeonPlayer::ClearCheckpoint()
+{
+	checkpointSerialised.clear();
+	checkpointExists = false;
 }
 
 void Crawl::DungeonPlayer::TakeDamage()

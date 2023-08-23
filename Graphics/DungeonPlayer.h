@@ -31,6 +31,9 @@ namespace Crawl
 		void SetRespawn(ivec2 position, FACING_INDEX orientation);
 		void Respawn();
 
+		void MakeCheckpoint();
+		void ClearCheckpoint();
+
 		void TakeDamage();
 
 		void SetShouldSwitchWith(DungeonEnemySwitcher* switcher) { shouldSwitchWith = switcher; }

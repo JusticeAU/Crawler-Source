@@ -106,14 +106,12 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	ImGui::SameLine();
 	if (ImGui::Button("Reset Dungeon"))
 	{
-		UnMarkUnsavedChanges();
-		dungeon->RebuildDungeonFromSerialised(dungeon->serialised);
+		TileEditUnselectAll();
+		dungeon->ResetDungeon();
 		dungeon->player->Teleport(dungeon->defaultPlayerStartPosition);
 		dungeon->player->Orient(dungeon->defaultPlayerStartOrientation);
-		dungeon->player->SetRespawn(dungeon->defaultPlayerStartPosition, dungeon->defaultPlayerStartOrientation);
-		dungeon->player->checkpointExists = false;
 		dirtyGameplayScene = false;
-		TileEditUnselectAll();
+		UnMarkUnsavedChanges();
 	}
 
 	// File Manipulation
@@ -146,6 +144,18 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 		ImGui::Text("Scene is Dirty");
 		ImGui::EndDisabled();
 	}
+	else
+	{
+		ImGui::SameLine();
+		if (ImGui::Button("New Dungeon"))
+		{
+			dungeon->ClearDungeon();
+			dungeonFileName = "";
+			dungeonFileNameSaveAs = "";
+			dungeonFilePath = "";
+		}
+	}
+
 
 	// Save As prompt
 	ImGui::SetNextWindowSize({ 300, 100 });
@@ -562,7 +572,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	if (selectedActivatorPlate)
 	{
 		string plateName = "Plate (Activates ID: ";
-		plateName += selectedActivatorPlate->activateID;
+		plateName += to_string(selectedActivatorPlate->activateID);
 		plateName += ")";
 		if (ImGui::Selectable(plateName.c_str())) selectedActivatorPlateWindowOpen = true;
 	}
@@ -1766,6 +1776,9 @@ void Crawl::DungeonEditor::Save()
 {
 	dungeonFilePath = GetDungeonFilePath();
 	dungeon->Save(dungeonFilePath);
+	dungeonFileName = dungeon->dungeonFileName;
+	dungeonFileNameSaveAs = dungeon->dungeonFileName;
+	dungeonWantLoad = "";
 	UnMarkUnsavedChanges();
 }
 
