@@ -54,6 +54,8 @@ SceneRenderer::SceneRenderer()
 	TextureManager::s_instance->AddFrameBuffer("SSAO", ssaoFBO);
 	ssaoBlurFBO = new FrameBuffer(FrameBuffer::Type::SSAOColourBuffer);
 	TextureManager::s_instance->AddFrameBuffer("SSAOBlur", ssaoBlurFBO);
+	ssaoBlurFBO2 = new FrameBuffer(FrameBuffer::Type::SSAOColourBuffer);
+	TextureManager::s_instance->AddFrameBuffer("SSAOBlur2", ssaoBlurFBO2);
 	// Generate the kernel - https://learnopengl.com/Advanced-Lighting/SSAO
 	// Both from <random>
 	ssaoGenerateKernel(ssaoKernelTaps);
@@ -226,6 +228,9 @@ void SceneRenderer::DrawGUI()
 			ssaoKernelTaps = 64;
 			ssaoGenerateKernel(ssaoKernelTaps);
 		}
+		ImGui::Checkbox("Blur?", &ssaoBlur);
+		ImGui::Checkbox("2-Pass Gaussian?", &ssaoGaussianBlur);
+
 
 		ImGui::PopID();
 		ImGui::Text("");
@@ -274,7 +279,8 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		frustumCullingCamera->UpdateFrustum();
 	}
 	vec3 cameraPosition = c->GetWorldSpacePosition();
-
+	
+	FrameBuffer* blurBufferUsed = nullptr; // store this outside so we can assign it based on whether we blurred, and which blur buffer we used.
 	if (ssaoEnabled)
 	{
 		// Build G Buffer for SSAO with a Geomerty Pass.
@@ -304,7 +310,7 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		glm::vec2 screenSize = Window::GetViewPortSize();
 		ssaoShader->SetVector2Uniform("screenSize", screenSize);
 		ssaoShader->SetIntUniform("kernelTaps", ssaoKernelTaps);
-		
+
 		glDisable(GL_BLEND);
 		ssaoShader->SetIntUniform("gPosition", 0);
 		ssaoShader->SetIntUniform("gNormal", 1);
@@ -321,16 +327,44 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		FrameBuffer::UnBindTexture(2);
 
 		// Do the SSAO Blur Pass
-		ssaoBlurFBO->BindTarget();
-		ShaderProgram* ssaoBlur = ShaderManager::GetShaderProgram("engine/shader/SSAOBlurPass");
-		ssaoBlur->Bind();
-		ssaoBlur->SetIntUniform("ssaoInput", 0);
-		ssaoFBO->BindTexture(0);
+		if (ssaoBlur)
+		{
+			ssaoBlurFBO->BindTarget();
+			if (ssaoGaussianBlur)
+			{
+				ShaderProgram* ssaoBlur = ShaderManager::GetShaderProgram("engine/shader/SSAOGaussianBlurPass");
+				ssaoBlur->Bind();
+				ssaoBlur->SetIntUniform("image", 0);
+				ssaoBlur->SetIntUniform("horizontal", true);
+				ssaoFBO->BindTexture(0);
+				PostProcess::PassThrough(ssaoBlur);
+				FrameBuffer::UnBindTexture(0);
 
-		PostProcess::PassThrough(ssaoBlur);
-		FrameBuffer::UnBindTexture(0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glEnable(GL_BLEND);
+				ssaoBlurFBO->BindTexture(0);
+				ssaoBlurFBO2->BindTarget();
+				ssaoBlur->SetIntUniform("horizontal", false);
+				PostProcess::PassThrough(ssaoBlur);
+				FrameBuffer::UnBindTexture(0);
+
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+				glEnable(GL_BLEND);
+				blurBufferUsed = ssaoBlurFBO2;
+			}
+			else
+			{
+				ShaderProgram* ssaoBlur = ShaderManager::GetShaderProgram("engine/shader/SSAOBlurPass");
+				ssaoBlur->Bind();
+				ssaoBlur->SetIntUniform("ssaoInput", 0);
+				ssaoFBO->BindTexture(0);
+				PostProcess::PassThrough(ssaoBlur);
+				FrameBuffer::UnBindTexture(0);
+
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
+				glEnable(GL_BLEND);
+				blurBufferUsed = ssaoBlurFBO;
+			}
+		}
+		else blurBufferUsed = ssaoFBO;
 	}
 
 	// Do normal render pass
@@ -352,8 +386,8 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	}
 	else
 		frameBufferRaw->BindTexture(20);
-
-	ssaoBlurFBO->BindTexture(21); // This is a bit crap, SSAO is kind of half backed in to the above pipeline and a postprocess effect on the camera.
+	
+	if(blurBufferUsed) blurBufferUsed->BindTexture(21); // This is a bit crap, SSAO is kind of half backed in to the above pipeline and a postprocess effect on the camera.
 	c->RunPostProcess(frameBufferProcessed);
 
 	// Stats

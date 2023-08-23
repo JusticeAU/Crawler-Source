@@ -60,6 +60,9 @@ protected:
 	FrameBuffer* ssaoGBuffer;
 	FrameBuffer* ssaoFBO;
 	FrameBuffer* ssaoBlurFBO;
+	FrameBuffer* ssaoBlurFBO2;
+	bool ssaoGaussianBlur = true;
+	bool ssaoBlur = true;
 	Texture* ssaoNoiseTexture;
 	vector<glm::vec3> ssaoKernel;
 	vector<glm::vec3> ssaoNoise;
