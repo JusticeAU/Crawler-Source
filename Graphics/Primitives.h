@@ -6,8 +6,9 @@ struct Plane
 	float distance		= 0.0f;
 };
 
-struct CameraFrustum
+class CameraFrustum
 {
+public:
 	Plane topFace;
 	Plane bottomFace;
 
@@ -16,4 +17,7 @@ struct CameraFrustum
 
 	Plane farFace;
 	Plane nearFace;
+
+	static bool IsPointInFrustum(glm::vec3 point, CameraFrustum frustum, float forgiveness = 0.0f);
+	static CameraFrustum GetFrustumFromVPMatrix(glm::mat4 matrix);
 };

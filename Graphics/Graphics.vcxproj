@@ -242,6 +242,7 @@
     <ClCompile Include="ModelManager.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="PostProcess.cpp" />
+    <ClCompile Include="Primitives.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneEditorCamera.cpp" />
     <ClCompile Include="SceneRenderer.cpp" />

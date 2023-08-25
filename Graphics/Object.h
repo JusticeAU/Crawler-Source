@@ -30,6 +30,8 @@ public:
 	
 	Object* parent = nullptr;
 	vector<Object*> children;
+
+	bool isStatic = true; // Affects the renderer passes. static objects are not updated regularly.
 	
 	bool dirtyTransform = true;
 	vec3 localPosition;

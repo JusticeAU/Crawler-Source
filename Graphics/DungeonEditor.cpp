@@ -1412,6 +1412,17 @@ void Crawl::DungeonEditor::UpdateModeTileBrush()
 }
 void Crawl::DungeonEditor::UpdateModeTileEdit()
 {
+	if (Input::Mouse(2).Pressed())
+	{
+		vec2 NDC = Input::GetMousePosNDC();
+		vec3 rayStart = Scene::s_editorCamera->object->GetWorldSpacePosition();
+		vec3 rayDir = Scene::s_editorCamera->camera->GetRayFromNDC(NDC);
+		float scale = rayStart.z / rayDir.z;
+		vec3 groundPos = rayStart - (rayDir * scale);
+		groundPos.z = 1.5f;
+		Scene::s_instance->m_pointLights[0].position = groundPos;
+	}
+
 	if (Input::Mouse(0).Down())
 	{
 		TileEditUnselectAll();

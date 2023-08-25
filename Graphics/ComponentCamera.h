@@ -35,8 +35,6 @@ public:
 	const mat4 GetViewMatrix() { return view; }
 
 	void UpdateFrustum();
-	bool IsPointInFrustum(vec3 point, float forgiveness = 0.0f);
-
 	const vec3 GetRayFromNDC(glm::vec2 NDC); // Returns a Vector pointing in to the scene from the camera near plane, from NDC.
 
 	void SetAspect(float aspect);

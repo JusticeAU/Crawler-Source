@@ -19,11 +19,19 @@
 #include "ModelManager.h"
 #include "MaterialManager.h"
 
+#include "Input.h"
 
 bool SceneRenderer::msaaEnabled = true;
 bool SceneRenderer::ssaoEnabled = true;
 ComponentCamera* SceneRenderer::frustumCullingCamera = nullptr;
 float SceneRenderer::frustumCullingForgiveness = 5.0f;
+FrameBuffer* SceneRenderer::pointShadowMap[4] = { nullptr,nullptr,nullptr,nullptr };
+FrameBuffer* SceneRenderer::pointShadowMap2[4] = { nullptr,nullptr,nullptr,nullptr };
+
+CameraFrustum* SceneRenderer::cullingFrustum = nullptr;
+bool SceneRenderer::currentPassIsStatic = false;
+bool SceneRenderer::currentPassIsSplit = false;
+
 
 SceneRenderer::SceneRenderer()
 {
@@ -89,6 +97,13 @@ SceneRenderer::SceneRenderer()
 	lightGizmoRenderer->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/Gizmos.material");
 	lightGizmo->components.push_back(lightGizmoRenderer);
 #pragma endregion
+
+	// Initialise Point Shadow Map Dev
+	for (int i = 0; i < 4; i++)
+	{
+		pointShadowMap[i] = new FrameBuffer(FrameBuffer::Type::ShadowCubeMap);
+		pointShadowMap2[i] = new FrameBuffer(FrameBuffer::Type::ShadowCubeMap);
+	}
 }
 
 void SceneRenderer::DrawGUI()
@@ -215,6 +230,7 @@ void SceneRenderer::DrawGUI()
 		ImGui::SameLine();
 		if (ImGui::Button("Reset"))
 			ssaoBias = 0.025f;
+		ImGui::PopID();
 		ImGui::PushID("Kernel Taps");
 		ImGui::Text("Kernel Taps");
 		if (ImGui::InputInt("", &ssaoKernelTaps))
@@ -228,11 +244,9 @@ void SceneRenderer::DrawGUI()
 			ssaoKernelTaps = 64;
 			ssaoGenerateKernel(ssaoKernelTaps);
 		}
+		ImGui::PopID();
 		ImGui::Checkbox("Blur?", &ssaoBlur);
 		ImGui::Checkbox("2-Pass Gaussian?", &ssaoGaussianBlur);
-
-
-		ImGui::PopID();
 		ImGui::Text("");
 		ImGui::Unindent();
 	}
@@ -240,6 +254,30 @@ void SceneRenderer::DrawGUI()
 	if (ImGui::Button("Reload Shaders"))
 		ShaderManager::RecompileAllShaderPrograms();
 
+	ImGui::End();
+}
+
+void SceneRenderer::DrawShadowCubeMappingGUI()
+{
+	ImGui::Begin("Shadow Cube Map Devvoooo");
+	ImGui::DragFloat("FOV", &FOV);
+	ImGui::DragFloat("Aspect", &aspect);
+	ImGui::DragFloat("Near", &nearNum);
+	ImGui::DragFloat("Far", &farNum);
+
+	ImGui::Text("");
+	ImGui::DragFloat3("Pos X", &cubeMapDirections[0].target.x,1, -1, 1);
+	ImGui::DragFloat3("Pos X Up", &cubeMapDirections[0].up.x ,1, -1, 1);
+	ImGui::DragFloat3("Neg X", &cubeMapDirections[1].target.x,1, -1, 1);
+	ImGui::DragFloat3("Neg X Up", &cubeMapDirections[1].up.x ,1, -1, 1);
+	ImGui::DragFloat3("Pos Y", &cubeMapDirections[2].target.x,1, -1, 1);
+	ImGui::DragFloat3("Pos Y Up", &cubeMapDirections[2].up.x ,1, -1, 1);
+	ImGui::DragFloat3("Neg Y", &cubeMapDirections[3].target.x,1, -1, 1);
+	ImGui::DragFloat3("Neg Y Up", &cubeMapDirections[3].up.x ,1, -1, 1);
+	ImGui::DragFloat3("Pos Z", &cubeMapDirections[4].target.x,1, -1, 1);
+	ImGui::DragFloat3("Pos Z Up", &cubeMapDirections[4].up.x ,1, -1, 1);
+	ImGui::DragFloat3("Neg Z", &cubeMapDirections[5].target.x,1, -1, 1);
+	ImGui::DragFloat3("Neg Z Up", &cubeMapDirections[5].up.x ,1, -1, 1);
 	ImGui::End();
 }
 
@@ -270,16 +308,24 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	//shadowMap->BindTexture(5);
 	// for each camera in each object, draw to that cameras frame buffer
 
-	// Update the camera VPM and also the culling frustum if being used.
-	c->UpdateViewProjectionMatrix();
-	if (frustumCullingCamera != nullptr)
+	//if (Input::Keyboard(GLFW_KEY_5).Pressed()) // This is just running natively so as to keep things moving whilst it's in development.
 	{
-		if(c != frustumCullingCamera) frustumCullingCamera->UpdateViewProjectionMatrix();
-
-		frustumCullingCamera->UpdateFrustum();
+		currentPassIsStatic = true;
+		currentPassIsSplit = true;
+		RenderSceneShadowCubeMaps(scene);
 	}
+	currentPassIsStatic = false;
+	currentPassIsSplit = true;
+	RenderSceneShadowCubeMaps(scene);
+	currentPassIsSplit = false;
+
+
+	// Prepare to render scene from our main camera
+	if (frustumCullingEnabled) cullingFrustum = &frustumCullingCamera->frustum;
+	else cullingFrustum = nullptr;
 	vec3 cameraPosition = c->GetWorldSpacePosition();
 	
+	// Render Scene SSAO Pre-Pass
 	FrameBuffer* blurBufferUsed = nullptr; // store this outside so we can assign it based on whether we blurred, and which blur buffer we used.
 	if (ssaoEnabled)
 	{
@@ -367,7 +413,7 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		else blurBufferUsed = ssaoFBO;
 	}
 
-	// Do normal render pass
+	// Render Scene Opaque Pass
 	frameBufferRaw->BindTarget();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	for (auto& o : scene->objects)
@@ -397,6 +443,54 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	sampleIndex++;
 	if (sampleIndex == 100)
 		sampleIndex = 0;
+}
+
+void SceneRenderer::RenderSceneShadowCubeMaps(Scene* scene)
+{
+	// if not prepass then we blit the prepasses to the regular pass, then those are the targets we're rendering (adding) too
+	glDisable(GL_BLEND);
+	if (!currentPassIsStatic)
+	{
+		// blit the preepass to the active
+		int width = pointShadowMap[0]->GetWidth();
+		int height = pointShadowMap[0]->GetHeight();
+
+		for (int i = 0; i < scene->m_pointLights.size(); i++)
+		{
+			glCopyImageSubData(pointShadowMap[i]->m_depthID, GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0, pointShadowMap2[i]->m_depthID, GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0, width, height, 6);
+		}
+
+	}
+
+	// Render shadow maps for each point light
+	for (int light = 0; light < scene->m_pointLights.size(); light++)
+	{
+		vec3 lightPosition = scene->m_pointLights[light].position;
+		// Render to each side of the cube face.
+		for (int i = 0; i < 6; i++)
+		{
+			if (currentPassIsStatic)
+			{
+				pointShadowMap[light]->BindTarget(cubeMapDirections[i].CubemapFace);
+				glClear(GL_DEPTH_BUFFER_BIT);
+			}
+			else pointShadowMap2[light]->BindTarget(cubeMapDirections[i].CubemapFace);
+			
+			// Build the cubeMap projection and frustum
+			mat4 projection = glm::perspective(glm::radians(FOV), aspect, nearNum, farNum);
+			mat4 view = glm::lookAt(lightPosition, lightPosition + cubeMapDirections[i].target, cubeMapDirections[i].up);
+			mat4 lightVP = projection * view;
+			CameraFrustum cubeMapFrustum = CameraFrustum::GetFrustumFromVPMatrix(lightVP);
+			cullingFrustum = &cubeMapFrustum;
+
+			// Render scene
+			for (auto& o : scene->objects)
+				o->Draw(lightVP, lightPosition, Component::DrawMode::ShadowCubeMapping);
+
+		}
+	}
+	FrameBuffer::UnBindTarget();
+	glEnable(GL_BLEND);
 }
 
 void SceneRenderer::RenderSceneShadowMaps(Scene* scene, ComponentCamera* camera)
@@ -471,7 +565,7 @@ void SceneRenderer::DrawBackBuffer()
 
 bool SceneRenderer::ShouldCull(vec3 position)
 {
-	return frustumCullingCamera->IsPointInFrustum(position, frustumCullingForgiveness);
+	return !CameraFrustum::IsPointInFrustum(position, *cullingFrustum, frustumCullingForgiveness);
 }
 
 void SceneRenderer::SetCullingCamera(int index)

@@ -323,6 +323,9 @@
     <ClCompile Include="SceneRenderer.cpp">
       <Filter>Source Files\Application\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Primitives.cpp">
+      <Filter>Source Files\Application\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
