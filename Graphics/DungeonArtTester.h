@@ -82,6 +82,7 @@ namespace Crawl
 		vector<string> stagingTextures;
 
 		vector<string> models;
+		string selectedModel;
 	};
 
 	void ModelDropCallback(GLFWwindow* window, int count, const char** paths);

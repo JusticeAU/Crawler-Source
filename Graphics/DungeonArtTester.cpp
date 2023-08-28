@@ -213,12 +213,15 @@ void Crawl::ArtTester::DrawGUIStaging()
 
 void Crawl::ArtTester::DrawModelSelector()
 {
-	if (ImGui::BeginCombo("Load Existing Model", "Select"))
+	ImGui::SetNextWindowSize({ 600, 300 });
+	if (ImGui::BeginCombo("Load Existing Model", selectedModel == "" ? "Select Object" : selectedModel.c_str()))
 	{
 		for (auto& path : models)
 		{
-			if (ImGui::Selectable(path.c_str(), false))
+			bool selected = path == selectedModel;
+			if (ImGui::Selectable(path.c_str(), selected))
 			{
+				selectedModel = path;
 				model->markedForDeletion = true;
 				renderer->markedForDeletion = true;
 				if(animator)
@@ -415,6 +418,7 @@ void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)
 		case FileType::Model:
 		{
 			LogUtils::Log("Dropped a Model file");
+			selectedModel = "";
 			ModelManager::s_instance->LoadFromFile(filepath.c_str(), Crawl::CRAWLER_TRANSFORM);
 			model = (ComponentModel*)Scene::s_instance->objects[1]->GetComponent(Component_Model);
 			renderer = (ComponentRenderer*)Scene::s_instance->objects[1]->GetComponent(Component_Renderer);
