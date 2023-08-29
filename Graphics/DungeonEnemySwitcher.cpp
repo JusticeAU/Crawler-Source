@@ -64,7 +64,6 @@ void Crawl::DungeonEnemySwitcher::Update()
 				// This could use a big ol tidy and clarification
 				LogUtils::Log("Swapping with Chaser");
 				DungeonEnemyChase* chaser = dungeon->GetEnemyChaseAtPosition(tile->position);
-				(tile->position);
 				ivec2 newPos = chaser->position;
 				chaser->position = position;
 				position = newPos;
@@ -78,6 +77,7 @@ void Crawl::DungeonEnemySwitcher::Update()
 				chaser->object->SetLocalRotationZ(orientationEulers[chaser->facing]);
 				chaser->targetPosition = dungeonPosToObjectScale(chaser->position);
 				chaser->oldPosition = dungeonPosToObjectScale(chaser->position);
+				chaser->positionWant = chaser->position;
 				return;
 			}
 			else if (dungeon->GetMirrorAt(tile->position))

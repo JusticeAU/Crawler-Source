@@ -237,7 +237,6 @@ void Application::Update(float delta)
 		Scene::s_editorCamera->DrawGUI();
 		dungeonEditor->Update();
 		dungeonEditor->DrawGUI();
-		Scene::s_instance->renderer->DrawGUI();
 		break;
 	}
 	case Mode::Art:
@@ -261,6 +260,7 @@ void Application::Update(float delta)
 		AudioManager::DrawGUI();
 		Scene::s_instance->DrawGUI();
 		Scene::s_instance->renderer->DrawGUI();
+		Scene::s_instance->renderer->DrawShadowCubeMappingGUI();
 		Scene::s_editorCamera->Update(delta);
 		Scene::s_editorCamera->DrawGUI();
 		break;
@@ -268,7 +268,6 @@ void Application::Update(float delta)
 
 	}
 
-	Scene::s_instance->renderer->DrawShadowCubeMappingGUI();
 
 	Input::Update();
 
