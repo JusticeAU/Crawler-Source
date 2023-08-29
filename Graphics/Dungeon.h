@@ -196,11 +196,11 @@ namespace Crawl
 		FACING_INDEX defaultPlayerStartOrientation = EAST_INDEX;
 		
 		bool playerHasKnife = false;
-		bool playerCanKickBox = false;
+		bool playerCanKickBox = true;
 		bool playerCanPushBox = false;
 		bool playerTurnIsFree = true;
-		bool playerInteractIsFree = true;
-		bool switchersMustBeLookedAt = true;
+		bool playerInteractIsFree = false;
+		bool switchersMustBeLookedAt = false;
 		bool playerCanPushMirror = false;
 
 		std::vector<DungeonInteractableLever*> interactables;

@@ -1456,13 +1456,7 @@ void Crawl::Dungeon::ClearDungeon()
 	dungeonFileName = "";
 	dungeonFilePath = "";
 	defaultPlayerStartPosition = { 0,0 };
-	defaultPlayerStartOrientation = EAST_INDEX;		bool playerHasKnife = false;
-	playerCanKickBox = false;
-	playerCanPushBox = false;
-	playerTurnIsFree = true;
-	playerInteractIsFree = true;
-	switchersMustBeLookedAt = true;
-	playerCanPushMirror = false;
+	defaultPlayerStartOrientation = EAST_INDEX;
 	
 	serialised.clear();
 
@@ -1509,13 +1503,15 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 	dungeon_serialised["version"] = 1;
 	dungeon_serialised["defaultPosition"] = defaultPlayerStartPosition;
 	dungeon_serialised["defaultOrientation"] = defaultPlayerStartOrientation;
-	dungeon_serialised["playerTurnIsFree"] = playerTurnIsFree;
+
+	// These settings are now just stored on the player and locked in.
+	/*dungeon_serialised["playerTurnIsFree"] = playerTurnIsFree;
 	dungeon_serialised["playerHasKnife"] = playerHasKnife;
 	dungeon_serialised["playerCanKickBox"] = playerCanKickBox;
 	dungeon_serialised["playerCanPushBox"] = playerCanPushBox;
 	dungeon_serialised["playerInteractIsFree"] = playerInteractIsFree;
 	dungeon_serialised["switchersMustBeLookedAt"] = switchersMustBeLookedAt;
-	dungeon_serialised["playerCanPushMirror"] = playerCanPushMirror;
+	dungeon_serialised["playerCanPushMirror"] = playerCanPushMirror;*/
 
 
 	for (auto& x : tiles)
@@ -1617,7 +1613,8 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	else
 		defaultPlayerStartOrientation = EAST_INDEX;
 
-	if (serialised.contains("playerTurnIsFree"))
+	// Player settings are no longer stored in dungeon files.
+	/*if (serialised.contains("playerTurnIsFree"))
 		serialised.at("playerTurnIsFree").get_to(playerTurnIsFree);
 	else
 		playerTurnIsFree = false;
@@ -1650,7 +1647,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	if (serialised.contains("playerCanPushMirror"))
 		serialised.at("playerCanPushMirror").get_to(playerCanPushMirror);
 	else
-		playerCanPushMirror = false;
+		playerCanPushMirror = false;*/
 
 
 	auto& tiles_json = serialised["tiles"];
