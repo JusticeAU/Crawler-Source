@@ -213,8 +213,7 @@ void Crawl::ArtTester::DrawGUIStaging()
 
 void Crawl::ArtTester::DrawModelSelector()
 {
-	ImGui::SetNextWindowSize({ 600, 300 });
-	if (ImGui::BeginCombo("Load Existing Model", selectedModel == "" ? "Select Object" : selectedModel.c_str()))
+	if (ImGui::BeginCombo("Load Existing Model", selectedModel == "" ? "Select Object" : selectedModel.c_str(), ImGuiComboFlags_HeightLarge))
 	{
 		for (auto& path : models)
 		{
@@ -235,6 +234,7 @@ void Crawl::ArtTester::DrawModelSelector()
 				if(animator) // If there is an animator, force it to update so that there's a 'current' animation created.
 					animator->Update(0);
 			}
+			if (selected) ImGui::SetItemDefaultFocus();
 		}
 		ImGui::EndCombo();
 	}
