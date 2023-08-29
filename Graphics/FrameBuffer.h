@@ -14,9 +14,11 @@ public:
 		PostProcess,	// same as above but no depth/stencil buffer
 		ObjectPicker,	// rgb32f, has depth buffer, viewport resolution.
 		ShadowMap,
+		ShadowCubeMap,
 		SSAOgBuffer,
 		SSAOColourBuffer
 	};
+
 
 public:
 	FrameBuffer(Type type);
@@ -27,6 +29,7 @@ public:
 	const FrameBuffer& operator=(const FrameBuffer& other) = delete;
 
 	void BindTarget();
+	void BindTarget(GLenum cubeFace);
 	static void UnBindTarget() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 
 	void BindTexture(int texture);
@@ -56,7 +59,7 @@ public:
 	void Resize(); // Resizes to view port size
 
 	unsigned int GetObjectID(int x, int y);
-protected:
+public:
 	bool m_primaryTarget = false; // if true MSAA being true or false will decide what FBO type this target gets and how it behaves in render passes.
 	Type m_type;
 	GLuint m_fbID;

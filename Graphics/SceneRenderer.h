@@ -6,6 +6,7 @@ class Scene;
 class ComponentCamera;
 class FrameBuffer;
 class Texture;
+class CameraFrustum;
 
 class ShaderProgram;
 class Object;
@@ -19,9 +20,11 @@ public:
 	SceneRenderer();
 
 	void DrawGUI();
+	void DrawShadowCubeMappingGUI();
 	void DrawShadowMappingGUI(); // not used right now.
 
 	void RenderScene(Scene* scene, ComponentCamera* cameraView);
+	void RenderSceneShadowCubeMaps(Scene* scene);
 	void RenderSceneShadowMaps(Scene* scene, ComponentCamera* camera);
 	void RenderSceneObjectPick(Scene* scene, ComponentCamera* camera);
 	void RenderSceneGizmos(Scene* scene, ComponentCamera* camera);
@@ -34,7 +37,10 @@ public:
 	static bool msaaEnabled;
 	static bool ssaoEnabled;
 	static ComponentCamera* frustumCullingCamera;
+	static CameraFrustum* cullingFrustum;
 	static float frustumCullingForgiveness;
+	static bool currentPassIsStatic;
+	static bool currentPassIsSplit;
 
 protected:
 	// Render Buffers
@@ -96,5 +102,33 @@ protected:
 	float renderLastFrameTime = 0.0f;
 	float renderTotalSamples[100];
 	int sampleIndex = 0;
+
+
+	// Point Light Shadow Map Dev
+public:
+	static FrameBuffer* pointShadowMap[4];
+	static FrameBuffer* pointShadowMap2[4];
+
+	struct CameraDirection
+	{
+		GLenum CubemapFace;
+		glm::vec3 target;
+		glm::vec3 up;
+	};
+
+	CameraDirection cubeMapDirections[6] =
+	{
+		{ GL_TEXTURE_CUBE_MAP_POSITIVE_X, vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f) },
+		{ GL_TEXTURE_CUBE_MAP_NEGATIVE_X, vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f) },
+		{ GL_TEXTURE_CUBE_MAP_POSITIVE_Y, vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f) },
+		{ GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f) },
+		{ GL_TEXTURE_CUBE_MAP_POSITIVE_Z, vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f) },
+		{ GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f) }
+	};
+
+	float FOV = 90.0f;
+	float aspect = 1.0f;
+	float nearNum = 0.000f;
+	float farNum = 15.0f;
 };
 

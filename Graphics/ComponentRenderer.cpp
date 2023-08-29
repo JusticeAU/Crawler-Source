@@ -39,11 +39,17 @@ ComponentRenderer::ComponentRenderer(Object* parent, nlohmann::ordered_json j) :
 
 void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 {
-	if (SceneRenderer::frustumCullingCamera)
+	// check if this thing should draw in this pass or not
+	if (SceneRenderer::currentPassIsSplit)
+	{
+		if (componentParent->isStatic != SceneRenderer::currentPassIsStatic) return;
+	}
+
+	// The culling Frustum should be set before any draw pass. If there is one set, then it is tested against.
+	if (SceneRenderer::cullingFrustum)
 	{
 		vec3 modelPos = componentParent->GetWorldSpacePosition();
-		if(!SceneRenderer::ShouldCull(modelPos))
-			return;
+		if(SceneRenderer::ShouldCull(modelPos)) return;
 	}
 
 	if (model != nullptr && materialArray[0] != nullptr) // At minimum we need a model and a shader to draw something.
@@ -99,6 +105,24 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 					return;
 
 				ShaderProgram* shader = isAnimated ? ShaderManager::GetShaderProgram("engine/shader/simpleDepthShaderSkinned") : ShaderManager::GetShaderProgram("engine/shader/simpleDepthShader");
+				shader->Bind();
+				glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
+
+				// Positions and Rotations
+				shader->SetMatrixUniform("pvmMatrix", pvm);
+				shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
+				shader->SetVector3Uniform("cameraPosition", position);
+				if (isAnimated)
+					BindBoneTransform();
+				DrawModel();
+				break;
+			}
+			case DrawMode::ShadowCubeMapping:
+			{
+				if (!castsShadows)
+					return;
+
+				ShaderProgram* shader = isAnimated ? ShaderManager::GetShaderProgram("engine/shader/lightPointShadowMap") : ShaderManager::GetShaderProgram("engine/shader/lightPointShadowMap");
 				shader->Bind();
 				glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
 
@@ -316,7 +340,14 @@ void ComponentRenderer::ApplyMaterials()
 			TextureManager::GetTexture("engine/texture/black1x1.tga")->Bind(9);
 			material->shader->SetIntUniform("emissiveMap", 9);
 		}
-
+		SceneRenderer::pointShadowMap2[0]->BindTexture(11);
+		material->shader->SetIntUniform("shadowMap0", 11);
+		SceneRenderer::pointShadowMap2[1]->BindTexture(12);
+		material->shader->SetIntUniform("shadowMap1", 12);
+		SceneRenderer::pointShadowMap2[2]->BindTexture(13);
+		material->shader->SetIntUniform("shadowMap2", 13);
+		SceneRenderer::pointShadowMap2[3]->BindTexture(14);
+		material->shader->SetIntUniform("shadowMap3", 14);
 	}
 }
 

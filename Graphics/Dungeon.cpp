@@ -260,6 +260,7 @@ void Crawl::Dungeon::CreateTileObject(DungeonTile* tile)
 		tile->object->markedForDeletion = true;
 
 	Object* obj = Scene::s_instance->DuplicateObject(tile_template, tilesParentObject);
+	obj->isStatic = true;
 	
 	// Set up wall variants
 	for (int i = 0; i < 4; i++)
@@ -269,6 +270,7 @@ void Crawl::Dungeon::CreateTileObject(DungeonTile* tile)
 		{
 			ordered_json wall = ReadJSONFromDisk(wallVariantPaths[0]); // There are no variants right now.
 			obj->children[i + 1]->children[0]->LoadFromJSON(wall); // directionIndex+1 because this object has the floor tile in index 0;
+			obj->children[i + 1]->children[0]->isStatic = true;
 		}
 	}
 	obj->SetLocalPosition({ tile->position.x * DUNGEON_GRID_SCALE, tile->position.y * DUNGEON_GRID_SCALE , 0 });
@@ -2171,6 +2173,7 @@ void Crawl::Dungeon::UpdatePillarsForTileCoordinate(ivec2 coordinate)
 				pillarObj->LoadFromJSON(ReadJSONFromDisk("crawler/model/tile_pillar.object"));
 				pillarObj->SetLocalPosition(dungeonPosToObjectScale(coordinate));
 				pillarObj->AddLocalPosition({ directionsDiagonal[i].x, directionsDiagonal[i].y, 0 });
+				pillarObj->isStatic = true;
 				pillars.emplace(pillarCoordinate, pillarObj);
 			}
 		}

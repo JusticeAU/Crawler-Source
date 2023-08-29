@@ -33,6 +33,7 @@ public:
 		Standard,
 		ObjectPicking,
 		ShadowMapping,
+		ShadowCubeMapping,
 		SSAOgBuffer,
 		SSAOColourPass
 	};
