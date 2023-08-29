@@ -561,7 +561,7 @@ void Crawl::Dungeon::DoActivate(unsigned int id, bool on)
 bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer)
 {
 	bool didDamage = false;
-	CreateDamageVisual(position, fromPlayer);
+	//CreateDamageVisual(position, fromPlayer);
 	// For now it's just the player, but this might need to turn in to "damagables"
 	// For prototype, lets just go with player, and vectors of things that can take damage (enemies)
 	if (player->GetPosition() == position)
@@ -1313,7 +1313,7 @@ Crawl::DungeonEnemySlug* Crawl::Dungeon::CreateSlug(ivec2 position, FACING_INDEX
 	slug->facing = direction;
 	slug->dungeon = this;
 	slug->object = Scene::CreateObject();
-	slug->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/slug.object"));
+	slug->object->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_sawarina.object"));
 	slug->object->AddLocalPosition(dungeonPosToObjectScale(position));
 	slug->object->SetLocalRotationZ(orientationEulers[direction]);
 	slugs.push_back(slug);

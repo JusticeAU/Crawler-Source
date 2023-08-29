@@ -39,7 +39,7 @@ namespace Crawl
 		void UpdateVisuals(float delta);
 
 		// visuals
-		float moveSpeed = 0.25f;
+		float moveSpeed = 1.0f;
 		float moveCurrent = 0.0f;
 		glm::vec3 oldPosition;
 		glm::vec3 targetPosition;
