@@ -1098,6 +1098,8 @@ Crawl::DungeonEnemyChase* Crawl::Dungeon::CreateEnemyChase(ivec2 position, FACIN
 	chaser->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/chase.object"));
 	chaser->object->AddLocalPosition(dungeonPosToObjectScale(position));
 	chaser->object->SetLocalRotationZ(orientationEulers[facing]);
+	chaser->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_chaser.object"));
+	chaser->object->children[0]->SetLocalRotationZ(180);
 	chasers.emplace_back(chaser);
 
 	DungeonTile* tile = GetTile(position);
@@ -1158,6 +1160,8 @@ Crawl::DungeonEnemySwitcher* Crawl::Dungeon::CreateEnemySwitcher(ivec2 position,
 	switcher->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/switch.object"));
 	switcher->object->AddLocalPosition(dungeonPosToObjectScale(position));
 	switcher->object->SetLocalRotationZ(orientationEulers[facing]);
+	switcher->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_switchbitch.object"));
+	switcher->object->children[0]->SetLocalRotationZ(180);
 	switchers.emplace_back(switcher);
 
 	DungeonTile* tile = GetTile(position);
@@ -1313,9 +1317,11 @@ Crawl::DungeonEnemySlug* Crawl::Dungeon::CreateSlug(ivec2 position, FACING_INDEX
 	slug->facing = direction;
 	slug->dungeon = this;
 	slug->object = Scene::CreateObject();
-	slug->object->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_sawarina.object"));
+	slug->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/slug.object"));
 	slug->object->AddLocalPosition(dungeonPosToObjectScale(position));
 	slug->object->SetLocalRotationZ(orientationEulers[direction]);
+	slug->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_sawarina.object"));
+	slug->object->children[0]->SetLocalRotationZ(180);
 	slugs.push_back(slug);
 
 	DungeonTile* tile = GetTile(position);
