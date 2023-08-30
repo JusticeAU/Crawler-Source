@@ -911,10 +911,54 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
 			}
 		ImGui::EndCombo();
 	}
-	if(ImGui::InputText("To Dungeon", &selectedTransporter->toDungeon))
-		MarkUnsavedChanges();
-	if(ImGui::InputText("To Transporter", &selectedTransporter->toTransporter))
-		MarkUnsavedChanges();
+
+	if (ImGui::BeginCombo("To Dungeon", selectedTransporter->toDungeon.c_str()))
+	{
+		for (auto d : fs::recursive_directory_iterator(subfolder))
+		{
+			bool selected = false;
+			string folder = d.path().relative_path().parent_path().string();
+			if (d.path().has_extension() && d.path().extension() == extension)
+			{
+				string foundDungeonPath = folder + "/" + d.path().stem().string();
+				if (foundDungeonPath == selectedTransporter->toDungeon) selected = true;
+				if (ImGui::Selectable(foundDungeonPath.c_str(), selected))
+				{
+					if (!selected)
+					{
+						selectedTransporter->toDungeon = foundDungeonPath;
+						RefreshSelectedTransporterData(foundDungeonPath + extension);
+						MarkUnsavedChanges();
+					}
+				}
+				if (selected) ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+
+	if (!selectedTransporterToDungeonLoaded) ImGui::BeginDisabled();
+	if (ImGui::BeginCombo("To Transporter", selectedTransporter->toTransporter.c_str()))
+	{
+		for (auto& transporter : selectedTransporterToDungeonJSON["transporters"])
+		{
+			bool selected = false;
+			string transporterName;
+			transporter["name"].get_to(transporterName);
+			if (selectedTransporter->toTransporter == transporterName) selected = true;
+			if (ImGui::Selectable(transporterName.c_str(), selected))
+			{
+				if (!selected)
+				{
+					selectedTransporter->toTransporter = transporterName;
+					MarkUnsavedChanges();
+				}
+			}
+			if (selected) ImGui::SetItemDefaultFocus();
+		}
+		ImGui::EndCombo();
+	}
+	if (!selectedTransporterToDungeonLoaded) ImGui::EndDisabled();
 
 	if (ImGui::Button("Delete"))
 		ImGui::OpenPopup("delete_transporter_confirm");
@@ -1550,6 +1594,7 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 		{
 			selectedTransporter = dungeon->transporterPlates[i];
 			selectedTileOccupied = true;
+			RefreshSelectedTransporterData(selectedTransporter->toDungeon + extension);
 		}
 	}
 
@@ -1633,6 +1678,16 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 		if (dungeon->decorations[i]->position == selectedTile->position)
 			selectedTileDecorations.push_back(dungeon->decorations[i]);
 	}
+}
+void Crawl::DungeonEditor::RefreshSelectedTransporterData(string dungeonPath)
+{
+	selectedTransporterToDungeonJSON.clear();
+	if (fs::exists(dungeonPath))
+	{
+		selectedTransporterToDungeonJSON = ReadJSONFromDisk(dungeonPath);
+		selectedTransporterToDungeonLoaded = true;
+	}
+	else LogUtils::Log("Warning: ToDungeon on selected Transporter does not exist");
 }
 void Crawl::DungeonEditor::RefreshAvailableDecorations()
 {

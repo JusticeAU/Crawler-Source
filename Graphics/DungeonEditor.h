@@ -55,6 +55,7 @@ namespace Crawl
 		void UpdateModeSlugPathEdit();
 
 		void RefreshSelectedTile();
+		void RefreshSelectedTransporterData(string dungeonPath);
 		void RefreshAvailableDecorations();
 
 		int GetNextAvailableLeverID();
@@ -129,6 +130,8 @@ namespace Crawl
 
 		DungeonTransporter* selectedTransporter = nullptr;
 		bool selectedTransporterWindowOpen = false;
+		bool selectedTransporterToDungeonLoaded = false;
+		ordered_json selectedTransporterToDungeonJSON;
 
 		DungeonCheckpoint* selectedCheckpoint = nullptr;
 		bool selectedCheckpointWindowOpen = false;
