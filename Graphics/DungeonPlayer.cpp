@@ -265,6 +265,11 @@ void Crawl::DungeonPlayer::SetRespawn(ivec2 position, FACING_INDEX orientation)
 	respawnOrientation = orientation;
 }
 
+void Crawl::DungeonPlayer::ClearRespawn()
+{
+	hasRespawnLocation = false;
+}
+
 void Crawl::DungeonPlayer::Respawn()
 {
 	AudioManager::PlaySound("crawler/sound/load/start.wav");

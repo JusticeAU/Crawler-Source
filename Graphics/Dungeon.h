@@ -188,7 +188,10 @@ namespace Crawl
 	public:
 		ordered_json serialised;
 		string dungeonFileExtension = ".dungeon";
+		string dungeonFileLocation = "crawler/dungeon/";
+
 		string dungeonFileName = "";
+		string dungeonSubFolder = "";
 		string dungeonFilePath = "";
 
 		unsigned int turn = 0;

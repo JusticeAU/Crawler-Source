@@ -57,6 +57,7 @@ namespace Crawl
 		void RefreshSelectedTile();
 		void RefreshSelectedTransporterData(string dungeonPath);
 		void RefreshAvailableDecorations();
+		void RefreshDungeonFileNames();
 
 		int GetNextAvailableLeverID();
 		int GetNextAvailableDoorID();
@@ -82,8 +83,6 @@ namespace Crawl
 		glm::ivec2 gridSelected = { 0, 0 };
 
 		// File Operations
-		std::string subfolder = "crawler/dungeon/";
-		std::string extension = ".dungeon";
 		std::string dungeonFileName = "new_dungeon";
 		std::string dungeonFileNameSaveAs = "";
 		std::string dungeonFilePath = "";

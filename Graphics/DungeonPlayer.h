@@ -29,6 +29,7 @@ namespace Crawl
 		void Teleport(ivec2 position);
 		void Orient(FACING_INDEX facing);
 		void SetRespawn(ivec2 position, FACING_INDEX orientation);
+		void ClearRespawn();
 		void Respawn();
 
 		void MakeCheckpoint();

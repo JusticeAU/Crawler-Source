@@ -1455,6 +1455,7 @@ void Crawl::Dungeon::ClearDungeon()
 {
 	dungeonFileName = "";
 	dungeonFilePath = "";
+	dungeonSubFolder = "";
 	defaultPlayerStartPosition = { 0,0 };
 	defaultPlayerStartOrientation = EAST_INDEX;
 	
@@ -1490,6 +1491,9 @@ void Crawl::Dungeon::SetDungeonNameFromFileName(string filename)
 	int extensionStart = filename.find_last_of('.');
 	string name = filename.substr(lastSlash + 1, extensionStart - (lastSlash + 1));
 	dungeonFileName = name;
+	int subFolderSize = lastSlash - dungeonFileLocation.size();
+	if (subFolderSize < 0) subFolderSize = 0;
+	dungeonSubFolder = filename.substr(dungeonFileLocation.size(), subFolderSize);
 	dungeonFilePath = filename;
 }
 

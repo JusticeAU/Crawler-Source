@@ -43,8 +43,7 @@ void Crawl::DungeonEditor::Activate()
 	RefreshAvailableDecorations();
 
 	// It's possible that gameplay took us in to another dungeon, and this, that is the one that should now be loaded.
-	dungeonFileName = dungeon->dungeonFileName;
-	dungeonFilePath = dungeon->dungeonFilePath;
+	RefreshDungeonFileNames();
 }
 
 void Crawl::DungeonEditor::Deactivate()
@@ -108,6 +107,7 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	{
 		TileEditUnselectAll();
 		dungeon->ResetDungeon();
+		dungeon->player->ClearRespawn();
 		dungeon->player->Teleport(dungeon->defaultPlayerStartPosition);
 		dungeon->player->Orient(dungeon->defaultPlayerStartOrientation);
 		dirtyGameplayScene = false;
@@ -163,7 +163,7 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	if (ImGui::BeginPopupModal("Save As", 0, ImGuiWindowFlags_NoCollapse & ImGuiWindowFlags_NoResize & ImGuiWindowFlags_NoMove))
 	{
 		ImGui::PushID("save_popup");
-		ImGui::InputText(extension.c_str(), &dungeonFileNameSaveAs);
+		ImGui::InputText(dungeon->dungeonFileExtension.c_str(), &dungeonFileNameSaveAs);
 		if (ImGui::Button("Save"))
 		{
 			if (FileUtils::CheckFileExists(GetDungeonFilePath()))
@@ -211,11 +211,12 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	{
 		ImGui::SameLine();
 		ImGui::SeparatorText("Dungeon Name");
-		for (auto d : fs::recursive_directory_iterator(subfolder))
+		for (auto d : fs::recursive_directory_iterator(dungeon->dungeonFileLocation))
 		{
-			if (d.path().has_extension() && d.path().extension() == extension)
+			if (d.path().has_extension() && d.path().extension() == dungeon->dungeonFileExtension)
 			{
 				string foundDungeonPath = d.path().relative_path().string();
+				std::replace(foundDungeonPath.begin(), foundDungeonPath.end(), '\\', '/');
 				if (ImGui::Selectable(foundDungeonPath.c_str()))
 				{
 					if (unsavedChanges)
@@ -914,11 +915,11 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
 
 	if (ImGui::BeginCombo("To Dungeon", selectedTransporter->toDungeon.c_str()))
 	{
-		for (auto d : fs::recursive_directory_iterator(subfolder))
+		for (auto d : fs::recursive_directory_iterator(dungeon->dungeonFileLocation))
 		{
 			bool selected = false;
 			string folder = d.path().relative_path().parent_path().string();
-			if (d.path().has_extension() && d.path().extension() == extension)
+			if (d.path().has_extension() && d.path().extension() == dungeon->dungeonFileExtension)
 			{
 				string foundDungeonPath = folder + "/" + d.path().stem().string();
 				if (foundDungeonPath == selectedTransporter->toDungeon) selected = true;
@@ -927,7 +928,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
 					if (!selected)
 					{
 						selectedTransporter->toDungeon = foundDungeonPath;
-						RefreshSelectedTransporterData(foundDungeonPath + extension);
+						RefreshSelectedTransporterData(foundDungeonPath + dungeon->dungeonFileExtension);
 						MarkUnsavedChanges();
 					}
 				}
@@ -1594,7 +1595,7 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 		{
 			selectedTransporter = dungeon->transporterPlates[i];
 			selectedTileOccupied = true;
-			RefreshSelectedTransporterData(selectedTransporter->toDungeon + extension);
+			RefreshSelectedTransporterData(selectedTransporter->toDungeon + dungeon->dungeonFileExtension);
 		}
 	}
 
@@ -1700,6 +1701,15 @@ void Crawl::DungeonEditor::RefreshAvailableDecorations()
 			if(d.path().string().find("decoration") != string::npos) decorations.push_back(d.path().generic_string());
 		}
 	}
+}
+
+void Crawl::DungeonEditor::RefreshDungeonFileNames()
+{
+	dungeonFileName = "";
+	if ((dungeon->dungeonSubFolder.size() > 0)) dungeonFileName += dungeon->dungeonSubFolder + "/";
+	dungeonFileName += dungeon->dungeonFileName;
+	dungeonFileNameSaveAs = dungeonFileName;
+	dungeonFilePath = dungeon->dungeonFilePath;
 }
 
 int Crawl::DungeonEditor::GetNextAvailableLeverID()
@@ -1840,10 +1850,9 @@ void Crawl::DungeonEditor::UpdateSurroundingTiles(ivec2 position)
 
 void Crawl::DungeonEditor::Save()
 {
-	dungeonFilePath = GetDungeonFilePath();
+	dungeonFilePath = dungeon->dungeonFileLocation + dungeonFileNameSaveAs + dungeon->dungeonFileExtension;
 	dungeon->Save(dungeonFilePath);
-	dungeonFileName = dungeon->dungeonFileName;
-	dungeonFileNameSaveAs = dungeon->dungeonFileName;
+	RefreshDungeonFileNames();
 	dungeonWantLoad = "";
 	UnMarkUnsavedChanges();
 }
@@ -1852,9 +1861,7 @@ void Crawl::DungeonEditor::Load(string path)
 {	
 	TileEditUnselectAll();
 	dungeon->Load(path);
-	dungeonFileName = dungeon->dungeonFileName;
-	dungeonFileNameSaveAs = dungeon->dungeonFileName;
-	dungeonFilePath = path;
+	RefreshDungeonFileNames();
 	dungeonWantLoad = "";
 	UnMarkUnsavedChanges();
 }
@@ -1862,9 +1869,9 @@ void Crawl::DungeonEditor::Load(string path)
 std::string Crawl::DungeonEditor::GetDungeonFilePath()
 {
 	std::string filename;
-	filename += subfolder;
+	filename += dungeon->dungeonFileLocation;
 	filename += dungeonFileNameSaveAs;
-	filename += extension;
+	filename += dungeon->dungeonFileExtension;
 	return filename;
 }
 

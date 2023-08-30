@@ -10,8 +10,17 @@ using std::string;
 using nlohmann::json;
 using nlohmann::ordered_json;
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 static void WriteJSONToDisk(string filename, ordered_json json)
 {
+	// Test folders exist and create if not
+	int index = filename.find_last_of('/');
+	string directory = filename.substr(0, index);
+	fs::path path = directory;
+	fs::create_directories(path);
+
 	std::fstream file(filename, std::ios::out);
 	file << std::setw(2) << json;
 	file.close();
