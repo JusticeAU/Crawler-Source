@@ -53,7 +53,7 @@ namespace Crawl
 			else return false;
 		}
 
-		bool SetTileMask(ivec2 position, int mask);
+		bool SetTileMask(ivec2 position, int maskTraverse);
 		DungeonTile* GetTile(ivec2 pos);
 		// Deletes a dungeonTile from the grid. returns true if a deletion happened.
 		bool DeleteTile(ivec2 position);
@@ -152,7 +152,7 @@ namespace Crawl
 		// Calculates the tile mask based on adjacent tiles
 		unsigned int GetAutoTileMask(ivec2 position);
 		// returns pointer to the template tile for the Scene to duplicate.
-		Object* GetTileTemplate(int mask);
+		Object* GetTileTemplate(int maskTraverse);
 		void SetParentTileObject(Object* object);
 
 		static unsigned int GetReverseDirectionMask(unsigned int direction);
@@ -168,7 +168,7 @@ namespace Crawl
 		// After loading a dungeon, this will build it in the Scene graph based on tile adjacency. used on editor and playmode dungeon loading.
 		void BuildSceneFromDungeonLayout();
 
-		const int version = 1; // increment this when the .dungeon file schema changes and ensure backwards compatibility.
+		const int version = 2; // increment this when the .dungeon file schema changes and ensure backwards compatibility.
 		std::map<int, Column> tiles;
 		Object* tile_template;
 		Object* tilesParentObject = nullptr;

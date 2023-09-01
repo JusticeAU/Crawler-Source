@@ -51,6 +51,18 @@ void Crawl::DungeonEditor::Deactivate()
 
 }
 
+void Crawl::DungeonEditor::SetDungeon(Dungeon* dungeonPtr)
+{
+	dungeon = dungeonPtr;
+	wallVarientShortNames.clear();
+	for (auto varient : dungeon->wallVariantPaths)
+	{
+		int lastSlash = varient.find_last_of('/');
+		int extension = varient.find_last_of('.');
+		wallVarientShortNames.push_back(varient.substr(lastSlash + 1, extension - lastSlash -1));
+	}
+}
+
 void Crawl::DungeonEditor::DrawGUI()
 {
 	ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_Always);
@@ -354,22 +366,65 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	ImGui::Checkbox("Occupied", &selectedTile->occupied);
 	ImGui::EndDisabled();
 
-	// Cardinal traversable yes/no
-	unsigned int oldMask = selectedTile->mask;
-	if (ImGui::Checkbox("Open North", &selectedTileOpenWalls[0]))
-		selectedTile->mask += selectedTileOpenWalls[0] ? NORTH_MASK : -NORTH_MASK;
-	if (ImGui::Checkbox("Open South", &selectedTileOpenWalls[1]))
-		selectedTile->mask += selectedTileOpenWalls[1] ? SOUTH_MASK : -SOUTH_MASK;
-	if (ImGui::Checkbox("Open East", &selectedTileOpenWalls[2]))
-		selectedTile->mask += selectedTileOpenWalls[2] ? EAST_MASK : -EAST_MASK;
-	if (ImGui::Checkbox("Open West", &selectedTileOpenWalls[3]))
-		selectedTile->mask += selectedTileOpenWalls[3] ? WEST_MASK : -WEST_MASK;
-	if (oldMask != selectedTile->mask)
+	// Cardinal traversable/see yes/no
+	unsigned int oldMaskTraverse = selectedTile->maskTraverse;
+	if (ImGui::BeginCombo("Can Walk", maskToString[oldMaskTraverse].c_str()))
 	{
-		MarkUnsavedChanges();
-		UpdateWallVariants(selectedTile);
-		dungeon->CreateTileObject(selectedTile);
+		if (ImGui::Checkbox("Can Walk North", &selectedTileUntraversableWalls[0]))
+			selectedTile->maskTraverse += selectedTileUntraversableWalls[0] ? NORTH_MASK : -NORTH_MASK;
+		if (ImGui::Checkbox("Can Walk South", &selectedTileUntraversableWalls[1]))
+			selectedTile->maskTraverse += selectedTileUntraversableWalls[1] ? SOUTH_MASK : -SOUTH_MASK;
+		if (ImGui::Checkbox("Can Walk East", &selectedTileUntraversableWalls[2]))
+			selectedTile->maskTraverse += selectedTileUntraversableWalls[2] ? EAST_MASK : -EAST_MASK;
+		if (ImGui::Checkbox("Can Walk West", &selectedTileUntraversableWalls[3]))
+			selectedTile->maskTraverse += selectedTileUntraversableWalls[3] ? WEST_MASK : -WEST_MASK;
+		ImGui::EndCombo();
 	}
+	if (oldMaskTraverse != selectedTile->maskTraverse) MarkUnsavedChanges();
+
+	unsigned int oldMaskSee = selectedTile->maskSee;
+	if (ImGui::BeginCombo("Can See", maskToString[oldMaskSee].c_str()))
+	{
+		if (ImGui::Checkbox("Can See North", &selectedTileSeeThroughWalls[0]))
+			selectedTile->maskSee += selectedTileSeeThroughWalls[0] ? NORTH_MASK : -NORTH_MASK;
+		if (ImGui::Checkbox("Can See South", &selectedTileSeeThroughWalls[1]))
+			selectedTile->maskSee += selectedTileSeeThroughWalls[1] ? SOUTH_MASK : -SOUTH_MASK;
+		if (ImGui::Checkbox("Can See East", &selectedTileSeeThroughWalls[2]))
+			selectedTile->maskSee += selectedTileSeeThroughWalls[2] ? EAST_MASK : -EAST_MASK;
+		if (ImGui::Checkbox("Can See West", &selectedTileSeeThroughWalls[3]))
+			selectedTile->maskSee += selectedTileSeeThroughWalls[3] ? WEST_MASK : -WEST_MASK;
+		ImGui::EndCombo();
+	}
+	if (oldMaskSee != selectedTile->maskSee) MarkUnsavedChanges();
+
+	// Wall Variants
+	ImGui::Text("Wall Variants");
+	for (int cardinal = 0; cardinal < 4; cardinal++)
+	{
+		ImGui::PushID(cardinal);
+		if (ImGui::BeginCombo(orientationNames[cardinal].c_str(), selectedTile->wallVariants[cardinal] == -1 ? "None" : wallVarientShortNames[selectedTile->wallVariants[cardinal]].c_str())) // lmao yuck
+		{
+			if (ImGui::Selectable("None", -1 == selectedTile->wallVariants[cardinal]))
+			{
+				selectedTile->wallVariants[cardinal] = -1;
+				dungeon->CreateTileObject(selectedTile);
+				MarkUnsavedChanges();
+			}
+
+			for (int i = 0; i < dungeon->wallVariantPaths.size(); i++)
+			{
+				if (ImGui::Selectable(wallVarientShortNames[i].c_str(), i == selectedTile->wallVariants[cardinal]))
+				{
+					selectedTile->wallVariants[cardinal] = i;
+					dungeon->CreateTileObject(selectedTile);
+					MarkUnsavedChanges();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::PopID();
+	}
+
 	// Path finding dev stuff.
 	/*int distance = dungeon->goodPath.size();
 	ImGui::InputInt("Distance", &distance);
@@ -384,22 +439,22 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 
 	// if yes, what wall variant - hidden for now, non-functional
 	/*ImGui::BeginDisabled();
-	if (!selectedTileOpenWalls[0])
+	if (!selectedTileUntraversableWalls[0])
 		ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[0] - 1].c_str());
 	else
 		ImGui::Text("Open");
 
-	if (!selectedTileOpenWalls[1])
+	if (!selectedTileUntraversableWalls[1])
 		ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[1] - 1].c_str());
 	else
 		ImGui::Text("Open");
 
-	if (!selectedTileOpenWalls[2])
+	if (!selectedTileUntraversableWalls[2])
 		ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[2] - 1].c_str());
 	else
 		ImGui::Text("Open");
 
-	if (!selectedTileOpenWalls[3])
+	if (!selectedTileUntraversableWalls[3])
 		ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[3] - 1].c_str());
 	else
 		ImGui::Text("Open");
@@ -1426,15 +1481,16 @@ void Crawl::DungeonEditor::UpdateModeTileBrush()
 			}
 			else
 			{
-				tile->mask = brush_tileMask;
-				if ((tile->mask & 1) != 1) // North Wall
-					tile->wallVariants[0] = 1;
-				if ((tile->mask & 8) != 8) // South Wall
-					tile->wallVariants[1] = 1;
-				if ((tile->mask & 4) != 4) // East Wall
-					tile->wallVariants[2] = 1;
-				if ((tile->mask & 2) != 2) // West Wall
-					tile->wallVariants[3] = 1;
+				tile->maskTraverse = brush_tileMask;
+				tile->maskSee = brush_tileMask;
+				if ((tile->maskTraverse & NORTH_MASK) != NORTH_MASK) // North Wall
+					tile->wallVariants[0] = 0;
+				if ((tile->maskTraverse & EAST_MASK) != EAST_MASK) // East Wall
+					tile->wallVariants[1] = 0;
+				if ((tile->maskTraverse & SOUTH_MASK) != SOUTH_MASK) // South Wall
+					tile->wallVariants[2] = 0;
+				if ((tile->maskTraverse & WEST_MASK) != WEST_MASK) // West Wall
+					tile->wallVariants[3] = 0;
 				dungeon->CreateTileObject(tile);
 			}
 		}
@@ -1549,10 +1605,15 @@ void Crawl::DungeonEditor::UpdateModeSlugPathEdit()
 
 void Crawl::DungeonEditor::RefreshSelectedTile()
 {
-	selectedTileOpenWalls[0] = (selectedTile->mask & 1) == 1; // North Check
-	selectedTileOpenWalls[1] = (selectedTile->mask & 8) == 8; // South Check
-	selectedTileOpenWalls[2] = (selectedTile->mask & 4) == 4; // East Check
-	selectedTileOpenWalls[3] = (selectedTile->mask & 2) == 2; // West Check
+	selectedTileUntraversableWalls[0] = (selectedTile->maskTraverse & NORTH_MASK) == NORTH_MASK; // North Check
+	selectedTileUntraversableWalls[1] = (selectedTile->maskTraverse & SOUTH_MASK) == SOUTH_MASK; // South Check
+	selectedTileUntraversableWalls[2] = (selectedTile->maskTraverse & EAST_MASK) == EAST_MASK; // East Check
+	selectedTileUntraversableWalls[3] = (selectedTile->maskTraverse & WEST_MASK) == WEST_MASK; // West Check
+
+	selectedTileSeeThroughWalls[0] = (selectedTile->maskSee & NORTH_MASK) == NORTH_MASK; // North Check
+	selectedTileSeeThroughWalls[1] = (selectedTile->maskSee & SOUTH_MASK) == SOUTH_MASK; // South Check
+	selectedTileSeeThroughWalls[2] = (selectedTile->maskSee & EAST_MASK) == EAST_MASK; // East Check
+	selectedTileSeeThroughWalls[3] = (selectedTile->maskSee & WEST_MASK) == WEST_MASK; // West Check
 
 	selectedTileOccupied = false;
 
@@ -1800,42 +1861,19 @@ void Crawl::DungeonEditor::UpdateAutoTile(ivec2 position)
 
 	if (tile != nullptr)
 	{
-		tile->mask = dungeon->GetAutoTileMask(tile->position);
-		UpdateWallVariants(tile);
+		tile->maskTraverse = dungeon->GetAutoTileMask(tile->position);
+		tile->maskSee = tile->maskTraverse;
+		SetDefaultWallVarients(tile);
 		dungeon->CreateTileObject(tile);
 	}
 }
 
-void Crawl::DungeonEditor::UpdateWallVariants(DungeonTile* tile)
+void Crawl::DungeonEditor::SetDefaultWallVarients(DungeonTile* tile)
 {
-	if ((tile->mask & 1) != 1) // North Wall
-	{
-		if (tile->wallVariants[0] == 0)
-			tile->wallVariants[0] = (rand() % WALL_VARIANT_COUNT) + 1;
-	}
-	else
-		tile->wallVariants[0] = 0;
-	if ((tile->mask & 8) != 8) // South Wall
-	{
-		if (tile->wallVariants[1] == 0)
-			tile->wallVariants[1] = (rand() % WALL_VARIANT_COUNT) + 1;
-	}
-	else
-		tile->wallVariants[1] = 0;
-	if ((tile->mask & 4) != 4) // East Wall
-	{
-		if (tile->wallVariants[2] == 0)
-			tile->wallVariants[2] = (rand() % WALL_VARIANT_COUNT) + 1;
-	}
-	else
-		tile->wallVariants[2] = 0;
-	if ((tile->mask & 2) != 2) // West Wall
-	{
-		if (tile->wallVariants[3] == 0)
-			tile->wallVariants[3] = (rand() % WALL_VARIANT_COUNT) + 1;
-	}
-	else
-		tile->wallVariants[3] = 0;
+	tile->wallVariants[0] = (tile->maskTraverse & NORTH_MASK) == NORTH_MASK ? -1 : 0;
+	tile->wallVariants[1] = (tile->maskTraverse & EAST_MASK) == EAST_MASK ? -1 : 0;
+	tile->wallVariants[2] = (tile->maskTraverse & SOUTH_MASK) == SOUTH_MASK ? -1 : 0;
+	tile->wallVariants[3] = (tile->maskTraverse & WEST_MASK) == WEST_MASK ? -1 : 0;
 }
 
 void Crawl::DungeonEditor::UpdateSurroundingTiles(ivec2 position)

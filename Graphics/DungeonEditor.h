@@ -25,7 +25,7 @@ namespace Crawl
 		bool requestedGameMode = false;
 		bool dirtyGameplayScene = false;
 
-		void SetDungeon(Dungeon* dungeonPtr) { dungeon = dungeonPtr; }
+		void SetDungeon(Dungeon* dungeonPtr);
 		void DrawGUI();
 		void DrawGUIFileOperations();
 		void DrawGUICursorInformation();
@@ -65,7 +65,7 @@ namespace Crawl
 		glm::ivec2 GetMousePosOnGrid();
 		void UpdateMousePosOnGrid();
 		void UpdateAutoTile(ivec2 position);
-		void UpdateWallVariants(DungeonTile* tile);
+		void SetDefaultWallVarients(DungeonTile* tile);
 		void UpdateSurroundingTiles(ivec2 position);
 
 		// Save the dungeon to file.
@@ -112,8 +112,10 @@ namespace Crawl
 		bool brush_TileWest = true;
 
 		// Tile edit mode
+		std::vector<std::string> wallVarientShortNames;
 		DungeonTile* selectedTile = nullptr;
-		bool selectedTileOpenWalls[4] = { false, false, false, false };
+		bool selectedTileUntraversableWalls[4] = { false, false, false, false };
+		bool selectedTileSeeThroughWalls[4] = { false, false, false, false };
 		bool selectedTileOccupied = false;
 
 		std::vector<DungeonDoor*> selectedTileDoors;

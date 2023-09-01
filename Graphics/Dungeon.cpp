@@ -33,6 +33,8 @@
 Crawl::Dungeon::Dungeon()
 {
 	wallVariantPaths.push_back("crawler/model/tile_wall_1.object");
+	wallVariantPaths.push_back("crawler/model/tile_wall_seethrough.object");
+
 	tilesParentObject = Scene::CreateObject("Tiles");
 
 	InitialiseTileMap();
@@ -215,13 +217,13 @@ bool Crawl::Dungeon::FindPath(ivec2 from, ivec2 to, int facing)
 
 }
 
-bool Crawl::Dungeon::SetTileMask(ivec2 position, int mask)
+bool Crawl::Dungeon::SetTileMask(ivec2 position, int maskTraverse)
 {
 	DungeonTile* tile = GetTile(position);
 	if (!tile)
 		return false;
 
-	tile->mask = mask;
+	tile->maskTraverse = maskTraverse;
 	return true;
 }
 
@@ -266,10 +268,10 @@ void Crawl::Dungeon::CreateTileObject(DungeonTile* tile)
 	for (int i = 0; i < 4; i++)
 	{
 		int variant = tile->wallVariants[i];
-		if (variant > 0)
+		if (variant >= 0)
 		{
-			ordered_json wall = ReadJSONFromDisk(wallVariantPaths[0]); // There are no variants right now.
-			obj->children[i + 1]->children[0]->LoadFromJSON(wall); // directionIndex+1 because this object has the floor tile in index 0;
+			ordered_json wall = ReadJSONFromDisk(wallVariantPaths[variant]);
+			obj->children[i + 1]->children[0]->LoadFromJSON(wall); // i+1 because this object has the floor tile in index 0;
 			obj->children[i + 1]->children[0]->isStatic = true;
 		}
 	}
@@ -315,7 +317,7 @@ bool Crawl::Dungeon::HasLineOfSight(ivec2 fromPos, int directionIndex)
 	if (!currentTile) return false; // early out if we're not a tile. We goofed up design wise and cant really resolve this, and shouldn't. Fix the level!
 
 	// Check if the tile we're on allows us to move in the requested direction - Maybe I could just create some Masks for each cardinal direction and pass those around instead.
-	canMove = (currentTile->mask & directionMask) == directionMask;
+	canMove = (currentTile->maskTraverse & directionMask) == directionMask;
 
 	if (!canMove)
 		return canMove;
@@ -347,7 +349,7 @@ bool Crawl::Dungeon::PlayerCanMove(glm::ivec2 fromPos, int directionIndex)
 	if (!currentTile) return false; // early out if we're not a tile. We goofed up design wise and cant really resolve this, and shouldn't. Fix the level!
 
 	// for a Wall..
-	canMove = (currentTile->mask & directionMask) == directionMask;
+	canMove = (currentTile->maskTraverse & directionMask) == directionMask;
 	if (!canMove) return canMove;
 
 	// for a Door (on both tiles, from and to)..
@@ -1510,7 +1512,7 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 	ordered_json tiles_json;
 
 	dungeon_serialised["type"] = "dungeon";
-	dungeon_serialised["version"] = 1;
+	dungeon_serialised["version"] = version;
 	dungeon_serialised["defaultPosition"] = defaultPlayerStartPosition;
 	dungeon_serialised["defaultOrientation"] = defaultPlayerStartOrientation;
 
@@ -1613,6 +1615,8 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 {
 	DestroySceneFromDungeonLayout();
 
+	int dungeonVersion = serialised["version"];
+
 	if (serialised.contains("defaultPosition"))
 		serialised.at("defaultPosition").get_to(defaultPlayerStartPosition);
 	else
@@ -1664,6 +1668,13 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	for (auto it = tiles_json.begin(); it != tiles_json.end(); it++)
 	{
 		DungeonTile tile = it.value().get<Crawl::DungeonTile>();
+		if (dungeonVersion == 1) // wallVariants were initially implemented kinda broken but are now being used to assist with untraversable but see through-able walls.
+		{
+			tile.wallVariants[0] = (tile.maskTraverse & NORTH_MASK) == NORTH_MASK ? -1 : 0;
+			tile.wallVariants[1] = (tile.maskTraverse & EAST_MASK) == EAST_MASK ? -1 : 0;
+			tile.wallVariants[2] = (tile.maskTraverse & SOUTH_MASK) == SOUTH_MASK ? -1 : 0;
+			tile.wallVariants[3] = (tile.maskTraverse & WEST_MASK) == WEST_MASK ? -1 : 0;
+		}
 		AddTile(tile);
 	}
 
@@ -1888,7 +1899,7 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 	decorations.clear();
 }
 
-Object* Crawl::Dungeon::GetTileTemplate(int mask)
+Object* Crawl::Dungeon::GetTileTemplate(int maskTraverse)
 {
 	return tile_template;
 }

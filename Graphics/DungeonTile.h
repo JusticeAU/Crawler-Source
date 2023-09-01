@@ -1,5 +1,6 @@
 #pragma once
 #include "serialisation.h"
+#include "DungeonHelpers.h"
 
 class Object;
 
@@ -9,7 +10,9 @@ namespace Crawl
 	{
 	public:
 		glm::ivec2 position = { 0, 0 };
-		int mask = 0;
+		int maskTraverse = 0;
+		int maskSee = 0;
+		int wallVariants[4] = { -1, -1, -1 ,-1 }; // North, East, South, West. -1 is no wall, any other value is to index in to the dungeon wallVariantPaths array. visual only.
 
 		// State
 		bool occupied = false;
@@ -19,11 +22,6 @@ namespace Crawl
 
 		// Pathfinding
 		DungeonTile* neighbors[4] = { nullptr, nullptr, nullptr, nullptr }; // address in to here with FACING_INDEX
-
-		// garbage
-		int wallVariants[4] = { 0, 0, 0 ,0 }; // North, South, East, West
-
-		// pathfind dev
 		int cost = -1;
 		bool openListed = false;
 		bool closedListed = false;
@@ -34,26 +32,41 @@ namespace Crawl
 
 	static void to_json(ordered_json& j, const DungeonTile& tile)
 	{
-		j = { {"position", tile.position}, {"mask", tile.mask}, {"wallVariants", tile.wallVariants} };
+		j = { {"position", tile.position}, {"mask", tile.maskTraverse}, {"maskSee", tile.maskSee}, {"wallVariants", tile.wallVariants} };
 	}
 
 	static void from_json(const ordered_json& j, DungeonTile& tile)
 	{
 		j.at("position").get_to(tile.position);
-		j.at("mask").get_to(tile.mask);
-		if(j.contains("wallVariants"))
-			j.at("wallVariants").get_to(tile.wallVariants);
+		j.at("mask").get_to(tile.maskTraverse);
+		
+		if(j.contains("maskSee"))
+			j.at("maskSee").get_to(tile.maskSee);
 		else
 		{
-			if ((tile.mask & 1) != 1) // North Wall
-				tile.wallVariants[0] = 1;
-			if ((tile.mask & 8) != 8) // South Wall
-				tile.wallVariants[1] = 1;
-			if ((tile.mask & 4) != 4) // East Wall
-				tile.wallVariants[2] = 1;
-			if ((tile.mask & 2) != 2) // West Wall
-				tile.wallVariants[3] = 1;
+			if ((tile.maskTraverse & NORTH_MASK) == NORTH_MASK) // North Wall
+				tile.maskSee += NORTH_MASK;
+			if ((tile.maskTraverse & SOUTH_MASK) == SOUTH_MASK) // South Wall
+				tile.maskSee += SOUTH_MASK;
+			if ((tile.maskTraverse & EAST_MASK) == EAST_MASK) // East Wall
+				tile.maskSee += EAST_MASK;
+			if ((tile.maskTraverse & WEST_MASK) == WEST_MASK) // West Wall
+				tile.maskSee += WEST_MASK;
 		}
+
+		if(j.contains("wallVariants"))
+			j.at("wallVariants").get_to(tile.wallVariants);
+		//else
+		//{
+		//	if ((tile.maskTraverse & NORTH_MASK) != NORTH_MASK) // North Wall
+		//		tile.wallVariants[0] = 1;
+		//	if ((tile.maskTraverse & SOUTH_MASK) != SOUTH_MASK) // South Wall
+		//		tile.wallVariants[1] = 1;
+		//	if ((tile.maskTraverse & EAST_MASK) != EAST_MASK) // East Wall
+		//		tile.wallVariants[2] = 1;
+		//	if ((tile.maskTraverse & WEST_MASK) != WEST_MASK) // West Wall
+		//		tile.wallVariants[3] = 1;
+		//}
 	}
 }
 

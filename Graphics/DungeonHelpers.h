@@ -111,6 +111,26 @@ namespace Crawl
 		{ 0, 1}
 	};
 
+	static std::string maskToString[16]
+	{
+		"None",
+		"North",
+		"West",
+		"North, West",
+		"East",
+		"North, East",
+		"East, West",
+		"North, East, West",
+		"South",
+		"North, South",
+		"South, West",
+		"North, South, West",
+		"East, South",
+		"North, East, South",
+		"East, South, West",
+		"North, East, South, West"
+	};
+
 
 	static glm::vec3 dungeonPosToObjectScale(glm::ivec2 pos)
 	{
@@ -135,5 +155,11 @@ namespace Crawl
 		if (newIndex < 0) newIndex = (FACING_INDEX)3;
 		if (newIndex > 3) newIndex = (FACING_INDEX)0;
 		return newIndex;
+	}
+
+	static int GetInvertedMask(int mask)
+	{
+		int flipped = ~mask;
+		return flipped & 0b1111;
 	}
 }
