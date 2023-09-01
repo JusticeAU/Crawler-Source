@@ -15,6 +15,7 @@
 #include "DungeonMirror.h"
 #include "DungeonEnemySlug.h"
 #include "DungeonDecoration.h"
+#include "DungeonStairs.h"
 
 #include "Object.h"
 #include "Input.h"
@@ -578,6 +579,16 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		selectedTileDecorations.push_back(selectedTileDecoration);
 		selectedDecorationWindowOpen = true;
 	}
+	
+	bool cantMakeStairs = selectedStairs != nullptr;
+	if (cantMakeStairs) ImGui::BeginDisabled();
+	if (ImGui::Button("Stairs (Justin Only!)"))
+	{
+		MarkUnsavedChanges();
+		selectedStairs = dungeon->CreateStairs(selectedTile->position);
+		selectedStairsWindowOpen = true;
+	}
+	if (cantMakeStairs) ImGui::EndDisabled();
 
 	ImGui::PopID();
 	// Entity List
@@ -699,6 +710,11 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		ImGui::PopID();
 	}
 
+	if (selectedStairs)
+	{
+		if (ImGui::Selectable("Stairs")) selectedStairsWindowOpen = true;
+	}
+
 	ImGui::Unindent();
 	ImGui::PopID();
 
@@ -729,7 +745,9 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		DrawGUIModeTileEditMirror();
 	if (selectedDecorationWindowOpen)
 		DrawGUIModeTileEditDecoration();
-	
+	if (selectedStairsWindowOpen)
+		DrawGUIModeTileEditStairs();
+
 	ImGui::PopID();
 }
 
@@ -1294,6 +1312,36 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDecoration()
 
 	ImGui::End();
 }
+void Crawl::DungeonEditor::DrawGUIModeTileEditStairs()
+{
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Edit Stairs", &selectedStairsWindowOpen);
+	ImGui::BeginDisabled();
+	ImGui::InputInt2("Start Position", &selectedStairs->startPosition.x);
+	ImGui::EndDisabled();
+	ImGui::InputInt2("End Position", &selectedStairs->endPosition.x);
+	ImGui::InputInt("Direction Start", (int*)&selectedStairs->directionStart);
+	ImGui::InputInt("Direction End", (int*)&selectedStairs->directionEnd);
+	ImGui::Checkbox("Stairs go up", &selectedStairs->up);
+	ImGui::Spacing();
+	ImGui::DragFloat3("Start World Position", &selectedStairs->startWorldPosition.x);
+	ImGui::DragFloat3("Start Offset", &selectedStairs->startOffset.x);
+	ImGui::DragFloat3("End World Position", &selectedStairs->endWorldPosition.x);
+	ImGui::DragFloat3("End Offset", &selectedStairs->endOffset.x);
+	if (ImGui::Button("Generate World Positions")) selectedStairs->BuildDefaultSpline();
+	ImGui::End();
+
+	// Send the curve to the line renderer
+	for (float i = 0; i < 0.98; i += 0.02f)
+	{
+		vec3 a = selectedStairs->EvaluatePosition(i);
+		if(!selectedStairs->up) a.z -= 3.0f;
+		vec3 b = selectedStairs->EvaluatePosition(i + 0.02f);
+		if (!selectedStairs->up) b.z -= 3.0f;
+		LineRenderer::DrawLine(a, b, glm::vec3((i/2) + 0.5f));
+	}
+}
 void Crawl::DungeonEditor::DrawGUIModeTileEditSwitcher()
 {
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
@@ -1744,6 +1792,13 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 		if (dungeon->decorations[i]->position == selectedTile->position)
 			selectedTileDecorations.push_back(dungeon->decorations[i]);
 	}
+
+	selectedStairs = nullptr;
+	for (int i = 0; i < dungeon->stairs.size(); i++)
+	{
+		if (dungeon->stairs[i]->startPosition == selectedTile->position)
+			selectedStairs = dungeon->stairs[i];
+	}
 }
 void Crawl::DungeonEditor::RefreshSelectedTransporterData(string dungeonPath)
 {
@@ -1944,6 +1999,7 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedMirror = nullptr;
 	selectedSlugEnemy = nullptr;
 	selectedTileDecoration = nullptr;
+	selectedStairs = nullptr;
 
 	selectedDoorWindowOpen = false;
 	selectedLeverWindowOpen = false;
@@ -1957,4 +2013,5 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedMirrorWindowOpen = false;
 	selectedSlugEnemyWindowOpen = false;
 	selectedDecorationWindowOpen = false;
+	selectedStairsWindowOpen = false;
 }

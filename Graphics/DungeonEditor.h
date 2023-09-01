@@ -46,6 +46,8 @@ namespace Crawl
 		void DrawGUIModeTileEditSlug();
 		void DrawGUIModeTileEditDecoration();
 
+		void DrawGUIModeTileEditStairs();
+
 
 		void DrawGUIModeDungeonProperties();
 
@@ -164,6 +166,9 @@ namespace Crawl
 		DungeonDecoration* selectedTileDecoration = nullptr;
 		bool selectedDecorationWindowOpen = false;
 		std::vector<string> decorations;
+
+		DungeonStairs* selectedStairs = nullptr;
+		bool selectedStairsWindowOpen = false;
 
 		bool unsavedChanges = false;
 		bool shouldConfirmSaveBeforeLoad = false;

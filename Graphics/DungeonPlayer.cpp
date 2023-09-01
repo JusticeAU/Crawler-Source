@@ -9,6 +9,10 @@
 
 #include "DungeonEnemySwitcher.h"
 #include "DungeonCheckpoint.h"
+#include "DungeonStairs.h"
+
+#include "gtx/spline.hpp"
+#include "gtx/easing.hpp"
 
 Crawl::DungeonPlayer::DungeonPlayer()
 {
@@ -26,6 +30,17 @@ Crawl::DungeonPlayer::DungeonPlayer()
 	Scene::s_instance->m_pointLights[0].colour.y = 0.36686262488365173;
 	Scene::s_instance->m_pointLights[0].colour.z = 0.10308541357517242;
 	Scene::s_instance->m_pointLights[0].intensity = 25.0f;
+
+	// load the lobby second level
+	lobbyLevel2Dungeon = new Dungeon(true);
+	lobbyLevel2Dungeon->Load("crawler/dungeon/lobby2.dungeon");
+	lobbyLevel2Dungeon->player = this;
+}
+
+void Crawl::DungeonPlayer::SetDungeon(Dungeon* dungeonPtr)
+{
+	dungeon = dungeonPtr;
+	currentDungeon = dungeon;
 }
 
 // Returns true if the player made a game-state changing action
@@ -33,206 +48,20 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 {
 	if (state == IDLE)
 	{
-		if (Input::Keyboard(GLFW_KEY_R).Down())
-			Respawn();
-
-		// All these checks should move to a turn processors state machine.
-		if (hp <= 0)
-		{
-			LogUtils::Log("Died. Resetting & Respawning");
-			dungeon->RebuildDungeonFromSerialised(dungeon->serialised);
-			Respawn();
-			return false;
-		}
-
-		if (dungeon->GetCheckpointAt(position))
-		{
-			DungeonCheckpoint* newCheckpoint = dungeon->GetCheckpointAt(position);
-			if (!newCheckpoint->activated)
-			{
-				LogUtils::Log("You activated a checkpoint");
-				newCheckpoint->SetCheckpoint(this);
-			}
-		}
-
-		if (shouldSwitchWith) // fairly hacky
-		{
-			AudioManager::PlaySound("crawler/sound/load/switcher.wav");
-			shouldSwitchWith->SwapWithPlayer();
-			shouldSwitchWith = nullptr;
-		}
-
-		// To here.
-
-		glm::ivec2 coordinate = { 0, 0 };
-		glm::ivec2 coordinateUnchanged = { 0, 0 }; // TO DO this sucks
-
-		if (Input::Keyboard(GLFW_KEY_LEFT_ALT).Down())
+		if (UpdateStateIdle(deltaTime))
 			return true;
-
-		/*if ((Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down() || Input::Mouse(1).Down()) && dungeon->playerHasKnife)
-		{
-			if (dungeon->CanSee(position, facing))
-			{
-				LogUtils::Log("Stab!");
-				dungeon->DamageAtPosition(position + directions[facing], this, true);
-				return true;
-			}
-		}*/
-
-		if (Input::Mouse(1).Down()) Window::GetWindow()->SetMouseCursorHidden(true);
-		if (Input::Mouse(1).Pressed())
-		{
-			vec2 mouseDelta = -Input::GetMouseDelta() * lookSpeed;
-			objectView->AddLocalRotation({ mouseDelta.y, 0, mouseDelta.x });
-			objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -lookMaxY, lookMaxY);
-			objectView->localRotation.z = glm::clamp(objectView->localRotation.z, -lookMaxZ, lookMaxZ);
-			return false;
-		}
-		
-		if (Input::Mouse(1).Up()) Window::GetWindow()->SetMouseCursorHidden(false);
-		if (!Input::Mouse(1).Pressed())
-		{
-			vec3 currentRotation = objectView->localRotation;
-			currentRotation *= -0.1;
-			objectView->AddLocalRotation(currentRotation);
-		}
-
-		if (Input::Keyboard(GLFW_KEY_SPACE).Down() && dungeon->playerCanKickBox)
-		{
-			if (dungeon->DoKick(position, facing))
-			{
-				animator->BlendToAnimation(animationNamePush, 0.1f);
-				return true;
-			}
-		}
-
-		// Test Object Picking stuffo
-		if (Input::Mouse(0).Down())
-			Scene::RequestObjectSelection();
-
-		if (Scene::s_instance->objectPickedID != 0)
-		{
-			unsigned int picked = Scene::s_instance->objectPickedID;
-			Scene::s_instance->objectPickedID = 0;
-			if (dungeon->DoInteractable(picked))
-			{
-				animator->BlendToAnimation(animationNamePush, 0.1f);
-				if (!dungeon->playerInteractIsFree)
-					return true;
-			}
-		}
-
-		int index = -1;
-		if (Input::Keyboard(GLFW_KEY_W).Down())
-			index = GetMoveCardinalIndex(FORWARD_INDEX);
-		if (Input::Keyboard(GLFW_KEY_S).Down())
-			index = GetMoveCardinalIndex(BACK_INDEX);
-		if (Input::Keyboard(GLFW_KEY_A).Down())
-			index = GetMoveCardinalIndex(LEFT_INDEX);
-		if (Input::Keyboard(GLFW_KEY_D).Down())
-			index = GetMoveCardinalIndex(RIGHT_INDEX);
-
-		ivec2 oldPlayerCoordinate = position;
-		if (index != -1)
-		{
-			if (dungeon->PlayerCanMove(position, index))
-			{
-				AudioManager::PlaySound(stepSounds[rand() % 4]);
-				position += directions[index];
-				dungeon->GetTile(position)->occupied = true;
-				didMove = true;
-			}
-		}
-
-		if (didMove)
-		{
-			dungeon->GetTile(oldPlayerCoordinate)->occupied = false;
-			state = MOVING;
-			oldPosition = object->localPosition;
-			targetPosition = { position.x * Crawl::DUNGEON_GRID_SCALE, position.y * Crawl::DUNGEON_GRID_SCALE , 0 };
-			moveCurrent = 0.0f;
-			didMove = false;
-			return true;
-		}
-
-		// Turning
-		if (Input::Keyboard(GLFW_KEY_E).Down())
-		{
-			AudioManager::PlaySound("crawler/sound/load/turn.wav");
-			int faceInt = (int)facing;
-			faceInt++;
-			if (faceInt == 4)
-				faceInt = 0;
-			facing = (FACING_INDEX)faceInt;
-			state = TURNING;
-			turnCurrent = 0.0f;
-			oldTurn = object->localRotation.z;
-			targetTurn = object->localRotation.z - 90;
-			if (!dungeon->playerTurnIsFree)
-				return true;
-		}
-		if (Input::Keyboard(GLFW_KEY_Q).Down())
-		{
-			AudioManager::PlaySound("crawler/sound/load/turn.wav");
-			int faceInt = (int)facing;
-			faceInt--;
-			if (faceInt == -1)
-				faceInt = 3;
-			facing = (FACING_INDEX)faceInt;
-			state = TURNING;
-			turnCurrent = 0.0f;
-			oldTurn = object->localRotation.z;
-			targetTurn = object->localRotation.z + 90;
-			if (!dungeon->playerTurnIsFree)
-				return true;
-		}
-
-		// Rotators
-
-		if (Input::Keyboard(GLFW_KEY_Z).Down())
-		{
-			DungeonMirror* mirror = dungeon->GetMirrorAt(position + directions[facing]);
-			if (mirror)
-			{
-				dungeon->RotateMirror(mirror, 1);
-				return true;
-			}
-		}
-		if (Input::Keyboard(GLFW_KEY_C).Down())
-		{
-			DungeonMirror* mirror = dungeon->GetMirrorAt(position + directions[facing]);
-			if (mirror)
-			{
-				dungeon->RotateMirror(mirror, -1);
-				return true;
-			}
-		}
-
 	}
 	else if (state == MOVING)
 	{
-		moveCurrent += deltaTime;
-		float t = MathUtils::InverseLerp(0, moveSpeed, moveCurrent);
-		if (moveCurrent > moveSpeed)
-		{
-			object->SetLocalPosition(targetPosition);
-			state = IDLE;
-		}
-		else
-			object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, t));
+		UpdateStateMoving(deltaTime);
 	}
 	else if (state == TURNING)
 	{
-		turnCurrent += deltaTime;
-		float t = MathUtils::InverseLerp(0, turnSpeed, turnCurrent);
-		if (turnCurrent > turnSpeed)
-		{
-			object->SetLocalRotationZ(targetTurn);
-			state = IDLE;
-		}
-		else
-			object->SetLocalRotationZ(MathUtils::Lerp(oldTurn, targetTurn, t));
+		UpdateStateTurning(deltaTime);
+	}
+	else if (state == STAIRBEARS)
+	{
+		UpdateStateStairs(deltaTime);
 	}
 
 	// Update the position of the light on the player after we have moved.
@@ -240,6 +69,280 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	Scene::s_instance->m_pointLights[0].position = object->GetWorldSpacePosition(); // hacky!!!
 	Scene::s_instance->m_pointLights[0].position.z += 1.6f;
 	Scene::s_instance->m_pointLights[0].position += dungeonPosToObjectScale(directions[facing]) * 0.2f;
+
+	return false;
+}
+
+bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
+{
+	if (Input::Keyboard(GLFW_KEY_R).Down())
+		Respawn();
+
+	// All these checks should move to a turn processors state machine.
+	if (hp <= 0)
+	{
+		LogUtils::Log("Died. Resetting & Respawning");
+		dungeon->RebuildDungeonFromSerialised(dungeon->serialised);
+		Respawn();
+		return false;
+	}
+
+	if (currentDungeon->GetCheckpointAt(position))
+	{
+		DungeonCheckpoint* newCheckpoint = dungeon->GetCheckpointAt(position);
+		if (!newCheckpoint->activated)
+		{
+			LogUtils::Log("You activated a checkpoint");
+			newCheckpoint->SetCheckpoint(this);
+		}
+	}
+
+	if (shouldSwitchWith) // fairly hacky
+	{
+		AudioManager::PlaySound("crawler/sound/load/switcher.wav");
+		shouldSwitchWith->SwapWithPlayer();
+		shouldSwitchWith = nullptr;
+	}
+
+	// To here.
+
+	glm::ivec2 coordinate = { 0, 0 };
+	glm::ivec2 coordinateUnchanged = { 0, 0 }; // TO DO this sucks
+
+	if (Input::Keyboard(GLFW_KEY_LEFT_ALT).Down())
+		return true;
+
+	/*if ((Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down() || Input::Mouse(1).Down()) && dungeon->playerHasKnife)
+	{
+		if (dungeon->CanSee(position, facing))
+		{
+			LogUtils::Log("Stab!");
+			dungeon->DamageAtPosition(position + directions[facing], this, true);
+			return true;
+		}
+	}*/
+
+	if (Input::Mouse(1).Down()) Window::GetWindow()->SetMouseCursorHidden(true);
+	if (Input::Mouse(1).Pressed())
+	{
+		vec2 mouseDelta = -Input::GetMouseDelta() * lookSpeed;
+		objectView->AddLocalRotation({ mouseDelta.y, 0, mouseDelta.x });
+		objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -lookMaxY, lookMaxY);
+		objectView->localRotation.z = glm::clamp(objectView->localRotation.z, -lookMaxZ, lookMaxZ);
+		return false;
+	}
+
+	if (Input::Mouse(1).Up()) Window::GetWindow()->SetMouseCursorHidden(false);
+	if (!Input::Mouse(1).Pressed())
+	{
+		vec3 currentRotation = objectView->localRotation;
+		currentRotation *= -0.1;
+		objectView->AddLocalRotation(currentRotation);
+	}
+
+	if (Input::Keyboard(GLFW_KEY_SPACE).Down() && currentDungeon->playerCanKickBox)
+	{
+		if (currentDungeon->DoKick(position, facing))
+		{
+			animator->BlendToAnimation(animationNamePush, 0.1f);
+			return true;
+		}
+	}
+
+	// Test Object Picking stuffo
+	if (Input::Mouse(0).Down())
+		Scene::RequestObjectSelection();
+
+	if (Scene::s_instance->objectPickedID != 0)
+	{
+		unsigned int picked = Scene::s_instance->objectPickedID;
+		Scene::s_instance->objectPickedID = 0;
+		if (currentDungeon->DoInteractable(picked))
+		{
+			animator->BlendToAnimation(animationNamePush, 0.1f);
+			if (!currentDungeon->playerInteractIsFree)
+				return true;
+		}
+	}
+
+	int index = -1;
+	if (Input::Keyboard(GLFW_KEY_W).Down())
+		index = GetMoveCardinalIndex(FORWARD_INDEX);
+	if (Input::Keyboard(GLFW_KEY_S).Down())
+		index = GetMoveCardinalIndex(BACK_INDEX);
+	if (Input::Keyboard(GLFW_KEY_A).Down())
+		index = GetMoveCardinalIndex(LEFT_INDEX);
+	if (Input::Keyboard(GLFW_KEY_D).Down())
+		index = GetMoveCardinalIndex(RIGHT_INDEX);
+
+	ivec2 oldPlayerCoordinate = position;
+	if (index != -1)
+	{
+		// Check stairs in this direction
+		if (currentDungeon->ShouldActivateStairs(position, (FACING_INDEX)index))
+		{
+			DungeonTile* oldTile = currentDungeon->GetTile(position);
+			if (oldTile) oldTile->occupied = false;
+			state = STAIRBEARS;
+			position = activateStairs->endPosition;
+			stairTimeCurrent = 0.0f;
+			if (activateStairs->up)
+			{
+				isOnLobbyLevel2 = true;
+				currentDungeon = lobbyLevel2Dungeon;
+				playerZPosition = lobbyLevel2Floor;
+			}
+			else
+			{
+				isOnLobbyLevel2 = false;
+				currentDungeon = dungeon;
+				playerZPosition = 0.0f;
+			}
+			return false;
+		}
+		else if (currentDungeon->PlayerCanMove(position, index))
+		{
+			AudioManager::PlaySound(stepSounds[rand() % 4]);
+			position += directions[index];
+			currentDungeon->GetTile(position)->occupied = true;
+			didMove = true;
+		}
+	}
+
+	if (didMove)
+	{
+		currentDungeon->GetTile(oldPlayerCoordinate)->occupied = false;
+		state = MOVING;
+		oldPosition = object->localPosition;
+		targetPosition = { position.x * Crawl::DUNGEON_GRID_SCALE, position.y * Crawl::DUNGEON_GRID_SCALE , playerZPosition };
+		moveCurrent = 0.0f;
+		didMove = false;
+		return true;
+	}
+
+	// Turning
+	if (Input::Keyboard(GLFW_KEY_E).Down())
+	{
+		AudioManager::PlaySound("crawler/sound/load/turn.wav");
+		int faceInt = (int)facing;
+		faceInt++;
+		if (faceInt == 4)
+			faceInt = 0;
+		facing = (FACING_INDEX)faceInt;
+		state = TURNING;
+		turnCurrent = 0.0f;
+		oldTurn = object->localRotation.z;
+		targetTurn = object->localRotation.z - 90;
+		if (!dungeon->playerTurnIsFree)
+			return true;
+	}
+	if (Input::Keyboard(GLFW_KEY_Q).Down())
+	{
+		AudioManager::PlaySound("crawler/sound/load/turn.wav");
+		int faceInt = (int)facing;
+		faceInt--;
+		if (faceInt == -1)
+			faceInt = 3;
+		facing = (FACING_INDEX)faceInt;
+		state = TURNING;
+		turnCurrent = 0.0f;
+		oldTurn = object->localRotation.z;
+		targetTurn = object->localRotation.z + 90;
+		if (!dungeon->playerTurnIsFree)
+			return true;
+	}
+
+	// Rotators
+
+	if (Input::Keyboard(GLFW_KEY_Z).Down())
+	{
+		DungeonMirror* mirror = currentDungeon->GetMirrorAt(position + directions[facing]);
+		if (mirror)
+		{
+			dungeon->RotateMirror(mirror, 1);
+			return true;
+		}
+	}
+	if (Input::Keyboard(GLFW_KEY_C).Down())
+	{
+		DungeonMirror* mirror = currentDungeon->GetMirrorAt(position + directions[facing]);
+		if (mirror)
+		{
+			currentDungeon->RotateMirror(mirror, -1);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool Crawl::DungeonPlayer::UpdateStateMoving(float delta)
+{
+	moveCurrent += delta;
+	float t = MathUtils::InverseLerp(0, moveSpeed, moveCurrent);
+	if (moveCurrent > moveSpeed)
+	{
+		object->SetLocalPosition(targetPosition);
+		state = IDLE;
+	}
+	else
+		object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, t));
+
+	return false;
+}
+
+bool Crawl::DungeonPlayer::UpdateStateTurning(float delta)
+{
+	turnCurrent += delta;
+	float t = MathUtils::InverseLerp(0, turnSpeed, turnCurrent);
+	if (turnCurrent > turnSpeed)
+	{
+		object->SetLocalRotationZ(targetTurn);
+		state = IDLE;
+	}
+	else
+		object->SetLocalRotationZ(MathUtils::Lerp(oldTurn, targetTurn, t));
+
+	return false;
+}
+
+bool Crawl::DungeonPlayer::UpdateStateStairs(float delta)
+{
+	// If we're not facing the stairs, do that first.
+	if (!facingStairs)
+	{
+		// We need to turn towards the enter direction
+		turnCurrent += delta;
+		float t = MathUtils::InverseLerp(0, turnSpeed * 2, turnCurrent);
+		if (turnCurrent > turnSpeed * 2)
+		{
+			object->SetLocalRotationZ(targetTurn);
+			facingStairs = true;
+		}
+		else
+			object->SetLocalRotationZ(MathUtils::LerpDegrees(oldTurn, targetTurn, t));
+
+	}
+	else
+	{
+		stairTimeCurrent += delta;
+		if (stairTimeCurrent > stairTimeTotal)
+		{
+			state = IDLE;
+			facing = activateStairs->directionEnd;
+			object->SetLocalPosition(activateStairs->endWorldPosition);
+			object->SetLocalRotationZ(orientationEulers[activateStairs->directionEnd]);
+			activateStairs = nullptr;
+		}
+		else
+		{
+			float t = stairTimeCurrent / stairTimeTotal;
+			float moveEase = t;
+			float lookEase = glm::sineEaseInOut(t);
+			object->SetLocalPosition(glm::hermite(activateStairs->startWorldPosition, activateStairs->startOffset, activateStairs->endWorldPosition, activateStairs->endOffset, moveEase));
+			object->SetLocalRotationZ(MathUtils::LerpDegrees(orientationEulers[activateStairs->directionStart], orientationEulers[activateStairs->directionEnd], lookEase));
+		}
+	}
 
 	return false;
 }
@@ -296,6 +399,9 @@ void Crawl::DungeonPlayer::Respawn()
 
 	hp = maxHp;
 	shouldSwitchWith = nullptr;
+	currentDungeon = dungeon;
+	isOnLobbyLevel2 = false;
+	playerZPosition = 0.0f;
 }
 
 void Crawl::DungeonPlayer::MakeCheckpoint()
@@ -315,6 +421,20 @@ void Crawl::DungeonPlayer::ClearCheckpoint()
 void Crawl::DungeonPlayer::TakeDamage()
 {
 	hp -= 1;
+}
+
+void Crawl::DungeonPlayer::SetShouldActivateStairs(DungeonStairs* stairs)
+{
+	activateStairs = stairs;
+	if (facing != activateStairs->directionStart)
+	{
+		facingStairs = false;
+		turnCurrent = 0.0f;
+		oldTurn = object->localRotation.z;
+		targetTurn = orientationEulers[activateStairs->directionStart];
+	}
+	else
+		facingStairs = true;
 }
 
 // Take the requested direction and offset by the direction we're facing, check for overflow, then index in to the directions array.

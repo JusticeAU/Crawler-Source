@@ -90,6 +90,13 @@ namespace Crawl
 		WEST_COORDINATE
 	};
 
+	inline glm::ivec2 directionsReversed[4] = {
+		SOUTH_COORDINATE,
+		WEST_COORDINATE,
+		NORTH_COORDINATE,
+		EAST_COORDINATE
+	};
+
 	inline glm::ivec2 directionsDiagonal[4] = {
 		NORTHEAST_COORDINATE,
 		SOUTHEAST_COORDINATE,

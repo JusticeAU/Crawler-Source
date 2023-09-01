@@ -15,14 +15,19 @@ namespace Crawl
 		enum STATE {
 			IDLE,
 			MOVING,
-			TURNING
+			TURNING,
+			STAIRBEARS
 		};
 		DungeonPlayer();
 
-		void SetDungeon(Dungeon* dungeonPtr) { this->dungeon = dungeonPtr; }
+		void SetDungeon(Dungeon* dungeonPtr);
 		void SetPlayerObject(Object* objectPtr) { this->object = objectPtr; }
 
 		bool Update(float deltaTime);
+		bool UpdateStateIdle(float delta);
+		bool UpdateStateMoving(float delta);
+		bool UpdateStateTurning(float delta);
+		bool UpdateStateStairs(float delta);
 
 		ivec2 GetPosition() { return position; }
 		FACING_INDEX GetOrientation() { return facing; }
@@ -38,6 +43,7 @@ namespace Crawl
 		void TakeDamage();
 
 		void SetShouldSwitchWith(DungeonEnemySwitcher* switcher) { shouldSwitchWith = switcher; }
+		void SetShouldActivateStairs(DungeonStairs* stairs);
 
 		// combines our requested direction with our facing direction to return the actual direction.
 		unsigned int GetMoveCardinalIndex(DIRECTION_INDEX dir);
@@ -74,6 +80,7 @@ namespace Crawl
 		FACING_INDEX respawnOrientation = EAST_INDEX;
 
 		DungeonEnemySwitcher* shouldSwitchWith = nullptr;
+		DungeonStairs* activateStairs = nullptr;
 
 		// Checkpointing
 	public:
@@ -91,5 +98,16 @@ namespace Crawl
 		};
 
 		string animationNamePush = "crawler/model/viewmodel_hands.fbxarmature|armatureaction";
+
+		// Lobby Scene Stuff
+		bool isOnLobbyLevel2 = false;
+		Dungeon* lobbyLevel2Dungeon = nullptr;
+		Dungeon* currentDungeon = nullptr;
+		
+		float lobbyLevel2Floor = 3.0f;
+		float stairTimeTotal = 3.0f;
+		float stairTimeCurrent = 0.0f;
+		float playerZPosition = 0.0f;
+		bool facingStairs = false;
 	};
 }

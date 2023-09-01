@@ -32,6 +32,7 @@ namespace Crawl
 	class DungeonEnemySlug;
 	class DungeonEnemySlugPath;
 	class DungeonDecoration;
+	class DungeonStairs;
 
 	struct Column
 	{
@@ -40,7 +41,7 @@ namespace Crawl
 	class Dungeon
 	{
 	public:
-		Dungeon();
+		Dungeon(bool fakeDungeon = false);
 		// Tile manipulation
 		DungeonTile* AddTile(ivec2 position);
 		DungeonTile* AddTile(DungeonTile& dungeonTile);
@@ -61,7 +62,6 @@ namespace Crawl
 		// Ensures the dungeonTile node has a visual representation in the Scene Graph.
 		void CreateTileObject(DungeonTile* tile);
 
-
 		bool IsOpenTile(ivec2 position);
 
 		bool CanTraverse(ivec2 fromPos, int directionIndex);
@@ -74,6 +74,8 @@ namespace Crawl
 		bool DoInteractable(unsigned int id);
 		void DoActivate(unsigned int id);
 		void DoActivate(unsigned int id, bool on);
+
+		bool ShouldActivateStairs(ivec2 position, FACING_INDEX direction);
 
 		// Returns true if this hit something
 		bool DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer = false);
@@ -139,6 +141,9 @@ namespace Crawl
 
 		DungeonDecoration* CreateDecoration(ivec2 position, FACING_INDEX facing);
 		void RemoveDecoration(DungeonDecoration* decoration);
+		
+		DungeonStairs* CreateStairs(ivec2 position);
+		void RemoveStairs(DungeonStairs* stairs);
 	
 		void Save(std::string filename);
 		void ClearDungeon();
@@ -231,6 +236,7 @@ namespace Crawl
 		std::vector<DungeonMirror*> mirrors;
 
 		std::vector<DungeonDecoration*> decorations;
+		std::vector<DungeonStairs*> stairs;
 		
 		DungeonPlayer* player = nullptr;
 
@@ -238,6 +244,10 @@ namespace Crawl
 		// Path Finding Visual Test
 		std::vector<DungeonTile*> goodPath;
 		std::vector<DungeonTile*> badNodes;
+
+		// Lobby stuff
+		bool fakeDungeon = false;
+		bool noRoof = false;
 	};
 }
 

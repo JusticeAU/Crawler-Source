@@ -19,6 +19,7 @@
 #include "DungeonEnemySlug.h"
 #include "DungeonEnemySlugPath.h"
 #include "DungeonDecoration.h"
+#include "DungeonStairs.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
@@ -30,8 +31,11 @@
 #include "serialisation.h"
 #include <algorithm>
 
-Crawl::Dungeon::Dungeon()
+Crawl::Dungeon::Dungeon(bool fakeDungeon) : fakeDungeon(fakeDungeon)
 {
+	if (fakeDungeon)
+		return;
+
 	wallVariantPaths.push_back("crawler/model/tile_wall_1.object");
 	wallVariantPaths.push_back("crawler/model/tile_wall_seethrough.object");
 
@@ -287,8 +291,11 @@ void Crawl::Dungeon::CreateTileObject(DungeonTile* tile)
 	UpdatePillarsForTileCoordinate(tile->position);
 
 	// ceiling
-	Object* ceiling = Scene::CreateObject(obj);
-	ceiling->LoadFromJSON(ReadJSONFromDisk("crawler/model/tile_ceiling1.object"));
+	if (!noRoof)
+	{
+		Object* ceiling = Scene::CreateObject(obj);
+		ceiling->LoadFromJSON(ReadJSONFromDisk("crawler/model/tile_ceiling1.object"));
+	}
 }
 
 bool Crawl::Dungeon::IsOpenTile(ivec2 position)
@@ -589,6 +596,21 @@ void Crawl::Dungeon::DoActivate(unsigned int id, bool on)
 				shootLasers[i]->Activate();
 		}
 	}
+}
+
+bool Crawl::Dungeon::ShouldActivateStairs(ivec2 position, FACING_INDEX direction)
+{
+	for (int i = 0; i < stairs.size(); i++)
+	{
+		// check if the direction we want to move would put as on a stair object, and if that stair object starts from that direction.
+		if (stairs[i]->startPosition == position + directions[direction] && stairs[i]->directionStart == direction)
+		{
+			// We should activate this staircase
+			player->SetShouldActivateStairs(stairs[i]);
+			return true;
+		}
+	}
+	return false;
 }
 
 bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer)
@@ -1483,6 +1505,27 @@ void Crawl::Dungeon::RemoveDecoration(DungeonDecoration* decoration)
 	}
 }
 
+Crawl::DungeonStairs* Crawl::Dungeon::CreateStairs(ivec2 position)
+{
+	DungeonStairs* stair = new DungeonStairs();
+	stair->startPosition = position;
+	stairs.push_back(stair);
+	return stair;
+}
+
+void Crawl::Dungeon::RemoveStairs(DungeonStairs* stair)
+{
+	for (int i = 0; i < stairs.size(); i++)
+	{
+		if (stairs[i] == stair)
+		{
+			delete stairs[i];
+			stairs.erase(stairs.begin() + i);
+			break;
+		}
+	}
+}
+
 void Crawl::Dungeon::Save(std::string filename)
 {
 	SetDungeonNameFromFileName(filename);
@@ -1546,6 +1589,8 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 	dungeon_serialised["version"] = version;
 	dungeon_serialised["defaultPosition"] = defaultPlayerStartPosition;
 	dungeon_serialised["defaultOrientation"] = defaultPlayerStartOrientation;
+	if (noRoof) dungeon_serialised["noRoof"] = true;
+
 
 	// These settings are now just stored on the player and locked in.
 	/*dungeon_serialised["playerTurnIsFree"] = playerTurnIsFree;
@@ -1639,12 +1684,21 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 		decorations_json.push_back(*decoration);
 	dungeon_serialised["decorations"] = decorations_json;
 
+	if (stairs.size() > 0)
+	{
+		ordered_json stairs_json;
+		for (auto& stair : stairs)
+			stairs_json.push_back(*stair);
+		dungeon_serialised["stairs"] = stairs_json;
+	}
+
 	return dungeon_serialised;
 }
 
 void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 {
-	DestroySceneFromDungeonLayout();
+	if(!fakeDungeon)
+		DestroySceneFromDungeonLayout();
 
 	int dungeonVersion = serialised["version"];
 
@@ -1657,6 +1711,8 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		serialised.at("defaultOrientation").get_to(defaultPlayerStartOrientation);
 	else
 		defaultPlayerStartOrientation = EAST_INDEX;
+
+	if (serialised.contains("noRoof")) noRoof = true;
 
 	// Player settings are no longer stored in dungeon files.
 	/*if (serialised.contains("playerTurnIsFree"))
@@ -1828,7 +1884,23 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		newDecoration->LoadDecoration();
 	}
 
-	BuildSceneFromDungeonLayout();
+	auto& stairs_json = serialised["stairs"];
+	for (auto it = stairs_json.begin(); it != stairs_json.end(); it++)
+	{
+		DungeonStairs stair = it.value().get<Crawl::DungeonStairs>();
+		DungeonStairs* newStair = CreateStairs(stair.startPosition);
+		newStair->endPosition = stair.endPosition;
+		newStair->directionStart = stair.directionStart;
+		newStair->directionEnd = stair.directionEnd;
+		newStair->up = stair.up;
+		newStair->startWorldPosition = stair.startWorldPosition;
+		newStair->startOffset = stair.startOffset;
+		newStair->endWorldPosition = stair.endWorldPosition;
+		newStair->endOffset = stair.endOffset;
+	}
+	
+	if(!fakeDungeon)
+		BuildSceneFromDungeonLayout();
 }
 
 void Crawl::Dungeon::InitialiseTileMap()
@@ -1928,6 +2000,8 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 	for (auto& decoration : decorations)
 		decoration->object->markedForDeletion = true;
 	decorations.clear();
+
+	stairs.clear();
 }
 
 Object* Crawl::Dungeon::GetTileTemplate(int maskTraverse)

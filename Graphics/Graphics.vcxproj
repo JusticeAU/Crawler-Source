@@ -229,6 +229,7 @@
     <ClCompile Include="DungeonShootLaserProjectile.cpp" />
     <ClCompile Include="DungeonDamageVisual.cpp" />
     <ClCompile Include="DungeonSpikes.cpp" />
+    <ClCompile Include="DungeonStairs.cpp" />
     <ClCompile Include="DungeonTransporter.cpp" />
     <ClCompile Include="FrameBuffer.cpp" />
     <ClCompile Include="glad.c" />
@@ -304,6 +305,7 @@
     <ClInclude Include="DungeonShootLaserProjectile.h" />
     <ClInclude Include="DungeonDamageVisual.h" />
     <ClInclude Include="DungeonSpikes.h" />
+    <ClInclude Include="DungeonStairs.h" />
     <ClInclude Include="DungeonTile.h" />
     <ClInclude Include="DungeonActivatorPlate.h" />
     <ClInclude Include="DungeonTransporter.h" />
