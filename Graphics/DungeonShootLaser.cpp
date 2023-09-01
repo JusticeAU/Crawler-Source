@@ -46,7 +46,7 @@ void Crawl::DungeonShootLaser::Update()
 				break;
 			}
 
-			if (dungeon->HasLineOfSight(currentPosition, facing))
+			if (dungeon->CanSee(currentPosition, facing))
 				currentPosition += directions[facing];
 			else
 				haveTileToCheck = false;
@@ -121,7 +121,7 @@ void Crawl::DungeonShootLaser::Fire()
 					break;
 			}
 
-			if (dungeon->HasLineOfSight(currentPosition, direction))
+			if (dungeon->CanSee(currentPosition, direction))
 				currentPosition += directions[direction];
 			else
 				break;

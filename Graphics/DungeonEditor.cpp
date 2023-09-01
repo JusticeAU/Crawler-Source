@@ -1401,7 +1401,7 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 		ImGui::EndCombo();
 	}
 
-	if (ImGui::Checkbox("Player Turn is Free (Default is False)", &dungeon->playerTurnIsFree))
+	if (ImGui::Checkbox("Player Turn is Free (Default is True)", &dungeon->playerTurnIsFree))
 		MarkUnsavedChanges();
 
 	if (ImGui::Checkbox("Player Interact is Free (Default is False)", &dungeon->playerInteractIsFree))
@@ -1449,6 +1449,15 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 
 void Crawl::DungeonEditor::Update()
 {
+
+	vec2 NDC = Input::GetMousePosNDC();
+	vec3 rayStart = Scene::s_editorCamera->object->GetWorldSpacePosition();
+	vec3 rayDir = Scene::s_editorCamera->camera->GetRayFromNDC(NDC);
+	float scale = rayStart.z / rayDir.z;
+	vec3 groundPos = rayStart - (rayDir * scale);
+	groundPos.z = 1.5f;
+	Scene::s_instance->m_pointLights[0].position = groundPos;
+
 	switch (editMode)
 	{
 	case Mode::TileBrush:
@@ -1513,15 +1522,10 @@ void Crawl::DungeonEditor::UpdateModeTileBrush()
 }
 void Crawl::DungeonEditor::UpdateModeTileEdit()
 {
-	if (Input::Mouse(2).Pressed())
+	if (selectedTile)
 	{
-		vec2 NDC = Input::GetMousePosNDC();
-		vec3 rayStart = Scene::s_editorCamera->object->GetWorldSpacePosition();
-		vec3 rayDir = Scene::s_editorCamera->camera->GetRayFromNDC(NDC);
-		float scale = rayStart.z / rayDir.z;
-		vec3 groundPos = rayStart - (rayDir * scale);
-		groundPos.z = 1.5f;
-		Scene::s_instance->m_pointLights[0].position = groundPos;
+		Scene::s_instance->m_pointLights[0].position = dungeonPosToObjectScale(selectedTile->position);
+		Scene::s_instance->m_pointLights[0].position.z = 0.1f;
 	}
 
 	if (Input::Mouse(0).Down())

@@ -19,7 +19,7 @@ void Crawl::DungeonEnemySwitcher::Update()
 {
 	// check that player is in line of sight
 	LogUtils::Log("Switcher is checking line of sight");
-	if (!dungeon->HasLineOfSight(position, facing))
+	if (!dungeon->CanSee(position, facing))
 		return;
 
 	bool shouldContinue = true;
@@ -95,7 +95,7 @@ void Crawl::DungeonEnemySwitcher::Update()
 				return;
 		}
 
-		if (dungeon->HasLineOfSight(currentPosition, direction))
+		if (dungeon->CanSee(currentPosition, direction))
 		{
 
 			currentPosition += directions[direction];

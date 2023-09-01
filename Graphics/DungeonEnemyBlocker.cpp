@@ -52,7 +52,7 @@ void Crawl::DungeonEnemyBlocker::CheckShouldPrime()
 {
 	// detect object in front
 	// if yes, upswing
-	if (!dungeon->HasLineOfSight(position, facing))
+	if (!dungeon->CanSee(position, facing))
 		return;
 
 	DungeonTile* tile = dungeon->GetTile(position + directions[facing]);

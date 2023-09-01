@@ -72,7 +72,7 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 
 		/*if ((Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down() || Input::Mouse(1).Down()) && dungeon->playerHasKnife)
 		{
-			if (dungeon->HasLineOfSight(position, facing))
+			if (dungeon->CanSee(position, facing))
 			{
 				LogUtils::Log("Stab!");
 				dungeon->DamageAtPosition(position + directions[facing], this, true);

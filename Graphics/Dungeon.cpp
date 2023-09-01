@@ -139,9 +139,13 @@ bool Crawl::Dungeon::FindPath(ivec2 from, ivec2 to, int facing)
 
 		for (int directionIndex = 0; directionIndex < 4; directionIndex++) // check all directions
 		{
+			if (!CanTraverse(currentTile->position, directionIndex))
+				continue;
+
 			DungeonTile* connectingTile = currentTile->neighbors[directionIndex];
 			if (connectingTile) // if there is a connectingTile
 			{
+
 				if (!connectingTile->closedListed)
 				{
 					int cost = currentTile->cost + 1;
@@ -300,7 +304,7 @@ bool Crawl::Dungeon::IsOpenTile(ivec2 position)
 	return true;
 }
 
-bool Crawl::Dungeon::HasLineOfSight(ivec2 fromPos, int directionIndex)
+bool Crawl::Dungeon::CanTraverse(ivec2 fromPos, int directionIndex)
 {
 	glm::ivec2 toPos = fromPos + directions[directionIndex];
 
@@ -309,8 +313,6 @@ bool Crawl::Dungeon::HasLineOfSight(ivec2 fromPos, int directionIndex)
 	else if (directionIndex == EAST_INDEX) directionMask = EAST_MASK;
 	else if (directionIndex == SOUTH_INDEX) directionMask = SOUTH_MASK;
 	else directionMask = WEST_MASK;
-	unsigned int reverseDirectionIndex = directionIndex + 2;
-	if (reverseDirectionIndex > 3) reverseDirectionIndex -= 4;
 
 	bool canMove = true;
 	DungeonTile* currentTile = GetTile(fromPos);
@@ -318,6 +320,35 @@ bool Crawl::Dungeon::HasLineOfSight(ivec2 fromPos, int directionIndex)
 
 	// Check if the tile we're on allows us to move in the requested direction - Maybe I could just create some Masks for each cardinal direction and pass those around instead.
 	canMove = (currentTile->maskTraverse & directionMask) == directionMask;
+
+	if (!canMove)
+		return canMove;
+
+	// check for edge blocked - Doors!
+
+	canMove = !IsDoorBlocking(currentTile, directionIndex);
+	if (!canMove)
+		return canMove;
+
+	return canMove;
+}
+
+bool Crawl::Dungeon::CanSee(ivec2 fromPos, int directionIndex)
+{
+	glm::ivec2 toPos = fromPos + directions[directionIndex];
+
+	unsigned int directionMask;
+	if (directionIndex == NORTH_INDEX) directionMask = NORTH_MASK;
+	else if (directionIndex == EAST_INDEX) directionMask = EAST_MASK;
+	else if (directionIndex == SOUTH_INDEX) directionMask = SOUTH_MASK;
+	else directionMask = WEST_MASK;
+
+	bool canMove = true;
+	DungeonTile* currentTile = GetTile(fromPos);
+	if (!currentTile) return false; // early out if we're not a tile. We goofed up design wise and cant really resolve this, and shouldn't. Fix the level!
+
+	// Check if the tile we're on allows us to see in the requested direction - Maybe I could just create some Masks for each cardinal direction and pass those around instead.
+	canMove = (currentTile->maskSee & directionMask) == directionMask;
 
 	if (!canMove)
 		return canMove;
@@ -379,7 +410,7 @@ bool Crawl::Dungeon::PlayerCanMove(glm::ivec2 fromPos, int directionIndex)
 				{
 					LogUtils::Log("block has a tile behind it");
 					// check line of sight
-					if (!HasLineOfSight(toPos, directionIndex))
+					if (!CanSee(toPos, directionIndex))
 						return false; // A door or something is blocking.
 
 					if (blockTo->occupied)
@@ -414,7 +445,7 @@ bool Crawl::Dungeon::PlayerCanMove(glm::ivec2 fromPos, int directionIndex)
 				{
 					LogUtils::Log("mirror has a tile behind it");
 					// check line of sight
-					if (!HasLineOfSight(toPos, directionIndex))
+					if (!CanSee(toPos, directionIndex))
 						return false; // A door or something is blocking.
 
 					if (blockTo->occupied)
@@ -629,7 +660,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 	ivec2 targetPosition = fromPosition + directions[direction];
 
 	// check you have line of sight to position
-	if (!HasLineOfSight(fromPosition, direction))
+	if (!CanSee(fromPosition, direction))
 		return false;
 
 	// see if theres anything kickable in that position
@@ -652,7 +683,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		// see if the thing can move
 		ivec2 moveToPos = targetPosition + directions[direction];
 
-		if (!HasLineOfSight(targetPosition, direction))
+		if (!CanSee(targetPosition, direction))
 			return false;
 
 		// is there a tile?
@@ -693,7 +724,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		// see if the thing can move
 		ivec2 moveToPos = targetPosition + directions[direction];
 
-		if (!HasLineOfSight(targetPosition, direction))
+		if (!CanSee(targetPosition, direction))
 			return false;
 
 		// is there a tile?
@@ -731,7 +762,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		// see if the thing can move
 		ivec2 moveToPos = targetPosition + directions[direction];
 
-		if (!HasLineOfSight(targetPosition, direction))
+		if (!CanSee(targetPosition, direction))
 			return false;
 
 		// is there a tile?
@@ -774,7 +805,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		// see if the thing can move
 		ivec2 moveToPos = targetPosition + directions[direction];
 
-		if (!HasLineOfSight(targetPosition, direction))
+		if (!CanSee(targetPosition, direction))
 			return false;
 
 		// is there a tile?

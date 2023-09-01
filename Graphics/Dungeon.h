@@ -64,7 +64,8 @@ namespace Crawl
 
 		bool IsOpenTile(ivec2 position);
 
-		bool HasLineOfSight(ivec2 fromPos, int directionIndex);
+		bool CanTraverse(ivec2 fromPos, int directionIndex);
+		bool CanSee(ivec2 fromPos, int directionIndex);
 		bool PlayerCanMove(ivec2 fromPos, int directionIndex);
 		bool IsDoorBlocking(DungeonTile* fromTile, int directionIndex);
 
