@@ -9,8 +9,8 @@ glm::vec3 Crawl::DungeonStairs::EvaluatePosition(float t)
 void Crawl::DungeonStairs::BuildDefaultSpline()
 {
 	// Take the start and finish grid positions and build a basic untweaked spline based off of this. maybe it will end op being fine?
-	startOffset = dungeonPosToObjectScale(directionsReversed[directionStart]);
-	startWorldPosition = dungeonPosToObjectScale(startPosition) + startOffset;
+	startOffset = dungeonPosToObjectScale(directions[directionStart]);
+	startWorldPosition = dungeonPosToObjectScale(startPosition) - startOffset;
 	if (!up)
 	{
 		startOffset.z = 3.0f;
@@ -18,7 +18,7 @@ void Crawl::DungeonStairs::BuildDefaultSpline()
 	}
 
 	endOffset = dungeonPosToObjectScale(directionsReversed[directionEnd]);
-	endWorldPosition = dungeonPosToObjectScale(endPosition) + endOffset;
+	endWorldPosition = dungeonPosToObjectScale(endPosition) - endOffset;
 	if (up)
 	{
 		endOffset.z = 3.0f;

@@ -97,6 +97,8 @@ void Scene::Render()
 
 	if(drawGizmos)
 		renderer->RenderSceneGizmos(this, cameraCurrent);
+
+	renderer->RenderLines(cameraCurrent);
 	renderer->DrawBackBuffer();
 }
 

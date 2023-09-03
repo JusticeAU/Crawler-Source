@@ -234,6 +234,7 @@
     <ClCompile Include="FrameBuffer.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="LineRenderer.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="MaterialManager.cpp" />
@@ -314,6 +315,7 @@
     <ClInclude Include="glad.h" />
     <ClInclude Include="glfwCallbacks.h" />
     <ClInclude Include="glm2json.h" />
+    <ClInclude Include="LineRenderer.h" />
     <ClInclude Include="PostProcess.h" />
     <ClInclude Include="Primitives.h" />
     <ClInclude Include="SceneEditorCamera.h" />

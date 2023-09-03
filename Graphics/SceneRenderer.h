@@ -28,6 +28,7 @@ public:
 	void RenderSceneShadowMaps(Scene* scene, ComponentCamera* camera);
 	void RenderSceneObjectPick(Scene* scene, ComponentCamera* camera);
 	void RenderSceneGizmos(Scene* scene, ComponentCamera* camera);
+	void RenderLines(ComponentCamera* camera);
 	void DrawBackBuffer();
 
 	static bool ShouldCull(vec3 position);

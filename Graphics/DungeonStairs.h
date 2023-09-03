@@ -19,10 +19,10 @@ namespace Crawl
 		
 		bool up = true;
 		
-		glm::vec3 startWorldPosition;
-		glm::vec3 startOffset;
-		glm::vec3 endWorldPosition;
-		glm::vec3 endOffset;
+		glm::vec3 startWorldPosition = {0,0,0 };
+		glm::vec3 startOffset = { 0,0,0 };;
+		glm::vec3 endWorldPosition = { 0,0,0 };;
+		glm::vec3 endOffset = { 0,0,0 };;
 	};
 
 	static void to_json(ordered_json& j, const DungeonStairs& object)

@@ -329,6 +329,9 @@
     <ClCompile Include="DungeonStairs.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
+    <ClCompile Include="LineRenderer.cpp">
+      <Filter>Source Files\Application\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -591,6 +594,9 @@
     </ClInclude>
     <ClInclude Include="DungeonStairs.h">
       <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="LineRenderer.h">
+      <Filter>Source Files\Application\Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

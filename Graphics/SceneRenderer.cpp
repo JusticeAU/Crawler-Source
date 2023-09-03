@@ -21,6 +21,8 @@
 
 #include "Input.h"
 
+#include "LineRenderer.h"
+
 bool SceneRenderer::msaaEnabled = true;
 bool SceneRenderer::ssaoEnabled = true;
 ComponentCamera* SceneRenderer::frustumCullingCamera = nullptr;
@@ -104,6 +106,8 @@ SceneRenderer::SceneRenderer()
 		pointShadowMap[i] = new FrameBuffer(FrameBuffer::Type::ShadowCubeMap);
 		pointShadowMap2[i] = new FrameBuffer(FrameBuffer::Type::ShadowCubeMap);
 	}
+
+	LineRenderer::Initialise();
 }
 
 void SceneRenderer::DrawGUI()
@@ -307,7 +311,6 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 
 	//shadowMap->BindTexture(5);
 	// for each camera in each object, draw to that cameras frame buffer
-
 	//if (Input::Keyboard(GLFW_KEY_5).Pressed()) // This is just running natively so as to keep things moving whilst it's in development.
 	{
 		currentPassIsStatic = true;
@@ -553,6 +556,15 @@ void SceneRenderer::RenderSceneGizmos(Scene* scene, ComponentCamera* c)
 	}
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	FrameBuffer::UnBindTarget();
+}
+
+void SceneRenderer::RenderLines(ComponentCamera* camera)
+{
+	// Line Renderer
+	frameBufferProcessed->BindTarget();
+	LineRenderer::Render(camera->GetViewProjectionMatrix());
 	FrameBuffer::UnBindTarget();
 }
 

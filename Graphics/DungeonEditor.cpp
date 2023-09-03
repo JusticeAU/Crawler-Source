@@ -29,6 +29,7 @@ namespace fs = std::filesystem;
 #include "ComponentCamera.h"
 
 #include "LogUtils.h"
+#include "LineRenderer.h"
 
 
 Crawl::DungeonEditor::DungeonEditor()
@@ -1315,21 +1316,25 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDecoration()
 void Crawl::DungeonEditor::DrawGUIModeTileEditStairs()
 {
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 450, 300 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Edit Stairs", &selectedStairsWindowOpen);
 	ImGui::BeginDisabled();
 	ImGui::InputInt2("Start Position", &selectedStairs->startPosition.x);
 	ImGui::EndDisabled();
-	ImGui::InputInt2("End Position", &selectedStairs->endPosition.x);
-	ImGui::InputInt("Direction Start", (int*)&selectedStairs->directionStart);
-	ImGui::InputInt("Direction End", (int*)&selectedStairs->directionEnd);
-	ImGui::Checkbox("Stairs go up", &selectedStairs->up);
+	if(ImGui::InputInt2("End Position", &selectedStairs->endPosition.x)) MarkUnsavedChanges();
+	if(ImGui::InputInt("Direction Start", (int*)&selectedStairs->directionStart)) MarkUnsavedChanges();
+	if(ImGui::InputInt("Direction End", (int*)&selectedStairs->directionEnd)) MarkUnsavedChanges();
+	if(ImGui::Checkbox("Stairs go up", &selectedStairs->up)) MarkUnsavedChanges();
 	ImGui::Spacing();
-	ImGui::DragFloat3("Start World Position", &selectedStairs->startWorldPosition.x);
-	ImGui::DragFloat3("Start Offset", &selectedStairs->startOffset.x);
-	ImGui::DragFloat3("End World Position", &selectedStairs->endWorldPosition.x);
-	ImGui::DragFloat3("End Offset", &selectedStairs->endOffset.x);
-	if (ImGui::Button("Generate World Positions")) selectedStairs->BuildDefaultSpline();
+	if(ImGui::DragFloat3("Start World Position", &selectedStairs->startWorldPosition.x)) MarkUnsavedChanges();
+	if(ImGui::DragFloat3("Start Offset", &selectedStairs->startOffset.x)) MarkUnsavedChanges();
+	if(ImGui::DragFloat3("End World Position", &selectedStairs->endWorldPosition.x)) MarkUnsavedChanges();
+	if(ImGui::DragFloat3("End Offset", &selectedStairs->endOffset.x)) MarkUnsavedChanges();
+	if (ImGui::Button("Generate World Positions"))
+	{
+		selectedStairs->BuildDefaultSpline();
+		MarkUnsavedChanges();
+	}
 	ImGui::End();
 
 	// Send the curve to the line renderer
