@@ -175,7 +175,9 @@ namespace Crawl
 		void BuildSceneFromDungeonLayout();
 
 		const int version = 2; // increment this when the .dungeon file schema changes and ensure backwards compatibility.
+	public:
 		std::map<int, Column> tiles;
+	protected:
 		Object* tile_template;
 		Object* tilesParentObject = nullptr;
 

@@ -370,6 +370,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 
 	// Cardinal traversable/see yes/no
 	unsigned int oldMaskTraverse = selectedTile->maskTraverse;
+	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
 	if (ImGui::BeginCombo("Can Walk", maskToString[oldMaskTraverse].c_str()))
 	{
 		if (ImGui::Checkbox("Can Walk North", &selectedTileUntraversableWalls[0]))
@@ -382,9 +383,11 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 			selectedTile->maskTraverse += selectedTileUntraversableWalls[3] ? WEST_MASK : -WEST_MASK;
 		ImGui::EndCombo();
 	}
+	ImGui::PopStyleColor();
 	if (oldMaskTraverse != selectedTile->maskTraverse) MarkUnsavedChanges();
 
 	unsigned int oldMaskSee = selectedTile->maskSee;
+	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(123, 123, 255, 255));
 	if (ImGui::BeginCombo("Can See", maskToString[oldMaskSee].c_str()))
 	{
 		if (ImGui::Checkbox("Can See North", &selectedTileSeeThroughWalls[0]))
@@ -397,6 +400,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 			selectedTile->maskSee += selectedTileSeeThroughWalls[3] ? WEST_MASK : -WEST_MASK;
 		ImGui::EndCombo();
 	}
+	ImGui::PopStyleColor();
 	if (oldMaskSee != selectedTile->maskSee) MarkUnsavedChanges();
 
 	// Wall Variants
@@ -1519,6 +1523,17 @@ void Crawl::DungeonEditor::Update()
 		UpdateModeTileEdit();	break;
 	case Mode::SlugPathEditor:
 		UpdateModeSlugPathEdit();	break;
+	case Mode::DungeonProperties:
+	{
+		for (auto& column : dungeon->tiles)
+		{
+			for (auto& dungeonTile : column.second.row)
+			{
+				DrawTileInformation(&dungeonTile.second);
+			}
+		}
+		break;
+	}
 	default:
 		break;
 	}
@@ -1579,6 +1594,8 @@ void Crawl::DungeonEditor::UpdateModeTileEdit()
 	{
 		Scene::s_instance->m_pointLights[0].position = dungeonPosToObjectScale(selectedTile->position);
 		Scene::s_instance->m_pointLights[0].position.z = 0.1f;
+
+		DrawTileInformation(selectedTile);
 	}
 
 	if (Input::Mouse(0).Down())
@@ -1658,6 +1675,17 @@ void Crawl::DungeonEditor::UpdateModeSlugPathEdit()
 			MarkUnsavedChanges();
 		}
 	}
+}
+
+void Crawl::DungeonEditor::DrawTileInformation(DungeonTile* tile)
+{
+	glm::vec3 tileOrigin = dungeonPosToObjectScale(tile->position);
+	for (int i = 0; i < 4; i++)
+		if ((tile->maskTraverse & orientationMasksIndex[i]) == orientationMasksIndex[i]) LineRenderer::DrawLine(tileOrigin, tileOrigin + dungeonPosToObjectScale(directions[i]) * 0.5f, { 0,1,0 });
+
+	tileOrigin.z += 0.2f;
+	for (int i = 0; i < 4; i++)
+		if ((tile->maskSee & orientationMasksIndex[i]) == orientationMasksIndex[i]) LineRenderer::DrawLine(tileOrigin, tileOrigin + dungeonPosToObjectScale(directions[i]) * 0.5f, { 0.5,.5,1 });
 }
 
 void Crawl::DungeonEditor::RefreshSelectedTile()
