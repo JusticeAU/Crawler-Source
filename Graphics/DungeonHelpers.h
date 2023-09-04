@@ -118,6 +118,14 @@ namespace Crawl
 		{ 0, 1}
 	};
 
+	enum PILLAR_INDEX
+	{
+		NORTHEAST_INDEX,
+		SOUTHEAST_INDEX,
+		SOUTHWEST_INDEX,
+		NORTHWEST_INDEX
+	};
+
 	static std::string maskToString[16]
 	{
 		"None",

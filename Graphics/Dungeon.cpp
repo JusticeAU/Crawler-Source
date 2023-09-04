@@ -260,6 +260,7 @@ bool Crawl::Dungeon::DeleteTile(ivec2 position)
 	tile->second.object->markedForDeletion = true;
 	col->second.row.erase(tile);
 	UpdateTileNeighbors(position);
+	UpdatePillarsForTileCoordinate(position);
 
 	return true;
 }
@@ -2274,10 +2275,23 @@ void Crawl::Dungeon::BuildSceneFromDungeonLayout()
 
 bool Crawl::Dungeon::ShouldHavePillar(ivec2 coordinate)
 {
-	int tilesOpen = 0;
-	for (int i = 0; i < 4; i++)
-		if (IsOpenTile(coordinate + pillarToTileCoordinates[i])) tilesOpen++;
-	return tilesOpen < 4;
+	// check North East Tile
+	DungeonTile* tileCheck = GetTile(coordinate + pillarToTileCoordinates[NORTHEAST_INDEX]);
+	if (tileCheck && (tileCheck->wallVariants[WEST_INDEX] >= 0 || tileCheck->wallVariants[SOUTH_INDEX] >= 0)) return true;
+
+	// check South East Tile
+	tileCheck = GetTile(coordinate + pillarToTileCoordinates[SOUTHEAST_INDEX]);
+	if (tileCheck && (tileCheck->wallVariants[NORTH_INDEX] >= 0 || tileCheck->wallVariants[WEST_INDEX] >= 0)) return true;
+
+	// check South West Tile
+	tileCheck = GetTile(coordinate + pillarToTileCoordinates[SOUTHWEST_INDEX]);
+	if (tileCheck && (tileCheck->wallVariants[EAST_INDEX] >= 0 || tileCheck->wallVariants[NORTH_INDEX] >= 0)) return true;
+
+	// check North West Tile
+	tileCheck = GetTile(coordinate + pillarToTileCoordinates[NORTHWEST_INDEX]);
+	if (tileCheck && (tileCheck->wallVariants[SOUTH_INDEX] >= 0 || tileCheck->wallVariants[EAST_INDEX] >= 0)) return true;
+
+	return false;	
 }
 
 void Crawl::Dungeon::UpdatePillarsForTileCoordinate(ivec2 coordinate)
