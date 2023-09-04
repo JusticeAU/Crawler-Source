@@ -803,7 +803,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		return true;
 	}
 
-	// Kickable blockers
+	// Kickable Mirror
 	DungeonMirror* kickableMirror = nullptr;
 	for (auto& mirror : mirrors)
 	{
@@ -837,6 +837,44 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		toTile->occupied = true;
 		kickableMirror->position = moveToPos;
 		kickableMirror->object->SetLocalPosition(dungeonPosToObjectScale(kickableMirror->position));
+
+		return true;
+	}
+
+	// Kickable Switcher
+	DungeonEnemySwitcher* kickableSwitcher = nullptr;
+	for (auto& switcher : switchers)
+	{
+		if (switcher->position == targetPosition)
+		{
+			kickableSwitcher = switcher;
+			break;
+		}
+	}
+
+	if (kickableSwitcher)
+	{
+		DungeonTile* kickTile = GetTile(targetPosition);
+
+		// see if the thing can move
+		ivec2 moveToPos = targetPosition + directions[direction];
+
+		if (!CanSee(targetPosition, direction))
+			return false;
+
+		// is there a tile?
+		DungeonTile* toTile = GetTile(moveToPos);
+		if (!toTile)
+			return false;
+		// is it occupied?
+		if (toTile->occupied)
+			return false; // We coudl do damage and shit here.
+
+		// kick it in that direction
+		kickTile->occupied = false;
+		toTile->occupied = true;
+		kickableSwitcher->position = moveToPos;
+		kickableSwitcher->object->SetLocalPosition(dungeonPosToObjectScale(kickableSwitcher->position));
 
 		return true;
 	}
