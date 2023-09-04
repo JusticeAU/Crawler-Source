@@ -115,7 +115,7 @@ void Crawl::DungeonShootLaser::Fire()
 			{
 				bool wasOccupied = tile->occupied;
 
-				dungeon->DamageAtPosition(currentPosition, this);
+				dungeon->DamageAtPosition(currentPosition, this, false, Dungeon::DamageType::Energy);
 
 				if (wasOccupied)
 					break;

@@ -605,7 +605,7 @@ bool Crawl::Dungeon::ShouldActivateStairs(ivec2 position, FACING_INDEX direction
 	return false;
 }
 
-bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer)
+bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer, DamageType damageType)
 {
 	bool didDamage = false;
 	//CreateDamageVisual(position, fromPlayer);
@@ -617,14 +617,16 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 		player->TakeDamage();
 	}
 
-	// check boxes
-	// check for pushable boxes at spikes
-	for (int i = 0; i < pushableBlocks.size(); i++)
+	// check boxes - We dont do this any more
+	if (damageType == DamageType::Physical)
 	{
-		if (pushableBlocks[i]->position == position)
+		for (int i = 0; i < pushableBlocks.size(); i++)
 		{
-			pushableBlocks[i]->isDead = true;
-			break;
+			if (pushableBlocks[i]->position == position)
+			{
+				pushableBlocks[i]->isDead = true;
+				break;
+			}
 		}
 	}
 

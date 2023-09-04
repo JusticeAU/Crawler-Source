@@ -41,6 +41,11 @@ namespace Crawl
 	class Dungeon
 	{
 	public:
+		enum class DamageType
+		{
+			Physical,
+			Energy
+		};
 		Dungeon(bool fakeDungeon = false);
 		// Tile manipulation
 		DungeonTile* AddTile(ivec2 position);
@@ -77,7 +82,7 @@ namespace Crawl
 		bool ShouldActivateStairs(ivec2 position, FACING_INDEX direction);
 
 		// Returns true if this hit something
-		bool DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer = false);
+		bool DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer = false, DamageType damageType = DamageType::Physical);
 		bool DoKick(ivec2 position, FACING_INDEX facing);
 		
 		DungeonInteractableLever* CreateLever(ivec2 position, unsigned int directionMask, unsigned int id, unsigned int doorID, bool startStatus);
