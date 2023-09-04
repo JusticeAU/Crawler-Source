@@ -571,24 +571,15 @@ void Crawl::Dungeon::RemoveLever(DungeonInteractableLever* lever)
 	}
 }
 
-void Crawl::Dungeon::DoActivate(unsigned int id)
+void Crawl::Dungeon::DoActivate(unsigned int id, bool on)
 {
 	for (int i = 0; i < activatable.size(); i++)
 	{
 		if (activatable[i]->id == id)
 			activatable[i]->Toggle();
 	}
-}
 
-// This method is not currently and should not be used.
-void Crawl::Dungeon::DoActivate(unsigned int id, bool on)
-{
-	for (int i = 0; i < activatable.size(); i++)
-	{
-		if (activatable[i]->id == id)
-			activatable[i]->Toggle(on);
-	}
-
+	// We only activate lasers on an 'on' signal, they dont fire if something walks off the plate.
 	if (on)
 	{
 		for (int i = 0; i < shootLasers.size(); i++)

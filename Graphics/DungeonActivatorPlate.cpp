@@ -23,7 +23,7 @@ bool Crawl::DungeonActivatorPlate::TestPosition()
 		if (tile->occupied && !down)
 		{
 			down = true;
-			dungeon->DoActivate(activateID);
+			dungeon->DoActivate(activateID, true);
 		}
 		else if (!tile->occupied && down)
 		{

@@ -72,8 +72,7 @@ namespace Crawl
 		void SetPlayer(DungeonPlayer* player) { this->player = player; }
 
 		bool DoInteractable(unsigned int id);
-		void DoActivate(unsigned int id);
-		void DoActivate(unsigned int id, bool on);
+		void DoActivate(unsigned int id, bool on = false);
 
 		bool ShouldActivateStairs(ivec2 position, FACING_INDEX direction);
 
