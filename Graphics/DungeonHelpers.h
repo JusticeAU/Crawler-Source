@@ -166,10 +166,10 @@ namespace Crawl
 
 	static FACING_INDEX dungeonRotate(FACING_INDEX from, int direction)
 	{
-		FACING_INDEX newIndex = (FACING_INDEX)(from + direction);
-		if (newIndex < 0) newIndex = (FACING_INDEX)3;
-		if (newIndex > 3) newIndex = (FACING_INDEX)0;
-		return newIndex;
+		int newIndex = (FACING_INDEX)(from + direction);
+		if (newIndex < 0) newIndex += 4;
+		if (newIndex > 3) newIndex -= 4;
+		return (FACING_INDEX)newIndex;
 	}
 
 	static int GetInvertedMask(int mask)
