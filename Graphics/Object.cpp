@@ -518,6 +518,7 @@ void to_json(nlohmann::ordered_json& j, const Object& object)
 			c["frameBuffer"] = cr->frameBufferName;
 			c["receivesShadows"] = cr->receivesShadows;
 			c["castsShadows"] = cr->castsShadows;
+			if (cr->dontFrustumCull) c["dontFrustumCull"] = true;
 			break;
 		}
 		case ComponentType::Component_Animator:

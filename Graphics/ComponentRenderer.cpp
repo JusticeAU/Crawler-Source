@@ -33,6 +33,7 @@ ComponentRenderer::ComponentRenderer(Object* parent, nlohmann::ordered_json j) :
 	frameBuffer = TextureManager::GetFrameBuffer(frameBufferName);
 	j.at("receivesShadows").get_to(receivesShadows);
 	j.at("castsShadows").get_to(castsShadows);
+	if (j.contains("dontFrustumCull")) dontFrustumCull = true;
 
 }
 
@@ -45,7 +46,7 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 	}
 
 	// The culling Frustum should be set before any draw pass. If there is one set, then it is tested against.
-	if (SceneRenderer::cullingFrustum)
+	if (SceneRenderer::cullingFrustum && !dontFrustumCull)
 	{
 		vec3 modelPos = componentParent->GetWorldSpacePosition();
 		if(SceneRenderer::ShouldCull(modelPos)) return;
@@ -151,6 +152,8 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 
 void ComponentRenderer::DrawGUI()
 {
+	ImGui::Checkbox("Do Not Cull (Chloe Only)", &dontFrustumCull);
+
 	// material settings per submesh
 	for (int i = 0; i < materialArray.size(); i++)
 	{
@@ -253,6 +256,7 @@ void ComponentRenderer::SetUniforms()
 	material->shader->SetVector3Uniform("ambientLightColour", Scene::GetAmbientLightColour());
 	material->shader->SetVector3Uniform("sunLightDirection", glm::normalize(Scene::GetSunDirection()));
 	material->shader->SetVector3Uniform("sunLightColour", Scene::GetSunColour());
+
 	// Point Lights
 	int numLights = Scene::GetNumPointLights();
 	material->shader->SetIntUniform("numLights", numLights);

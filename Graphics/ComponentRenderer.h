@@ -49,6 +49,7 @@ public:
 	bool castsShadows = true;
 	bool receivesShadows = true;
 	float shadowBias = 0.005f;
+	bool dontFrustumCull = false;
 
 protected:
 	ComponentAnimator* animator = nullptr;
