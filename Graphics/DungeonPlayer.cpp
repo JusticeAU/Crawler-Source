@@ -151,47 +151,42 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		}
 	}
 
-	int index = -1;
-	if (Input::Keyboard(GLFW_KEY_W).Down())
-		index = GetMoveCardinalIndex(FORWARD_INDEX);
-	if (Input::Keyboard(GLFW_KEY_S).Down())
-		index = GetMoveCardinalIndex(BACK_INDEX);
-	if (Input::Keyboard(GLFW_KEY_A).Down())
-		index = GetMoveCardinalIndex(LEFT_INDEX);
-	if (Input::Keyboard(GLFW_KEY_D).Down())
-		index = GetMoveCardinalIndex(RIGHT_INDEX);
-
 	ivec2 oldPlayerCoordinate = position;
-	if (index != -1)
+	if (IsMoveDown() || IsMovePressedLongEnough(delta))
 	{
-		// Check stairs in this direction
-		if (currentDungeon->ShouldActivateStairs(position, (FACING_INDEX)index))
+		int index = GetMoveIndex();
+
+		if (index != -1)
 		{
-			DungeonTile* oldTile = currentDungeon->GetTile(position);
-			if (oldTile) oldTile->occupied = false;
-			state = STAIRBEARS;
-			position = activateStairs->endPosition;
-			stairTimeCurrent = 0.0f;
-			if (activateStairs->up)
+			// Check stairs in this direction
+			if (currentDungeon->ShouldActivateStairs(position, (FACING_INDEX)index))
 			{
-				isOnLobbyLevel2 = true;
-				currentDungeon = lobbyLevel2Dungeon;
-				playerZPosition = lobbyLevel2Floor;
+				DungeonTile* oldTile = currentDungeon->GetTile(position);
+				if (oldTile) oldTile->occupied = false;
+				state = STAIRBEARS;
+				position = activateStairs->endPosition;
+				stairTimeCurrent = 0.0f;
+				if (activateStairs->up)
+				{
+					isOnLobbyLevel2 = true;
+					currentDungeon = lobbyLevel2Dungeon;
+					playerZPosition = lobbyLevel2Floor;
+				}
+				else
+				{
+					isOnLobbyLevel2 = false;
+					currentDungeon = dungeon;
+					playerZPosition = 0.0f;
+				}
+				return false;
 			}
-			else
+			else if (currentDungeon->PlayerCanMove(position, index))
 			{
-				isOnLobbyLevel2 = false;
-				currentDungeon = dungeon;
-				playerZPosition = 0.0f;
+				AudioManager::PlaySound(stepSounds[rand() % 4]);
+				position += directions[index];
+				currentDungeon->GetTile(position)->occupied = true;
+				didMove = true;
 			}
-			return false;
-		}
-		else if (currentDungeon->PlayerCanMove(position, index))
-		{
-			AudioManager::PlaySound(stepSounds[rand() % 4]);
-			position += directions[index];
-			currentDungeon->GetTile(position)->occupied = true;
-			didMove = true;
 		}
 	}
 
@@ -260,6 +255,48 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	}
 
 	return false;
+}
+
+bool Crawl::DungeonPlayer::IsMoveDown()
+{
+	return
+		Input::Keyboard(GLFW_KEY_W).Down() ||
+		Input::Keyboard(GLFW_KEY_S).Down() ||
+		Input::Keyboard(GLFW_KEY_A).Down() ||
+		Input::Keyboard(GLFW_KEY_D).Down();
+}
+
+bool Crawl::DungeonPlayer::IsMovePressedLongEnough(float delta)
+{
+	if (Input::Keyboard(GLFW_KEY_W).Pressed() ||
+		Input::Keyboard(GLFW_KEY_S).Pressed() ||
+		Input::Keyboard(GLFW_KEY_A).Pressed() ||
+		Input::Keyboard(GLFW_KEY_D).Pressed())
+	{
+		moveDelayCurrent += delta;
+		if (moveDelayCurrent > moveDelay)
+		{
+			moveDelayCurrent = 0.0f;
+			return true;
+		}
+	}
+	else moveDelayCurrent = 0.0f;
+
+	return false;
+}
+
+int Crawl::DungeonPlayer::GetMoveIndex()
+{
+	int index = -1;
+	if (Input::Keyboard(GLFW_KEY_W).Pressed())
+		index = GetMoveCardinalIndex(FORWARD_INDEX);
+	if (Input::Keyboard(GLFW_KEY_S).Pressed())
+		index = GetMoveCardinalIndex(BACK_INDEX);
+	if (Input::Keyboard(GLFW_KEY_A).Pressed())
+		index = GetMoveCardinalIndex(LEFT_INDEX);
+	if (Input::Keyboard(GLFW_KEY_D).Pressed())
+		index = GetMoveCardinalIndex(RIGHT_INDEX);
+	return index;
 }
 
 bool Crawl::DungeonPlayer::UpdateStateMoving(float delta)

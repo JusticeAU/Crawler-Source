@@ -25,6 +25,9 @@ namespace Crawl
 
 		bool Update(float deltaTime);
 		bool UpdateStateIdle(float delta);
+		bool IsMoveDown();
+		bool IsMovePressedLongEnough(float delta);
+		int GetMoveIndex();
 		bool UpdateStateMoving(float delta);
 		bool UpdateStateTurning(float delta);
 		bool UpdateStateStairs(float delta);
@@ -56,10 +59,15 @@ namespace Crawl
 		float lookSpeed = 0.1f;
 		float lookMaxY = 45.0f;
 		float lookMaxZ = 170.0f;
+
 		float moveSpeed = 0.25f;
 		float moveCurrent = 0.0f;
 		glm::vec3 oldPosition;
 		glm::vec3 targetPosition;
+
+		float moveDelay = 0.15f;
+		float moveDelayCurrent = 0.0f;
+
 		float turnSpeed = 0.15f;
 		float turnCurrent = 0.0f;
 		float oldTurn;
