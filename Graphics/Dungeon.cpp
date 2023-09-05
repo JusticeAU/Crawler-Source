@@ -686,6 +686,17 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 			}
 		}
 	}
+
+	// Check for Switchers
+	for (int i = 0; i < switchers.size(); i++)
+	{
+		if (switchers[i]->position == position)
+		{
+			didDamage = true;
+			RemoveEnemySwitcher(switchers[i]);
+			break;
+		}
+	}
 	return didDamage;
 }
 
