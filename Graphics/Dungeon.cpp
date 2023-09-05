@@ -631,13 +631,16 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 	}
 
 	// check blockers
-	for (int i = 0; i < blockers.size(); i++)
+	if (damageType == DamageType::Physical)
 	{
-		if (blockers[i]->position == position)
+		for (int i = 0; i < blockers.size(); i++)
 		{
-			didDamage = true;
-			RemoveEnemyBlocker(blockers[i]);
-			break;
+			if (blockers[i]->position == position)
+			{
+				didDamage = true;
+				RemoveEnemyBlocker(blockers[i]);
+				break;
+			}
 		}
 	}
 
