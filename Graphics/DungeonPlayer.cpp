@@ -91,13 +91,13 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	}
 
 	// To here.
-
 	glm::ivec2 coordinate = { 0, 0 };
 	glm::ivec2 coordinateUnchanged = { 0, 0 }; // TO DO this sucks
 
 	if (Input::Keyboard(GLFW_KEY_LEFT_ALT).Down())
 		return true;
 
+	// Old Stab mechanic
 	/*if ((Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down() || Input::Mouse(1).Down()) && dungeon->playerHasKnife)
 	{
 		if (dungeon->CanSee(position, facing))
@@ -135,7 +135,8 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		}
 	}
 
-	// Test Object Picking stuffo
+	// Activating Objects
+	// Via Mouse
 	if (Input::Mouse(0).Down())
 		Scene::RequestObjectSelection();
 
@@ -144,6 +145,17 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		unsigned int picked = Scene::s_instance->objectPickedID;
 		Scene::s_instance->objectPickedID = 0;
 		if (currentDungeon->DoInteractable(picked))
+		{
+			animator->BlendToAnimation(animationNamePush, 0.1f);
+			if (!currentDungeon->playerInteractIsFree)
+				return true;
+		}
+	}
+	
+	// Via Interact Key
+	if (Input::Keyboard(GLFW_KEY_SPACE).Down())
+	{
+		if (currentDungeon->DoInteractable(position, facing))
 		{
 			animator->BlendToAnimation(animationNamePush, 0.1f);
 			if (!currentDungeon->playerInteractIsFree)
@@ -233,9 +245,8 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 			return true;
 	}
 
-	// Rotators
-
-	if (Input::Keyboard(GLFW_KEY_Z).Down())
+	// Rotators - not in use
+	/*if (Input::Keyboard(GLFW_KEY_Z).Down())
 	{
 		DungeonMirror* mirror = currentDungeon->GetMirrorAt(position + directions[facing]);
 		if (mirror)
@@ -252,7 +263,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 			currentDungeon->RotateMirror(mirror, -1);
 			return true;
 		}
-	}
+	}*/
 
 	return false;
 }

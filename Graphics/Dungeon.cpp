@@ -528,6 +528,20 @@ bool Crawl::Dungeon::DoInteractable(unsigned int id)
 	return didInteract;
 }
 
+bool Crawl::Dungeon::DoInteractable(ivec2 position, FACING_INDEX direction)
+{
+	bool didInteract = false;
+	for (int i = 0; i < interactables.size(); i++)
+	{
+		if (position == interactables[i]->position && direction == interactables[i]->orientation)
+		{
+			interactables[i]->Toggle();
+			didInteract = true;
+		}
+	}
+	return didInteract;
+}
+
 Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, unsigned int directionIndex, unsigned int id, unsigned int doorID, bool status)
 {
 	DungeonInteractableLever* lever = new DungeonInteractableLever();
