@@ -20,7 +20,7 @@ class ComponentRenderer : public Component
 {
 public:
 	ComponentRenderer(Object* parent) : Component("Renderer", Component_Renderer, parent) {};
-	ComponentRenderer(Object* parent, nlohmann::ordered_json);
+	ComponentRenderer(Object* parent, nlohmann::ordered_json j);
 
 	void Draw(mat4 pv, vec3 position, DrawMode mode) override;
 

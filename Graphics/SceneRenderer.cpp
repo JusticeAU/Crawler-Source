@@ -8,6 +8,8 @@
 #include "ComponentCamera.h"
 #include "PostProcess.h"
 
+#include "ComponentLightPoint.h"
+
 #include "MathUtils.h"
 
 #include <random>
@@ -458,7 +460,7 @@ void SceneRenderer::RenderSceneShadowCubeMaps(Scene* scene)
 		int width = pointShadowMap[0]->GetWidth();
 		int height = pointShadowMap[0]->GetHeight();
 
-		for (int i = 0; i < scene->m_pointLights.size(); i++)
+		for (int i = 0; i < scene->m_pointLightComponents.size(); i++)
 		{
 			glCopyImageSubData(pointShadowMap[i]->m_depthID, GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0, pointShadowMap2[i]->m_depthID, GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0, width, height, 6);
 		}
@@ -466,9 +468,9 @@ void SceneRenderer::RenderSceneShadowCubeMaps(Scene* scene)
 	}
 
 	// Render shadow maps for each point light
-	for (int light = 0; light < scene->m_pointLights.size(); light++)
+	for (int light = 0; light < scene->m_pointLightComponents.size(); light++)
 	{
-		vec3 lightPosition = scene->m_pointLights[light].position;
+		vec3 lightPosition = scene->m_pointLightComponents[light]->GetComponentParentObject()->GetWorldSpacePosition();
 		// Render to each side of the cube face.
 		for (int i = 0; i < 6; i++)
 		{
@@ -533,12 +535,12 @@ void SceneRenderer::RenderSceneGizmos(Scene* scene, ComponentCamera* c)
 	frameBufferProcessed->BindTarget();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	gizmoShader->Bind();
-	for (auto& light : scene->m_pointLights)
+	for (auto& pointLight : scene->m_pointLightComponents)
 	{
-		gizmoShader->SetVector3Uniform("gizmoColour", light.colour);
+		gizmoShader->SetVector3Uniform("gizmoColour", pointLight->colour);
 
 		vec3 localPosition, localRotation, localScale;
-		localPosition = light.position;
+		localPosition = pointLight->GetComponentParentObject()->GetWorldSpacePosition();
 		localScale = { 0.2f, 0.2f, 0.2f, };
 		localRotation = { 90, 0, 0 };
 		ImGuizmo::RecomposeMatrixFromComponents((float*)&localPosition, (float*)&localRotation, (float*)&localScale, (float*)&lightGizmo->transform);

@@ -15,6 +15,7 @@ class FrameBuffer;
 class Mesh;
 class Camera;
 class ComponentCamera;
+class ComponentLightPoint;
 
 class PostProcess;
 
@@ -50,6 +51,8 @@ public:
 	static int GetNumPointLights();
 	static glm::vec3* GetPointLightPositions() { return &s_instance->m_pointLightPositions[0]; }
 	static glm::vec3* GetPointLightColours() { return &s_instance->m_pointLightColours[0]; }
+	static void AddPointLight(ComponentLightPoint* light);
+	static void RemovePointLight(ComponentLightPoint* light);
 
 	static int GetCameraIndex() { return s_instance->cameraIndex; }
 	static ComponentCamera* GetCameraByIndex(int index);
@@ -79,6 +82,8 @@ public:
 	string GetSceneName() { return s_instance->sceneName; };
 
 	void Update(float deltaTime);
+	void UpdatePointLightData();
+
 	void Render();
 	void DrawGUI();
 	static void DrawCameraGUI();
@@ -107,7 +112,7 @@ protected:
 	// Point Lights
 	int MAX_LIGHTS = 4;
 public:
-	vector<Light> m_pointLights;
+	vector<ComponentLightPoint*> m_pointLightComponents;
 	static SceneRenderer* renderer;
 	glm::mat4 lightSpaceMatrix; // Directional Light Shadow Mapping.
 

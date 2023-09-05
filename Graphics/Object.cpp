@@ -237,7 +237,7 @@ void Object::DrawGUI()
 			{
 				if (ImGui::Selectable(ComponentFactory::GetComponentName(i).c_str()))
 				{
-					components.push_back(ComponentFactory::NewComponent(this,i));
+					components.push_back(ComponentFactory::NewComponent(this,(ComponentType)i));
 					for (auto component : components)
 						component->OnParentChange();
 				}
@@ -520,25 +520,6 @@ void to_json(nlohmann::ordered_json& j, const Object& object)
 			c["castsShadows"] = cr->castsShadows;
 			break;
 		}
-		case ComponentType::Component_SkinnedRenderer:
-		{
-			c["type"] = "SkinnedRenderer";
-			c["type"] = "Renderer";
-			ComponentRenderer* cr = (ComponentRenderer*)object.components[i];
-			ordered_json matsJSON;
-			for (int m = 0; m < cr->materialArray.size(); m++)
-			{
-				if (cr->materialArray[m])
-					matsJSON.push_back(cr->materialArray[m]->name);
-				else
-					matsJSON.push_back("NULL");
-			}
-			c["materials"] = matsJSON;
-			c["frameBuffer"] = cr->frameBufferName;
-			c["receivesShadows"] = cr->receivesShadows;
-			c["castsShadows"] = cr->castsShadows;
-			break;
-		}
 		case ComponentType::Component_Animator:
 		{
 			c["type"] = "Animator";
@@ -571,6 +552,14 @@ void to_json(nlohmann::ordered_json& j, const Object& object)
 			}
 
 			c["postProcess"] = ppJSON;
+			break;
+		}
+		case ComponentType::Component_LightPoint:
+		{
+			c["type"] = "Point Light";
+			ComponentLightPoint* cc = (ComponentLightPoint*)object.components[i];
+			c["colour"] = cc->colour;
+			c["intensity"] = cc->intensity;
 			break;
 		}
 		}

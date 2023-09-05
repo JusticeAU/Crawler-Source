@@ -9,7 +9,6 @@
 #include "MaterialManager.h"
 
 #include "ComponentAnimator.h"
-#include "ComponentAnimationBlender.h"
 #include "UniformBuffer.h"
 
 #include "FrameBuffer.h"
@@ -377,13 +376,6 @@ void ComponentRenderer::BindBoneTransform()
 
 		// Technically, all animated models can share the same boneTransformBuffer and just keep uploading their data in to it every frame.
 		// A dedicated animation system could provide a single global buffer for the shader for this.
-	}
-
-	if (animationBlender != nullptr && animationBlender->boneTransfomBuffer != nullptr)
-	{
-		material->shader->SetUniformBlockIndex("boneTransformBuffer", 0);
-		animationBlender->boneTransfomBuffer->Bind(0);
-		animationBlender->boneTransfomBuffer->SendData(animationBlender->boneTransforms);
 	}
 }
 

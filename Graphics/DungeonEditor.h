@@ -184,6 +184,9 @@ namespace Crawl
 		std::vector<Object*> pathFindObjects;
 		ordered_json path_template = ReadJSONFromDisk("crawler/object/testing/path.object");
 		int facingTest = 0;
+
+		// Beauty Scene Config
+		Object* beautySceneLights = nullptr;
 	};
 }
 

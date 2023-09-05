@@ -7,6 +7,7 @@
 #include "Primitives.h"
 
 #include "Input.h"
+#include "Window.h"
 
 SceneEditorCamera::SceneEditorCamera()
 {

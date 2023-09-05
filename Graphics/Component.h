@@ -16,13 +16,10 @@ enum ComponentType
 	Component_Model,
 	Component_Animator,
 	Component_Renderer,
-	Component_SkinnedRenderer,
-	Component_Material,
-	Component_Light,
 	Component_Camera,
-	Component_FPSTest,
-	Component_AnimationBlender,
-	Component_AudioSource
+	Component_AudioSource,
+	Component_LightPoint,
+	Component_LightDirectional
 };
 
 class Component

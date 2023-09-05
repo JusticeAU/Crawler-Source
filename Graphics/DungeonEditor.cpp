@@ -1482,16 +1482,11 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 
 	if (ImGui::Button("Beauty Scene Quick Config"))
 	{
-		while (Scene::s_instance->m_pointLights.size() < 3)
-			Scene::s_instance->m_pointLights.push_back(Light());;
-
-		Scene::s_instance->m_pointLights[1].colour = { .4765625, .8984375, .8984375 };
-		Scene::s_instance->m_pointLights[1].position = { 7.14, -2.010, 1.220 };
-		Scene::s_instance->m_pointLights[1].intensity = 6.370;
-
-		Scene::s_instance->m_pointLights[2].colour = { .93, 0.26, 0.06 };
-		Scene::s_instance->m_pointLights[2].position = { -0.010, -3.930, 2.50 };
-		Scene::s_instance->m_pointLights[2].intensity = 5.7;
+		if (beautySceneLights == nullptr)
+		{
+			beautySceneLights = Scene::CreateObject();
+			beautySceneLights->LoadFromJSON(ReadJSONFromDisk("crawler/object/beautySceneLights.object"));
+		}
 
 		Scene::s_instance->drawGizmos = false;
 
@@ -1501,19 +1496,13 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 
 		dungeon->player->Respawn();
 	}
-
 }
 
 void Crawl::DungeonEditor::Update()
 {
-
-	vec2 NDC = Input::GetMousePosNDC();
-	vec3 rayStart = Scene::s_editorCamera->object->GetWorldSpacePosition();
-	vec3 rayDir = Scene::s_editorCamera->camera->GetRayFromNDC(NDC);
-	float scale = rayStart.z / rayDir.z;
-	vec3 groundPos = rayStart - (rayDir * scale);
-	groundPos.z = 1.5f;
-	Scene::s_instance->m_pointLights[0].position = groundPos;
+	// Draw Player Position
+	vec3 playerWorldPosition = dungeonPosToObjectScale(dungeon->player->GetPosition());
+	LineRenderer::DrawLine(playerWorldPosition, playerWorldPosition + vec3(0, 0, 2));
 
 	switch (editMode)
 	{
@@ -1592,11 +1581,21 @@ void Crawl::DungeonEditor::UpdateModeTileEdit()
 {
 	if (selectedTile)
 	{
-		Scene::s_instance->m_pointLights[0].position = dungeonPosToObjectScale(selectedTile->position);
-		Scene::s_instance->m_pointLights[0].position.z = 0.1f;
-
 		DrawTileInformation(selectedTile);
+
+		// Highlight the tile
+		vec3 tilePos = dungeonPosToObjectScale(selectedTile->position);
+		for (int i = 0; i < 4; i++)
+		{	
+			int nextI = i+1;
+			if (nextI == 4) nextI = 0;
+			vec3 a = dungeonPosToObjectScale(directionsDiagonal[i]) * 0.5f;;
+			vec3 b = dungeonPosToObjectScale(directionsDiagonal[nextI]) * 0.5f;;
+
+			LineRenderer::DrawLine(tilePos + a, tilePos + b);
+		}
 	}
+
 
 	if (Input::Mouse(0).Down())
 	{

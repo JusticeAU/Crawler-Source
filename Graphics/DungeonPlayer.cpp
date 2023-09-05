@@ -19,17 +19,9 @@ Crawl::DungeonPlayer::DungeonPlayer()
 	// Initialise the player Scene Object;
 	object = Scene::CreateObject();
 	object->LoadFromJSON(ReadJSONFromDisk("crawler/object/player.object"));
-	object->children[2]->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/viewmodel_hands.object"));
-	animator = (ComponentAnimator*)object->children[2]->children[0]->GetComponent(Component_Animator);
+	object->children[0]->children[0]->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/viewmodel_hands.object"));
+	animator = (ComponentAnimator*)object->children[0]->children[0]->children[0]->GetComponent(Component_Animator);
 	objectView = object->children[0];
-	
-	// Hack the light in
-	Scene::s_instance->m_pointLights.push_back(Light());
-	Scene::s_instance->m_pointLights[0].position.z = 1.6;
-	Scene::s_instance->m_pointLights[0].colour.x = 0.7009804248809814;
-	Scene::s_instance->m_pointLights[0].colour.y = 0.36686262488365173;
-	Scene::s_instance->m_pointLights[0].colour.z = 0.10308541357517242;
-	Scene::s_instance->m_pointLights[0].intensity = 25.0f;
 
 	// load the lobby second level
 	lobbyLevel2Dungeon = new Dungeon(true);
@@ -63,12 +55,6 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	{
 		UpdateStateStairs(deltaTime);
 	}
-
-	// Update the position of the light on the player after we have moved.
-	object->RecalculateTransforms();
-	Scene::s_instance->m_pointLights[0].position = object->GetWorldSpacePosition(); // hacky!!!
-	Scene::s_instance->m_pointLights[0].position.z += 1.6f;
-	Scene::s_instance->m_pointLights[0].position += dungeonPosToObjectScale(directions[facing]) * 0.2f;
 
 	return false;
 }

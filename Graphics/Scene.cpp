@@ -77,11 +77,15 @@ void Scene::Update(float deltaTime)
 	for (auto o : objects)
 		o->Update(deltaTime);
 
-	// Update point light arrays - right now we send this in as ivec and vec4s - should turn this in to a more dynamic uniform buffer.
-	for (int i = 0; i < m_pointLights.size(); i++)
+	UpdatePointLightData();
+}
+
+void Scene::UpdatePointLightData()
+{
+	for (int i = 0; i < m_pointLightComponents.size(); i++)
 	{
-		m_pointLightColours[i] = m_pointLights[i].colour * m_pointLights[i].intensity;
-		m_pointLightPositions[i] = m_pointLights[i].position;
+		m_pointLightColours[i] = m_pointLightComponents[i]->colour * m_pointLightComponents[i]->intensity;
+		m_pointLightPositions[i] = m_pointLightComponents[i]->GetComponentParentObject()->GetWorldSpacePosition();
 	}
 }
 
@@ -163,34 +167,6 @@ void Scene::DrawGUI()
 		float sunDir[3] = { m_sunDirection.x, m_sunDirection.y, m_sunDirection.z, };
 		if (ImGui::SliderFloat3("Sun Direction", &sunDir[0], -1, 1, "%.3f"))
 			SetSunDirection({ sunDir[0], sunDir[1], sunDir[2] });
-
-		unsigned int lightsAtStartOfFrame = m_pointLights.size();
-		if (lightsAtStartOfFrame == MAX_LIGHTS) ImGui::BeginDisabled();
-		if (ImGui::Button("New Point Light"))
-			m_pointLights.push_back(Light());
-		if (lightsAtStartOfFrame == MAX_LIGHTS) ImGui::EndDisabled();
-
-		// Draw all point lights
-		for (int i = 0; i < m_pointLights.size(); i++)
-		{
-			ImGui::PushID(i);
-			float pointCol[3] = { m_pointLights[i].colour.r, m_pointLights[i].colour.g, m_pointLights[i].colour.b, };
-			if (ImGui::ColorEdit3("Point Light Colour", &pointCol[0]))
-				m_pointLights[i].colour = { pointCol[0], pointCol[1], pointCol[2] };
-
-			float pointPos[3] = { m_pointLights[i].position.x, m_pointLights[i].position.y, m_pointLights[i].position.z, };
-			if (ImGui::DragFloat3("Point Light Position", &pointPos[0]))
-				m_pointLights[i].position = { pointPos[0], pointPos[1], pointPos[2] };
-
-			ImGui::DragFloat("Intensity", &m_pointLights[i].intensity);
-			ImGui::SameLine();
-			if (ImGui::Button("Delete"))
-			{
-				m_pointLights.erase(m_pointLights.begin() + i);
-				i--;
-			}
-			ImGui::PopID();
-		}
 	}
 
 	if (ImGui::Button("New Object"))
@@ -318,7 +294,24 @@ void Scene::SetAmbientLightColour(vec3 ambientColour)
 
 int Scene::GetNumPointLights()
 {
-	return (int)s_instance->m_pointLights.size();
+	return (int)s_instance->m_pointLightComponents.size();
+}
+
+void Scene::AddPointLight(ComponentLightPoint* light)
+{
+	s_instance->m_pointLightComponents.push_back(light);
+}
+
+void Scene::RemovePointLight(ComponentLightPoint* light)
+{
+	for (int i = 0; i < Scene::s_instance->m_pointLightComponents.size(); i++)
+	{
+		if (s_instance->m_pointLightComponents[i] == light)
+		{
+			s_instance->m_pointLightComponents.erase(s_instance->m_pointLightComponents.begin() + i);
+			break;
+		}
+	}
 }
 
 ComponentCamera* Scene::GetCameraByIndex(int index)
@@ -413,14 +406,7 @@ void Scene::SaveJSON()
 	scene_lighting["sunColour"] = m_sunColour;
 	scene_lighting["sunDirection"] = m_sunDirection;
 
-	// Point lights
-	int numPointLights = (int)m_pointLights.size();
-	for (int i = 0; i < numPointLights; i++)
-		scene_lighting_pointLights.push_back(m_pointLights[i]);
-
-	scene_lighting["pointLights"] = scene_lighting_pointLights;
 	output["lighting"] = scene_lighting;
-
 
 	// Populate objects
 	for (int i = 0; i < objects.size(); i++)
@@ -451,19 +437,6 @@ void Scene::LoadJSON()
 	m_ambientColour = lighting.at("ambientColour");
 	m_sunColour = lighting.at("sunColour");
 	m_sunDirection = lighting.at("sunDirection");
-
-	// point lights
-	ordered_json pointLights = lighting.at("pointLights");
-	m_pointLights.clear();
-	if (pointLights.is_null() == false)
-	{
-		//m_pointLights.resize(pointLights.size());
-		for (auto it = pointLights.begin(); it != pointLights.end(); it++)
-		{
-			Light light = it.value();
-			m_pointLights.push_back(light);
-		}
-	}
 
 	// clear current objects
 	for (auto object = objects.begin(); object != objects.end(); object++)

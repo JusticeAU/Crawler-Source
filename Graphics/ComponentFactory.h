@@ -1,12 +1,13 @@
 #pragma once
+#include "Component.h"
 #include "ComponentModel.h"
 #include "ComponentAnimator.h"
 #include "ComponentRenderer.h"
 #include "ComponentCamera.h"
-#include "ComponentFPSTest.h"
-#include "ComponentAnimationBlender.h"
 #include "ComponentAudioSource.h"
+#include "ComponentLightPoint.h"
 #include "PostProcess.h"
+
 #include "serialisation.h"
 
 #include <vector>
@@ -15,6 +16,8 @@
 using std::string;
 using std::vector;
 
+class Object;
+
 static class ComponentFactory
 {
 public:
@@ -22,7 +25,7 @@ public:
 	static unsigned int GetComponentCount() { return components.size(); };
 	static string GetComponentName(unsigned int i) { return components[i]; };
 
-	static Component* NewComponent(Object* parent, int i);
+	static Component* NewComponent(Object* parent, ComponentType type);
 	static Component* ReadComponentJSON(Object* parent, nlohmann::ordered_json j);
 protected:
 	static vector<string> components;

@@ -50,9 +50,6 @@
     <Filter Include="Libraries\ImGuizmo">
       <UniqueIdentifier>{c8cf5cf9-dd70-444b-8e6a-2c339c5f8bfe}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Application\Scene\Components\dev">
-      <UniqueIdentifier>{b6f81852-2116-4074-9870-bedbd7bce7a0}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Libraries\soloud">
       <UniqueIdentifier>{0d929240-a4b5-4ac7-8d41-96bfa70d614e}</UniqueIdentifier>
     </Filter>
@@ -163,12 +160,6 @@
     </ClCompile>
     <ClCompile Include="PostProcess.cpp">
       <Filter>Source Files\Application\Graphics\Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="ComponentAnimationBlender.cpp">
-      <Filter>Source Files\Application\Scene\Components\dev</Filter>
-    </ClCompile>
-    <ClCompile Include="ComponentFPSTest.cpp">
-      <Filter>Source Files\Application\Scene\Components\dev</Filter>
     </ClCompile>
     <ClCompile Include="Animation.cpp">
       <Filter>Source Files\Application\Graphics\Models</Filter>
@@ -332,6 +323,9 @@
     <ClCompile Include="LineRenderer.cpp">
       <Filter>Source Files\Application\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="ComponentLightPoint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -466,12 +460,6 @@
     <ClInclude Include="PostProcess.h">
       <Filter>Source Files\Application\Graphics\Shaders</Filter>
     </ClInclude>
-    <ClInclude Include="ComponentAnimationBlender.h">
-      <Filter>Source Files\Application\Scene\Components\dev</Filter>
-    </ClInclude>
-    <ClInclude Include="ComponentFPSTest.h">
-      <Filter>Source Files\Application\Scene\Components\dev</Filter>
-    </ClInclude>
     <ClInclude Include="Animation.h">
       <Filter>Source Files\Application\Graphics\Models</Filter>
     </ClInclude>
@@ -597,6 +585,9 @@
     </ClInclude>
     <ClInclude Include="LineRenderer.h">
       <Filter>Source Files\Application\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentLightPoint.h">
+      <Filter>Source Files\Application\Scene\Components</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
