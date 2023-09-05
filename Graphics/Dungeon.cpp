@@ -944,7 +944,7 @@ Crawl::DungeonActivatorPlate* Crawl::Dungeon::CreatePlate(ivec2 position, unsign
 	plate->dungeon = this;
 	plate->object = Scene::CreateObject();
 	plate->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/interactable_floortile.object"));
-	plate->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_floorplate/interactable_floorplate.object"));
+	plate->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_pressureplate.object"));
 	plate->object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
 	activatorPlates.push_back(plate);
 	return plate;

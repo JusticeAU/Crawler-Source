@@ -19,6 +19,9 @@ namespace Crawl
 
 		glm::ivec2 position;
 		unsigned int activateID = 1;
+
+		float heightUnactivated = 0.0f;
+		float heightActivated = -0.095f;
 		
 		bool down = false;
 		
