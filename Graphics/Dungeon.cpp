@@ -655,18 +655,20 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 	}
 
 	// Check for slugs
-	for (int i = 0; i < slugs.size(); i++)
+	if (damageType == DamageType::Physical)
 	{
-		if (slugs[i]->position == position)
+		for (int i = 0; i < slugs.size(); i++)
 		{
-			if (dealer == slugs[i])
-				continue;
-			didDamage = true;
-			slugs[i]->isDead = true;
-			break;
+			if (slugs[i]->position == position)
+			{
+				if (dealer == slugs[i])
+					continue;
+				didDamage = true;
+				slugs[i]->isDead = true;
+				break;
+			}
 		}
 	}
-
 	return didDamage;
 }
 
