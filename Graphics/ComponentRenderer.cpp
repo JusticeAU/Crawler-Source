@@ -76,6 +76,7 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 						BindBoneTransform();
 					model->DrawSubMesh(i);
 				}
+
 				break;
 			}
 			case DrawMode::ObjectPicking:
@@ -240,10 +241,11 @@ void ComponentRenderer::BindMatricies(mat4 pv, vec3 position)
 	glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
 
 	// Positions and Rotations
-	material->shader->SetMatrixUniform("pvmMatrix", pvm);
-	material->shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
-	material->shader->SetVector3Uniform("cameraPosition", position);
-	material->shader->SetMatrixUniform("lightSpaceMatrix", Scene::GetLightSpaceMatrix());
+	ShaderProgram* shader = isAnimated ? material->shaderSkinned : material->shader;
+	shader->SetMatrixUniform("pvmMatrix", pvm);
+	shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
+	shader->SetVector3Uniform("cameraPosition", position);
+	shader->SetMatrixUniform("lightSpaceMatrix", Scene::GetLightSpaceMatrix());
 }
 
 void ComponentRenderer::SetUniforms()
@@ -253,104 +255,111 @@ void ComponentRenderer::SetUniforms()
 	// Likely part of a material system.
 
 	// Lighting
-	material->shader->SetVector3Uniform("ambientLightColour", Scene::GetAmbientLightColour());
-	material->shader->SetVector3Uniform("sunLightDirection", glm::normalize(Scene::GetSunDirection()));
-	material->shader->SetVector3Uniform("sunLightColour", Scene::GetSunColour());
+	ShaderProgram* shader = isAnimated ? material->shaderSkinned : material->shader;
+
+	shader->SetVector3Uniform("ambientLightColour", Scene::GetAmbientLightColour());
+	shader->SetVector3Uniform("sunLightDirection", glm::normalize(Scene::GetSunDirection()));
+	shader->SetVector3Uniform("sunLightColour", Scene::GetSunColour());
 
 	// Point Lights
 	int numLights = Scene::GetNumPointLights();
-	material->shader->SetIntUniform("numLights", numLights);
-	material->shader->SetFloat3ArrayUniform("PointLightPositions", numLights, Scene::GetPointLightPositions());
-	material->shader->SetFloat3ArrayUniform("PointLightColours", numLights, Scene::GetPointLightColours());
+	shader->SetIntUniform("numLights", numLights);
+	shader->SetFloat3ArrayUniform("PointLightPositions", numLights, Scene::GetPointLightPositions());
+	shader->SetFloat3ArrayUniform("PointLightColours", numLights, Scene::GetPointLightColours());
 
 	if (receivesShadows)
 	{
-		material->shader->SetFloatUniform("shadowBias", shadowBias);
+		shader->SetFloatUniform("shadowBias", shadowBias);
 	}
 }
 
 void ComponentRenderer::ApplyMaterials()
 {
 	// Material Uniforms
+	ShaderProgram* shader = isAnimated ? material->shaderSkinned : material->shader;
 	if (material)
 	{
-		material->shader->SetVector3Uniform("Ka", material->Ka);
-		material->shader->SetVector3Uniform("Kd", material->Kd);
-		material->shader->SetVector3Uniform("Ks", material->Ks);
-		material->shader->SetFloatUniform("specularPower", material->specularPower);
+		shader->SetVector3Uniform("Ka", material->Ka);
+		shader->SetVector3Uniform("Kd", material->Kd);
+		shader->SetVector3Uniform("Ks", material->Ks);
+		shader->SetFloatUniform("specularPower", material->specularPower);
 
 		if (material->mapKd)
 		{
 			material->mapKd->Bind(1);
-			material->shader->SetIntUniform("diffuseTex", 1);
+			shader->SetIntUniform("diffuseTex", 1);
 		}
 		if (material->mapKs)
 		{
 			material->mapKs->Bind(2);
-			material->shader->SetIntUniform("specularTex", 2);
+			shader->SetIntUniform("specularTex", 2);
 		}
 		if (material->mapBump)
 		{
 			material->mapBump->Bind(3);
-			material->shader->SetIntUniform("normalTex", 3);
+			shader->SetIntUniform("normalTex", 3);
 		}
 
+		SceneRenderer::pointShadowMap2[0]->BindTexture(11);
+		shader->SetIntUniform("shadowMap0", 11);
+		SceneRenderer::pointShadowMap2[1]->BindTexture(12);
+		shader->SetIntUniform("shadowMap1", 12);
+		SceneRenderer::pointShadowMap2[2]->BindTexture(13);
+		shader->SetIntUniform("shadowMap2", 13);
+		SceneRenderer::pointShadowMap2[3]->BindTexture(14);
+		shader->SetIntUniform("shadowMap3", 14);
+
 		// PBR
+		if (!material->isPBR)
+			return;
+
 		if (material->albedoMap)
 		{
 			material->albedoMap->Bind(4);
-			material->shader->SetIntUniform("albedoMap", 4);
+			shader->SetIntUniform("albedoMap", 4);
 		}
 		if (material->normalMap)
 		{
 			material->normalMap->Bind(5);
-			material->shader->SetIntUniform("normalMap", 5);
+			shader->SetIntUniform("normalMap", 5);
 		}
 		if (material->metallicMap)
 		{
 			material->metallicMap->Bind(6);
-			material->shader->SetIntUniform("metallicMap", 6);
+			shader->SetIntUniform("metallicMap", 6);
 		}
 		else
 		{
 			TextureManager::GetTexture("engine/texture/black1x1.tga")->Bind(6);
-			material->shader->SetIntUniform("metallicMap", 6);
+			shader->SetIntUniform("metallicMap", 6);
 		}
 
 		if (material->roughnessMap)
 		{
 			material->roughnessMap->Bind(7);
-			material->shader->SetIntUniform("roughnessMap", 7);
+			shader->SetIntUniform("roughnessMap", 7);
 		}
 		if (material->aoMap)
 		{
 			material->aoMap->Bind(8);
-			material->shader->SetIntUniform("aoMap", 8);
+			shader->SetIntUniform("aoMap", 8);
 		}
 		else
 		{
 			TextureManager::GetTexture("engine/texture/white1x1.tga")->Bind(8);
-			material->shader->SetIntUniform("aoMap", 8);
+			shader->SetIntUniform("aoMap", 8);
 		}
 
 		if (material->emissiveMap)
 		{
 			material->emissiveMap->Bind(9);
-			material->shader->SetIntUniform("emissiveMap", 9);
+			shader->SetIntUniform("emissiveMap", 9);
 		}
 		else
 		{
 			TextureManager::GetTexture("engine/texture/black1x1.tga")->Bind(9);
-			material->shader->SetIntUniform("emissiveMap", 9);
+			shader->SetIntUniform("emissiveMap", 9);
 		}
-		SceneRenderer::pointShadowMap2[0]->BindTexture(11);
-		material->shader->SetIntUniform("shadowMap0", 11);
-		SceneRenderer::pointShadowMap2[1]->BindTexture(12);
-		material->shader->SetIntUniform("shadowMap1", 12);
-		SceneRenderer::pointShadowMap2[2]->BindTexture(13);
-		material->shader->SetIntUniform("shadowMap2", 13);
-		SceneRenderer::pointShadowMap2[3]->BindTexture(14);
-		material->shader->SetIntUniform("shadowMap3", 14);
 	}
 }
 
@@ -361,7 +370,7 @@ void ComponentRenderer::DrawModel()
 
 void ComponentRenderer::BindBoneTransform()
 {
-	if (material == nullptr || material->shader == nullptr)
+	if (material == nullptr || material->shaderSkinned == nullptr)
 		return;
 
 	// skinned mesh rendering
@@ -369,7 +378,7 @@ void ComponentRenderer::BindBoneTransform()
 	if (animator != nullptr && animator->boneTransfomBuffer != nullptr)
 	{
 		// get the shader uniform block index and set binding point - we'll just hardcode 0 for this.
-		material->shader->SetUniformBlockIndex("boneTransformBuffer", 0);
+		material->shaderSkinned->SetUniformBlockIndex("boneTransformBuffer", 0);
 		// TODO - this could be done in shader initialisation if it detected that that shader had this uniform buffer
 		// It only needs to be done once per shader too, assuming im not reusing the index anywhere else (which im not)
 

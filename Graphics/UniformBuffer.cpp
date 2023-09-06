@@ -4,7 +4,7 @@ UniformBuffer::UniformBuffer(unsigned int size) : m_size(size)
 {
 	glGenBuffers(1, &m_uboID);
 	glBindBuffer(GL_UNIFORM_BUFFER, m_uboID);
-	glBufferData(GL_UNIFORM_BUFFER, m_size, NULL, GL_STATIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, m_size, NULL, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
@@ -23,6 +23,6 @@ void UniformBuffer::Bind(const unsigned int index)
 void UniformBuffer::SendData(void* data)
 {
 	glBindBuffer(GL_UNIFORM_BUFFER, m_uboID);
-	glBufferData(GL_UNIFORM_BUFFER, m_size, data, GL_STATIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, m_size, data, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
