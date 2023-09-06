@@ -171,6 +171,7 @@ namespace Crawl
 
 		DungeonStairs* selectedStairs = nullptr;
 		bool selectedStairsWindowOpen = false;
+		int selectedStairsGizmoIndex = 0;
 
 		bool unsavedChanges = false;
 		bool shouldConfirmSaveBeforeLoad = false;

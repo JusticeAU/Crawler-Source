@@ -1339,6 +1339,10 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditStairs()
 		selectedStairs->BuildDefaultSpline();
 		MarkUnsavedChanges();
 	}
+	if (ImGui::InputInt("Gizmo Edit", &selectedStairsGizmoIndex))
+	{
+		selectedStairsGizmoIndex = glm::clamp(selectedStairsGizmoIndex, 0, 3);
+	}
 	ImGui::End();
 
 	// Send the curve to the line renderer
@@ -1349,6 +1353,49 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditStairs()
 		vec3 b = selectedStairs->EvaluatePosition(i + 0.02f);
 		if (!selectedStairs->up) b.z -= 3.0f;
 		LineRenderer::DrawLine(a, b, glm::vec3((i/2) + 0.5f));
+	}
+	// send the anchors in to the line renderer
+	LineRenderer::DrawLine(selectedStairs->startWorldPosition, selectedStairs->startWorldPosition + selectedStairs->startOffset);
+	LineRenderer::DrawLine(selectedStairs->endWorldPosition, selectedStairs->endWorldPosition + selectedStairs->endOffset);
+
+	// Render Gizmo
+	ImGuizmo::SetRect(0, 0, Window::GetViewPortSize().x, Window::GetViewPortSize().y);
+	mat4 view = Scene::GetCurrentCamera()->GetViewMatrix();
+	mat4 projection = Scene::GetCurrentCamera()->GetProjectionMatrix();
+	mat4 translation;
+	switch (selectedStairsGizmoIndex)
+	{
+	case 0:
+		translation = glm::translate(mat4(1), selectedStairs->startWorldPosition);
+		break;
+	case 1:
+		translation = glm::translate(mat4(1), selectedStairs->startWorldPosition + selectedStairs->startOffset);
+		break;
+	case 2:
+		translation = glm::translate(mat4(1), selectedStairs->endWorldPosition);
+		break;
+	case 3:
+		translation = glm::translate(mat4(1), selectedStairs->endWorldPosition + selectedStairs->endOffset);
+		break;
+	}
+
+	if (ImGuizmo::Manipulate((float*)&view, (float*)&projection, ImGuizmo::TRANSLATE, ImGuizmo::LOCAL, (float*)&translation))
+	{
+		switch (selectedStairsGizmoIndex)
+		{
+		case 0:
+			selectedStairs->startWorldPosition = translation[3];
+			break;
+		case 1:
+			selectedStairs->startOffset = (vec3)translation[3] - selectedStairs->startWorldPosition;
+			break;
+		case 2:
+			selectedStairs->endWorldPosition = translation[3];
+			break;
+		case 3:
+			selectedStairs->endOffset = (vec3)translation[3] - selectedStairs->endWorldPosition;
+			break;
+		}
 	}
 }
 void Crawl::DungeonEditor::DrawGUIModeTileEditSwitcher()
