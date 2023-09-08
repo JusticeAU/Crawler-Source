@@ -34,7 +34,7 @@ ComponentCamera::ComponentCamera(Object* parent, bool noGizmo) : Component("Came
 		componentRenderer->model = ModelManager::GetModel("engine/model/Gizmos/camera.fbx");
 		componentRenderer->materialArray.resize(1);
 		componentRenderer->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/Gizmos.material");
-
+		componentRenderer->receivesShadows = false;
 
 		cameraGizmo->components.push_back(componentRenderer);
 

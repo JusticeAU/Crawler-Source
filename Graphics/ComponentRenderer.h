@@ -12,15 +12,20 @@ class Material;
 class FrameBuffer;
 class ComponentAnimator;
 class ComponentAnimationBlender;
+class UniformBuffer;
 
 using std::string;
 using std::vector;
 
+const int RENDERER_MAX_LIGHTS = 4;
+
 class ComponentRenderer : public Component
 {
 public:
-	ComponentRenderer(Object* parent) : Component("Renderer", Component_Renderer, parent) {};
+	ComponentRenderer(Object* parent);
 	ComponentRenderer(Object* parent, nlohmann::ordered_json j);
+
+	void Update(float delta) override;
 
 	void Draw(mat4 pv, vec3 position, DrawMode mode) override;
 
@@ -54,4 +59,7 @@ public:
 protected:
 	ComponentAnimator* animator = nullptr;
 	ComponentAnimationBlender* animationBlender = nullptr;
+
+	int closestPointLightIndices[8] = {-1, -1, -1, -1, -1, -1, -1, -1 };
+	UniformBuffer* closestPointLightUBO;
 };

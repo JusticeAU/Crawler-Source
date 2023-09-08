@@ -1622,6 +1622,7 @@ void Crawl::Dungeon::Load(std::string filename)
 
 	serialised = ReadJSONFromDisk(filename);
 	RebuildDungeonFromSerialised(serialised);
+	Scene::s_instance->SetStaticObjectsDirty();
 }
 
 bool Crawl::Dungeon::TestDungeonExists(std::string filename)

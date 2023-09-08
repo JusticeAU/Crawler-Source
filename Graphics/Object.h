@@ -34,6 +34,7 @@ public:
 	bool isStatic = true; // Affects the renderer passes. static objects are not updated regularly.
 	
 	bool dirtyTransform = true;
+	bool wasDirtyTransform = true;
 	vec3 localPosition;
 	vec3 localRotation;
 	vec3 localScale;
@@ -80,6 +81,8 @@ public:
 
 	void RefreshComponents();
 	void RecalculateTransforms();
+	void SetDirtyTransform() { dirtyTransform = true; };
+	void SetStatic(bool isStatic);
 
 	Object* FindObjectWithID(unsigned int id);
 	Object* FindObjectWithName(string objectName);

@@ -39,8 +39,8 @@ unordered_map<string, Scene*> Scene::s_instances;
 Scene::Scene(string name) : sceneName(name)
 {
 	// Create light pos and col arrays for sending to shaders.
-	m_pointLightPositions = new vec3[MAX_LIGHTS];
-	m_pointLightColours = new vec3[MAX_LIGHTS];
+	m_pointLightPositions = new vec4[MAX_POINTLIGHTS];
+	m_pointLightColours = new vec4[MAX_POINTLIGHTS];
 }
 Scene::~Scene()
 {
@@ -84,8 +84,8 @@ void Scene::UpdatePointLightData()
 {
 	for (int i = 0; i < m_pointLightComponents.size(); i++)
 	{
-		m_pointLightColours[i] = m_pointLightComponents[i]->colour * m_pointLightComponents[i]->intensity;
-		m_pointLightPositions[i] = m_pointLightComponents[i]->GetComponentParentObject()->GetWorldSpacePosition();
+		m_pointLightColours[i] = glm::vec4(m_pointLightComponents[i]->colour * m_pointLightComponents[i]->intensity,0);
+		m_pointLightPositions[i] = glm::vec4(m_pointLightComponents[i]->GetComponentParentObject()->GetWorldSpacePosition(), 0);
 	}
 }
 
@@ -104,6 +104,13 @@ void Scene::Render()
 
 	renderer->RenderLines(cameraCurrent);
 	renderer->DrawBackBuffer();
+}
+
+void Scene::RenderBakedShadowMaps()
+{
+	renderer->currentPassIsStatic = true;
+	renderer->currentPassIsSplit = true;
+	renderer->RenderSceneShadowCubeMaps(this);
 }
 
 void Scene::DrawGUI()
@@ -300,6 +307,7 @@ int Scene::GetNumPointLights()
 void Scene::AddPointLight(ComponentLightPoint* light)
 {
 	s_instance->m_pointLightComponents.push_back(light);
+	renderer->SetStaticShadowMapsDirty();
 }
 
 void Scene::RemovePointLight(ComponentLightPoint* light)
@@ -386,6 +394,11 @@ Object* Scene::FindObjectWithName(string objectName)
 
 
 	return nullptr;
+}
+
+void Scene::SetAllObjectsStatic()
+{
+	for (auto& o : objects) o->SetStatic(true);
 }
 
 void Scene::SaveJSON()

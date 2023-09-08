@@ -149,6 +149,11 @@ void ShaderProgram::SetIntUniform(std::string variableName, int value)
 	GLint uniformLocation = glGetUniformLocation(shaderProgramID, variableName.c_str());
 	glUniform1i(uniformLocation, value);
 }
+void ShaderProgram::SetIVec4Uniform(std::string variableName, glm::ivec4 value)
+{
+	GLint uniformLocation = glGetUniformLocation(shaderProgramID, variableName.c_str());
+	glUniform4i(uniformLocation, value[0], value[1], value[2], value[3]);
+}
 void ShaderProgram::SetUIntUniform(std::string variableName, unsigned int value)
 {
 	GLint uniformLocation = glGetUniformLocation(shaderProgramID, variableName.c_str());

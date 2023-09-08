@@ -49,8 +49,8 @@ public:
 	static void SetAmbientLightColour(vec3 ambientColour);
 
 	static int GetNumPointLights();
-	static glm::vec3* GetPointLightPositions() { return &s_instance->m_pointLightPositions[0]; }
-	static glm::vec3* GetPointLightColours() { return &s_instance->m_pointLightColours[0]; }
+	static glm::vec4* GetPointLightPositions() { return &s_instance->m_pointLightPositions[0]; }
+	static glm::vec4* GetPointLightColours() { return &s_instance->m_pointLightColours[0]; }
 	static void AddPointLight(ComponentLightPoint* light);
 	static void RemovePointLight(ComponentLightPoint* light);
 
@@ -66,6 +66,9 @@ public:
 	static Object* FindObjectWithID(unsigned int id);
 	static Object* FindObjectWithName(string objectName);
 
+	void SetStaticObjectsDirty() { rendererShouldRefreshStaticMaps = true; };
+	void SetAllObjectsStatic();
+
 	bool drawn3DGizmo = false;;
 
 	static Scene* s_instance;
@@ -79,12 +82,15 @@ public:
 	static SceneEditorCamera* s_editorCamera;
 	vector<ComponentCamera*> componentCameras;
 
+	bool rendererShouldRefreshStaticMaps = true;
+
 	string GetSceneName() { return s_instance->sceneName; };
 
 	void Update(float deltaTime);
 	void UpdatePointLightData();
 
 	void Render();
+	void RenderBakedShadowMaps();
 	void DrawGUI();
 	static void DrawCameraGUI();
 	void CleanUp();
@@ -110,15 +116,15 @@ protected:
 	vec3 m_ambientColour = { 0.25f, 0.25f, 0.25f };
 
 	// Point Lights
-	int MAX_LIGHTS = 4;
+	int MAX_POINTLIGHTS = 50;
 public:
 	vector<ComponentLightPoint*> m_pointLightComponents;
 	static SceneRenderer* renderer;
 	glm::mat4 lightSpaceMatrix; // Directional Light Shadow Mapping.
 
 protected:
-	glm::vec3* m_pointLightPositions;
-	glm::vec3* m_pointLightColours;
+	glm::vec4* m_pointLightPositions;
+	glm::vec4* m_pointLightColours;
 	
 	// selecting which camera we should render.
 	int cameraIndex = 0;

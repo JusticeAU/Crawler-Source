@@ -85,6 +85,7 @@ namespace Crawl
 
 		Dungeon* dungeon = nullptr;
 		glm::ivec2 gridSelected = { 0, 0 };
+		glm::vec3 groundPos;
 
 		// File Operations
 		std::string dungeonFileName = "new_dungeon";

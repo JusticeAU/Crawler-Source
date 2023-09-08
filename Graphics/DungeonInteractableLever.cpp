@@ -30,7 +30,7 @@ void Crawl::DungeonInteractableLever::UpdateTransform()
 		if (object)
 		{
 			object->localPosition.z = wallHeightOn;
-			object->dirtyTransform = true;
+			object->SetDirtyTransform();
 		}
 	}
 	else
@@ -38,7 +38,7 @@ void Crawl::DungeonInteractableLever::UpdateTransform()
 		if (object)
 		{
 			object->localPosition.z = wallHeightOff;
-			object->dirtyTransform = true;
+			object->SetDirtyTransform();
 		}
 	}
 }

@@ -55,11 +55,8 @@ Object::~Object()
 void Object::Update(float delta)
 {
 
-	if (dirtyTransform) // Our transform has changed. Update it and our childrens transforms.
-	{
-		RecalculateTransforms();
-		dirtyTransform = false; // clear our dirty flag
-	}
+	if (dirtyTransform) RecalculateTransforms();
+	else wasDirtyTransform = false;
 
 	// Update all components
 	for (auto component : components)
@@ -82,61 +79,61 @@ void Object::Draw(mat4 pv, vec3 position, Component::DrawMode mode)
 void Object::SetLocalPosition(vec3 pos)
 {
 	localPosition = pos;
-	dirtyTransform = true;
+	SetDirtyTransform();
 }
 
 void Object::SetLocalRotation(vec3 euler)
 {
 	localRotation = euler;
-	dirtyTransform = true;
+	SetDirtyTransform();
 }
 
 void Object::SetLocalRotationX(float x)
 {
 	localRotation.x = x;
-	dirtyTransform = true;
+	SetDirtyTransform();
 }
 
 void Object::SetLocalRotationY(float y)
 {
 	localRotation.y = y;
-	dirtyTransform = true;
+	SetDirtyTransform();
 }
 
 void Object::SetLocalRotationZ(float z)
 {
 	localRotation.z = z;
-	dirtyTransform = true;
+	SetDirtyTransform();
 }
 
 void Object::SetLocalScale(vec3 scale)
 {
 	localScale = scale;
-	dirtyTransform = true;
+	SetDirtyTransform();
 }
 
 void Object::SetLocalScale(float uniformScale)
 {
 	localScale = vec3(uniformScale);
-	dirtyTransform = true;
+	SetDirtyTransform();
 }
 
 void Object::AddLocalPosition(vec3 pos)
 {
 	localPosition += pos;
-	dirtyTransform = true;
+	SetDirtyTransform();
 }
 
 void Object::AddLocalRotation(vec3 euler)
 {
 	localRotation += euler;
-	dirtyTransform = true;
+	SetDirtyTransform();
 }
 
 void Object::AddLocalScale(vec3 scale)
 {
 	localScale += scale;
-	dirtyTransform = true;
+	SetDirtyTransform();
 }
 
 
@@ -167,17 +164,32 @@ void Object::DrawGUI()
 		{
 			ImGui::Indent();
 			if (ImGui::DragFloat3("Position", &localPosition[0]))
-				dirtyTransform = true;
+			{
+				SetDirtyTransform();
+				SetStatic(false);
+			}
 
 			if(ImGui::SliderFloat3("Rotation", &localRotation[0], -180, 180))
-				dirtyTransform = true;
-
+			{
+				SetDirtyTransform();
+				SetStatic(false);
+			}
 			if(ImGui::DragFloat3("Scale", &localScale[0]))
-				dirtyTransform = true;
+			{
+				SetDirtyTransform();
+				SetStatic(false);
+			}
+			bool guiStatic = isStatic;
+			if(ImGui::Checkbox("Static?", &guiStatic))
+			{
+				SetStatic(guiStatic);
+			}
 
+			ImGui::BeginDisabled();
 			ImGui::DragFloat3("Forward", &forward[0]);
 			ImGui::DragFloat3("Up", &up[0]);
 			ImGui::DragFloat3("Right", &right[0]);
+			ImGui::EndDisabled();
 		}
 
 		// Draw Components.
@@ -441,9 +453,21 @@ void Object::RecalculateTransforms()
 	up = glm::normalize(glm::vec3(transform[2]));
 
 	for (auto c : children)
-		c->RecalculateTransforms();
+		c->SetDirtyTransform();
 
 	dirtyTransform = false;
+	wasDirtyTransform = true;
+}
+
+void Object::SetStatic(bool isStatic)
+{
+	if (this->isStatic != isStatic)
+	{
+		this->isStatic = isStatic;
+		Scene::s_instance->SetStaticObjectsDirty();
+	}
+
+	for (auto& c : children) c->SetStatic(isStatic);
 }
 
 Object* Object::FindObjectWithID(unsigned int id)

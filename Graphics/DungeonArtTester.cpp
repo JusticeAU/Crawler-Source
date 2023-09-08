@@ -122,13 +122,13 @@ void Crawl::ArtTester::DrawGUI()
 	ImGui::Indent();
 	ImGui::Text("Transform (Preview Only)");
 	if (ImGui::DragFloat3("Position", &Scene::s_instance->objects[1]->localPosition[0],0.1f, -5, 5))
-		Scene::s_instance->objects[1]->dirtyTransform = true;
+		Scene::s_instance->objects[1]->SetDirtyTransform();
 
 	if (ImGui::SliderFloat3("Rotation", &Scene::s_instance->objects[1]->localRotation[0], -180, 180))
-		Scene::s_instance->objects[1]->dirtyTransform = true;
+		Scene::s_instance->objects[1]->SetDirtyTransform();
 
 	if (ImGui::DragFloat3("Scale", &Scene::s_instance->objects[1]->localScale[0],0.1f, -5, 5))
-		Scene::s_instance->objects[1]->dirtyTransform = true;
+		Scene::s_instance->objects[1]->SetDirtyTransform();
 
 	renderer->DrawGUI();
 	

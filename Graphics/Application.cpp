@@ -259,8 +259,8 @@ void Application::Update(float delta)
 		ModelManager::DrawGUI();
 		AudioManager::DrawGUI();
 		Scene::s_instance->DrawGUI();
-		Scene::s_instance->renderer->DrawGUI();
-		Scene::s_instance->renderer->DrawShadowCubeMappingGUI();
+		//Scene::s_instance->renderer->DrawGUI();
+		//Scene::s_instance->renderer->DrawShadowCubeMappingGUI();
 		Scene::s_editorCamera->Update(delta);
 		Scene::s_editorCamera->DrawGUI();
 		break;
@@ -273,6 +273,7 @@ void Application::Update(float delta)
 
 	if (developerMode)
 	{
+		Scene::s_instance->renderer->DrawGUI();
 		if (dungeonEditor != nullptr && dungeonEditor->requestedGameMode)
 		{
 			s_mode = Mode::Game;
@@ -303,8 +304,9 @@ void Application::Update(float delta)
 	AudioManager::s_instance->Update();
 
 	Scene::s_instance->Update(delta);
-	Scene::s_instance->Render();
 	Scene::s_instance->CleanUp();
+
+	Scene::s_instance->Render();
 }
 
 Application::Mode Application::s_mode = Mode::Game;

@@ -4,6 +4,7 @@
 #include "ShaderManager.h"
 #include "TextureManager.h"
 #include "Window.h"
+#include "UniformBuffer.h"
 
 #include "ComponentCamera.h"
 #include "PostProcess.h"
@@ -29,8 +30,8 @@ bool SceneRenderer::msaaEnabled = true;
 bool SceneRenderer::ssaoEnabled = true;
 ComponentCamera* SceneRenderer::frustumCullingCamera = nullptr;
 float SceneRenderer::frustumCullingForgiveness = 5.0f;
-FrameBuffer* SceneRenderer::pointShadowMap[4] = { nullptr,nullptr,nullptr,nullptr };
-FrameBuffer* SceneRenderer::pointShadowMap2[4] = { nullptr,nullptr,nullptr,nullptr };
+vector<FrameBuffer*> SceneRenderer::pointLightCubeMapStatic;
+vector<FrameBuffer*> SceneRenderer::pointLightCubeMapDynamic;
 
 CameraFrustum* SceneRenderer::cullingFrustum = nullptr;
 bool SceneRenderer::currentPassIsStatic = false;
@@ -99,15 +100,13 @@ SceneRenderer::SceneRenderer()
 	lightGizmoRenderer->model = lightGizmoModelComponent->model;
 	lightGizmoRenderer->materialArray.resize(1);
 	lightGizmoRenderer->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/Gizmos.material");
+	lightGizmoRenderer->receivesShadows = false;
 	lightGizmo->components.push_back(lightGizmoRenderer);
-#pragma endregion
 
-	// Initialise Point Shadow Map Dev
-	for (int i = 0; i < 4; i++)
-	{
-		pointShadowMap[i] = new FrameBuffer(FrameBuffer::Type::ShadowCubeMap);
-		pointShadowMap2[i] = new FrameBuffer(FrameBuffer::Type::ShadowCubeMap);
-	}
+	pointLightPositionBuffer = new UniformBuffer(sizeof(glm::vec4) * 50);
+	pointLightColourBuffer = new UniformBuffer(sizeof(glm::vec4) * 50);
+
+#pragma endregion
 
 	LineRenderer::Initialise();
 }
@@ -303,8 +302,34 @@ void SceneRenderer::DrawShadowMappingGUI()
 	ImGui::End();
 }
 
+void SceneRenderer::Prepare(Scene* scene)
+{
+	// Check we have allocated cubemaps for each point light
+	while (scene->m_pointLightComponents.size() > pointLightCubeMapStatic.size())
+	{
+		pointLightCubeMapStatic.push_back(new FrameBuffer(FrameBuffer::Type::ShadowCubeMap));
+		pointLightCubeMapDynamic.push_back(new FrameBuffer(FrameBuffer::Type::ShadowCubeMap));
+	}
+}
+
 void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 {
+	Prepare(scene);
+
+	// Set up buffers for da shaders
+	ShaderProgram* shader = ShaderManager::GetShaderProgram("engine/shader/PBR");
+	shader->SetUniformBlockIndex("pointLightPositionBuffer", 1);
+	shader->SetUniformBlockIndex("pointLightColourBuffer", 2);
+	shader = ShaderManager::GetShaderProgram("engine/shader/Lambert");
+	shader->SetUniformBlockIndex("pointLightPositionBuffer", 1);
+	shader->SetUniformBlockIndex("pointLightColourBuffer", 2);
+
+	pointLightPositionBuffer->SendData(Scene::GetPointLightPositions());
+	pointLightPositionBuffer->Bind(1);
+	pointLightColourBuffer->SendData(Scene::GetPointLightColours());
+	pointLightColourBuffer->Bind(2);
+
+
 	// Shadow map dev stuff
 	// Bind recently rendered shadowmap.
 	//shadowMap->BindTexture(20);
@@ -312,13 +337,14 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	//PostProcess::PassThrough(depthMapOutputShader);
 
 	//shadowMap->BindTexture(5);
-	// for each camera in each object, draw to that cameras frame buffer
-	//if (Input::Keyboard(GLFW_KEY_5).Pressed()) // This is just running natively so as to keep things moving whilst it's in development.
-	{
-		currentPassIsStatic = true;
-		currentPassIsSplit = true;
-		RenderSceneShadowCubeMaps(scene);
-	}
+
+	// Render any 'static' cubemaps that need to (They have been newly created, or the list of static and dynamic objects have changed)
+	currentPassIsStatic = true;
+	currentPassIsSplit = true;
+	RenderSceneShadowCubeMaps(scene);
+	pointLightShadowMapsStaticDirty = false;
+
+	// Render all dynamic objects.
 	currentPassIsStatic = false;
 	currentPassIsSplit = true;
 	RenderSceneShadowCubeMaps(scene);
@@ -441,6 +467,8 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	if(blurBufferUsed) blurBufferUsed->BindTexture(21); // This is a bit crap, SSAO is kind of half backed in to the above pipeline and a postprocess effect on the camera.
 	c->RunPostProcess(frameBufferProcessed);
 
+	CleanUp(scene);
+
 	// Stats
 	renderTotalSamples[sampleIndex] = glfwGetTime() - renderLastFrameTime;
 	renderLastFrameTime = glfwGetTime();
@@ -457,12 +485,11 @@ void SceneRenderer::RenderSceneShadowCubeMaps(Scene* scene)
 	if (!currentPassIsStatic)
 	{
 		// blit the preepass to the active
-		int width = pointShadowMap[0]->GetWidth();
-		int height = pointShadowMap[0]->GetHeight();
-
+		int width = pointLightCubeMapStatic[0]->GetWidth();
+		int height = pointLightCubeMapStatic[0]->GetHeight();
 		for (int i = 0; i < scene->m_pointLightComponents.size(); i++)
 		{
-			glCopyImageSubData(pointShadowMap[i]->m_depthID, GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0, pointShadowMap2[i]->m_depthID, GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0, width, height, 6);
+			glCopyImageSubData(pointLightCubeMapStatic[i]->m_depthID, GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0, pointLightCubeMapDynamic[i]->m_depthID, GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0, width, height, 6);
 		}
 
 	}
@@ -470,16 +497,18 @@ void SceneRenderer::RenderSceneShadowCubeMaps(Scene* scene)
 	// Render shadow maps for each point light
 	for (int light = 0; light < scene->m_pointLightComponents.size(); light++)
 	{
+		if (currentPassIsStatic && (!scene->m_pointLightComponents[light]->GetComponentParentObject()->wasDirtyTransform && !scene->rendererShouldRefreshStaticMaps)) continue;
+
 		vec3 lightPosition = scene->m_pointLightComponents[light]->GetComponentParentObject()->GetWorldSpacePosition();
 		// Render to each side of the cube face.
 		for (int i = 0; i < 6; i++)
 		{
 			if (currentPassIsStatic)
 			{
-				pointShadowMap[light]->BindTarget(cubeMapDirections[i].CubemapFace);
+				pointLightCubeMapStatic[light]->BindTarget(cubeMapDirections[i].CubemapFace);
 				glClear(GL_DEPTH_BUFFER_BIT);
 			}
-			else pointShadowMap2[light]->BindTarget(cubeMapDirections[i].CubemapFace);
+			else pointLightCubeMapDynamic[light]->BindTarget(cubeMapDirections[i].CubemapFace);
 			
 			// Build the cubeMap projection and frustum
 			mat4 projection = glm::perspective(glm::radians(FOV), aspect, nearNum, farNum);
@@ -494,6 +523,7 @@ void SceneRenderer::RenderSceneShadowCubeMaps(Scene* scene)
 
 		}
 	}
+	if (scene->rendererShouldRefreshStaticMaps) scene->rendererShouldRefreshStaticMaps = false;
 	FrameBuffer::UnBindTarget();
 	glEnable(GL_BLEND);
 }
@@ -570,11 +600,28 @@ void SceneRenderer::RenderLines(ComponentCamera* camera)
 	FrameBuffer::UnBindTarget();
 }
 
+void SceneRenderer::CleanUp(Scene* scene)
+{
+	// Remove any shadow cubemaps no longer required;
+	while (scene->m_pointLightComponents.size() < pointLightCubeMapStatic.size())
+	{
+		delete pointLightCubeMapStatic[pointLightCubeMapStatic.size() - 1];
+		pointLightCubeMapStatic.erase(pointLightCubeMapStatic.end() - 1);
+		delete pointLightCubeMapDynamic[pointLightCubeMapDynamic.size() - 1];
+		pointLightCubeMapDynamic.erase(pointLightCubeMapDynamic.end() - 1);
+	}
+}
+
 void SceneRenderer::DrawBackBuffer()
 {
 	frameBufferProcessed->BindTexture(20);
 	PostProcess::PassThrough();
 	FrameBuffer::UnBindTexture(20);
+}
+
+bool SceneRenderer::compareIndexDistancePair(std::pair<int, float> a, std::pair<int, float> b)
+{
+		return a.second < b.second;
 }
 
 bool SceneRenderer::ShouldCull(vec3 position)

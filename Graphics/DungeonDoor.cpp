@@ -44,7 +44,7 @@ void Crawl::DungeonDoor::UpdateTransforms()
 		if (object)
 		{
 			object->localPosition.z = openHeight;
-			object->dirtyTransform = true;
+			object->SetDirtyTransform();
 		}
 	}
 	else
@@ -52,7 +52,7 @@ void Crawl::DungeonDoor::UpdateTransforms()
 		if (object)
 		{
 			object->localPosition.z = closedHeight;
-			object->dirtyTransform = true;
+			object->SetDirtyTransform();
 		}
 	}
 }

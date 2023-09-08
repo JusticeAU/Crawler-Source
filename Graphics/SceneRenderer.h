@@ -11,6 +11,8 @@ class CameraFrustum;
 class ShaderProgram;
 class Object;
 
+class UniformBuffer;
+
 using std::vector;
 using glm::vec3;
 
@@ -23,16 +25,25 @@ public:
 	void DrawShadowCubeMappingGUI();
 	void DrawShadowMappingGUI(); // not used right now.
 
+	void Prepare(Scene* scene);
+
 	void RenderScene(Scene* scene, ComponentCamera* cameraView);
 	void RenderSceneShadowCubeMaps(Scene* scene);
 	void RenderSceneShadowMaps(Scene* scene, ComponentCamera* camera);
 	void RenderSceneObjectPick(Scene* scene, ComponentCamera* camera);
 	void RenderSceneGizmos(Scene* scene, ComponentCamera* camera);
 	void RenderLines(ComponentCamera* camera);
+
+	void CleanUp(Scene* scene);
+	
 	void DrawBackBuffer();
+
+	static bool compareIndexDistancePair(std::pair<int, float> a, std::pair<int, float> b);
 
 	static bool ShouldCull(vec3 position);
 	void SetCullingCamera(int sceneCameraIndex);
+
+	void SetStaticShadowMapsDirty() { pointLightShadowMapsStaticDirty = true; };
 	
 	// General Config
 	static bool msaaEnabled;
@@ -107,8 +118,11 @@ protected:
 
 	// Point Light Shadow Map Dev
 public:
-	static FrameBuffer* pointShadowMap[4];
-	static FrameBuffer* pointShadowMap2[4];
+	static vector<FrameBuffer*> pointLightCubeMapStatic;
+	static vector<FrameBuffer*> pointLightCubeMapDynamic;
+	UniformBuffer* pointLightPositionBuffer;
+	UniformBuffer* pointLightColourBuffer;
+	bool pointLightShadowMapsStaticDirty = true;
 
 	struct CameraDirection
 	{

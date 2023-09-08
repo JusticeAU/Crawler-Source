@@ -20,6 +20,11 @@
 #include "LogUtils.h"
 using std::string;
 
+ComponentRenderer::ComponentRenderer(Object* parent) : Component("Renderer", Component_Renderer, parent)
+{
+	closestPointLightUBO = new UniformBuffer(sizeof(int) * 8);
+}
+
 ComponentRenderer::ComponentRenderer(Object* parent, nlohmann::ordered_json j) : ComponentRenderer(parent)
 {
 	auto matsJSON = j.at("materials");
@@ -35,6 +40,31 @@ ComponentRenderer::ComponentRenderer(Object* parent, nlohmann::ordered_json j) :
 	j.at("castsShadows").get_to(castsShadows);
 	if (j.contains("dontFrustumCull")) dontFrustumCull = true;
 
+}
+
+void ComponentRenderer::Update(float delta)
+{
+	vec3 position = componentParent->GetWorldSpacePosition();
+	int numLights = Scene::GetNumPointLights();
+	std::vector<std::pair<int, float>> lightDistances;
+	for (int i = 0; i < numLights; i++)
+	{
+		glm::vec3 lightPosition = vec3(Scene::GetPointLightPositions()[i]);
+		float distanceSquared = glm::length2(position - lightPosition);
+		lightDistances.push_back(std::pair(i, distanceSquared));
+	}
+
+	// sort
+	std::sort(lightDistances.begin(), lightDistances.end(), SceneRenderer::compareIndexDistancePair);
+
+	// get 8 closest lights!
+	for (int i = 0; i < 8; i++)
+	{
+		if (i < numLights)	closestPointLightIndices[i] = lightDistances[i].first;
+		else				closestPointLightIndices[i] = -1;
+	}
+	
+	closestPointLightUBO->SendData(&closestPointLightIndices);
 }
 
 void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
@@ -264,8 +294,8 @@ void ComponentRenderer::SetUniforms()
 	// Point Lights
 	int numLights = Scene::GetNumPointLights();
 	shader->SetIntUniform("numLights", numLights);
-	shader->SetFloat3ArrayUniform("PointLightPositions", numLights, Scene::GetPointLightPositions());
-	shader->SetFloat3ArrayUniform("PointLightColours", numLights, Scene::GetPointLightColours());
+	//shader->SetFloat3ArrayUniform("PointLightPositions", numLights, Scene::GetPointLightPositions());
+	//shader->SetFloat3ArrayUniform("PointLightColours", numLights, Scene::GetPointLightColours());
 
 	if (receivesShadows)
 	{
@@ -299,15 +329,54 @@ void ComponentRenderer::ApplyMaterials()
 			material->mapBump->Bind(3);
 			shader->SetIntUniform("normalTex", 3);
 		}
+		
+		if (receivesShadows)
+		{
+			int shadowmaps = SceneRenderer::pointLightCubeMapStatic.size();
+			if (shadowmaps > 0)
+			{
+				SceneRenderer::pointLightCubeMapDynamic[closestPointLightIndices[0]]->BindTexture(11);
+				shader->SetIntUniform("shadowMap0", 11);
+			}
+			if (shadowmaps > 1)
+			{
+				SceneRenderer::pointLightCubeMapDynamic[closestPointLightIndices[1]]->BindTexture(12);
+				shader->SetIntUniform("shadowMap1", 12);
+			}
+			if (shadowmaps > 2)
+			{
+				SceneRenderer::pointLightCubeMapDynamic[closestPointLightIndices[2]]->BindTexture(13);
+				shader->SetIntUniform("shadowMap2", 13);
+			}
+			if (shadowmaps > 3)
+			{
+				SceneRenderer::pointLightCubeMapDynamic[closestPointLightIndices[3]]->BindTexture(14);
+				shader->SetIntUniform("shadowMap3", 14);
+			}
+			if (shadowmaps > 4)
+			{
+				SceneRenderer::pointLightCubeMapDynamic[closestPointLightIndices[4]]->BindTexture(15);
+				shader->SetIntUniform("shadowMap4", 15);
+			}
+			if (shadowmaps > 5)
+			{
+				SceneRenderer::pointLightCubeMapDynamic[closestPointLightIndices[5]]->BindTexture(16);
+				shader->SetIntUniform("shadowMap5", 16);
+			}
+			if (shadowmaps > 6)
+			{
+				SceneRenderer::pointLightCubeMapDynamic[closestPointLightIndices[6]]->BindTexture(17);
+				shader->SetIntUniform("shadowMap6", 17);
+			}
+			if (shadowmaps > 7)
+			{
+				SceneRenderer::pointLightCubeMapDynamic[closestPointLightIndices[7]]->BindTexture(18);
+				shader->SetIntUniform("shadowMap7", 18);
+			}
+		}
 
-		SceneRenderer::pointShadowMap2[0]->BindTexture(11);
-		shader->SetIntUniform("shadowMap0", 11);
-		SceneRenderer::pointShadowMap2[1]->BindTexture(12);
-		shader->SetIntUniform("shadowMap1", 12);
-		SceneRenderer::pointShadowMap2[2]->BindTexture(13);
-		shader->SetIntUniform("shadowMap2", 13);
-		SceneRenderer::pointShadowMap2[3]->BindTexture(14);
-		shader->SetIntUniform("shadowMap3", 14);
+		closestPointLightUBO->Bind(3);
+		shader->SetUniformBlockIndex("pointLightIndicesBuffer", 3);
 
 		// PBR
 		if (!material->isPBR)
