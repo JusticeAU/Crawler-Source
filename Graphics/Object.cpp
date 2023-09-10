@@ -459,6 +459,12 @@ void Object::RecalculateTransforms()
 	wasDirtyTransform = true;
 }
 
+void Object::SetDirtyTransform()
+{
+	dirtyTransform = true;
+	if (isStatic) SetStatic(false);
+}
+
 void Object::SetStatic(bool isStatic)
 {
 	if (this->isStatic != isStatic)

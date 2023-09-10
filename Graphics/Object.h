@@ -81,7 +81,7 @@ public:
 
 	void RefreshComponents();
 	void RecalculateTransforms();
-	void SetDirtyTransform() { dirtyTransform = true; };
+	void SetDirtyTransform();
 	void SetStatic(bool isStatic);
 
 	Object* FindObjectWithID(unsigned int id);
