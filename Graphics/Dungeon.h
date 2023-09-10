@@ -134,6 +134,7 @@ namespace Crawl
 		DungeonMirror* CreateMirror(ivec2 position, FACING_INDEX direction);
 		void RemoveMirror(DungeonMirror* mirror);
 		DungeonMirror* GetMirrorAt(ivec2 position);
+		bool IsMirrorAtPosition(ivec2 position);
 		void RotateMirror(DungeonMirror* mirror, int direction);
 
 		DungeonEnemySlug* CreateSlug(ivec2 position, FACING_INDEX direction);

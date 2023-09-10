@@ -169,6 +169,7 @@ bool Crawl::Dungeon::FindPath(ivec2 from, ivec2 to, int facing)
 						if (IsEnemySwitcherAtPosition(connectingTile->position)) shouldSkip = true;
 						if (IsSpikesAtPosition(connectingTile->position)) shouldSkip = true;
 						if (IsSlugPath(connectingTile->position)) shouldSkip = true;
+						if (IsMirrorAtPosition(connectingTile->position)) shouldSkip = true;
 
 						if (shouldSkip)
 						{
@@ -1413,6 +1414,12 @@ Crawl::DungeonMirror* Crawl::Dungeon::GetMirrorAt(ivec2 position)
 	}
 
 	return nullptr;
+}
+
+bool Crawl::Dungeon::IsMirrorAtPosition(ivec2 position)
+{
+	DungeonMirror* mirror = GetMirrorAt(position);
+	return mirror;
 }
 
 // direction should be a sign of a direction e.g. -1 or 1 to upadte the mirrors FACING_INDEX

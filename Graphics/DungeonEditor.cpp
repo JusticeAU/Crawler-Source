@@ -1645,7 +1645,7 @@ void Crawl::DungeonEditor::UpdateModeTileEdit()
 	}
 
 
-	/*if (Input::Mouse(0).Down())
+	if (Input::Mouse(0).Down())
 	{
 		TileEditUnselectAll();
 		glm::ivec2 selectionPos = GetMousePosOnGrid();
@@ -1655,22 +1655,22 @@ void Crawl::DungeonEditor::UpdateModeTileEdit()
 			return;
 		
 		RefreshSelectedTile();
-	}*/
-
-	if (Input::Mouse(0).Down())
-	{
-		// make new light
-
-		Object* obj = Scene::CreateObject("Light");
-		GetMousePosOnGrid();
-		groundPos.z = 1.5f;
-		obj->SetLocalPosition(groundPos);
-		ComponentLightPoint* light = new ComponentLightPoint(obj);
-		//obj->components.push_back(light);
-		light->colour.x = (rand() % 100) * 0.01;
-		light->colour.y = (rand() % 100) * 0.01;
-		light->colour.z = (rand() % 100) * 0.01;
 	}
+
+	//if (Input::Mouse(0).Down())
+	//{
+	//	// make new light
+
+	//	Object* obj = Scene::CreateObject("Light");
+	//	GetMousePosOnGrid();
+	//	groundPos.z = 1.5f;
+	//	obj->SetLocalPosition(groundPos);
+	//	ComponentLightPoint* light = new ComponentLightPoint(obj);
+	//	//obj->components.push_back(light);
+	//	light->colour.x = (rand() % 100) * 0.01;
+	//	light->colour.y = (rand() % 100) * 0.01;
+	//	light->colour.z = (rand() % 100) * 0.01;
+	//}
 
 	// path finding dev stuff
 	/*if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down())
