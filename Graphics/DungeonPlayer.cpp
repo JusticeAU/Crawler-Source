@@ -333,7 +333,7 @@ bool Crawl::DungeonPlayer::UpdateStateMoving(float delta)
 		state = IDLE;
 	}
 	else
-		object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, t));
+		object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, glm::sineEaseOut(t)));
 
 	return false;
 }
