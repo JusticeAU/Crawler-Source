@@ -259,7 +259,7 @@ void Application::Update(float delta)
 		ModelManager::DrawGUI();
 		AudioManager::DrawGUI();
 		Scene::s_instance->DrawGUI();
-		//Scene::s_instance->renderer->DrawGUI();
+		Scene::s_instance->renderer->DrawGUI();
 		//Scene::s_instance->renderer->DrawShadowCubeMappingGUI();
 		Scene::s_editorCamera->Update(delta);
 		Scene::s_editorCamera->DrawGUI();
@@ -273,7 +273,6 @@ void Application::Update(float delta)
 
 	if (developerMode)
 	{
-		Scene::s_instance->renderer->DrawGUI();
 		if (dungeonEditor != nullptr && dungeonEditor->requestedGameMode)
 		{
 			s_mode = Mode::Game;

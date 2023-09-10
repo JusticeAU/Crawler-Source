@@ -59,6 +59,9 @@ namespace Crawl
 		float lookSpeed = 0.1f;
 		float lookMaxY = 45.0f;
 		float lookMaxZ = 170.0f;
+		glm::vec3 lookReturnFrom;
+		float lookReturnTimeTotal = 0.25f;
+		float lookReturnTimeCurrent = 1.0f;
 
 		float moveSpeed = 0.25f;
 		float moveCurrent = 0.0f;
@@ -68,7 +71,7 @@ namespace Crawl
 		float moveDelay = 0.15f;
 		float moveDelayCurrent = 0.0f;
 
-		float turnSpeed = 0.15f;
+		float turnSpeed = 0.25f;
 		float turnCurrent = 0.0f;
 		float oldTurn;
 		float targetTurn;

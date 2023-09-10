@@ -61,6 +61,46 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 
 bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 {
+	if (Input::Mouse(1).Down()) Window::GetWindow()->SetMouseCursorHidden(true);
+	if (Input::Mouse(1).Pressed())
+	{
+		vec2 mouseDelta = -Input::GetMouseDelta() * lookSpeed;
+		objectView->AddLocalRotation({ mouseDelta.y, 0, mouseDelta.x });
+		objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -lookMaxY, lookMaxY);
+		objectView->localRotation.z = glm::clamp(objectView->localRotation.z, -lookMaxZ, lookMaxZ);
+		return false;
+	}
+
+	if (Input::Mouse(1).Up())
+	{
+		Window::GetWindow()->SetMouseCursorHidden(false);
+		lookReturnFrom = objectView->localRotation;
+		lookReturnTimeCurrent = 0.0f;
+	}
+	if (lookReturnTimeCurrent < lookReturnTimeTotal)
+	{
+		float t = glm::clamp(lookReturnTimeCurrent / lookReturnTimeTotal, 0.0f, 1.0f);
+		
+		vec3 newRotation(0, 0, 0);
+		newRotation.x = MathUtils::Lerp(lookReturnFrom.x, 0.0f, MathUtils::EaseOutBounceSubtle(t));
+		newRotation.z = MathUtils::Lerp(lookReturnFrom.z, 0.0f, MathUtils::EaseOutBounceSubtle(t));
+		objectView->SetLocalRotation(newRotation);
+
+		lookReturnTimeCurrent += delta;
+
+		return false; // disallow movement whilst this is resetting
+	}
+
+	if (Input::Keyboard(GLFW_KEY_SPACE).Down() && currentDungeon->playerCanKickBox)
+	{
+		if (currentDungeon->DoKick(position, facing))
+		{
+			animator->BlendToAnimation(animationNamePush, 0.1f);
+			return true;
+		}
+	}
+
+
 	if (Input::Keyboard(GLFW_KEY_R).Down())
 		Respawn();
 
@@ -107,33 +147,6 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 			return true;
 		}
 	}*/
-
-	if (Input::Mouse(1).Down()) Window::GetWindow()->SetMouseCursorHidden(true);
-	if (Input::Mouse(1).Pressed())
-	{
-		vec2 mouseDelta = -Input::GetMouseDelta() * lookSpeed;
-		objectView->AddLocalRotation({ mouseDelta.y, 0, mouseDelta.x });
-		objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -lookMaxY, lookMaxY);
-		objectView->localRotation.z = glm::clamp(objectView->localRotation.z, -lookMaxZ, lookMaxZ);
-		return false;
-	}
-
-	if (Input::Mouse(1).Up()) Window::GetWindow()->SetMouseCursorHidden(false);
-	if (!Input::Mouse(1).Pressed())
-	{
-		vec3 currentRotation = objectView->localRotation;
-		currentRotation *= -0.1;
-		objectView->AddLocalRotation(currentRotation);
-	}
-
-	if (Input::Keyboard(GLFW_KEY_SPACE).Down() && currentDungeon->playerCanKickBox)
-	{
-		if (currentDungeon->DoKick(position, facing))
-		{
-			animator->BlendToAnimation(animationNamePush, 0.1f);
-			return true;
-		}
-	}
 
 	// Activating Objects
 	// Via Mouse
@@ -327,7 +340,6 @@ bool Crawl::DungeonPlayer::UpdateStateMoving(float delta)
 
 bool Crawl::DungeonPlayer::UpdateStateTurning(float delta)
 {
-	turnCurrent += delta;
 	float t = MathUtils::InverseLerp(0, turnSpeed, turnCurrent);
 	if (turnCurrent > turnSpeed)
 	{
@@ -335,8 +347,11 @@ bool Crawl::DungeonPlayer::UpdateStateTurning(float delta)
 		state = IDLE;
 	}
 	else
-		object->SetLocalRotationZ(MathUtils::Lerp(oldTurn, targetTurn, t));
+	{
+		object->SetLocalRotationZ(MathUtils::Lerp(oldTurn, targetTurn, MathUtils::EaseOutBounceSubtle(t)));
+	}
 
+	turnCurrent += delta;
 	return false;
 }
 

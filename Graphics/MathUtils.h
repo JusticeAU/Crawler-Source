@@ -1,5 +1,6 @@
 #pragma once
 #include "glm.hpp"
+#include "gtx/easing.hpp"
 
 class MathUtils
 {
@@ -8,6 +9,12 @@ public:
 	{
 		return a * (1.0 - t) + (b * t);
 	}
+    static float EaseOutBounceSubtle(float t)
+    {
+        float easedT = glm::backEaseOut(t);
+        if (easedT > 1.0f) easedT -= (easedT - 1.0f) * 0.85f;
+        return easedT;
+    }
 	static vec3 Lerp(vec3 a, vec3 b, float t)
 	{
 		vec3 out;
