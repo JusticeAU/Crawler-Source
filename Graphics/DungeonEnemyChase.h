@@ -20,12 +20,13 @@ namespace Crawl
 			STUN,
 			KICKED
 		};
+
+		const bool sightReflectsOffMirrors = true;
 		~DungeonEnemyChase();
 		glm::ivec2 position = {0,0};
 		FACING_INDEX facing = NORTH_INDEX;
 		
 		bool isDead = false;
-
 		
 		STATE state = INACTIVE;
 		STATE stateVisual = IDLE;

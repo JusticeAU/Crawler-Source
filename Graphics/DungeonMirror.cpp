@@ -7,6 +7,7 @@ Crawl::DungeonMirror::~DungeonMirror()
 		object->markedForDeletion = true;
 }
 
+// Returns the bounce direction if its a valid approach direction. Returns -1 if the direction fails to bounce.
 int Crawl::DungeonMirror::ShouldReflect(FACING_INDEX approachFrom)
 {
 	switch (approachFrom)

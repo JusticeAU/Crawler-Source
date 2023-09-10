@@ -3,6 +3,7 @@
 #include "Dungeon.h"
 #include "DungeonPlayer.h"
 #include "DungeonHelpers.h"
+#include "DungeonMirror.h"
 #include "MathUtils.h"
 #include "LogUtils.h"	
 
@@ -31,25 +32,35 @@ void Crawl::DungeonEnemyChase::Update()
 		glm::ivec2 currentPosition = position + directions[direction];
 		while (shouldContinue)
 		{
-			DungeonTile* tile = dungeon->GetTile(currentPosition);
-			if (!tile)
+			if (dungeon->player->GetPosition() == currentPosition) // player is here - activate!
+			{
+				LogUtils::Log("Chaser saw player - activating.");
+				state = IDLE;
 				return;
+			}
+
+			DungeonTile* tile = dungeon->GetTile(currentPosition);
+			if (!tile) return;
 
 			if (tile->occupied)
 			{
-				if (dungeon->player->GetPosition() == tile->position) // player is here - activate!
+				if (sightReflectsOffMirrors)
 				{
-					LogUtils::Log("Chaser saw player - activating.");
-					state = IDLE;
+					DungeonMirror* mirror = dungeon->GetMirrorAt(currentPosition);
+					if (mirror)
+					{
+						int reflection = mirror->ShouldReflect(direction);
+						if (reflection < 0)
+							return;
+						else
+							direction = (FACING_INDEX)reflection;
+					}
+					else return;
 				}
-				else
-					return;
 			}
 
-			if (dungeon->CanSee(currentPosition, direction))
-				currentPosition += directions[direction];
-			else
-				return;
+			if (dungeon->CanSee(currentPosition, direction)) currentPosition += directions[direction];
+			else return;
 		}
 	}
 	else
