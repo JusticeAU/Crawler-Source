@@ -43,16 +43,22 @@ void Crawl::DungeonDoor::UpdateTransforms()
 	{
 		if (object)
 		{
-			object->localPosition.z = openHeight;
-			object->SetDirtyTransform();
+			object->children[0]->children[1]->SetLocalRotationZ(openEulerAngle);
+			object->children[0]->children[2]->SetLocalRotationZ(-openEulerAngle);
+
+			//object->localPosition.z = openHeight;
+			//object->SetDirtyTransform();
 		}
 	}
 	else
 	{
 		if (object)
 		{
-			object->localPosition.z = closedHeight;
-			object->SetDirtyTransform();
+			object->children[0]->children[1]->SetLocalRotationZ(0.0f);
+			object->children[0]->children[2]->SetLocalRotationZ(0.0f);
+
+			//object->localPosition.z = closedHeight;
+			//object->SetDirtyTransform();
 		}
 	}
 }

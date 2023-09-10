@@ -23,6 +23,8 @@ namespace Crawl
 		int orientation = 0; // Use DIRECTION_MASK in DungeonHelpers.h
 		unsigned int id = 0;
 		
+		const float openEulerAngle = -140.0f;
+
 		unsigned int power = 0;
 		bool open = false;
 		

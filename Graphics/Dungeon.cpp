@@ -926,10 +926,22 @@ Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int dire
 	door_object->LoadFromJSON(door_objectJSON);
 	door->object = door_object;
 	door_object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
-	ordered_json door_modelJSON = ReadJSONFromDisk("crawler/model/door_jail_blockout/door_jail_blockout.object");
-	Object* door_model = Scene::CreateObject(door_object->children[0]);
+	
+	ordered_json door_modelJSON = ReadJSONFromDisk("crawler/model/door_door1.object");
+	Object* door_model = door_object->children[0]->children[0];
 	door_model->LoadFromJSON(door_modelJSON);
 	door_object->SetLocalRotationZ(orientationEulers[directionIndex]);
+
+	// Left Panel
+	ordered_json door_panelModelJSON = ReadJSONFromDisk("crawler/model/door_panel_prototype.object");
+	Object* door_leftPanelJSON = Scene::CreateObject(door_object->children[0]->children[1]->children[0]);
+	door_leftPanelJSON->LoadFromJSON(door_panelModelJSON);
+
+	// Right panel
+	Object* door_rightPanelJSON = Scene::CreateObject(door_object->children[0]->children[2]->children[0]);
+	door_rightPanelJSON->LoadFromJSON(door_panelModelJSON);
+		
+	
 	door->UpdateTransforms();
 	activatable.push_back(door);
 	return door;
@@ -1784,6 +1796,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		defaultPlayerStartOrientation = EAST_INDEX;
 
 	if (serialised.contains("noRoof")) noRoof = true;
+	else noRoof = false;
 
 	// Player settings are no longer stored in dungeon files.
 	/*if (serialised.contains("playerTurnIsFree"))
