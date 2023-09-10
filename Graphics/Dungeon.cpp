@@ -706,8 +706,8 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 	// translate kick in direction
 	ivec2 targetPosition = fromPosition + directions[direction];
 
-	// check you have line of sight to position
-	if (!CanSee(fromPosition, direction))
+	// check you reach into the tile you're interacting with.
+	if (!CanTraverse(fromPosition, direction))
 		return false;
 
 	// see if theres anything kickable in that position
@@ -730,7 +730,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		// see if the thing can move
 		ivec2 moveToPos = targetPosition + directions[direction];
 
-		if (!CanSee(targetPosition, direction))
+		if (!CanTraverse(targetPosition, direction))
 			return false;
 
 		// is there a tile?
@@ -771,7 +771,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		// see if the thing can move
 		ivec2 moveToPos = targetPosition + directions[direction];
 
-		if (!CanSee(targetPosition, direction))
+		if (!CanTraverse(targetPosition, direction))
 			return false;
 
 		// is there a tile?
@@ -809,7 +809,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		// see if the thing can move
 		ivec2 moveToPos = targetPosition + directions[direction];
 
-		if (!CanSee(targetPosition, direction))
+		if (!CanTraverse(targetPosition, direction))
 			return false;
 
 		// is there a tile?
@@ -852,7 +852,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		// see if the thing can move
 		ivec2 moveToPos = targetPosition + directions[direction];
 
-		if (!CanSee(targetPosition, direction))
+		if (!CanTraverse(targetPosition, direction))
 			return false;
 
 		// is there a tile?
@@ -890,7 +890,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		// see if the thing can move
 		ivec2 moveToPos = targetPosition + directions[direction];
 
-		if (!CanSee(targetPosition, direction))
+		if (!CanTraverse(targetPosition, direction))
 			return false;
 
 		// is there a tile?
