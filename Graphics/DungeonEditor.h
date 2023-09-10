@@ -56,7 +56,7 @@ namespace Crawl
 		void UpdateModeTileEdit();
 		void UpdateModeSlugPathEdit();
 
-		void DrawTileInformation(DungeonTile* tile);
+		void DrawTileInformation(DungeonTile* tile, bool drawBorder = false);
 
 		void RefreshSelectedTile();
 		void RefreshSelectedTransporterData(string dungeonPath);

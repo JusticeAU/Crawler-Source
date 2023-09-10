@@ -16,6 +16,7 @@ namespace Crawl
 
 		// State
 		bool occupied = false;
+		bool permanentlyOccupied = false;
 
 		// Dependencies
 		Object* object = nullptr;
@@ -33,6 +34,7 @@ namespace Crawl
 	static void to_json(ordered_json& j, const DungeonTile& tile)
 	{
 		j = { {"position", tile.position}, {"mask", tile.maskTraverse}, {"maskSee", tile.maskSee}, {"wallVariants", tile.wallVariants} };
+		if (tile.permanentlyOccupied) j["permanentlyOccupied"] = true;
 	}
 
 	static void from_json(const ordered_json& j, DungeonTile& tile)
@@ -54,19 +56,16 @@ namespace Crawl
 				tile.maskSee += WEST_MASK;
 		}
 
-		if(j.contains("wallVariants"))
+		if (j.contains("wallVariants"))
 			j.at("wallVariants").get_to(tile.wallVariants);
-		//else
-		//{
-		//	if ((tile.maskTraverse & NORTH_MASK) != NORTH_MASK) // North Wall
-		//		tile.wallVariants[0] = 1;
-		//	if ((tile.maskTraverse & SOUTH_MASK) != SOUTH_MASK) // South Wall
-		//		tile.wallVariants[1] = 1;
-		//	if ((tile.maskTraverse & EAST_MASK) != EAST_MASK) // East Wall
-		//		tile.wallVariants[2] = 1;
-		//	if ((tile.maskTraverse & WEST_MASK) != WEST_MASK) // West Wall
-		//		tile.wallVariants[3] = 1;
-		//}
+		
+		if (j.contains("permanentlyOccupied"))
+		{
+			j.at("permanentlyOccupied").get_to(tile.permanentlyOccupied);
+			tile.occupied = tile.permanentlyOccupied;
+		}
+
+
 	}
 }
 

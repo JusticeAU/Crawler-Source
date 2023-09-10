@@ -368,6 +368,10 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	ImGui::DragInt2("Location", &selectedTile->position.x);
 	ImGui::Checkbox("Occupied", &selectedTile->occupied);
 	ImGui::EndDisabled();
+	if (ImGui::Checkbox("Permanently Occupied", &selectedTile->permanentlyOccupied))
+		MarkUnsavedChanges();
+	if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		ImGui::SetTooltip("Marks the tile as completely untraversable. Overrides any anything else.");
 
 	// Cardinal traversable/see yes/no
 	unsigned int oldMaskTraverse = selectedTile->maskTraverse;
@@ -385,6 +389,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		ImGui::EndCombo();
 	}
 	ImGui::PopStyleColor();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		ImGui::SetTooltip("Configure in what direction you can walk off this tile");
 	if (oldMaskTraverse != selectedTile->maskTraverse) MarkUnsavedChanges();
 
 	unsigned int oldMaskSee = selectedTile->maskSee;
@@ -402,6 +408,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		ImGui::EndCombo();
 	}
 	ImGui::PopStyleColor();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		ImGui::SetTooltip("Configure in what direction you can see out of this tile");
 	if (oldMaskSee != selectedTile->maskSee) MarkUnsavedChanges();
 
 	// Wall Variants
@@ -429,6 +437,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 			}
 			ImGui::EndCombo();
 		}
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("Configure the configurations of the walls for this tile. Note this doesnt affect ability to traverse or see through the tile");
 		ImGui::PopID();
 	}
 
@@ -1627,22 +1637,7 @@ void Crawl::DungeonEditor::UpdateModeTileBrush()
 }
 void Crawl::DungeonEditor::UpdateModeTileEdit()
 {
-	if (selectedTile)
-	{
-		DrawTileInformation(selectedTile);
-
-		// Highlight the tile
-		vec3 tilePos = dungeonPosToObjectScale(selectedTile->position);
-		for (int i = 0; i < 4; i++)
-		{	
-			int nextI = i+1;
-			if (nextI == 4) nextI = 0;
-			vec3 a = dungeonPosToObjectScale(directionsDiagonal[i]) * 0.5f;;
-			vec3 b = dungeonPosToObjectScale(directionsDiagonal[nextI]) * 0.5f;;
-
-			LineRenderer::DrawLine(tilePos + a, tilePos + b);
-		}
-	}
+	if (selectedTile) DrawTileInformation(selectedTile, true);
 
 
 	if (Input::Mouse(0).Down())
@@ -1739,15 +1734,46 @@ void Crawl::DungeonEditor::UpdateModeSlugPathEdit()
 	}
 }
 
-void Crawl::DungeonEditor::DrawTileInformation(DungeonTile* tile)
+void Crawl::DungeonEditor::DrawTileInformation(DungeonTile* tile, bool drawBorder)
 {
-	glm::vec3 tileOrigin = dungeonPosToObjectScale(tile->position);
-	for (int i = 0; i < 4; i++)
-		if ((tile->maskTraverse & orientationMasksIndex[i]) == orientationMasksIndex[i]) LineRenderer::DrawLine(tileOrigin, tileOrigin + dungeonPosToObjectScale(directions[i]) * 0.5f, { 0,1,0 });
+	vec3 tilePos = dungeonPosToObjectScale(tile->position);
+	if (drawBorder)
+	{
+		// Highlight the tile
+		for (int i = 0; i < 4; i++)
+		{
+			int nextI = i + 1;
+			if (nextI == 4) nextI = 0;
+			vec3 a = dungeonPosToObjectScale(directionsDiagonal[i]) * 0.5f;;
+			vec3 b = dungeonPosToObjectScale(directionsDiagonal[nextI]) * 0.5f;;
 
-	tileOrigin.z += 0.2f;
-	for (int i = 0; i < 4; i++)
-		if ((tile->maskSee & orientationMasksIndex[i]) == orientationMasksIndex[i]) LineRenderer::DrawLine(tileOrigin, tileOrigin + dungeonPosToObjectScale(directions[i]) * 0.5f, { 0.5,.5,1 });
+			LineRenderer::DrawLine(tilePos + a, tilePos + b, vec3(0.25, 0.25, 0.25));
+		}
+	}
+
+	if (!tile->permanentlyOccupied)
+	{
+		glm::vec3 tileOrigin = dungeonPosToObjectScale(tile->position);
+		for (int i = 0; i < 4; i++)
+			if ((tile->maskTraverse & orientationMasksIndex[i]) == orientationMasksIndex[i]) LineRenderer::DrawLine(tileOrigin, tileOrigin + dungeonPosToObjectScale(directions[i]) * 0.5f, { 0,1,0 });
+
+
+		tileOrigin.z += 0.2f;
+		for (int i = 0; i < 4; i++)
+			if ((tile->maskSee & orientationMasksIndex[i]) == orientationMasksIndex[i]) LineRenderer::DrawLine(tileOrigin, tileOrigin + dungeonPosToObjectScale(directions[i]) * 0.5f, { 0.5,.5,1 });
+	}
+	else
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			int nextI = i + 1;
+			if (nextI == 4) nextI = 0;
+			vec3 a = dungeonPosToObjectScale(directionsDiagonal[i]) * 0.4f;;
+			vec3 b = dungeonPosToObjectScale(directionsDiagonal[nextI]) * 0.4f;;
+
+			LineRenderer::DrawLine(tilePos + a, tilePos + b, vec3(1, 0, 0));
+		}
+	}
 }
 
 void Crawl::DungeonEditor::RefreshSelectedTile()
