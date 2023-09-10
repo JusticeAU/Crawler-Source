@@ -369,7 +369,7 @@ bool Crawl::DungeonPlayer::UpdateStateStairs(float delta)
 			facingStairs = true;
 		}
 		else
-			object->SetLocalRotationZ(MathUtils::LerpDegrees(oldTurn, targetTurn, t));
+			object->SetLocalRotationZ(MathUtils::LerpDegrees(oldTurn, targetTurn, MathUtils::EaseOutBounceSubtle(t)));
 
 	}
 	else
