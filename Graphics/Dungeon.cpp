@@ -1042,7 +1042,7 @@ Crawl::DungeonPushableBlock* Crawl::Dungeon::CreatePushableBlock(ivec2 position)
 	DungeonPushableBlock* pushable = new DungeonPushableBlock();
 	pushable->position = position;
 	pushable->object = Scene::CreateObject();
-	pushable->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/pushable.object"));
+	pushable->object->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_crate.object"));
 	pushable->object->SetLocalPosition(dungeonPosToObjectScale(position));
 	pushableBlocks.push_back(pushable);
 
