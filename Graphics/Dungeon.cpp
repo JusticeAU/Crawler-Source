@@ -989,9 +989,12 @@ Crawl::DungeonTransporter* Crawl::Dungeon::CreateTransporter(ivec2 position)
 {
 	DungeonTransporter* transporter = new DungeonTransporter();
 	transporter->position = position;
-	transporter->object = Scene::CreateObject();
-	transporter->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/exit.object"));
-	transporter->object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 1 });
+	if (!fakeDungeon) // We dont need an object for this if its the fake lobby dungeon boiii
+	{
+		transporter->object = Scene::CreateObject();
+		transporter->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/exit.object"));
+		transporter->object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 1 });
+	}
 	transporterPlates.push_back(transporter);
 	return transporter;
 }
@@ -1877,6 +1880,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		newTransporter->toDungeon = transporter.toDungeon;
 		newTransporter->toTransporter = transporter.toTransporter;
 		newTransporter->fromOrientation = transporter.fromOrientation;
+		newTransporter->toLobby2 = transporter.toLobby2;
 	}
 
 	auto& checkpoints_json = serialised["checkpoints"];
@@ -2247,7 +2251,11 @@ void Crawl::Dungeon::Update()
 
 	if (activateTransporter)
 	{
+		// store this stuff because its about to be deleted from memory.
 		string dungeonToLoad = activateTransporter->toDungeon;
+		string TransporterToGoTo = activateTransporter->toTransporter;
+		bool toLobbyLevel2 = activateTransporter->toLobby2;
+		
 		if (!TestDungeonExists(dungeonToLoad + ".dungeon"))
 		{
 			LogUtils::Log("Dungeon does not exist, bailing on loading:");
@@ -2255,12 +2263,21 @@ void Crawl::Dungeon::Update()
 			return;
 		}
 
-		string TransporterToGoTo = activateTransporter->toTransporter;
-		// Load dungeonName
+		// Load dungeonName - the transporter we just activated is no longer in memory.
 		Load(dungeonToLoad + ".dungeon");
 
 		// Get Transporter By Name
-		DungeonTransporter* gotoTransporter = GetTransporter(TransporterToGoTo);
+		DungeonTransporter* gotoTransporter;
+		if (toLobbyLevel2)
+		{
+			gotoTransporter = player->lobbyLevel2Dungeon->GetTransporter(TransporterToGoTo);
+			player->SetLevel2(true);
+		}
+		else
+		{
+			gotoTransporter = GetTransporter(TransporterToGoTo);
+			player->SetLevel2(false);
+		}
 
 		// Reset previous checkpoint
 		player->ClearCheckpoint();
@@ -2268,7 +2285,7 @@ void Crawl::Dungeon::Update()
 		// Set player Position
 		if (gotoTransporter)
 		{
-			player->SetRespawn(gotoTransporter->position, (FACING_INDEX)gotoTransporter->fromOrientation);
+			player->SetRespawn(gotoTransporter->position, (FACING_INDEX)gotoTransporter->fromOrientation, toLobbyLevel2);
 			player->Respawn();
 		}
 		else

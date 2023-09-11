@@ -102,7 +102,10 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 
 
 	if (Input::Keyboard(GLFW_KEY_R).Down())
+	{
+		if (isOnLobbyLevel2) lobbyLevel2Dungeon->GetTile(position)->occupied = false; // because this level doesnt reset, we need to keep it tidy!!
 		Respawn();
+	}
 
 	// All these checks should move to a turn processors state machine.
 	if (hp <= 0)
@@ -400,7 +403,8 @@ void Crawl::DungeonPlayer::Teleport(ivec2 position)
 {
 	state = IDLE;
 	this->position = position;
-	targetPosition = { position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 };
+	SetLevel2(respawnLevel2);
+	targetPosition = { position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, playerZPosition };
 	object->SetLocalPosition(targetPosition);
 }
 
@@ -410,11 +414,12 @@ void Crawl::DungeonPlayer::Orient(FACING_INDEX facing)
 	object->SetLocalRotationZ(orientationEulers[facing]);
 }
 
-void Crawl::DungeonPlayer::SetRespawn(ivec2 position, FACING_INDEX orientation)
+void Crawl::DungeonPlayer::SetRespawn(ivec2 position, FACING_INDEX orientation, bool isLevel2)
 {
 	hasRespawnLocation = true;
-	this->respawnPosition = position;
+	respawnPosition = position;
 	respawnOrientation = orientation;
+	respawnLevel2 = isLevel2;
 }
 
 void Crawl::DungeonPlayer::ClearRespawn()
@@ -425,6 +430,7 @@ void Crawl::DungeonPlayer::ClearRespawn()
 void Crawl::DungeonPlayer::Respawn()
 {
 	AudioManager::PlaySound("crawler/sound/load/start.wav");
+
 	if (checkpointExists)
 	{
 		dungeon->RebuildDungeonFromSerialised(checkpointSerialised);
@@ -448,9 +454,6 @@ void Crawl::DungeonPlayer::Respawn()
 
 	hp = maxHp;
 	shouldSwitchWith = nullptr;
-	currentDungeon = dungeon;
-	isOnLobbyLevel2 = false;
-	playerZPosition = 0.0f;
 }
 
 void Crawl::DungeonPlayer::MakeCheckpoint()
@@ -495,4 +498,22 @@ unsigned int Crawl::DungeonPlayer::GetMoveCardinalIndex(DIRECTION_INDEX dir)
 		index -= 4;
 
 	return index;
+}
+
+void Crawl::DungeonPlayer::SetLevel2(bool level2)
+{
+	if (level2)
+	{
+		playerZPosition = lobbyLevel2Floor;
+		currentDungeon = lobbyLevel2Dungeon;
+		isOnLobbyLevel2 = true;
+		respawnLevel2 = true;
+	}
+	else
+	{
+		playerZPosition = 0.0f;
+		currentDungeon = dungeon;
+		isOnLobbyLevel2 = false;
+		respawnLevel2 = false;
+	}
 }

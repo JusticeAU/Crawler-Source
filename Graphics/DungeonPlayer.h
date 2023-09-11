@@ -36,7 +36,7 @@ namespace Crawl
 		FACING_INDEX GetOrientation() { return facing; }
 		void Teleport(ivec2 position);
 		void Orient(FACING_INDEX facing);
-		void SetRespawn(ivec2 position, FACING_INDEX orientation);
+		void SetRespawn(ivec2 position, FACING_INDEX orientation, bool isLevel2 = false);
 		void ClearRespawn();
 		void Respawn();
 
@@ -50,6 +50,8 @@ namespace Crawl
 
 		// combines our requested direction with our facing direction to return the actual direction.
 		unsigned int GetMoveCardinalIndex(DIRECTION_INDEX dir);
+
+		void SetLevel2(bool level2);
 
 	private:
 		glm::ivec2 position;
@@ -89,6 +91,7 @@ namespace Crawl
 		bool hasRespawnLocation = false;
 		glm::ivec2 respawnPosition = { 0,0 };
 		FACING_INDEX respawnOrientation = EAST_INDEX;
+		bool respawnLevel2 = false;
 
 		DungeonEnemySwitcher* shouldSwitchWith = nullptr;
 		DungeonStairs* activateStairs = nullptr;
@@ -111,6 +114,7 @@ namespace Crawl
 		string animationNamePush = "crawler/model/viewmodel_hands.fbxarmature|armatureaction";
 
 		// Lobby Scene Stuff
+	public:
 		bool isOnLobbyLevel2 = false;
 		Dungeon* lobbyLevel2Dungeon = nullptr;
 		Dungeon* currentDungeon = nullptr;

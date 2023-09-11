@@ -122,9 +122,11 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	{
 		TileEditUnselectAll();
 		dungeon->ResetDungeon();
+		dungeon->player->SetLevel2(false);
 		dungeon->player->ClearRespawn();
 		dungeon->player->Teleport(dungeon->defaultPlayerStartPosition);
 		dungeon->player->Orient(dungeon->defaultPlayerStartOrientation);
+
 		dirtyGameplayScene = false;
 		UnMarkUnsavedChanges();
 	}
@@ -986,6 +988,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
 	ImGui::Begin("Edit Transporter", &selectedTransporterWindowOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 	if (ImGui::InputText("Name", &selectedTransporter->name))
 		MarkUnsavedChanges();
+	ImGui::PushItemWidth(100);
 	if (ImGui::BeginCombo("Orientation", orientationNames[selectedTransporter->fromOrientation].c_str()))
 	{
 		int oldOrientation = selectedTransporter->fromOrientation;
@@ -1001,7 +1004,16 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
 			}
 		ImGui::EndCombo();
 	}
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	if (ImGui::Checkbox("To Lobby Second Level", &selectedTransporter->toLobby2))
+	{
+		selectedTransporter->toDungeon = "crawler/dungeon/lobby";
+		RefreshSelectedTransporterData("crawler/dungeon/lobby2" + dungeon->dungeonFileExtension);
+		MarkUnsavedChanges();
+	}
 
+	if (selectedTransporter->toLobby2) ImGui::BeginDisabled();
 	if (ImGui::BeginCombo("To Dungeon", selectedTransporter->toDungeon.c_str()))
 	{
 		for (auto d : fs::recursive_directory_iterator(dungeon->dungeonFileLocation))
@@ -1026,6 +1038,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
 		}
 		ImGui::EndCombo();
 	}
+	if (selectedTransporter->toLobby2) ImGui::EndDisabled();
 
 	if (!selectedTransporterToDungeonLoaded) ImGui::BeginDisabled();
 	if (ImGui::BeginCombo("To Transporter", selectedTransporter->toTransporter.c_str()))
