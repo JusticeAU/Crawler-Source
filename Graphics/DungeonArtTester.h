@@ -63,10 +63,10 @@ namespace Crawl
 
 		// Staging Configuration
 		float timeLastRefreshed = 0.0f;
-		int type = 0;
+		int type = 4;
 		string types[6] = { "Monster", "Tile", "Interactble", "Door", "Decoration", "Other"};
 		string typesFolders[6] = { "monster_", "tile_", "interactable_", "door_", "decoration_", "" };
-		string stagedType = "Monster";
+		string stagedType = "Decoration"; // type = 4;
 
 		// Staging names and paths
 		string stagedName = "name";	// Managed by ImGui and UpdateStagingFolders function
