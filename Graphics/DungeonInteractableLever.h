@@ -14,12 +14,15 @@ namespace Crawl
 		~DungeonInteractableLever();
 		void Toggle() override;
 		void SetID(unsigned int newID);
-		void UpdateTransform();
+		
+		void UpdateTransform(bool instant = false);
+		void UpdateVisuals(float delta);
 
-		//void Prime();
+		float onRotationEuler = 60.0f;
 
-		static const float wallHeightOff;
-		static const float wallHeightOn;
+		const float swingTime = 0.5f;
+		float swingTimeCurrent = 0.0f;
+		bool shouldSwing = false;
 
 		bool status = false;
 

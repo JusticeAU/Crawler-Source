@@ -14,16 +14,19 @@ namespace Crawl
 		void Toggle(bool on);
 
 		void Update();
-		void UpdateTransforms();
+		void UpdateVisuals(float delta);
+		void UpdateTransforms(bool instant = false);
 
-		static const float openHeight;
-		static const float closedHeight;
+		const float openEulerAngle = -150.0f;
+		
+		const float swingTime = 0.5f;
+		float swingTimeCurrent = 0.0f;
+		bool shouldSwing = false;
 
 		glm::ivec2 position = { 0, 0 };
 		int orientation = 0; // Use DIRECTION_MASK in DungeonHelpers.h
 		unsigned int id = 0;
 		
-		const float openEulerAngle = -140.0f;
 
 		unsigned int power = 0;
 		bool open = false;

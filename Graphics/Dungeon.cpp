@@ -246,7 +246,7 @@ Crawl::DungeonTile* Crawl::Dungeon::GetTile(ivec2 pos)
 
 	return &existingTile->second;
 }
-
+ 
 bool Crawl::Dungeon::DeleteTile(ivec2 position)
 {
 	auto col = tiles.find(position.x);
@@ -553,7 +553,7 @@ Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, uns
 
 	// Load lever Objects from JSON
 	ordered_json lever_objectJSON = ReadJSONFromDisk("crawler/object/interactable_lever.object");
-	ordered_json lever_modelJSON = ReadJSONFromDisk("crawler/model/interactable_lever_lever/interactable_lever_lever.object");
+	ordered_json lever_modelJSON = ReadJSONFromDisk("crawler/model/interactable_lever.object");
 
 	// load Model object in to Model child object
 	Object* lever_object = Scene::CreateObject();
@@ -565,11 +565,9 @@ Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, uns
 	lever_object->SetLocalRotationZ(orientationEulers[directionIndex]);
 	lever->SetID(id);
 	lever->activateID = doorID;
-	lever->UpdateTransform();
+	lever->UpdateTransform(true);
+	
 	interactables.push_back(lever);
-	/*if (lever->status) // Removed because we're not using this 'power' method currently.
-		lever->Prime();*/
-
 	return lever;
 }
 
@@ -942,7 +940,7 @@ Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int dire
 	door_rightPanelJSON->LoadFromJSON(door_panelModelJSON);
 		
 	
-	door->UpdateTransforms();
+	door->UpdateTransforms(true);
 	activatable.push_back(door);
 	return door;
 }
@@ -2323,6 +2321,11 @@ void Crawl::Dungeon::UpdateVisuals(float delta)
 		}
 	}
 
+	for (auto& door : activatable)
+		door->UpdateVisuals(delta);
+
+	for (auto& lever : interactables)
+		lever->UpdateVisuals(delta);
 }
 
 unsigned int Crawl::Dungeon::GetAutoTileMask(ivec2 position)

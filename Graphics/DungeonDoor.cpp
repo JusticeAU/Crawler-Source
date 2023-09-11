@@ -1,5 +1,7 @@
 #include "DungeonDoor.h"
 #include "Object.h"
+#include "MathUtils.h"
+
 
 Crawl::DungeonDoor::~DungeonDoor()
 {
@@ -37,31 +39,47 @@ void Crawl::DungeonDoor::Update()
 		UpdateTransforms();*/
 }
 
-void Crawl::DungeonDoor::UpdateTransforms()
+void Crawl::DungeonDoor::UpdateVisuals(float delta)
 {
-	if (open)
+	if (shouldSwing)
 	{
-		if (object)
+		if (swingTimeCurrent < swingTime)
 		{
-			object->children[0]->children[1]->SetLocalRotationZ(openEulerAngle);
-			object->children[0]->children[2]->SetLocalRotationZ(-openEulerAngle);
+			float t = swingTimeCurrent / swingTime;
+			if (open)
+			{
+				t = glm::backEaseOut(t);
+				float currentAngle = MathUtils::Lerp(0.0f, openEulerAngle, t);
+				object->children[0]->children[1]->SetLocalRotationZ(currentAngle);
+				object->children[0]->children[2]->SetLocalRotationZ(-currentAngle);
+			}
+			else
+			{
+				t = glm::bounceEaseOut(t);
+				float currentAngle = MathUtils::Lerp(openEulerAngle, 0.0f, t);
+				object->children[0]->children[1]->SetLocalRotationZ(currentAngle);
+				object->children[0]->children[2]->SetLocalRotationZ(-currentAngle);
+			}
 
-			//object->localPosition.z = openHeight;
-			//object->SetDirtyTransform();
+			swingTimeCurrent += delta;
 		}
-	}
-	else
-	{
-		if (object)
+		else
 		{
-			object->children[0]->children[1]->SetLocalRotationZ(0.0f);
-			object->children[0]->children[2]->SetLocalRotationZ(0.0f);
+			float finalAngle = open ? openEulerAngle : 0.0f;
+			object->children[0]->children[1]->SetLocalRotationZ(finalAngle);
+			object->children[0]->children[2]->SetLocalRotationZ(-finalAngle);
 
-			//object->localPosition.z = closedHeight;
-			//object->SetDirtyTransform();
+			shouldSwing = false;
+			swingTimeCurrent = 0.0f;
 		}
 	}
 }
 
-const float Crawl::DungeonDoor::closedHeight = 0.0f;
-const float Crawl::DungeonDoor::openHeight = 3.0f;
+void Crawl::DungeonDoor::UpdateTransforms(bool instant)
+{
+	// instant is used on level load to prime door state, for cases when a door should start open
+	if (!instant) swingTimeCurrent = 0.0f;
+	else swingTimeCurrent = swingTime;
+	
+	shouldSwing = true;
+}

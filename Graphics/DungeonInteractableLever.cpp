@@ -1,6 +1,7 @@
 #include "DungeonInteractableLever.h"
 #include "Dungeon.h"
 #include "Object.h"
+#include "MathUtils.h"
 
 Crawl::DungeonInteractableLever::~DungeonInteractableLever()
 {
@@ -13,7 +14,6 @@ void Crawl::DungeonInteractableLever::Toggle()
 	status = !status;
 	UpdateTransform();
 
-	//dungeon->DoActivate(activateID, status);
 	dungeon->DoActivate(activateID);
 }
 
@@ -23,35 +23,45 @@ void Crawl::DungeonInteractableLever::SetID(unsigned int newID)
 	object->children[0]->children[0]->id = newID;
 }
 
-void Crawl::DungeonInteractableLever::UpdateTransform()
+void Crawl::DungeonInteractableLever::UpdateTransform(bool instant)
 {
-	if (status)
+	if (!instant) swingTimeCurrent = 0.0f;
+	else swingTimeCurrent = swingTime;
+
+	shouldSwing = true;
+}
+
+void Crawl::DungeonInteractableLever::UpdateVisuals(float delta)
+{
+	if (shouldSwing)
 	{
-		if (object)
+		if (swingTimeCurrent < swingTime)
 		{
-			object->localPosition.z = wallHeightOn;
-			object->SetDirtyTransform();
+			float t = swingTimeCurrent / swingTime;
+			if (status)
+			{
+				t = glm::elasticEaseOut(t);
+				float currentAngle = MathUtils::Lerp(0.0f, onRotationEuler, t);
+				object->children[0]->localRotation.x = currentAngle;
+			}
+			else
+			{
+				t = glm::elasticEaseOut(t);
+				float currentAngle = MathUtils::Lerp(onRotationEuler, 0.0f, t);
+				object->children[0]->localRotation.x = currentAngle;
+			}
+			object->children[0]->SetDirtyTransform();
+
+			swingTimeCurrent += delta;
 		}
-	}
-	else
-	{
-		if (object)
+		else
 		{
-			object->localPosition.z = wallHeightOff;
-			object->SetDirtyTransform();
+			float finalAngle = status ? onRotationEuler : 0.0f;
+			object->children[0]->localRotation.x = finalAngle;
+			object->children[0]->SetDirtyTransform();
+
+			shouldSwing = false;
+			swingTimeCurrent = 0.0f;
 		}
 	}
 }
-
-//void Crawl::DungeonInteractableLever::Prime()
-//{
-//	if (object)
-//	{
-//		object->localPosition.z = wallHeightOn;
-//		object->dirtyTransform = true;
-//	}
-//	dungeon->DoActivate(activateID, status);
-//}
-
-const float Crawl::DungeonInteractableLever::wallHeightOn = 1.25f;
-const float Crawl::DungeonInteractableLever::wallHeightOff = 1.50f;
