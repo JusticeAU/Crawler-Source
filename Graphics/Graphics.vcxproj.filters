@@ -326,6 +326,9 @@
     <ClCompile Include="ComponentLightPoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DungeonLight.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -588,6 +591,12 @@
     </ClInclude>
     <ClInclude Include="ComponentLightPoint.h">
       <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonLight.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonEventTrigger.h">
+      <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -16,6 +16,7 @@ class Mesh;
 class Camera;
 class ComponentCamera;
 class ComponentLightPoint;
+class ComponentRenderer;
 
 class PostProcess;
 
@@ -53,6 +54,9 @@ public:
 	static glm::vec4* GetPointLightColours() { return &s_instance->m_pointLightColours[0]; }
 	static void AddPointLight(ComponentLightPoint* light);
 	static void RemovePointLight(ComponentLightPoint* light);
+
+	static void AddRendererComponent(ComponentRenderer* rendererComponent);
+	static void RemoveRendererComponent(ComponentRenderer* rendererComponent);
 
 	static int GetCameraIndex() { return s_instance->cameraIndex; }
 	static ComponentCamera* GetCameraByIndex(int index);
@@ -119,6 +123,7 @@ protected:
 	int MAX_POINTLIGHTS = 50;
 public:
 	vector<ComponentLightPoint*> m_pointLightComponents;
+	vector<ComponentRenderer*> m_rendererComponents;
 	static SceneRenderer* renderer;
 	glm::mat4 lightSpaceMatrix; // Directional Light Shadow Mapping.
 

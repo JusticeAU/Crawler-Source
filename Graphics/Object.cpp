@@ -249,7 +249,7 @@ void Object::DrawGUI()
 			{
 				if (ImGui::Selectable(ComponentFactory::GetComponentName(i).c_str()))
 				{
-					components.push_back(ComponentFactory::NewComponent(this,(ComponentType)i));
+					ComponentFactory::NewComponent(this,(ComponentType)i);
 					for (auto component : components)
 						component->OnParentChange();
 				}

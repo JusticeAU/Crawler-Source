@@ -33,6 +33,8 @@ namespace Crawl
 	class DungeonEnemySlugPath;
 	class DungeonDecoration;
 	class DungeonStairs;
+	class DungeonLight;
+	class DungeonEventTrigger;
 
 	struct Column
 	{
@@ -150,6 +152,12 @@ namespace Crawl
 		
 		DungeonStairs* CreateStairs(ivec2 position);
 		void RemoveStairs(DungeonStairs* stairs);
+
+		DungeonLight* CreateLight(ivec2 position);
+		void RemoveLight(DungeonLight* light);
+
+		DungeonEventTrigger* CreateEventTrigger(ivec2 position);
+		void RemoveEventTrigger(DungeonEventTrigger* trigger);
 	
 		void Save(std::string filename);
 		void ClearDungeon();
@@ -245,6 +253,9 @@ namespace Crawl
 
 		std::vector<DungeonDecoration*> decorations;
 		std::vector<DungeonStairs*> stairs;
+
+		std::vector<DungeonLight*> pointLights;
+		std::vector<DungeonEventTrigger*> events;
 		
 		DungeonPlayer* player = nullptr;
 

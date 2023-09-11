@@ -10,6 +10,7 @@
 #include "DungeonEnemySwitcher.h"
 #include "DungeonCheckpoint.h"
 #include "DungeonStairs.h"
+#include "DungeonLight.h"
 
 #include "gtx/spline.hpp"
 #include "gtx/easing.hpp"
@@ -38,6 +39,28 @@ void Crawl::DungeonPlayer::SetDungeon(Dungeon* dungeonPtr)
 // Returns true if the player made a game-state changing action
 bool Crawl::DungeonPlayer::Update(float deltaTime)
 {
+	FindLobbyLight();
+
+	// This gotta be moved to some game / global event manager
+	if (lobbyLightActivated && lobbyLight != nullptr && lobbyLightTimeCurrent < (lobbyLightTime + 0.55f))
+	{
+		float t = glm::bounceEaseIn(lobbyLightTimeCurrent / lobbyLightTime);
+		t = glm::clamp(t, 0.0f, 1.0f);
+		lobbyLight->intensity = MathUtils::Lerp(0.0f,100.0f, t);
+		lobbyLight->UpdateLight();
+
+		lobbyLightTimeCurrent += deltaTime;
+	}
+	else
+	{
+		if (lobbyLight != nullptr)
+		{
+			lobbyLight->intensity = 0.0f;
+			lobbyLight->UpdateLight();
+		}
+	}
+
+
 	if (state == IDLE)
 	{
 		if (UpdateStateIdle(deltaTime))
@@ -489,6 +512,18 @@ void Crawl::DungeonPlayer::SetShouldActivateStairs(DungeonStairs* stairs)
 		facingStairs = true;
 }
 
+void Crawl::DungeonPlayer::FindLobbyLight()
+{
+	for (auto& light : dungeon->pointLights)
+	{
+		if (light->isLobbyLight)
+		{
+			lobbyLight = light;
+			break;
+		}
+	}
+}
+
 // Take the requested direction and offset by the direction we're facing, check for overflow, then index in to the directions array.
 unsigned int Crawl::DungeonPlayer::GetMoveCardinalIndex(DIRECTION_INDEX dir)
 {
@@ -515,5 +550,28 @@ void Crawl::DungeonPlayer::SetLevel2(bool level2)
 		currentDungeon = dungeon;
 		isOnLobbyLevel2 = false;
 		respawnLevel2 = false;
+	}
+}
+
+void Crawl::DungeonPlayer::DoEvent(int eventID)
+{
+	switch (eventID)
+	{
+	case -1:
+	{
+		LogUtils::Log("Attempted to trigger unassigned event (-1)");
+		return;
+	}
+	case 1: // activate lighting in lobby
+	{
+		ActivateLobbyLight();
+		return;
+	}
+
+	default:
+	{
+		LogUtils::Log("Attempted to trigger event that doesnt exist (" + to_string(eventID) + ")");
+		return;
+	}
 	}
 }

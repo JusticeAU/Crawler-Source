@@ -20,6 +20,8 @@
 #include "DungeonEnemySlugPath.h"
 #include "DungeonDecoration.h"
 #include "DungeonStairs.h"
+#include "DungeonLight.h"
+#include "DungeonEventTrigger.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
@@ -1608,6 +1610,51 @@ void Crawl::Dungeon::RemoveStairs(DungeonStairs* stair)
 	}
 }
 
+Crawl::DungeonLight* Crawl::Dungeon::CreateLight(ivec2 position)
+{
+	DungeonLight* light = new DungeonLight();
+	light->position = position;
+	pointLights.push_back(light);
+	light->Init();
+	light->UpdateTransform();
+	return light;
+}
+
+void Crawl::Dungeon::RemoveLight(DungeonLight* light)
+{
+	for (int i = 0; i < pointLights.size(); i++)
+	{
+		if (pointLights[i] == light)
+		{
+			delete pointLights[i];
+			pointLights.erase(pointLights.begin() + i);
+			break;
+		}
+	}
+}
+
+Crawl::DungeonEventTrigger* Crawl::Dungeon::CreateEventTrigger(ivec2 position)
+{
+	DungeonEventTrigger* event = new DungeonEventTrigger();
+	event->dungeon = this;
+	event->position = position;
+	events.emplace_back(event);
+	return event;
+}
+
+void Crawl::Dungeon::RemoveEventTrigger(DungeonEventTrigger* event)
+{
+	for (int i = 0; i < events.size(); i++)
+	{
+		if (events[i] == event)
+		{
+			delete events[i];
+			events.erase(events.begin() + i);
+			break;
+		}
+	}
+}
+
 void Crawl::Dungeon::Save(std::string filename)
 {
 	SetDungeonNameFromFileName(filename);
@@ -1767,6 +1814,16 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 	for (auto& decoration : decorations)
 		decorations_json.push_back(*decoration);
 	dungeon_serialised["decorations"] = decorations_json;
+
+	ordered_json pointLights_json;
+	for (auto& pointLight : pointLights)
+		pointLights_json.push_back(*pointLight);
+	dungeon_serialised["pointLights"] = pointLights_json;
+
+	ordered_json events_json;
+	for (auto& event : events)
+		events_json.push_back(*event);
+	dungeon_serialised["events"] = events_json;
 
 	if (stairs.size() > 0)
 	{
@@ -1967,7 +2024,33 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		DungeonDecoration* newDecoration = CreateDecoration(decoration.position, decoration.facing);
 		newDecoration->localPosition = decoration.localPosition;
 		newDecoration->modelName = decoration.modelName;
+		newDecoration->castsShadows = decoration.castsShadows;
 		newDecoration->LoadDecoration();
+		newDecoration->UpdateShadowCasting();
+	}
+
+	auto& pointLights_json = serialised["pointLights"];
+	for (auto it = pointLights_json.begin(); it != pointLights_json.end(); it++)
+	{
+		DungeonLight pointLight = it.value().get<Crawl::DungeonLight>();
+		DungeonLight* newPointLight = CreateLight(pointLight.position);
+		newPointLight->position = pointLight.position;
+		newPointLight->localPosition = pointLight.localPosition;
+		newPointLight->colour = pointLight.colour;
+		newPointLight->intensity = pointLight.intensity;
+		newPointLight->isLobbyLight = pointLight.isLobbyLight;
+		newPointLight->UpdateLight();
+		newPointLight->UpdateTransform();
+
+	}
+
+	auto& events_json = serialised["events"];
+	for (auto it = events_json.begin(); it != events_json.end(); it++)
+	{
+		DungeonEventTrigger event = it.value().get<Crawl::DungeonEventTrigger>();
+		DungeonEventTrigger* newEvent = CreateEventTrigger(event.position);
+		newEvent->eventID = event.eventID;
+		newEvent->repeats = event.repeats;
 	}
 
 	auto& stairs_json = serialised["stairs"];
@@ -2086,7 +2169,17 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 	for (auto& decoration : decorations)
 		decoration->object->markedForDeletion = true;
 	decorations.clear();
+	
+	for (auto& pointLight : pointLights)
+		pointLight->object->markedForDeletion = true;
+	pointLights.clear();
 
+	for (int i = 0; i < events.size(); i++)
+		delete events[i];
+	events.clear();
+
+	for (int i = 0; i < stairs.size(); i++)
+		delete stairs[i];
 	stairs.clear();
 }
 
@@ -2134,6 +2227,12 @@ void Crawl::Dungeon::Update()
 			i--;
 		}
 	}
+	// Events
+	for (auto& event : events)
+	{
+		if (event->position == player->GetPosition()) event->Activate();
+	}
+
 
 	// slug logic
 	for (auto& slug : slugs)

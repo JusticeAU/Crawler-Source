@@ -47,11 +47,19 @@ namespace Crawl
 
 		void SetShouldSwitchWith(DungeonEnemySwitcher* switcher) { shouldSwitchWith = switcher; }
 		void SetShouldActivateStairs(DungeonStairs* stairs);
+		void FindLobbyLight();
+		void ActivateLobbyLight() { lobbyLightActivated = true; lobbyLightTimeCurrent = 0.0f; }
+		DungeonLight* lobbyLight = nullptr;
+		bool lobbyLightActivated = false;
+		float lobbyLightTime = .5f;
+		float lobbyLightTimeCurrent = 0.0f;
 
 		// combines our requested direction with our facing direction to return the actual direction.
 		unsigned int GetMoveCardinalIndex(DIRECTION_INDEX dir);
 
 		void SetLevel2(bool level2);
+
+		void DoEvent(int eventID);
 
 	private:
 		glm::ivec2 position;

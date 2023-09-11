@@ -23,6 +23,7 @@ using std::string;
 ComponentRenderer::ComponentRenderer(Object* parent) : Component("Renderer", Component_Renderer, parent)
 {
 	closestPointLightUBO = new UniformBuffer(sizeof(int) * 8);
+	Scene::AddRendererComponent(this);
 }
 
 ComponentRenderer::ComponentRenderer(Object* parent, nlohmann::ordered_json j) : ComponentRenderer(parent)
@@ -42,7 +43,18 @@ ComponentRenderer::ComponentRenderer(Object* parent, nlohmann::ordered_json j) :
 
 }
 
+ComponentRenderer::~ComponentRenderer()
+{
+	Scene::RemoveRendererComponent(this);
+	delete closestPointLightUBO;
+}
+
 void ComponentRenderer::Update(float delta)
+{
+	
+}
+
+void ComponentRenderer::UpdateClosestLights()
 {
 	vec3 position = componentParent->GetWorldSpacePosition();
 	int numLights = Scene::GetNumPointLights();
@@ -63,7 +75,7 @@ void ComponentRenderer::Update(float delta)
 		if (i < numLights)	closestPointLightIndices[i] = lightDistances[i].first;
 		else				closestPointLightIndices[i] = -1;
 	}
-	
+
 	closestPointLightUBO->SendData(&closestPointLightIndices);
 }
 
@@ -332,43 +344,43 @@ void ComponentRenderer::ApplyMaterials()
 		
 		if (receivesShadows)
 		{
-			int shadowmaps = SceneRenderer::pointLightCubeMapStatic.size();
-			if (shadowmaps > 0)
+			int numPointLights = Scene::GetNumPointLights();
+			if (numPointLights > 0)
 			{
 				SceneRenderer::pointLightCubeMapDynamic[closestPointLightIndices[0]]->BindTexture(11);
 				shader->SetIntUniform("shadowMap0", 11);
 			}
-			if (shadowmaps > 1)
+			if (numPointLights > 1)
 			{
 				SceneRenderer::pointLightCubeMapDynamic[closestPointLightIndices[1]]->BindTexture(12);
 				shader->SetIntUniform("shadowMap1", 12);
 			}
-			if (shadowmaps > 2)
+			if (numPointLights > 2)
 			{
 				SceneRenderer::pointLightCubeMapDynamic[closestPointLightIndices[2]]->BindTexture(13);
 				shader->SetIntUniform("shadowMap2", 13);
 			}
-			if (shadowmaps > 3)
+			if (numPointLights > 3)
 			{
 				SceneRenderer::pointLightCubeMapDynamic[closestPointLightIndices[3]]->BindTexture(14);
 				shader->SetIntUniform("shadowMap3", 14);
 			}
-			if (shadowmaps > 4)
+			if (numPointLights > 4)
 			{
 				SceneRenderer::pointLightCubeMapDynamic[closestPointLightIndices[4]]->BindTexture(15);
 				shader->SetIntUniform("shadowMap4", 15);
 			}
-			if (shadowmaps > 5)
+			if (numPointLights > 5)
 			{
 				SceneRenderer::pointLightCubeMapDynamic[closestPointLightIndices[5]]->BindTexture(16);
 				shader->SetIntUniform("shadowMap5", 16);
 			}
-			if (shadowmaps > 6)
+			if (numPointLights > 6)
 			{
 				SceneRenderer::pointLightCubeMapDynamic[closestPointLightIndices[6]]->BindTexture(17);
 				shader->SetIntUniform("shadowMap6", 17);
 			}
-			if (shadowmaps > 7)
+			if (numPointLights > 7)
 			{
 				SceneRenderer::pointLightCubeMapDynamic[closestPointLightIndices[7]]->BindTexture(18);
 				shader->SetIntUniform("shadowMap7", 18);

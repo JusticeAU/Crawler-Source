@@ -24,8 +24,10 @@ class ComponentRenderer : public Component
 public:
 	ComponentRenderer(Object* parent);
 	ComponentRenderer(Object* parent, nlohmann::ordered_json j);
+	~ComponentRenderer();
 
 	void Update(float delta) override;
+	void UpdateClosestLights();
 
 	void Draw(mat4 pv, vec3 position, DrawMode mode) override;
 

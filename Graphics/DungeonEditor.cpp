@@ -16,6 +16,8 @@
 #include "DungeonEnemySlug.h"
 #include "DungeonDecoration.h"
 #include "DungeonStairs.h"
+#include "DungeonLight.h"
+#include "DungeonEventTrigger.h"
 
 #include "Object.h"
 #include "Input.h"
@@ -608,6 +610,23 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	}
 	if (cantMakeStairs) ImGui::EndDisabled();
 
+	bool cantMakeLight = selectedLight != nullptr;
+	if (cantMakeLight) ImGui::BeginDisabled();
+	if (ImGui::Button("Light (Justin only for now!"))
+	{
+		MarkUnsavedChanges();
+		selectedLight = dungeon->CreateLight(selectedTile->position);
+		selectedLightWindowOpen = true;
+	}
+	if (cantMakeLight) ImGui::EndDisabled();
+
+	if (ImGui::Button("Event Trigger"))
+	{
+		MarkUnsavedChanges();
+		selectedEventTrigger = dungeon->CreateEventTrigger(selectedTile->position);
+		selectedEventTriggerWindowOpen = true;
+	}
+
 	ImGui::PopID();
 	// Entity List
 	ImGui::Text("Modify/Remove");
@@ -733,6 +752,16 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Stairs")) selectedStairsWindowOpen = true;
 	}
 
+	if (selectedLight)
+	{
+		if (ImGui::Selectable("Light")) selectedLightWindowOpen = true;
+	}
+
+	if (selectedEventTrigger)
+	{
+		if (ImGui::Selectable("Event Trigger")) selectedEventTriggerWindowOpen = true;
+	}
+
 	ImGui::Unindent();
 	ImGui::PopID();
 
@@ -765,6 +794,10 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		DrawGUIModeTileEditDecoration();
 	if (selectedStairsWindowOpen)
 		DrawGUIModeTileEditStairs();
+	if (selectedLightWindowOpen)
+		DrawGUIModeTileEditLight();
+	if (selectedEventTriggerWindowOpen)
+		DrawGUIModeTileEditEventTrigger();
 
 	ImGui::PopID();
 }
@@ -1317,6 +1350,12 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDecoration()
 		selectedTileDecoration->UpdateTransform();
 	}
 
+	if (ImGui::Checkbox("Casts Shadows", &selectedTileDecoration->castsShadows))
+	{
+		MarkUnsavedChanges();
+		selectedTileDecoration->UpdateShadowCasting();
+	}
+
 	if (ImGui::Button("Delete"))
 		ImGui::OpenPopup("delete_decoration_confirm");
 
@@ -1421,6 +1460,48 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditStairs()
 			break;
 		}
 	}
+}
+void Crawl::DungeonEditor::DrawGUIModeTileEditLight()
+{
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Edit Point Light", &selectedLightWindowOpen);
+	if (ImGui::ColorPicker3("Colour", &selectedLight->colour.x))
+	{
+		MarkUnsavedChanges();
+		selectedLight->UpdateLight();
+	}
+	if (ImGui::DragFloat("Intensity", &selectedLight->intensity))
+	{
+		MarkUnsavedChanges();
+		selectedLight->UpdateLight();
+	}
+	if (ImGui::DragFloat3("Position", &selectedLight->localPosition.x, 0.1f, -2.0f, 10.0f))
+	{
+		MarkUnsavedChanges();
+		selectedLight->UpdateTransform();
+	}
+	if (ImGui::Checkbox("Is Lobby trigger light", &selectedLight->isLobbyLight))
+		MarkUnsavedChanges();
+
+	glm::vec3 worldPos = dungeonPosToObjectScale(selectedLight->position) + selectedLight->localPosition;
+	glm::vec3 offset(0, 0, 0.1f);
+	LineRenderer::DrawLine(worldPos, worldPos + offset, selectedLight->colour);
+	ImGui::End();
+}
+void Crawl::DungeonEditor::DrawGUIModeTileEditEventTrigger()
+{
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
+	ImGui::Begin("EditEvent Trigger", &selectedSwitcherEnemyWindowOpen);
+	
+	if (ImGui::Checkbox("Repeats", &selectedEventTrigger->repeats))
+		MarkUnsavedChanges();
+	if(ImGui::InputInt("Event ID", &selectedEventTrigger->eventID))
+		MarkUnsavedChanges();
+
+	ImGui::End();
+
 }
 void Crawl::DungeonEditor::DrawGUIModeTileEditSwitcher()
 {
@@ -1933,6 +2014,20 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 		if (dungeon->stairs[i]->startPosition == selectedTile->position)
 			selectedStairs = dungeon->stairs[i];
 	}
+
+	selectedLight = nullptr;
+	for (int i = 0; i < dungeon->pointLights.size(); i++)
+	{
+		if (dungeon->pointLights[i]->position == selectedTile->position)
+			selectedLight = dungeon->pointLights[i];
+	}
+
+	selectedEventTrigger = nullptr;
+	for (int i = 0; i < dungeon->events.size(); i++)
+	{
+		if (dungeon->events[i]->position == selectedTile->position)
+			selectedEventTrigger = dungeon->events[i];
+	}
 }
 void Crawl::DungeonEditor::RefreshSelectedTransporterData(string dungeonPath)
 {
@@ -2134,6 +2229,8 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedSlugEnemy = nullptr;
 	selectedTileDecoration = nullptr;
 	selectedStairs = nullptr;
+	selectedLight = nullptr;
+	selectedEventTrigger = nullptr;
 
 	selectedDoorWindowOpen = false;
 	selectedLeverWindowOpen = false;
@@ -2148,4 +2245,6 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedSlugEnemyWindowOpen = false;
 	selectedDecorationWindowOpen = false;
 	selectedStairsWindowOpen = false;
+	selectedLightWindowOpen = false;
+	selectedEventTriggerWindowOpen = false;
 }

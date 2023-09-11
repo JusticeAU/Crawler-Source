@@ -77,6 +77,8 @@ void Scene::Update(float deltaTime)
 	for (auto o : objects)
 		o->Update(deltaTime);
 
+	for (auto& rendererComponent : m_rendererComponents)
+		rendererComponent->UpdateClosestLights();
 	UpdatePointLightData();
 }
 
@@ -317,6 +319,23 @@ void Scene::RemovePointLight(ComponentLightPoint* light)
 		if (s_instance->m_pointLightComponents[i] == light)
 		{
 			s_instance->m_pointLightComponents.erase(s_instance->m_pointLightComponents.begin() + i);
+			break;
+		}
+	}
+}
+
+void Scene::AddRendererComponent(ComponentRenderer* rendererComponent)
+{
+	s_instance->m_rendererComponents.push_back(rendererComponent);
+}
+
+void Scene::RemoveRendererComponent(ComponentRenderer* rendererComponent)
+{
+	for (int i = 0; i < Scene::s_instance->m_rendererComponents.size(); i++)
+	{
+		if (s_instance->m_rendererComponents[i] == rendererComponent)
+		{
+			s_instance->m_rendererComponents.erase(s_instance->m_rendererComponents.begin() + i);
 			break;
 		}
 	}

@@ -47,6 +47,8 @@ namespace Crawl
 		void DrawGUIModeTileEditDecoration();
 
 		void DrawGUIModeTileEditStairs();
+		void DrawGUIModeTileEditLight();
+		void DrawGUIModeTileEditEventTrigger();
 
 
 		void DrawGUIModeDungeonProperties();
@@ -173,6 +175,12 @@ namespace Crawl
 		DungeonStairs* selectedStairs = nullptr;
 		bool selectedStairsWindowOpen = false;
 		int selectedStairsGizmoIndex = 0;
+
+		DungeonLight* selectedLight = nullptr;
+		bool selectedLightWindowOpen = false;
+
+		DungeonEventTrigger* selectedEventTrigger = nullptr;
+		bool selectedEventTriggerWindowOpen = false;
 
 		bool unsavedChanges = false;
 		bool shouldConfirmSaveBeforeLoad = false;

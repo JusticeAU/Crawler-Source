@@ -3,6 +3,7 @@
 #include "serialisation.h"
 
 class Object;
+class ComponentRenderer;
 
 namespace Crawl
 {
@@ -16,15 +17,21 @@ namespace Crawl
 		glm::vec3 localPosition = {0,0,0};
 		std::string modelName = "";
 
+		bool castsShadows = true;
+
 		void UpdateTransform();
 		void LoadDecoration();
 
+		void UpdateShadowCasting();
+
 		Object* object = nullptr;
+		ComponentRenderer* renderer = nullptr;
 	};
 
 	static void to_json(ordered_json& j, const DungeonDecoration& object)
 	{
 		j = { {"position", object.position }, {"facing", object.facing}, {"localPosition", object.localPosition }, {"modelName", object.modelName } };
+		if (!object.castsShadows) j["castsShadows"] = false;
 	}
 
 	static void from_json(const ordered_json& j, DungeonDecoration& object)
@@ -33,6 +40,7 @@ namespace Crawl
 		j.at("facing").get_to(object.facing);
 		j.at("localPosition").get_to(object.localPosition);
 		j.at("modelName").get_to(object.modelName);
+		if (j.contains("castsShadows")) j.at("castsShadows").get_to(object.castsShadows);
 	}
 }
 
