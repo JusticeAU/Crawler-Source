@@ -178,8 +178,7 @@ void Application::InitGame()
 	MaterialManager::PreloadAllFiles();
 	dungeon->Load("crawler/dungeon/start.dungeon");
 	Scene::SetCameraByName("Player Camera");
-	/*if (!developerMode)
-		dungeonPlayer->Respawn();*/
+	dungeonPlayer->Respawn();
 }
 
 void Application::Run()
