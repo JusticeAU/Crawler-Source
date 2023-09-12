@@ -60,7 +60,7 @@ namespace Crawl
 		void SetLevel2(bool level2);
 
 		void DoEvent(int eventID);
-
+		bool didJustRespawn = false;
 	private:
 		glm::ivec2 position;
 		FACING_INDEX facing = EAST_INDEX;

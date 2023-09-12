@@ -1689,8 +1689,6 @@ void Crawl::Dungeon::Load(std::string filename)
 
 	serialised = ReadJSONFromDisk(filename);
 	RebuildDungeonFromSerialised(serialised);
-	Scene::s_instance->SetAllObjectsStatic();
-	Scene::s_instance->SetStaticObjectsDirty();
 }
 
 bool Crawl::Dungeon::TestDungeonExists(std::string filename)
@@ -2068,8 +2066,13 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		newStair->endOffset = stair.endOffset;
 	}
 	
-	if(!fakeDungeon)
+	if (!fakeDungeon)
+	{
 		BuildSceneFromDungeonLayout();
+
+		Scene::s_instance->SetAllObjectsStatic();
+		Scene::s_instance->SetStaticObjectsDirty();
+	}
 }
 
 void Crawl::Dungeon::InitialiseTileMap()

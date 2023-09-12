@@ -39,6 +39,13 @@ void Crawl::DungeonPlayer::SetDungeon(Dungeon* dungeonPtr)
 // Returns true if the player made a game-state changing action
 bool Crawl::DungeonPlayer::Update(float deltaTime)
 {
+	if (didJustRespawn) // This needs to be fixed - hack fix for lighting on level transport
+	{
+		Scene::s_instance->SetAllObjectsStatic();
+		Scene::s_instance->SetStaticObjectsDirty();
+		didJustRespawn = false;
+	}
+
 	FindLobbyLight();
 
 	// This gotta be moved to some game / global event manager
@@ -452,6 +459,7 @@ void Crawl::DungeonPlayer::ClearRespawn()
 
 void Crawl::DungeonPlayer::Respawn()
 {
+	didJustRespawn = true;
 	AudioManager::PlaySound("crawler/sound/load/start.wav");
 
 	if (checkpointExists)
