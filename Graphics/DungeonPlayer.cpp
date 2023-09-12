@@ -49,9 +49,9 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	FindLobbyLight();
 
 	// This gotta be moved to some game / global event manager
-	if (lobbyLightActivated && lobbyLight != nullptr && lobbyLightTimeCurrent < (lobbyLightTime + 0.55f))
+	if (lobbyLightActivated && lobbyLight != nullptr && lobbyLightTimeCurrent < (lobbyLightTime + 0.15f))
 	{
-		float t = glm::bounceEaseIn(lobbyLightTimeCurrent / lobbyLightTime);
+		float t = glm::bounceEaseIn(glm::clamp(lobbyLightTimeCurrent / lobbyLightTime, 0.0f, 1.0f));
 		t = glm::clamp(t, 0.0f, 1.0f);
 		lobbyLight->intensity = MathUtils::Lerp(0.0f,100.0f, t);
 		lobbyLight->UpdateLight();

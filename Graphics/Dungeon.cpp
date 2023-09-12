@@ -1123,9 +1123,13 @@ Crawl::DungeonShootLaser* Crawl::Dungeon::CreateShootLaser(ivec2 position, FACIN
 	shootLaser->position = position;
 	shootLaser->facing = facing;
 	shootLaser->object = Scene::CreateObject();
-	shootLaser->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/shoot_laser.object"));
+	shootLaser->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/monster_shootlaser.object"));
 	shootLaser->object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
 	shootLaser->object->SetLocalRotationZ(orientationEulersReversed[facing]);
+
+	Object* gargoyle = Scene::CreateObject(shootLaser->object->children[0]);
+	gargoyle->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_gargoyle.object"));
+
 	shootLasers.emplace_back(shootLaser);
 	return shootLaser;
 }
@@ -2348,6 +2352,17 @@ void Crawl::Dungeon::Update()
 		{
 			activateTransporter = transporter;
 			break;
+		}
+	}
+	if (player->isOnLobbyLevel2)
+	{
+		for (auto& transporter : player->lobbyLevel2Dungeon->transporterPlates)
+		{
+			if (transporter->position == player->GetPosition())
+			{
+				activateTransporter = transporter;
+				break;
+			}
 		}
 	}
 
