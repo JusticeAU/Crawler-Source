@@ -15,7 +15,7 @@ public:
 		return output;
 	}
 
-	static std::string* Split(std::string str, char delim)
+	static std::string* Split(std::string str, string delim)
 	{
 		int offset = 0;
 		std::vector<std::string> splits;

@@ -316,14 +316,19 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 {
 	Prepare(scene);
 
-	// Set up buffers for da shaders
+	// Set up buffers for da shaders - move this in to material batching.
 	ShaderProgram* shader = ShaderManager::GetShaderProgram("engine/shader/PBR");
+	shader->SetUniformBlockIndex("pointLightPositionBuffer", 1);
+	shader->SetUniformBlockIndex("pointLightColourBuffer", 2);
+	shader = ShaderManager::GetShaderProgram("engine/shader/PBRSkinned");
 	shader->SetUniformBlockIndex("pointLightPositionBuffer", 1);
 	shader->SetUniformBlockIndex("pointLightColourBuffer", 2);
 	shader = ShaderManager::GetShaderProgram("engine/shader/Lambert");
 	shader->SetUniformBlockIndex("pointLightPositionBuffer", 1);
 	shader->SetUniformBlockIndex("pointLightColourBuffer", 2);
-
+	shader = ShaderManager::GetShaderProgram("engine/shader/LambertSkinned");
+	shader->SetUniformBlockIndex("pointLightPositionBuffer", 1);
+	shader->SetUniformBlockIndex("pointLightColourBuffer", 2);
 	pointLightPositionBuffer->SendData(Scene::GetPointLightPositions());
 	pointLightPositionBuffer->Bind(1);
 	pointLightColourBuffer->SendData(Scene::GetPointLightColours());

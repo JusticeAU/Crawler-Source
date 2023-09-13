@@ -2,6 +2,8 @@
 #include "Graphics.h"
 #include <filesystem>
 #include "LogUtils.h"
+#include "FileUtils.h"
+#include "StringUtils.h"
 
 using std::vector;
 namespace fs = std::filesystem;
@@ -49,12 +51,17 @@ void ShaderManager::DrawGUI()
 
 void ShaderManager::LoadFromFile(string filename)
 {
-	// right now shaderes are hardcoded to be a vertex and fragment shader, with assumed matching names.
-	ShaderProgram* SHAD = new ShaderProgram();
-	SHAD->LoadFromFiles(filename + ".VERT", filename + ".FRAG");
-	SHAD->name = filename;
-	shaderPrograms.emplace(filename, SHAD);
+	// Read the vert and frag shader from the file
+ 	string SHAD = FileUtils::LoadFileAsString(filename + ".SHAD");
+	string* SHADs = StringUtils::Split(SHAD, "\n");
+	string subfolder = filename.substr(0, filename.find_last_of('/') + 1);
 
+	// Build the shader from the serilised names that are assumed to be paths relative to the current sub folder
+	ShaderProgram* shader = new ShaderProgram();
+	shader->LoadFromFiles(subfolder + SHADs[0], subfolder + SHADs[1]);
+	shader->name = filename;
+	shaderPrograms.emplace(filename, shader);
+	delete[] SHADs;
 }
 
 void ShaderManager::LoadAllFiles()
