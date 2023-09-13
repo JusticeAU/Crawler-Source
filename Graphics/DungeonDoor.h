@@ -17,7 +17,7 @@ namespace Crawl
 		void UpdateVisuals(float delta);
 		void UpdateTransforms(bool instant = false);
 
-		const float openEulerAngle = -150.0f;
+		const float openEulerAngle = -120.0f;
 		
 		const float swingTime = 0.5f;
 		float swingTimeCurrent = 0.0f;
