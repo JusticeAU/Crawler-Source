@@ -3,6 +3,7 @@
 #include "serialisation.h"
 
 class Object;
+class ComponentAnimator;
 
 namespace Crawl
 {
@@ -31,6 +32,15 @@ namespace Crawl
 		STATE state = INACTIVE;
 		STATE stateVisual = IDLE;
 
+		const bool useAnimator = false;
+		string animationActivate = "";
+		string animationWalkForward = "";
+		string animationTurnLeft = "";
+		string animationTurnRight = "";
+		string animationFlourish = "";
+		string animationDeath = "";
+
+
 		// movement
 		glm::ivec2 positionWant = { 0,0 };
 
@@ -41,8 +51,9 @@ namespace Crawl
 
 
 		// dependencies
-		Object* object = nullptr;
 		Dungeon* dungeon = nullptr;
+		Object* object = nullptr;
+		ComponentAnimator* animator = nullptr;
 
 		// visuals
 		float moveSpeed = 0.25f;

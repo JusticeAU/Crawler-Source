@@ -1246,6 +1246,10 @@ Crawl::DungeonEnemyChase* Crawl::Dungeon::CreateEnemyChase(ivec2 position, FACIN
 	chaser->object->SetLocalRotationZ(orientationEulers[facing]);
 	chaser->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_chaser.object"));
 	chaser->object->children[0]->SetLocalRotationZ(180);
+	if (chaser->useAnimator)
+	{
+		chaser->animator = (ComponentAnimator*)chaser->object->children[0]->GetComponent(Component_Animator);
+	}
 	chasers.emplace_back(chaser);
 
 	DungeonTile* tile = GetTile(position);

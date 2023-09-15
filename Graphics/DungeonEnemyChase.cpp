@@ -6,6 +6,7 @@
 #include "DungeonMirror.h"
 #include "MathUtils.h"
 #include "LogUtils.h"	
+#include "ComponentAnimator.h"
 
 Crawl::DungeonEnemyChase::~DungeonEnemyChase()
 {
@@ -36,6 +37,7 @@ void Crawl::DungeonEnemyChase::Update()
 			{
 				LogUtils::Log("Chaser saw player - activating.");
 				state = IDLE;
+				if (animator) animator->StartAnimation(animationActivate);
 				return;
 			}
 
@@ -103,6 +105,7 @@ void Crawl::DungeonEnemyChase::Update()
 			stateVisual = TURNING;
 			targetTurn = orientationEulers[facing];
 			turnCurrent = 0.0f;
+			if (animator) animator->StartAnimation(animationTurnLeft);
 		}
 		// else turn to face it
 	}
@@ -119,6 +122,7 @@ void Crawl::DungeonEnemyChase::ExecuteMove()
 	stateVisual = MOVING;
 	targetPosition = dungeonPosToObjectScale(position);
 	moveCurrent = -0.0f;
+	if (animator) animator->StartAnimation(animationWalkForward);
 }
 
 void Crawl::DungeonEnemyChase::ExecuteDamage()
