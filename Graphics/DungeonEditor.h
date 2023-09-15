@@ -28,7 +28,6 @@ namespace Crawl
 		void SetDungeon(Dungeon* dungeonPtr);
 		void DrawGUI();
 		void DrawGUIFileOperations();
-		void DrawGUICursorInformation();
 		void DrawGUIModeSelect();
 		void DrawGUIModeTileBrush();
 		void DrawGUIModeTileEdit();
@@ -182,7 +181,7 @@ namespace Crawl
 		DungeonEventTrigger* selectedEventTrigger = nullptr;
 		bool selectedEventTriggerWindowOpen = false;
 
-		bool unsavedChanges = false;
+		bool unsavedChanges = true;
 		bool shouldConfirmSaveBeforeLoad = false;
 
 		// Slug Path Editor Mode

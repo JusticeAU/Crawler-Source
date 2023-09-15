@@ -74,7 +74,6 @@ void Crawl::DungeonEditor::DrawGUI()
 	ImGui::SetNextWindowSize({ 320, 600 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Dungeon Edit", 0, ImGuiWindowFlags_NoMove);
 	DrawGUIFileOperations();
-	DrawGUICursorInformation();
 	DrawGUIModeSelect();
 	switch (editMode)
 	{
@@ -114,10 +113,12 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 			dungeon->player->Respawn();
 		dirtyGameplayScene = true;
 	}
-
 	if (unsavedChanges)
+	{
 		ImGui::EndDisabled();
-
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("You cannot Play with unsaved changes.");
+	}
 
 	ImGui::SameLine();
 	if (ImGui::Button("Reset Dungeon"))
@@ -132,6 +133,8 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 		dirtyGameplayScene = false;
 		UnMarkUnsavedChanges();
 	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		ImGui::SetTooltip("Resets the gameplay changes to the dungeon back to initial dungeon state.");
 
 	// File Manipulation
 	if (dirtyGameplayScene)
@@ -276,23 +279,6 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 		ImGui::EndPopup();
 	}
 }
-void Crawl::DungeonEditor::DrawGUICursorInformation()
-{
-	ImGui::BeginDisabled();
-	ImGui::DragInt2("Grid Selected", &gridSelected.x);
-	ImGui::EndDisabled();
-
-	/*if (ImGui::BeginCombo("Path Start Orientation", orientationNames[facingTest].c_str()))
-	{
-		int oldOrientation = facingTest;
-		for (int i = 0; i < 4; i++)
-		{
-			if (ImGui::Selectable(orientationNames[i].c_str()))
-				facingTest = i;
-		}
-		ImGui::EndCombo();
-	}*/
-}
 void Crawl::DungeonEditor::DrawGUIModeSelect()
 {
 	string mode = "Tile Brush";
@@ -330,6 +316,9 @@ void Crawl::DungeonEditor::DrawGUIModeSelect()
 }
 void Crawl::DungeonEditor::DrawGUIModeTileBrush()
 {
+	ImGui::BeginDisabled();
+	ImGui::DragInt2("Brush Position", &gridSelected.x);
+	ImGui::EndDisabled();
 	ImGui::Text("Auto Tile");
 	ImGui::Indent();
 		ImGui::Checkbox("Enabled", &brush_AutoTileEnabled);
@@ -375,9 +364,11 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	if (ImGui::Checkbox("Permanently Occupied", &selectedTile->permanentlyOccupied))
 		MarkUnsavedChanges();
 	if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-		ImGui::SetTooltip("Marks the tile as completely untraversable. Overrides any anything else.");
+		ImGui::SetTooltip("Marks the tile as completely untraversable. Takes precedence over any other settings.");
 
 	// Cardinal traversable/see yes/no
+	ImGui::Spacing();
+	ImGui::Text("Pathing");
 	unsigned int oldMaskTraverse = selectedTile->maskTraverse;
 	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
 	if (ImGui::BeginCombo("Can Walk", maskToString[oldMaskTraverse].c_str()))
@@ -394,7 +385,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	}
 	ImGui::PopStyleColor();
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-		ImGui::SetTooltip("Configure in what direction you can walk off this tile");
+		ImGui::SetTooltip("Configure in what direction things can walk off this tile");
 	if (oldMaskTraverse != selectedTile->maskTraverse) MarkUnsavedChanges();
 
 	unsigned int oldMaskSee = selectedTile->maskSee;
@@ -413,11 +404,12 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	}
 	ImGui::PopStyleColor();
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-		ImGui::SetTooltip("Configure in what direction you can see out of this tile");
+		ImGui::SetTooltip("Configure in what direction things can see out of this tile");
 	if (oldMaskSee != selectedTile->maskSee) MarkUnsavedChanges();
 
 	// Wall Variants
-	ImGui::Text("Wall Variants");
+	ImGui::Spacing();
+	ImGui::Text("Wall Visuals");
 	for (int cardinal = 0; cardinal < 4; cardinal++)
 	{
 		ImGui::PushID(cardinal);
@@ -483,153 +475,169 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	ImGui::EndDisabled();*/
 
 	// Buttons
-	ImGui::Text("Add");
+	ImGui::Spacing();
+	ImGui::Text("Tile Objects");
 	ImGui::PushID("Add");
-	if (ImGui::Button("Door"))
+	if (ImGui::BeginCombo("Add", "...", ImGuiComboFlags_HeightLargest))
 	{
-		MarkUnsavedChanges();
-		selectedDoor = dungeon->CreateDoor(selectedTile->position, 0, GetNextAvailableDoorID(), false);
-		selectedTileDoors.push_back(selectedDoor);
-		selectedDoorWindowOpen = true;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Lever"))
-	{
-		MarkUnsavedChanges();
-		selectedLever = dungeon->CreateLever(selectedTile->position, 0, GetNextAvailableLeverID(), 0, false);
-		selectedTileLevers.push_back(selectedLever);
-		selectedLeverWindowOpen = true;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Shooter"))
-	{
-		MarkUnsavedChanges();
-		selectedTileShootLaser = dungeon->CreateShootLaser(selectedTile->position, (FACING_INDEX)0, GetNextAvailableDoorID());
-		selectedTileShootLasers.push_back(selectedTileShootLaser);
-		selectedShootLaserWindowOpen = true;
-	}
-	bool tileOccupied = selectedTileOccupied;
-	if (tileOccupied) ImGui::BeginDisabled();
-	if (ImGui::Button("Activator Plate"))
-	{
-		MarkUnsavedChanges();
-		selectedActivatorPlate = dungeon->CreatePlate(selectedTile->position, 0);
-		selectedActivatorPlateWindowOpen = true;
-		selectedTileOccupied = true;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Spikes"))
-	{
-		MarkUnsavedChanges();
-		dungeon->CreateSpikes(selectedTile->position);
-		selectedHasSpikes = true;
-		selectedTileOccupied = true;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Box"))
-	{
-		MarkUnsavedChanges();
-		dungeon->CreatePushableBlock(selectedTile->position);
-		selectedHasBlock = true;
-		selectedTileOccupied = true;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Mirror"))
-	{
-		MarkUnsavedChanges();
-		selectedMirror = dungeon->CreateMirror(selectedTile->position, NORTH_INDEX);
-		selectedMirrorWindowOpen = true;
-		selectedTileOccupied = true;
-	}
+		ImGui::Text("Edge Objects");
+		ImGui::Indent();
+		if (ImGui::Selectable("Door"))
+		{
+			MarkUnsavedChanges();
+			selectedDoor = dungeon->CreateDoor(selectedTile->position, 0, GetNextAvailableDoorID(), false);
+			selectedTileDoors.push_back(selectedDoor);
+			selectedDoorWindowOpen = true;
+		}
+		//ImGui::SameLine();
+		if (ImGui::Selectable("Lever"))
+		{
+			MarkUnsavedChanges();
+			selectedLever = dungeon->CreateLever(selectedTile->position, 0, GetNextAvailableLeverID(), 0, false);
+			selectedTileLevers.push_back(selectedLever);
+			selectedLeverWindowOpen = true;
+		}
+		//ImGui::SameLine();
+		if (ImGui::Selectable("Shooter"))
+		{
+			MarkUnsavedChanges();
+			selectedTileShootLaser = dungeon->CreateShootLaser(selectedTile->position, (FACING_INDEX)0, GetNextAvailableDoorID());
+			selectedTileShootLasers.push_back(selectedTileShootLaser);
+			selectedShootLaserWindowOpen = true;
+		}
+		ImGui::Unindent();
+		ImGui::Text("Basic");
+		ImGui::Indent();
+		bool tileOccupied = selectedTileOccupied;
+		if (tileOccupied) ImGui::BeginDisabled();
+		if (ImGui::Selectable("Activator Plate"))
+		{
+			MarkUnsavedChanges();
+			selectedActivatorPlate = dungeon->CreatePlate(selectedTile->position, 0);
+			selectedActivatorPlateWindowOpen = true;
+			selectedTileOccupied = true;
+		}
+		//ImGui::SameLine();
+		if (ImGui::Selectable("Spikes"))
+		{
+			MarkUnsavedChanges();
+			dungeon->CreateSpikes(selectedTile->position);
+			selectedHasSpikes = true;
+			selectedTileOccupied = true;
+		}
+		//ImGui::SameLine();
+		if (ImGui::Selectable("Box"))
+		{
+			MarkUnsavedChanges();
+			dungeon->CreatePushableBlock(selectedTile->position);
+			selectedHasBlock = true;
+			selectedTileOccupied = true;
+		}
+		//ImGui::SameLine();
+		if (ImGui::Selectable("Mirror"))
+		{
+			MarkUnsavedChanges();
+			selectedMirror = dungeon->CreateMirror(selectedTile->position, NORTH_INDEX);
+			selectedMirrorWindowOpen = true;
+			selectedTileOccupied = true;
+		}
 
-	if (ImGui::Button("Transporter"))
-	{
-		MarkUnsavedChanges();
-		selectedTransporter = dungeon->CreateTransporter(selectedTile->position);
-		selectedTransporterWindowOpen = true;
-		selectedTileOccupied = true;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Checkpoint"))
-	{
-		MarkUnsavedChanges();
-		selectedCheckpoint = dungeon->CreateCheckpoint(selectedTile->position, NORTH_INDEX);
-		selectedCheckpointWindowOpen = true;
-		selectedTileOccupied = true;
-	}
-	if (ImGui::Button("Blocker"))
-	{
-		MarkUnsavedChanges();
-		selectedBlockerEnemy = dungeon->CreateEnemyBlocker(selectedTile->position, NORTH_INDEX);
-		selectedBlockerEnemyWindowOpen = true;
-		selectedTileOccupied = true;
-	}
-	ImGui::SameLine();
-	bool maxChasers = (dungeon->chasers.size() > 1);
-	if (maxChasers) ImGui::BeginDisabled();
-	if (ImGui::Button("Chaser"))
-	{
-		MarkUnsavedChanges();
-		selectedChaseEnemy = dungeon->CreateEnemyChase(selectedTile->position, NORTH_INDEX);
-		selectedChaseEnemyWindowOpen = true;
-		selectedTileOccupied = true;
-	}
-	if (maxChasers) ImGui::EndDisabled();
-	ImGui::SameLine();
-	if (ImGui::Button("Slug"))
-	{
-		MarkUnsavedChanges();
-		selectedSlugEnemy = dungeon->CreateSlug(selectedTile->position, NORTH_INDEX);
-		selectedSlugEnemyWindowOpen = true;
-		selectedTileOccupied = true;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Switcher"))
-	{
-		MarkUnsavedChanges();
-		selectedSwitcherEnemy = dungeon->CreateEnemySwitcher(selectedTile->position, NORTH_INDEX);
-		selectedSwitcherEnemyWindowOpen = true;
-		selectedTileOccupied = true;
-	}
-	if (tileOccupied) ImGui::EndDisabled();
-	if (ImGui::Button("Decoration"))
-	{
-		MarkUnsavedChanges();
-		selectedTileDecoration = dungeon->CreateDecoration(selectedTile->position, NORTH_INDEX);
-		selectedTileDecorations.push_back(selectedTileDecoration);
-		selectedDecorationWindowOpen = true;
-	}
-	
-	bool cantMakeStairs = selectedStairs != nullptr;
-	if (cantMakeStairs) ImGui::BeginDisabled();
-	if (ImGui::Button("Stairs (Justin Only!)"))
-	{
-		MarkUnsavedChanges();
-		selectedStairs = dungeon->CreateStairs(selectedTile->position);
-		selectedStairsWindowOpen = true;
-	}
-	if (cantMakeStairs) ImGui::EndDisabled();
+		if (ImGui::Selectable("Transporter"))
+		{
+			MarkUnsavedChanges();
+			selectedTransporter = dungeon->CreateTransporter(selectedTile->position);
+			selectedTransporterWindowOpen = true;
+			selectedTileOccupied = true;
+		}
+		//ImGui::SameLine();
+		if (ImGui::Selectable("Checkpoint"))
+		{
+			MarkUnsavedChanges();
+			selectedCheckpoint = dungeon->CreateCheckpoint(selectedTile->position, NORTH_INDEX);
+			selectedCheckpointWindowOpen = true;
+			selectedTileOccupied = true;
+		}
+		ImGui::Unindent();
+		ImGui::Text("Enemies");
+		ImGui::Indent();
+		if (ImGui::Selectable("Blocker"))
+		{
+			MarkUnsavedChanges();
+			selectedBlockerEnemy = dungeon->CreateEnemyBlocker(selectedTile->position, NORTH_INDEX);
+			selectedBlockerEnemyWindowOpen = true;
+			selectedTileOccupied = true;
+		}
+		//ImGui::SameLine();
+		bool maxChasers = (dungeon->chasers.size() > 1);
+		if (maxChasers) ImGui::BeginDisabled();
+		if (ImGui::Selectable("Chaser"))
+		{
+			MarkUnsavedChanges();
+			selectedChaseEnemy = dungeon->CreateEnemyChase(selectedTile->position, NORTH_INDEX);
+			selectedChaseEnemyWindowOpen = true;
+			selectedTileOccupied = true;
+		}
+		if (maxChasers) ImGui::EndDisabled();
+		//ImGui::SameLine();
+		if (ImGui::Selectable("Slug"))
+		{
+			MarkUnsavedChanges();
+			selectedSlugEnemy = dungeon->CreateSlug(selectedTile->position, NORTH_INDEX);
+			selectedSlugEnemyWindowOpen = true;
+			selectedTileOccupied = true;
+		}
+		//ImGui::SameLine();
+		if (ImGui::Selectable("Switcher"))
+		{
+			MarkUnsavedChanges();
+			selectedSwitcherEnemy = dungeon->CreateEnemySwitcher(selectedTile->position, NORTH_INDEX);
+			selectedSwitcherEnemyWindowOpen = true;
+			selectedTileOccupied = true;
+		}
+		if (tileOccupied) ImGui::EndDisabled();
+		ImGui::Unindent();
+		ImGui::Text("Miscellaneous");
+		ImGui::Indent();
+		if (ImGui::Selectable("Decoration"))
+		{
+			MarkUnsavedChanges();
+			selectedTileDecoration = dungeon->CreateDecoration(selectedTile->position, NORTH_INDEX);
+			selectedTileDecorations.push_back(selectedTileDecoration);
+			selectedDecorationWindowOpen = true;
+		}
+		bool cantMakeLight = selectedLight != nullptr;
+		if (cantMakeLight) ImGui::BeginDisabled();
+		if (ImGui::Selectable("Light"))
+		{
+			MarkUnsavedChanges();
+			selectedLight = dungeon->CreateLight(selectedTile->position);
+			selectedLightWindowOpen = true;
+		}
+		if (cantMakeLight) ImGui::EndDisabled();
 
-	bool cantMakeLight = selectedLight != nullptr;
-	if (cantMakeLight) ImGui::BeginDisabled();
-	if (ImGui::Button("Light (Justin only for now!"))
-	{
-		MarkUnsavedChanges();
-		selectedLight = dungeon->CreateLight(selectedTile->position);
-		selectedLightWindowOpen = true;
-	}
-	if (cantMakeLight) ImGui::EndDisabled();
+		bool cantMakeStairs = selectedStairs != nullptr;
+		if (cantMakeStairs) ImGui::BeginDisabled();
+		if (ImGui::Selectable("Stairs"))
+		{
+			MarkUnsavedChanges();
+			selectedStairs = dungeon->CreateStairs(selectedTile->position);
+			selectedStairsWindowOpen = true;
+		}
+		if (cantMakeStairs) ImGui::EndDisabled();
 
-	if (ImGui::Button("Event Trigger"))
-	{
-		MarkUnsavedChanges();
-		selectedEventTrigger = dungeon->CreateEventTrigger(selectedTile->position);
-		selectedEventTriggerWindowOpen = true;
+		//ImGui::SameLine();
+		if (ImGui::Selectable("Event Trigger"))
+		{
+			MarkUnsavedChanges();
+			selectedEventTrigger = dungeon->CreateEventTrigger(selectedTile->position);
+			selectedEventTriggerWindowOpen = true;
+		}
+		ImGui::Unindent();
+		ImGui::EndCombo();
 	}
-
 	ImGui::PopID();
 	// Entity List
-	ImGui::Text("Modify/Remove");
+	ImGui::Text("Modify/Remove Objects");
 	ImGui::PushID("Modify");
 	ImGui::Indent();
 	for (int i = 0; i < selectedTileDoors.size(); i++)
