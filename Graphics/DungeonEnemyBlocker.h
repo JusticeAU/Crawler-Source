@@ -2,6 +2,7 @@
 #include "glm.hpp"
 #include "DungeonHelpers.h"
 #include "serialisation.h"
+#include "ComponentAnimator.h"
 
 class Object;
 
@@ -28,6 +29,12 @@ namespace Crawl
 
 		Dungeon* dungeon = nullptr;
 		Object* object = nullptr;
+		ComponentAnimator* animator = nullptr;
+
+		string animationUpSwing = "crawler/model/monster_blocker_prototype.fbxidletorise";
+		string animationDownSwing = "crawler/model/monster_blocker_prototype.fbxrisetoswing";
+		string animationIdle = "crawler/model/monster_blocker_prototype.fbxswingtoidle";
+
 
 		void Update();
 		void CheckShouldPrime();

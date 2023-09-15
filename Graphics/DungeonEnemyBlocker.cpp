@@ -27,6 +27,8 @@ void Crawl::DungeonEnemyBlocker::Update()
 		dungeon->DamageAtPosition(position + directions[facing], this);
 		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/monster_blocker_downSwing.material");
 		state = State::DownSwing;
+		animator->BlendToAnimation(animationDownSwing, 0.0f);
+		animator->next->animationSpeedScale = 4.0f;
 		break;
 	}
 	case(State::DownSwing):
@@ -41,6 +43,8 @@ void Crawl::DungeonEnemyBlocker::Update()
 			LogUtils::Log("No Rapid Attack - Moving to Idle");
 			state = State::Idle;
 			((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/monster_blocker_idle.material");
+			animator->BlendToAnimation(animationIdle, 0.0f);
+			animator->next->animationSpeedScale = 4.0f;
 		}
 		break;
 	}
@@ -64,6 +68,8 @@ void Crawl::DungeonEnemyBlocker::CheckShouldPrime()
 		LogUtils::Log("Object infront - Transition to Upswing");
 		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/monster_blocker_upSwing.material");
 		state = State::UpSwing;
+		animator->BlendToAnimation(animationUpSwing, 0.0f);
+		animator->next->animationSpeedScale = 4.0f;
 	}
 	else
 	{
