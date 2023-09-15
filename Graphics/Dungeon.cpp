@@ -556,6 +556,8 @@ Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, uns
 	// Load lever Objects from JSON
 	ordered_json lever_objectJSON = ReadJSONFromDisk("crawler/object/interactable_lever.object");
 	ordered_json lever_modelJSON = ReadJSONFromDisk("crawler/model/interactable_lever.object");
+	ordered_json lever_modelBracketJSON = ReadJSONFromDisk("crawler/model/interactable_lever_bracket.object");
+
 
 	// load Model object in to Model child object
 	Object* lever_object = Scene::CreateObject();
@@ -564,6 +566,9 @@ Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, uns
 	lever_object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 1.5 });
 	Object* lever_model = Scene::CreateObject(lever_object->children[0]);
 	lever_model->LoadFromJSON(lever_modelJSON);
+	Object* lever_modelBracket = Scene::CreateObject(lever_object->children[1]);
+	lever_modelBracket->LoadFromJSON(lever_modelBracketJSON);
+
 	lever_object->SetLocalRotationZ(orientationEulers[directionIndex]);
 	lever->SetID(id);
 	lever->activateID = doorID;
