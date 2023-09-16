@@ -221,6 +221,7 @@
     <ClCompile Include="DungeonEnemySwitcher.cpp" />
     <ClCompile Include="DungeonInteractableLever.cpp" />
     <ClCompile Include="DungeonLight.cpp" />
+    <ClCompile Include="DungeonMenu.cpp" />
     <ClCompile Include="DungeonMirror.cpp" />
     <ClCompile Include="DungeonPlayer.cpp" />
     <ClCompile Include="DungeonActivatorPlate.cpp" />
@@ -300,6 +301,7 @@
     <ClInclude Include="DungeonInteractable.h" />
     <ClInclude Include="DungeonInteractableLever.h" />
     <ClInclude Include="DungeonLight.h" />
+    <ClInclude Include="DungeonMenu.h" />
     <ClInclude Include="DungeonMirror.h" />
     <ClInclude Include="DungeonPlayer.h" />
     <ClInclude Include="DungeonPushableBlock.h" />

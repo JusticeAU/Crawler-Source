@@ -487,7 +487,7 @@ void SceneRenderer::RenderSceneShadowCubeMaps(Scene* scene)
 {
 	// if not prepass then we blit the prepasses to the regular pass, then those are the targets we're rendering (adding) too
 	glDisable(GL_BLEND);
-	if (!currentPassIsStatic)
+	if (!currentPassIsStatic && scene->GetNumPointLights() > 0)
 	{
 		// blit the preepass to the active
 		int width = pointLightCubeMapStatic[0]->GetWidth();

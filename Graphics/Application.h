@@ -8,6 +8,7 @@ namespace Crawl
 	class Dungeon;
 	class DungeonPlayer;
 	class DungeonEditor;
+	class DungeonMenu;
 	class ArtTester;
 }
 
@@ -19,7 +20,8 @@ public:
 		Game,
 		Design,
 		Art,
-		Programming
+		Programming,
+		Scene
 	};
 
 	Application();
@@ -43,4 +45,6 @@ public:
 	// Dev stuff
 	Crawl::DungeonEditor* dungeonEditor = nullptr;
 	Crawl::ArtTester* artTester = nullptr;
+
+	Crawl::DungeonMenu* menu = nullptr;
 };

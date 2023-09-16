@@ -25,7 +25,10 @@ void Window::ToggleFullscreen()
 	const GLFWvidmode* vid = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
 	if (fullScreen)
+	{
 		glfwSetWindowMonitor(m_window, NULL, m_windowPos.x, m_windowPos.y, m_windowSize.x, m_windowSize.y, vid->refreshRate);
+		glfwSwapInterval(1);
+	}
 	else
 	{
 		// Save previous window size for when we go back.
@@ -34,6 +37,7 @@ void Window::ToggleFullscreen()
 
 		// Set fullscreen
 		glfwSetWindowMonitor(m_window, glfwGetPrimaryMonitor(), 0, 0, vid->width, vid->height, vid->refreshRate);
+		glfwSwapInterval(1);
 	}
 
 	fullScreen = !fullScreen;

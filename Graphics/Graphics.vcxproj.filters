@@ -59,12 +59,6 @@
     <Filter Include="Source Files\Application\Crawler">
       <UniqueIdentifier>{e59a8875-a180-4083-99f7-968dc4fabf36}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Application\Crawler\Hazards">
-      <UniqueIdentifier>{8e0bf20e-4576-440c-adcc-aa978c47a0c8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Application\Crawler\Interactables">
-      <UniqueIdentifier>{bf69eb8e-7594-44ff-a8e0-345017f5e0a7}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -263,7 +257,52 @@
     <ClCompile Include="DungeonArtTester.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
+    <ClCompile Include="DungeonInteractableLever.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonDoor.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonActivatorPlate.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonTransporter.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonSpikes.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonPushableBlock.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonShootLaser.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
     <ClCompile Include="DungeonDamageVisual.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonShootLaserProjectile.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonEnemyBlocker.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonEnemyChase.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonEnemySwitcher.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonCheckpoint.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonMirror.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonEnemySlug.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonEnemySlugPath.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
     <ClCompile Include="DungeonDecoration.cpp">
@@ -278,62 +317,20 @@
     <ClCompile Include="Primitives.cpp">
       <Filter>Source Files\Application\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="DungeonStairs.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
     <ClCompile Include="LineRenderer.cpp">
       <Filter>Source Files\Application\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="ComponentLightPoint.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DungeonLight.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
-    <ClCompile Include="DungeonActivatorPlate.cpp">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
+    <ClCompile Include="ComponentLightPoint.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
-    <ClCompile Include="DungeonCheckpoint.cpp">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
-    </ClCompile>
-    <ClCompile Include="DungeonDoor.cpp">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
-    </ClCompile>
-    <ClCompile Include="DungeonInteractableLever.cpp">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
-    </ClCompile>
-    <ClCompile Include="DungeonMirror.cpp">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
-    </ClCompile>
-    <ClCompile Include="DungeonPushableBlock.cpp">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
-    </ClCompile>
-    <ClCompile Include="DungeonEnemyBlocker.cpp">
-      <Filter>Source Files\Application\Crawler\Hazards</Filter>
-    </ClCompile>
-    <ClCompile Include="DungeonEnemyChase.cpp">
-      <Filter>Source Files\Application\Crawler\Hazards</Filter>
-    </ClCompile>
-    <ClCompile Include="DungeonEnemySlug.cpp">
-      <Filter>Source Files\Application\Crawler\Hazards</Filter>
-    </ClCompile>
-    <ClCompile Include="DungeonEnemySlugPath.cpp">
-      <Filter>Source Files\Application\Crawler\Hazards</Filter>
-    </ClCompile>
-    <ClCompile Include="DungeonEnemySwitcher.cpp">
-      <Filter>Source Files\Application\Crawler\Hazards</Filter>
-    </ClCompile>
-    <ClCompile Include="DungeonShootLaser.cpp">
-      <Filter>Source Files\Application\Crawler\Hazards</Filter>
-    </ClCompile>
-    <ClCompile Include="DungeonShootLaserProjectile.cpp">
-      <Filter>Source Files\Application\Crawler\Hazards</Filter>
-    </ClCompile>
-    <ClCompile Include="DungeonSpikes.cpp">
-      <Filter>Source Files\Application\Crawler\Hazards</Filter>
-    </ClCompile>
-    <ClCompile Include="DungeonTransporter.cpp">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
-    </ClCompile>
-    <ClCompile Include="DungeonStairs.cpp">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
+    <ClCompile Include="DungeonMenu.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -517,10 +514,58 @@
     <ClInclude Include="DungeonTile.h">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
+    <ClInclude Include="DungeonInteractable.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonInteractableLever.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonDoor.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
     <ClInclude Include="DungeonHelpers.h">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
+    <ClInclude Include="DungeonActivatorPlate.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonTransporter.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonSpikes.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonPushableBlock.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonShootLaser.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
     <ClInclude Include="DungeonDamageVisual.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonShootLaserProjectile.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonEnemyBlocker.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonEnemyChase.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonEnemySwitcher.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonCheckpoint.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonMirror.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonEnemySlug.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonEnemySlugPath.h">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
     <ClInclude Include="StringUtils.h">
@@ -541,6 +586,9 @@
     <ClInclude Include="Primitives.h">
       <Filter>Source Files\Application\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="DungeonStairs.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
     <ClInclude Include="LineRenderer.h">
       <Filter>Source Files\Application\Scene</Filter>
     </ClInclude>
@@ -550,59 +598,11 @@
     <ClInclude Include="DungeonLight.h">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
-    <ClInclude Include="DungeonActivatorPlate.h">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
-    </ClInclude>
-    <ClInclude Include="DungeonCheckpoint.h">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
-    </ClInclude>
-    <ClInclude Include="DungeonDoor.h">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
-    </ClInclude>
     <ClInclude Include="DungeonEventTrigger.h">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
+      <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
-    <ClInclude Include="DungeonInteractable.h">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
-    </ClInclude>
-    <ClInclude Include="DungeonInteractableLever.h">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
-    </ClInclude>
-    <ClInclude Include="DungeonMirror.h">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
-    </ClInclude>
-    <ClInclude Include="DungeonPushableBlock.h">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
-    </ClInclude>
-    <ClInclude Include="DungeonEnemyBlocker.h">
-      <Filter>Source Files\Application\Crawler\Hazards</Filter>
-    </ClInclude>
-    <ClInclude Include="DungeonEnemyChase.h">
-      <Filter>Source Files\Application\Crawler\Hazards</Filter>
-    </ClInclude>
-    <ClInclude Include="DungeonEnemySlug.h">
-      <Filter>Source Files\Application\Crawler\Hazards</Filter>
-    </ClInclude>
-    <ClInclude Include="DungeonEnemySlugPath.h">
-      <Filter>Source Files\Application\Crawler\Hazards</Filter>
-    </ClInclude>
-    <ClInclude Include="DungeonEnemySwitcher.h">
-      <Filter>Source Files\Application\Crawler\Hazards</Filter>
-    </ClInclude>
-    <ClInclude Include="DungeonShootLaser.h">
-      <Filter>Source Files\Application\Crawler\Hazards</Filter>
-    </ClInclude>
-    <ClInclude Include="DungeonShootLaserProjectile.h">
-      <Filter>Source Files\Application\Crawler\Hazards</Filter>
-    </ClInclude>
-    <ClInclude Include="DungeonSpikes.h">
-      <Filter>Source Files\Application\Crawler\Hazards</Filter>
-    </ClInclude>
-    <ClInclude Include="DungeonTransporter.h">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
-    </ClInclude>
-    <ClInclude Include="DungeonStairs.h">
-      <Filter>Source Files\Application\Crawler\Interactables</Filter>
+    <ClInclude Include="DungeonMenu.h">
+      <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

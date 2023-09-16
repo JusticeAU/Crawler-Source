@@ -22,6 +22,7 @@
 #include "DungeonEditor.h"
 #include "DungeonPlayer.h"
 #include "DungeonArtTester.h"
+#include "DungeonMenu.h"
 
 #include "ComponentFactory.h"
 
@@ -140,36 +141,57 @@ Application::~Application()
 void Application::LaunchArgument(char* arg)
 {
 	std::string argument = arg;
-	if (argument == "design" || argument == "art" || argument == "dev")
+		
+	if (argument == "design")
 	{
 		developerMode = true;
 		Scene::CreateSceneEditorCamera();
-		
-		if (argument == "design")
-		{
-			dungeonEditor = new Crawl::DungeonEditor();
-			dungeonEditor->SetDungeon(dungeon);
+		dungeonEditor = new Crawl::DungeonEditor();
+		dungeonEditor->SetDungeon(dungeon);
 
-			s_mode = Mode::Design;
-			Scene::ChangeScene("Dungeon");
-			dungeonEditor->SetDungeon(dungeon);
-			dungeonEditor->Activate();
-			Window::SetWindowTitle("Crawler Editor");
-		}
-		else if (argument == "art")
-		{
-			Scene* art = Scene::NewScene("CrawlArtTest");
-			Scene::s_instance = art;
-			art->LoadJSON("crawler/scene/test_art.scene");
-			artTester = new Crawl::ArtTester();
+		s_mode = Mode::Design;
+		Scene::ChangeScene("Dungeon");
+		dungeonEditor->SetDungeon(dungeon);
+		dungeonEditor->Activate();
+		Window::SetWindowTitle("Crawler Editor");
+	}
+	else if (argument == "art")
+	{
+		developerMode = true;
+		Scene::CreateSceneEditorCamera();
+		Scene* art = Scene::NewScene("CrawlArtTest");
+		Scene::s_instance = art;
+		art->LoadJSON("crawler/scene/test_art.scene");
+		artTester = new Crawl::ArtTester();
 
-			Scene::s_editorCamera->object->SetLocalPosition({ -2.45, -3.75, 2.75 });
-			Scene::s_editorCamera->object->SetLocalRotationZ({ -30 });
-			Scene::s_editorCamera->object->SetLocalRotationX({ -20 });
-			Scene::s_editorCamera->moveSpeed = 5.0f;
-			s_mode = Mode::Art;
-			artTester->Activate();
-		}
+		Scene::s_editorCamera->object->SetLocalPosition({ -2.45, -3.75, 2.75 });
+		Scene::s_editorCamera->object->SetLocalRotationZ({ -30 });
+		Scene::s_editorCamera->object->SetLocalRotationX({ -20 });
+		Scene::s_editorCamera->moveSpeed = 5.0f;
+		s_mode = Mode::Art;
+		artTester->Activate();
+	}
+	else if (argument == "scene")
+	{
+		developerMode = true;
+		Scene::CreateSceneEditorCamera();
+		s_mode = Mode::Scene;
+		Scene::s_instance = Scene::NewScene("New Scene");
+		Scene::SetCameraIndex(-1);
+	}
+	else if (argument == "menutest")
+	{
+		developerMode = true;
+		Scene::CreateSceneEditorCamera();
+		Scene::SetCameraIndex(-1);
+		s_mode = Mode::Scene;
+		menu = new Crawl::DungeonMenu();
+		menu->SetApplication(this);
+	}
+	else if (argument == "dev")
+	{
+		developerMode = true;
+		Scene::CreateSceneEditorCamera();
 	}
 }
 
@@ -263,6 +285,10 @@ void Application::Update(float delta)
 		Scene::s_editorCamera->Update(delta);
 		Scene::s_editorCamera->DrawGUI();
 		break;
+	}
+	case Mode::Scene:
+	{
+		menu->DrawMenu();
 	}
 
 	}
