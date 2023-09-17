@@ -269,6 +269,7 @@ void Application::Update(float delta)
 		}
 		artTester->Update(delta);
 		artTester->DrawGUI();
+		MaterialManager::DrawGUI();
 		break;
 	}
 	case Mode::Programming:

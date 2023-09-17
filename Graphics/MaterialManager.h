@@ -26,8 +26,6 @@ public:
 	static void RemoveMaterial(string name);
 
 	static void ListUnreferencedMaterials();
-
-	static Material* MaterialSelected;
 protected:
 	MaterialManager();
 	map<string, Material*> materials;
@@ -36,5 +34,8 @@ protected:
 
 	string fileExtension = ".material";
 	string newFileName = "models/model/modelname";
+
+	Material* selectedMaterial = nullptr;
+	bool selectedMaterialWindowOpen = false;
 };
 

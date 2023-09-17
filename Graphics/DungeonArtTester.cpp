@@ -61,37 +61,6 @@ void Crawl::ArtTester::Deactivate()
 
 void Crawl::ArtTester::DrawGUI()
 {
-	MaterialManager::DrawGUI();
-	if (MaterialManager::MaterialSelected)
-	{
-		Material* selected = MaterialManager::MaterialSelected;
-		ImGui::SetNextWindowPos({ 550, 10 }, ImGuiCond_FirstUseEver);
-		ImGui::SetNextWindowSize({ 600, 400 }, ImGuiCond_FirstUseEver);
-		ImGui::Begin("Material");
-		
-		bool canEditName = true;
-		if (selected->name.substr(0,7) == "crawler")
-			canEditName = false;
-
-		if (!canEditName)
-			ImGui::BeginDisabled();
-
-		string newName = selected->name;
-		if (ImGui::InputText("Name", &newName, ImGuiInputTextFlags_EnterReturnsTrue))
-		{
-			// Material Manager change name
-			MaterialManager::RemoveMaterial(selected->name);
-			MaterialManager::PushMaterial(newName, selected);
-			// change name
-			selected->name = newName;
-		}
-
-		if (!canEditName)
-			ImGui::EndDisabled();
-		selected->DrawGUI();
-		ImGui::End();
-	}
-
 	ImGui::SetNextWindowPos({ 0,0 });
 	ImGui::SetNextWindowSize({ 500, 600 });
 	ImGui::Begin("Crawl Art Test",0, ImGuiWindowFlags_NoMove);

@@ -35,13 +35,19 @@ void Texture::Load()
 
 	// Load with stb_image
 	int width, height, channels;
+	/*stbi_info(name.c_str(), &width, &height, &channels);
+
+	if (channels < 3)
+	{
+		LogUtils::Log("Error: Trying to load file with less than");
+	}*/
 	stbi_set_flip_vertically_on_load(true); // OpenGL expect y=0 to be the bottom of the texture.
-	unsigned char* data = stbi_load(name.c_str(), &width, &height, &channels, 3);
+	unsigned char* data = stbi_load(name.c_str(), &width, &height, &channels, 4);
 
 	// transfer to VRAM
 	glGenTextures(1, &texID);
 	glBindTexture(GL_TEXTURE_2D, texID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	// Configure this particular texture filtering
 	glGenerateMipmap(GL_TEXTURE_2D);

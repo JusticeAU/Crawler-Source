@@ -21,6 +21,7 @@ public:
 	void SaveToFile();
 
 	bool loaded = false;
+	bool isInGameData = false;
 	int references = 0;
 	string name;
 	string filePath;
@@ -42,6 +43,16 @@ public:
 	ShaderProgram* shaderSkinned = nullptr;
 	string shaderSkinnedName = "";
 
+	enum class BlendMode
+	{
+		Opaque,
+		AlphaCutoff,
+		Transparent,
+		Count
+	};
+	static string blendModeStrings[3];
+
+	BlendMode blendMode = BlendMode::Opaque;
 
 	// PBR
 	bool isPBR = false;

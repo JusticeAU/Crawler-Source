@@ -1,10 +1,28 @@
 #include "Material.h"
 #include "TextureManager.h"
 #include "ShaderManager.h"
+#include "MaterialManager.h"
 #include <fstream>
 
 void Material::DrawGUI()
 {
+	// The ImGui begin headers for this are at the end of the Material Manager Draw GUI function.. for laziness..
+	if (isInGameData)
+		ImGui::BeginDisabled();
+
+	string newName = name;
+	if (ImGui::InputText("Name", &newName, ImGuiInputTextFlags_EnterReturnsTrue))
+	{
+		// Material Manager change name
+		MaterialManager::RemoveMaterial(name);
+		MaterialManager::PushMaterial(newName, this);
+		// change name
+		name = newName;
+	}
+
+	if (isInGameData)
+		ImGui::EndDisabled();
+
 	// Shader
 	string shaderStr = "Static Shader";
 	if (ImGui::BeginCombo(shaderStr.c_str(), shader != nullptr ? shader->name.c_str() : "NULL"))
@@ -238,8 +256,23 @@ void Material::DrawGUI()
 			ImGui::EndCombo();
 		}
 	}
-	if (ImGui::Button("Save"))
+	if (ImGui::BeginCombo("Blend Mode", Material::blendModeStrings[(int)blendMode].c_str()))
+	{
+		for (int i = 0; i < (int)Material::BlendMode::Count; i++)
+		{
+			bool selected = false;
+			if ((int)blendMode == i) selected = true;
+			if (ImGui::Selectable(Material::blendModeStrings[i].c_str(), selected))
+			{
+				blendMode = (Material::BlendMode)i;
+			}
+		}
+	}
+	ImGui::Spacing();
+	if (!isInGameData) ImGui::BeginDisabled();
+	if (ImGui::Button("Write changes to Game Data"))
 		SaveToFile();
+	if (!isInGameData) ImGui::EndDisabled();
 }
 
 void Material::ReferenceTextures()
@@ -282,8 +315,6 @@ void Material::UnreferenceTextures()
 
 void Material::LoadTextures()
 {
-	if (shaderName != "") shader = ShaderManager::GetShaderProgram(shaderName);
-	if (shaderSkinnedName != "") shaderSkinned = ShaderManager::GetShaderProgram(shaderSkinnedName);
 	if (!isPBR)
 	{
 		if (mapKdName != "") mapKd = TextureManager::GetTexture(mapKdName);
@@ -345,6 +376,8 @@ void to_json(nlohmann::ordered_json& j, const Material& mat)
 	j["aoMap"] = mat.aoMapName;
 	j["emissiveMap"] = mat.emissiveMapName;
 
+	if (mat.blendMode != Material::BlendMode::Opaque)
+		j["blendMode"] = mat.blendMode;
 }
 void from_json(const nlohmann::ordered_json& j, Material& mat)
 {
@@ -368,4 +401,15 @@ void from_json(const nlohmann::ordered_json& j, Material& mat)
 	if (j.contains("roughnessMap"))		j.at("roughnessMap").get_to(mat.roughnessMapName);
 	if (j.contains("aoMap"))			j.at("aoMap").get_to(mat.aoMapName);
 	if (j.contains("emissiveMap"))		j.at("emissiveMap").get_to(mat.emissiveMapName);
+
+	if (j.contains("blendMode"))		j.at("blendMode").get_to(mat.blendMode);
+
+	if (mat.shaderName != "") mat.shader = ShaderManager::GetShaderProgram(mat.shaderName);
+	if (mat.shaderSkinnedName != "") mat.shaderSkinned = ShaderManager::GetShaderProgram(mat.shaderSkinnedName);
 }
+
+string Material::blendModeStrings[3] = {
+		"Opaque",
+		"Opaque with Alpha Cutoff",
+		"Transparent"
+};

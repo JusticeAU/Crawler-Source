@@ -13,6 +13,7 @@ public:
 
 	void Reload();
 
+	void SetBoolUniform(std::string variableName, bool value);
 	void SetFloatUniform(std::string variableName, float value);
 	void SetFloat3ArrayUniform(std::string arrayName, int elements, const glm::vec3* firstValue);
 	void SetVector2Uniform(std::string variableName, glm::vec2 value);

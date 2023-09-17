@@ -175,7 +175,20 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				shader->SetVector3Uniform("cameraPosition", position);
 				if (isAnimated)
 					BindBoneTransform();
-				DrawModel();
+
+				for (int i = 0; i < materialArray.size(); i++)
+				{
+					// Check for alpha cutoff and configured if required.
+					if (materialArray[i] != nullptr && materialArray[i]->blendMode == Material::BlendMode::AlphaCutoff)
+					{
+						shader->SetBoolUniform("useAlphaCutoff", true);
+						materialArray[i]->albedoMap->Bind(4);
+						shader->SetIntUniform("albedoMap", 4);
+					}
+					else shader->SetBoolUniform("useAlphaCutoff", false);
+					
+					model->DrawSubMesh(i);
+				}
 				break;
 			}
 			case DrawMode::SSAOgBuffer:
@@ -184,7 +197,20 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				ssaoGeoShader->SetMatrixUniform("model", componentParent->transform * model->modelTransform);
 				if (isAnimated)
 					BindBoneTransform();
-				DrawModel();
+
+				for (int i = 0; i < materialArray.size(); i++)
+				{
+					// Check for alpha cutoff and configured if required.
+					if (materialArray[i] != nullptr && materialArray[i]->blendMode == Material::BlendMode::AlphaCutoff)
+					{
+						ssaoGeoShader->SetBoolUniform("useAlphaCutoff", true);
+						materialArray[i]->albedoMap->Bind(4);
+						ssaoGeoShader->SetIntUniform("albedoMap", 4);
+					}
+					else ssaoGeoShader->SetBoolUniform("useAlphaCutoff", false);
+					
+					model->DrawSubMesh(i);
+				}
 				break;
 			}
 		}
@@ -321,6 +347,11 @@ void ComponentRenderer::ApplyMaterials()
 	ShaderProgram* shader = isAnimated ? material->shaderSkinned : material->shader;
 	if (material)
 	{
+		// Check for alpha cutoff and configured if required.
+		if (material->blendMode == Material::BlendMode::AlphaCutoff) shader->SetBoolUniform("useAlphaCutoff", true);
+		else shader->SetBoolUniform("useAlphaCutoff", false);
+
+
 		shader->SetVector3Uniform("Ka", material->Ka);
 		shader->SetVector3Uniform("Kd", material->Kd);
 		shader->SetVector3Uniform("Ks", material->Ks);

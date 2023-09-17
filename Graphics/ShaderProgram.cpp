@@ -107,6 +107,12 @@ void ShaderProgram::Reload()
 	LoadFromFiles(vertFilename, fragFilename);
 }
 
+void ShaderProgram::SetBoolUniform(std::string variableName, bool value)
+{
+	GLint uniformLocation = glGetUniformLocation(shaderProgramID, variableName.c_str());
+	glUniform1i(uniformLocation, value);
+}
+
 void ShaderProgram::SetFloatUniform(std::string variableName, float value)
 {
 	GLint uniformLocation = glGetUniformLocation(shaderProgramID, variableName.c_str());

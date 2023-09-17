@@ -87,10 +87,22 @@ void MaterialManager::DrawGUI()
 		string name = m.first;
 		if (m.second != nullptr) name += " (refs: " + std::to_string(m.second->references) + ")";
 		if (ImGui::Selectable(name.c_str()))
-			MaterialSelected = m.second;
+		{
+			s_instance->selectedMaterial = m.second;
+			s_instance->selectedMaterialWindowOpen = true;
+		}
 	}
 
 	ImGui::End();
+
+	if (s_instance->selectedMaterialWindowOpen)
+	{
+		ImGui::SetNextWindowPos({ 550, 10 }, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize({ 600, 400 }, ImGuiCond_FirstUseEver);
+		ImGui::Begin("Material", &s_instance->selectedMaterialWindowOpen);
+		s_instance->selectedMaterial->DrawGUI();
+		ImGui::End();
+	}
 }
 
 void MaterialManager::RemoveMaterial(string name)
@@ -122,6 +134,7 @@ void MaterialManager::LoadFromFile(const char* filename)
 	Material* material = new Material();
 	material->name = filename;
 	material->filePath = filename;
+	material->isInGameData = true;
 	
 	auto input = ReadJSONFromDisk(filename);
 	input.get_to<Material>(*material);
@@ -153,4 +166,3 @@ void MaterialManager::PreloadAllFiles()
 }
 
 MaterialManager* MaterialManager::s_instance = nullptr;
-Material* MaterialManager::MaterialSelected = nullptr;
