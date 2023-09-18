@@ -74,6 +74,7 @@ namespace Crawl
 		bool CanTraverse(ivec2 fromPos, int directionIndex);
 		bool CanSee(ivec2 fromPos, int directionIndex);
 		bool PlayerCanMove(ivec2 fromPos, int directionIndex);
+		bool IsPlayerPointOfInterest(ivec2 position);
 		bool IsDoorBlocking(DungeonTile* fromTile, int directionIndex);
 
 		void SetPlayer(DungeonPlayer* player) { this->player = player; }
@@ -96,6 +97,7 @@ namespace Crawl
 
 		DungeonActivatorPlate* CreatePlate(ivec2 position, unsigned int activateID);
 		void RemovePlate(DungeonActivatorPlate* plate);
+		bool IsPlateAtPosition(ivec2 position);
 
 		DungeonTransporter* CreateTransporter(ivec2 position);
 		void RemoveTransporter(DungeonTransporter* transporter);

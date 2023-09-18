@@ -76,14 +76,17 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	else if (state == MOVING)
 	{
 		UpdateStateMoving(deltaTime);
+		ContinueResettingTilt(deltaTime);
 	}
 	else if (state == TURNING)
 	{
 		UpdateStateTurning(deltaTime);
+		ContinueResettingTilt(deltaTime);
 	}
 	else if (state == STAIRBEARS)
 	{
 		UpdateStateStairs(deltaTime);
+		ContinueResettingTilt(deltaTime);
 	}
 
 	return false;
@@ -96,7 +99,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	{
 		vec2 mouseDelta = -Input::GetMouseDelta() * lookSpeed;
 		objectView->AddLocalRotation({ mouseDelta.y, 0, mouseDelta.x });
-		objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -lookMaxY, lookMaxY);
+		objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -lookMaxX, lookMaxX);
 		objectView->localRotation.z = glm::clamp(objectView->localRotation.z, -lookMaxZ, lookMaxZ);
 		return false;
 	}
@@ -107,17 +110,10 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		lookReturnFrom = objectView->localRotation;
 		lookReturnTimeCurrent = 0.0f;
 	}
+
 	if (lookReturnTimeCurrent < lookReturnTimeTotal)
 	{
-		float t = glm::clamp(lookReturnTimeCurrent / lookReturnTimeTotal, 0.0f, 1.0f);
-		
-		vec3 newRotation(0, 0, 0);
-		newRotation.x = MathUtils::Lerp(lookReturnFrom.x, 0.0f, MathUtils::EaseOutBounceSubtle(t));
-		newRotation.z = MathUtils::Lerp(lookReturnFrom.z, 0.0f, MathUtils::EaseOutBounceSubtle(t));
-		objectView->SetLocalRotation(newRotation);
-
-		lookReturnTimeCurrent += delta;
-
+		ContinueResettingTilt(delta);
 		return false; // disallow movement whilst this is resetting
 	}
 
@@ -203,6 +199,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	{
 		if (currentDungeon->DoInteractable(position, facing))
 		{
+			UpdatePointOfInterestTilt();
 			animator->BlendToAnimation(animationNamePush, 0.1f);
 			if (!currentDungeon->playerInteractIsFree)
 				return true;
@@ -256,6 +253,8 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		targetPosition = { position.x * Crawl::DUNGEON_GRID_SCALE, position.y * Crawl::DUNGEON_GRID_SCALE , playerZPosition };
 		moveCurrent = 0.0f;
 		didMove = false;
+		
+		UpdatePointOfInterestTilt();
 		return true;
 	}
 
@@ -272,6 +271,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		turnCurrent = 0.0f;
 		oldTurn = object->localRotation.z;
 		targetTurn = object->localRotation.z - 90;
+		UpdatePointOfInterestTilt();
 		if (!dungeon->playerTurnIsFree)
 			return true;
 	}
@@ -287,6 +287,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		turnCurrent = 0.0f;
 		oldTurn = object->localRotation.z;
 		targetTurn = object->localRotation.z + 90;
+		UpdatePointOfInterestTilt();
 		if (!dungeon->playerTurnIsFree)
 			return true;
 	}
@@ -362,11 +363,14 @@ bool Crawl::DungeonPlayer::UpdateStateMoving(float delta)
 	float t = MathUtils::InverseLerp(0, moveSpeed, moveCurrent);
 	if (moveCurrent > moveSpeed)
 	{
+		//LogUtils::Log("Finished Move");
 		object->SetLocalPosition(targetPosition);
 		state = IDLE;
 	}
 	else
+	{
 		object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, glm::sineEaseOut(t)));
+	}
 
 	return false;
 }
@@ -429,6 +433,31 @@ bool Crawl::DungeonPlayer::UpdateStateStairs(float delta)
 	return false;
 }
 
+void Crawl::DungeonPlayer::UpdatePointOfInterestTilt()
+{
+	bool isPointOfInterest = dungeon->IsPlayerPointOfInterest(position + directions[facing]);
+	if (wasLookingAtPointOfInterest != isPointOfInterest)
+	{
+		wasLookingAtPointOfInterest = isPointOfInterest;
+		if (isPointOfInterest) lookRestX = lookRestXInterest;
+		else lookRestX = lookRestXDefault;
+		lookReturnFrom = objectView->localRotation;
+		lookReturnTimeCurrent = 0.0f;
+	}
+}
+
+void Crawl::DungeonPlayer::ContinueResettingTilt(float delta)
+{
+	float t = glm::clamp(lookReturnTimeCurrent / lookReturnTimeTotal, 0.0f, 1.0f);
+
+	vec3 newRotation(0, 0, 0);
+	newRotation.x = MathUtils::Lerp(lookReturnFrom.x, lookRestX, MathUtils::EaseOutBounceSubtle(t));
+	newRotation.z = MathUtils::Lerp(lookReturnFrom.z, 0.0f, MathUtils::EaseOutBounceSubtle(t));
+	objectView->SetLocalRotation(newRotation);
+
+	lookReturnTimeCurrent += delta;
+}
+
 void Crawl::DungeonPlayer::Teleport(ivec2 position)
 {
 	state = IDLE;
@@ -441,6 +470,7 @@ void Crawl::DungeonPlayer::Teleport(ivec2 position)
 void Crawl::DungeonPlayer::Orient(FACING_INDEX facing)
 {
 	this->facing = facing;
+	objectView->localRotation.x = lookRestX;
 	object->SetLocalRotationZ(orientationEulers[facing]);
 }
 

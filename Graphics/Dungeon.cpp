@@ -479,6 +479,15 @@ bool Crawl::Dungeon::PlayerCanMove(glm::ivec2 fromPos, int directionIndex)
 	return true;
 }
 
+bool Crawl::Dungeon::IsPlayerPointOfInterest(ivec2 position)
+{
+	if (IsEnemyChaserAtPosition(position))return true;
+	if (IsSpikesAtPosition(position)) return true;
+	if (IsPlateAtPosition(position)) return true;
+	
+	return false;
+}
+
 bool Crawl::Dungeon::IsDoorBlocking(DungeonTile* fromTile, int directionIndex)
 {
 	ivec2 fromPos = fromTile->position;
@@ -989,6 +998,16 @@ void Crawl::Dungeon::RemovePlate(DungeonActivatorPlate* plate)
 			return;
 		}
 	}
+}
+
+bool Crawl::Dungeon::IsPlateAtPosition(ivec2 position)
+{
+	for (int i = 0; i < activatorPlates.size(); i++)
+	{
+		if (activatorPlates[i]->position == position) return true;
+	}
+
+	return false;
 }
 
 Crawl::DungeonTransporter* Crawl::Dungeon::CreateTransporter(ivec2 position)
@@ -2368,6 +2387,7 @@ void Crawl::Dungeon::Update()
 			break;
 		}
 	}
+
 	if (player->isOnLobbyLevel2)
 	{
 		for (auto& transporter : player->lobbyLevel2Dungeon->transporterPlates)
@@ -2428,6 +2448,8 @@ void Crawl::Dungeon::Update()
 			player->Respawn();
 		}
 	}
+	else
+		player->UpdatePointOfInterestTilt();
 }
 
 void Crawl::Dungeon::UpdateVisuals(float delta)

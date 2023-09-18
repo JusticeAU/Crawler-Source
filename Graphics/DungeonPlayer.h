@@ -32,6 +32,9 @@ namespace Crawl
 		bool UpdateStateTurning(float delta);
 		bool UpdateStateStairs(float delta);
 
+		void UpdatePointOfInterestTilt();
+		void ContinueResettingTilt(float delta);
+
 		ivec2 GetPosition() { return position; }
 		FACING_INDEX GetOrientation() { return facing; }
 		void Teleport(ivec2 position);
@@ -67,9 +70,13 @@ namespace Crawl
 		
 		STATE state = IDLE;
 		float lookSpeed = 0.1f;
-		float lookMaxY = 45.0f;
+		float lookMaxX = 45.0f;
 		float lookMaxZ = 170.0f;
+		const float lookRestXDefault = -7.0f;
+		const float lookRestXInterest = -17.0f;
+		float lookRestX = lookRestXDefault;
 		glm::vec3 lookReturnFrom;
+		bool wasLookingAtPointOfInterest = false;
 		float lookReturnTimeTotal = 0.25f;
 		float lookReturnTimeCurrent = 1.0f;
 
@@ -78,7 +85,7 @@ namespace Crawl
 		glm::vec3 oldPosition;
 		glm::vec3 targetPosition;
 
-		float moveDelay = 0.15f;
+		float moveDelay = 0.0f;
 		float moveDelayCurrent = 0.0f;
 
 		float turnSpeed = 0.25f;
