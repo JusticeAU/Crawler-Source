@@ -228,6 +228,7 @@ void ComponentAnimator::StartAnimation(string name, bool loop)
 
 	delete current;
 	current = newAnimation;
+	isPlaying = true;
 }
 
 void ComponentAnimator::BlendToAnimation(string name, float time, float offset, bool loop)
@@ -250,6 +251,14 @@ void ComponentAnimator::BlendToAnimation(string name, float time, float offset, 
 	transitionTime = time;
 }
 
+void ComponentAnimator::SetPose(string name, float offset)
+{
+	StartAnimation(name);
+	current->position = offset;
+	Update(0.0f);
+	isPlaying = false;
+}
+
 void ComponentAnimator::AnimationState::Update(float delta)
 {
 	position += delta * animationSpeedScale * animation->ticksPerSecond;
@@ -267,4 +276,9 @@ void ComponentAnimator::AnimationState::Update(float delta)
 		else
 			position = 0.0f;
 	}
+}
+
+bool ComponentAnimator::AnimationState::IsFinished()
+{
+	return position >= animation->duration;
 }

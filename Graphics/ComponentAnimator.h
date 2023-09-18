@@ -35,6 +35,7 @@ public:
 
 	void StartAnimation(string name, bool loop = false);
 	void BlendToAnimation(string name, float transitionTime, float offset = 0.0f, bool loop = false);
+	void SetPose(string name, float offset = 0.0f);
 
 	struct AnimationState
 	{
@@ -44,6 +45,7 @@ public:
 		float position = 0.0f;
 
 		void Update(float delta);
+		bool IsFinished();
 	};
 
 	bool isPlaying = false;

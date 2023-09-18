@@ -120,6 +120,9 @@ void Scene::DrawGUI()
 	ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize({ 400, 900 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Scene", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+
+	int lightCount = m_pointLightComponents.size();
+	ImGui::InputInt("Lights", &lightCount);
 	if (ImGui::Button("Save"))
 		SaveJSON();
 	ImGui::SameLine();

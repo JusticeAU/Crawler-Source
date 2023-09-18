@@ -7,6 +7,7 @@
 #include "MathUtils.h"
 #include "LogUtils.h"	
 #include "ComponentAnimator.h"
+#include "Animation.h"
 
 Crawl::DungeonEnemyChase::~DungeonEnemyChase()
 {
@@ -65,7 +66,7 @@ void Crawl::DungeonEnemyChase::Update()
 			else return;
 		}
 	}
-	else
+	else // Activated.
 	{
 		stateVisual = IDLE;
 		object->SetLocalPosition(dungeonPosToObjectScale(position));
@@ -99,13 +100,20 @@ void Crawl::DungeonEnemyChase::Update()
 			}
 
 		}
-		else
+		else // Yoo we gotta turn.
 		{
+			bool isClockwise(IsClockWiseTurn(facing, (FACING_INDEX)myTile->toDestination->enterDirection));
 			facing = dungeonRotateTowards(facing, (FACING_INDEX)myTile->toDestination->enterDirection);
 			stateVisual = TURNING;
 			targetTurn = orientationEulers[facing];
 			turnCurrent = 0.0f;
-			if (animator) animator->StartAnimation(animationTurnLeft);
+			LogUtils::Log("Start Animation Turn");
+			
+			if (animator)
+			{
+				if(isClockwise)	animator->StartAnimation(animationTurnRight); // need to differentiate between left and right turn here.
+				else animator->StartAnimation(animationTurnLeft);
+			}
 		}
 		// else turn to face it
 	}
@@ -122,6 +130,7 @@ void Crawl::DungeonEnemyChase::ExecuteMove()
 	stateVisual = MOVING;
 	targetPosition = dungeonPosToObjectScale(position);
 	moveCurrent = -0.0f;
+	LogUtils::Log("Start Animation Walk");
 	if (animator) animator->StartAnimation(animationWalkForward);
 }
 
@@ -138,28 +147,22 @@ void Crawl::DungeonEnemyChase::UpdateVisuals(float delta)
 		break;
 	case TURNING:
 	{
-		turnCurrent += delta;
-		float t = MathUtils::InverseLerp(0, turnSpeed, glm::max(0.0f,turnCurrent));
-		if (turnCurrent > turnSpeed)
+		if (animator->current->IsFinished())
 		{
+			state = IDLE;
 			object->SetLocalRotationZ(targetTurn);
-			stateVisual = IDLE;
+			animator->SetPose(animationWalkForward);
 		}
-		else
-			object->SetLocalRotationZ(MathUtils::LerpDegrees(oldTurn, targetTurn, t));
 		break;
 	}
 	case MOVING:
 	{
-		moveCurrent += delta;
-		float t = MathUtils::InverseLerp(0, moveSpeed, glm::max(0.0f, moveCurrent));
-		if (moveCurrent > moveSpeed)
+		if (animator->current->IsFinished()) // animation has finished
 		{
+			state = IDLE;
 			object->SetLocalPosition(targetPosition);
-			stateVisual = IDLE;
+			animator->SetPose(animationWalkForward);
 		}
-		else
-			object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, t));
 		break;
 	}
 	case KICKED:

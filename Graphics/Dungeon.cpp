@@ -274,7 +274,6 @@ void Crawl::Dungeon::CreateTileObject(DungeonTile* tile)
 		tile->object->markedForDeletion = true;
 
 	Object* obj = Scene::s_instance->DuplicateObject(tile_template, tilesParentObject);
-	obj->isStatic = true;
 	
 	// Set up wall variants
 	for (int i = 0; i < 4; i++)
@@ -284,7 +283,6 @@ void Crawl::Dungeon::CreateTileObject(DungeonTile* tile)
 		{
 			ordered_json wall = ReadJSONFromDisk(wallVariantPaths[variant]);
 			obj->children[i + 1]->children[0]->LoadFromJSON(wall); // i+1 because this object has the floor tile in index 0;
-			obj->children[i + 1]->children[0]->isStatic = true;
 		}
 	}
 	obj->SetLocalPosition({ tile->position.x * DUNGEON_GRID_SCALE, tile->position.y * DUNGEON_GRID_SCALE , 0 });
@@ -1242,13 +1240,12 @@ Crawl::DungeonEnemyChase* Crawl::Dungeon::CreateEnemyChase(ivec2 position, FACIN
 	chaser->dungeon = this;
 	chaser->object = Scene::CreateObject();
 	chaser->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/chase.object"));
-	chaser->object->AddLocalPosition(dungeonPosToObjectScale(position));
-	chaser->object->SetLocalRotationZ(orientationEulers[facing]);
 	chaser->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_chaser.object"));
 	chaser->object->children[0]->SetLocalRotationZ(180);
 	if (chaser->useAnimator)
 	{
 		chaser->animator = (ComponentAnimator*)chaser->object->children[0]->GetComponent(Component_Animator);
+		chaser->animator->SetPose(chaser->animationActivate);
 	}
 	chasers.emplace_back(chaser);
 
@@ -1258,8 +1255,10 @@ Crawl::DungeonEnemyChase* Crawl::Dungeon::CreateEnemyChase(ivec2 position, FACIN
 		tile->occupied = true;
 	}
 	else
-		LogUtils::Log("WARNING - ATTEMPTING TO ADD BLOCKER TO TILE THAT DOESN'T EXIST");
+		LogUtils::Log("WARNING - ATTEMPTING TO ADD CHASER TO TILE THAT DOESN'T EXIST");
 
+	chaser->object->AddLocalPosition(dungeonPosToObjectScale(position));
+	chaser->object->SetLocalRotationZ(orientationEulers[facing]);
 	return chaser;
 }
 
@@ -1907,7 +1906,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	else
 		playerCanPushMirror = false;*/
 
-
+	// Static Objects
 	auto& tiles_json = serialised["tiles"];
 	for (auto it = tiles_json.begin(); it != tiles_json.end(); it++)
 	{
@@ -1920,27 +1919,6 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 			tile.wallVariants[3] = (tile.maskTraverse & WEST_MASK) == WEST_MASK ? -1 : 0;
 		}
 		AddTile(tile);
-	}
-
-	auto& doors_json = serialised["doors"];
-	for (auto it = doors_json.begin(); it != doors_json.end(); it++)
-	{
-		DungeonDoor door = it.value().get<Crawl::DungeonDoor>();
-		CreateDoor(door.position, door.orientation, door.id, door.open);
-	}
-
-	auto& levers_json = serialised["levers"];
-	for (auto it = levers_json.begin(); it != levers_json.end(); it++)
-	{
-		DungeonInteractableLever lever = it.value().get<Crawl::DungeonInteractableLever>();
-		DungeonInteractableLever* newLever = CreateLever(lever.position, lever.orientation, lever.id, lever.activateID, lever.status);
-	}
-
-	auto& plates_json = serialised["plates"];
-	for (auto it = plates_json.begin(); it != plates_json.end(); it++)
-	{
-		DungeonActivatorPlate plate = it.value().get<Crawl::DungeonActivatorPlate>();
-		CreatePlate(plate.position, plate.activateID);
 	}
 
 	auto& transporters_json = serialised["transporters"];
@@ -1962,21 +1940,6 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		DungeonCheckpoint* newCheckpoint = CreateCheckpoint(checkpoint.position, checkpoint.facing);
 	}
 
-
-	auto& spikes_json = serialised["spikes"];
-	for (auto it = spikes_json.begin(); it != spikes_json.end(); it++)
-	{
-		DungeonSpikes spikes = it.value().get<Crawl::DungeonSpikes>();
-		CreateSpikes(spikes.position, spikes.disabled);
-	}
-
-	auto& blocks_json = serialised["blocks"];
-	for (auto it = blocks_json.begin(); it != blocks_json.end(); it++)
-	{
-		DungeonPushableBlock block = it.value().get<Crawl::DungeonPushableBlock>();
-		CreatePushableBlock(block.position);
-	}
-
 	auto& shootLasers_json = serialised["shootLasers"];
 	for (auto it = shootLasers_json.begin(); it != shootLasers_json.end(); it++)
 	{
@@ -1986,6 +1949,67 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		newLaser->firesProjectile = shootLaser.firesProjectile;
 		newLaser->firesImmediately = shootLaser.firesImmediately;
 		newLaser->activateID = shootLaser.activateID;
+	}
+
+	auto& decorations_json = serialised["decorations"];
+	for (auto it = decorations_json.begin(); it != decorations_json.end(); it++)
+	{
+		DungeonDecoration decoration = it.value().get<Crawl::DungeonDecoration>();
+		DungeonDecoration* newDecoration = CreateDecoration(decoration.position, decoration.facing);
+		newDecoration->localPosition = decoration.localPosition;
+		newDecoration->modelName = decoration.modelName;
+		newDecoration->castsShadows = decoration.castsShadows;
+		newDecoration->LoadDecoration();
+		newDecoration->UpdateShadowCasting();
+	}
+
+	auto& slugPaths_json = serialised["slugPaths"];
+	for (auto it = slugPaths_json.begin(); it != slugPaths_json.end(); it++)
+	{
+		DungeonEnemySlugPath slug = it.value().get<Crawl::DungeonEnemySlugPath>();
+		DungeonEnemySlugPath* newSlug = CreateSlugPath(slug.position);
+	}
+
+	auto& spikes_json = serialised["spikes"];
+	for (auto it = spikes_json.begin(); it != spikes_json.end(); it++)
+	{
+		DungeonSpikes spikes = it.value().get<Crawl::DungeonSpikes>();
+		CreateSpikes(spikes.position, spikes.disabled);
+	}
+
+	if (!fakeDungeon) // Here we build the actual scene objects for the game and mark them all as static.
+	{
+		BuildSceneFromDungeonLayout();
+		Scene::s_instance->SetAllObjectsStatic();
+	}
+
+	// Dynamic Objects
+	auto& doors_json = serialised["doors"];
+	for (auto it = doors_json.begin(); it != doors_json.end(); it++)
+	{
+		DungeonDoor door = it.value().get<Crawl::DungeonDoor>();
+		CreateDoor(door.position, door.orientation, door.id, door.open);
+	}
+
+	auto& levers_json = serialised["levers"];
+	for (auto it = levers_json.begin(); it != levers_json.end(); it++)
+	{
+		DungeonInteractableLever lever = it.value().get<Crawl::DungeonInteractableLever>();
+		DungeonInteractableLever* newLever = CreateLever(lever.position, lever.orientation, lever.id, lever.activateID, lever.status);
+	}
+
+	auto& plates_json = serialised["plates"];
+	for (auto it = plates_json.begin(); it != plates_json.end(); it++)
+	{
+		DungeonActivatorPlate plate = it.value().get<Crawl::DungeonActivatorPlate>();
+		CreatePlate(plate.position, plate.activateID);
+	}
+
+	auto& blocks_json = serialised["blocks"];
+	for (auto it = blocks_json.begin(); it != blocks_json.end(); it++)
+	{
+		DungeonPushableBlock block = it.value().get<Crawl::DungeonPushableBlock>();
+		CreatePushableBlock(block.position);
 	}
 
 	auto& blockers_json = serialised["blockers"];
@@ -2002,6 +2026,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		DungeonEnemyChase chaser = it.value().get<Crawl::DungeonEnemyChase>();
 		DungeonEnemyChase* newChaser = CreateEnemyChase(chaser.position, chaser.facing);
 		newChaser->state = chaser.state;
+		newChaser->object->SetStatic(false);
 	}
 
 	auto& slugs_json = serialised["slugs"];
@@ -2009,13 +2034,6 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	{
 		DungeonEnemySlug slug = it.value().get<Crawl::DungeonEnemySlug>();
 		DungeonEnemySlug* newSlug = CreateSlug(slug.position, slug.facing);
-	}
-
-	auto& slugPaths_json = serialised["slugPaths"];
-	for (auto it = slugPaths_json.begin(); it != slugPaths_json.end(); it++)
-	{
-		DungeonEnemySlugPath slug = it.value().get<Crawl::DungeonEnemySlugPath>();
-		DungeonEnemySlugPath* newSlug = CreateSlugPath(slug.position);
 	}
 
 	auto& switchers_json = serialised["switchers"];
@@ -2032,18 +2050,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		DungeonMirror* newMirror = CreateMirror(mirror.position, mirror.facing);
 	}
 
-	auto& decorations_json = serialised["decorations"];
-	for (auto it = decorations_json.begin(); it != decorations_json.end(); it++)
-	{
-		DungeonDecoration decoration = it.value().get<Crawl::DungeonDecoration>();
-		DungeonDecoration* newDecoration = CreateDecoration(decoration.position, decoration.facing);
-		newDecoration->localPosition = decoration.localPosition;
-		newDecoration->modelName = decoration.modelName;
-		newDecoration->castsShadows = decoration.castsShadows;
-		newDecoration->LoadDecoration();
-		newDecoration->UpdateShadowCasting();
-	}
-
+	// Invisible objects
 	auto& pointLights_json = serialised["pointLights"];
 	for (auto it = pointLights_json.begin(); it != pointLights_json.end(); it++)
 	{
@@ -2082,14 +2089,8 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		newStair->endWorldPosition = stair.endWorldPosition;
 		newStair->endOffset = stair.endOffset;
 	}
-	
-	if (!fakeDungeon)
-	{
-		BuildSceneFromDungeonLayout();
 
-		Scene::s_instance->SetAllObjectsStatic();
-		Scene::s_instance->SetStaticObjectsDirty();
-	}
+	if(!fakeDungeon) Scene::s_instance->SetStaticObjectsDirty();
 }
 
 void Crawl::Dungeon::InitialiseTileMap()
@@ -2435,7 +2436,7 @@ void Crawl::Dungeon::UpdateVisuals(float delta)
 	{
 		chasers[i]->UpdateVisuals(delta);
 		{
-			if (chasers[i]->isDead && chasers[i]->stateVisual == Crawl::DungeonEnemyChase::IDLE)
+			if (chasers[i]->isDead)
 			{
 				RemoveEnemyChase(chasers[i]);
 				i--;
@@ -2543,7 +2544,6 @@ void Crawl::Dungeon::UpdatePillarsForTileCoordinate(ivec2 coordinate)
 				pillarObj->LoadFromJSON(ReadJSONFromDisk("crawler/model/tile_pillar.object"));
 				pillarObj->SetLocalPosition(dungeonPosToObjectScale(coordinate));
 				pillarObj->AddLocalPosition({ directionsDiagonal[i].x, directionsDiagonal[i].y, 0 });
-				pillarObj->isStatic = true;
 				pillars.emplace(pillarCoordinate, pillarObj);
 			}
 		}

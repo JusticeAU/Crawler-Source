@@ -165,7 +165,7 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				if (!castsShadows)
 					return;
 
-				ShaderProgram* shader = isAnimated ? ShaderManager::GetShaderProgram("engine/shader/lightPointShadowMap") : ShaderManager::GetShaderProgram("engine/shader/lightPointShadowMap");
+				ShaderProgram* shader = isAnimated ? ShaderManager::GetShaderProgram("engine/shader/lightPointShadowMapSkinned") : ShaderManager::GetShaderProgram("engine/shader/lightPointShadowMap");
 				shader->Bind();
 				glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
 

@@ -87,6 +87,8 @@ public:
 	vector<ComponentCamera*> componentCameras;
 
 	bool rendererShouldRefreshStaticMaps = true;
+	int staticObjects = 0;
+	int dynamicObjects = 0;
 
 	string GetSceneName() { return s_instance->sceneName; };
 

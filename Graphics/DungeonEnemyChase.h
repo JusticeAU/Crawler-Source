@@ -32,11 +32,13 @@ namespace Crawl
 		STATE state = INACTIVE;
 		STATE stateVisual = IDLE;
 
-		const bool useAnimator = false;
-		string animationActivate = "";
-		string animationWalkForward = "";
-		string animationTurnLeft = "";
-		string animationTurnRight = "";
+		const bool useAnimator = true;
+		string animationBaseName = "crawler/model/monster_chaser.fbx";
+		string animationIdle = animationBaseName + "chaser.rig|chaser_idle"; // We call this as a pose instead.
+		string animationActivate = animationBaseName + "chaser.rig|chaser_activate";
+		string animationWalkForward = animationBaseName + "chaser.rig|chaser_walk";
+		string animationTurnLeft = animationBaseName + "chaser.rig|chaser_turn_left";
+		string animationTurnRight = animationBaseName + "chaser.rig|chaser_turn_right";
 		string animationFlourish = "";
 		string animationDeath = "";
 

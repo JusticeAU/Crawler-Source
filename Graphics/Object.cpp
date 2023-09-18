@@ -347,8 +347,9 @@ void Object::CleanUpComponents()
 {
 	for (int i = 0; i < components.size(); i++)
 	{
-		if (components[i]->markedForDeletion)
+		if (markedForDeletion || components[i]->markedForDeletion)
 		{
+			delete components[i];
 			components.erase(components.begin() + i);
 			i--;
 		}
@@ -360,7 +361,7 @@ void Object::CleanUpChildren()
 	for (int i = 0; i < children.size(); i++)
 	{
 		children[i]->CleanUpComponents();
-		if (children[i]->markedForDeletion)
+		if (markedForDeletion || children[i]->markedForDeletion)
 		{
 			children[i]->DeleteAllChildren();
 			children.erase(children.begin() + i);

@@ -172,6 +172,16 @@ namespace Crawl
 		return (FACING_INDEX)newIndex;
 	}
 
+	// a 180 will be clockwise, a turn to the same direction will be considered invalid and return bogus data
+	static bool IsClockWiseTurn(FACING_INDEX from, FACING_INDEX to)
+	{
+		int difference = to - from;
+		if (difference == 3) difference -= 4;
+		if (difference == -3) difference += 4;
+		int sign = glm::sign(difference);
+		return sign == 1;
+	}
+
 	static int GetInvertedMask(int mask)
 	{
 		int flipped = ~mask;

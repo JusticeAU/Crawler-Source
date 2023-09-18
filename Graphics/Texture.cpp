@@ -106,7 +106,7 @@ void Texture::RewriteTGAwithRLE(string from, string to)
 	// Load with stb_image
 	stbi_set_flip_vertically_on_load(false);
 	int width, height, channels;
-	unsigned char* data = stbi_load(from.c_str(), &width, &height, &channels, 0);
+	unsigned char* data = stbi_load(from.c_str(), &width, &height, &channels, 0); // load with auto components to ensure we're not destructive to the alpha or whatever.
 	// Write it back out. Easy Peasy.	
 	stbi_write_tga(to.c_str(), width, height, channels, data);
 	stbi_image_free(data);

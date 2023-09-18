@@ -326,11 +326,11 @@
     <ClCompile Include="DungeonLight.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
-    <ClCompile Include="ComponentLightPoint.cpp">
-      <Filter>Source Files\Application\Crawler</Filter>
-    </ClCompile>
     <ClCompile Include="DungeonMenu.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentLightPoint.cpp">
+      <Filter>Source Files\Application\Scene\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
