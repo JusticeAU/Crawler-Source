@@ -1474,7 +1474,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLight()
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Edit Point Light", &selectedLightWindowOpen);
-	if (ImGui::ColorPicker3("Colour", &selectedLight->colour.x))
+	if (ImGui::ColorEdit3("Colour", &selectedLight->colour.x))
 	{
 		MarkUnsavedChanges();
 		selectedLight->UpdateLight();
@@ -1495,6 +1495,32 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLight()
 	glm::vec3 worldPos = dungeonPosToObjectScale(selectedLight->position) + selectedLight->localPosition;
 	glm::vec3 offset(0, 0, 0.1f);
 	LineRenderer::DrawLine(worldPos, worldPos + offset, selectedLight->colour);
+
+
+	if (ImGui::Button("Delete"))
+		ImGui::OpenPopup("delete_light_confirm");
+
+
+	if (ImGui::BeginPopupModal("delete_light_confirm"))
+	{
+		ImGui::Text("Are you sure you want to delete the light?");
+		if (ImGui::Button("Yes"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemoveLight(selectedLight);
+			selectedLight = nullptr;
+			selectedLightWindowOpen = false;
+			RefreshSelectedTile();
+		}
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
+	ImGui::End();
+
 	ImGui::End();
 }
 void Crawl::DungeonEditor::DrawGUIModeTileEditEventTrigger()

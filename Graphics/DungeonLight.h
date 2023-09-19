@@ -10,6 +10,7 @@ namespace Crawl
 	class DungeonLight
 	{
 	public:
+		~DungeonLight();
 		glm::ivec2 position = { 0,0 }; // grid coordinate
 		glm::vec3 localPosition = { 0,0,0 }; // scene scale position on grid square;
 		

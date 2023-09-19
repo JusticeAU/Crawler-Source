@@ -2,6 +2,11 @@
 #include "Scene.h"
 #include "DungeonHelpers.h"
 
+Crawl::DungeonLight::~DungeonLight()
+{
+	Scene::s_instance->RemovePointLight(light);
+}
+
 void Crawl::DungeonLight::Init()
 {
 	object = Scene::CreateObject("Light");
