@@ -12,6 +12,8 @@ Crawl::DungeonDecoration::~DungeonDecoration()
 void Crawl::DungeonDecoration::UpdateTransform()
 {
 	object->children[0]->SetLocalPosition(localPosition);
+	object->children[0]->SetLocalRotation(localRotation);
+
 }
 
 void Crawl::DungeonDecoration::LoadDecoration()

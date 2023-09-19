@@ -1976,6 +1976,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		DungeonDecoration decoration = it.value().get<Crawl::DungeonDecoration>();
 		DungeonDecoration* newDecoration = CreateDecoration(decoration.position, decoration.facing);
 		newDecoration->localPosition = decoration.localPosition;
+		newDecoration->localRotation = decoration.localRotation;
 		newDecoration->modelName = decoration.modelName;
 		newDecoration->castsShadows = decoration.castsShadows;
 		newDecoration->LoadDecoration();

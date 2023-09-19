@@ -1318,8 +1318,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditSlug()
 void Crawl::DungeonEditor::DrawGUIModeTileEditDecoration()
 {
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
-	ImGui::Begin("Edit Decoration", &selectedDecorationWindowOpen);
+	ImGui::SetNextWindowSize({ 450, 170 }, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Edit Decoration", &selectedDecorationWindowOpen, ImGuiWindowFlags_NoResize);
 
 	if (ImGui::BeginCombo("Select Decoration", selectedTileDecoration->modelName.c_str()))
 	{
@@ -1352,7 +1352,12 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDecoration()
 		ImGui::EndCombo();
 	}
 
-	if (ImGui::DragFloat3("XYZ", &selectedTileDecoration->localPosition.x,0.1f, -5, 5, "%.3f", ImGuiSliderFlags_AlwaysClamp))
+	if (ImGui::DragFloat3("Position", &selectedTileDecoration->localPosition.x,0.1f, -5, 5, "%.3f", ImGuiSliderFlags_AlwaysClamp))
+	{
+		MarkUnsavedChanges();
+		selectedTileDecoration->UpdateTransform();
+	}
+	if (ImGui::DragFloat3("Rotation", &selectedTileDecoration->localRotation.x, 0.1f, -180.0f, 180.0f, "%.3f", ImGuiSliderFlags_AlwaysClamp))
 	{
 		MarkUnsavedChanges();
 		selectedTileDecoration->UpdateTransform();
