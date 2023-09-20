@@ -260,26 +260,31 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 		string materialName = objectJSON["components"][1]["materials"][i];
 		if (materialName.substr(0, 7) != "crawler" && materialName.substr(0, 6) != "engine" && materialName.substr(0, 4) != "NULL")
 		{
-			// Staged material, need to copy
+			// prepare the material - we definately need to update our path to it,
+			//  and if its a material we havent seen before in the loop, we need to copy it and the texture files too.
 			Material savedMaterial = *MaterialManager::GetMaterial(materialName);
 			string newMaterialName = stagedName + "_" + savedMaterial.name;
+
+			// update reference to the material in the JSON - this must happen every iteration.
+			if(!preview) objectJSON["components"][1]["materials"][i] = materialPath + newMaterialName + ".material";
 			
-			// Check we havent processed this material already from a previous submesh
+			// Check we havent already processed this new material from a previosu iteration.
 			bool duplicate = false;
 			for (auto& matStr : stagingMaterials)
 			{
 				if (matStr == materialPath + newMaterialName + ".material") duplicate = true;
 			}
-			if (duplicate)
-				break;
 
-			// updates names of each texture as required
+			if (duplicate) // We already processed it, so none of the below needs to happen.
+				continue;
+
+			// Process the new material. We'll update all the filenames, references to them, and copy the textures in.
+			// Update names of each texture as required
 			if (savedMaterial.albedoMap != nullptr && savedMaterial.albedoMapName.substr(0, 7) != "crawler" && savedMaterial.albedoMapName.substr(0, 6) != "engine")
 			{
 				stagingTextures.push_back(texturePath + newMaterialName + "_albedo.tga");
 				if(!preview)
 				{
-					//fs::copy_file(savedMaterial.albedoMapName, texturePath + stagedName + "_" + savedMaterial.name + "_albedo.tga", fs::copy_options::overwrite_existing);
 					Texture::RewriteTGAwithRLE(savedMaterial.albedoMapName, texturePath + stagedName + "_" + savedMaterial.name + "_albedo.tga");
 					savedMaterial.albedoMapName = texturePath + newMaterialName + "_albedo.tga";
 				}
@@ -290,7 +295,6 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 				stagingTextures.push_back(texturePath + newMaterialName + "_normal.tga");
 				if (!preview)
 				{
-					//fs::copy_file(savedMaterial.normalMapName, texturePath + stagedName + "_" + savedMaterial.name + "_normal.tga", fs::copy_options::overwrite_existing);
 					Texture::RewriteTGAwithRLE(savedMaterial.normalMapName, texturePath + stagedName + "_" + savedMaterial.name + "_normal.tga");
 					savedMaterial.normalMapName = texturePath + newMaterialName + "_normal.tga";
 				}
@@ -301,7 +305,6 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 				stagingTextures.push_back(texturePath + newMaterialName + "_metallic.tga");
 				if(!preview)
 				{
-					//fs::copy_file(savedMaterial.metallicMapName, texturePath + stagedName + "_" + savedMaterial.name + "_metallic.tga", fs::copy_options::overwrite_existing);
 					Texture::RewriteTGAwithRLE(savedMaterial.metallicMapName, texturePath + stagedName + "_" + savedMaterial.name + "_metallic.tga");
 					savedMaterial.metallicMapName = texturePath + newMaterialName + "_metallic.tga";
 				}
@@ -312,7 +315,6 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 				stagingTextures.push_back(texturePath + newMaterialName + "_roughness.tga");
 				if(!preview)
 				{
-					//fs::copy_file(savedMaterial.roughnessMapName, texturePath + stagedName + "_" + savedMaterial.name + "_roughness.tga", fs::copy_options::overwrite_existing);
 					Texture::RewriteTGAwithRLE(savedMaterial.roughnessMapName, texturePath + stagedName + "_" + savedMaterial.name + "_roughness.tga");
 					savedMaterial.roughnessMapName = texturePath + newMaterialName + "_roughness.tga";
 				}
@@ -323,7 +325,6 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 				stagingTextures.push_back(texturePath + newMaterialName + "_ao.tga");
 				if (!preview)
 				{
-					//fs::copy_file(savedMaterial.aoMapName, texturePath + stagedName + "_" + savedMaterial.name + "_ao.tga", fs::copy_options::overwrite_existing);
 					Texture::RewriteTGAwithRLE(savedMaterial.aoMapName, texturePath + stagedName + "_" + savedMaterial.name + "_ao.tga");
 					savedMaterial.aoMapName = texturePath + newMaterialName + "_ao.tga";
 				}
@@ -334,7 +335,6 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 				stagingTextures.push_back(texturePath + newMaterialName + "_emissive.tga");
 				if (!preview)
 				{
-					//fs::copy_file(savedMaterial.emissiveMapName, texturePath + stagedName + "_" + savedMaterial.name + "_emissive.tga", fs::copy_options::overwrite_existing);
 					Texture::RewriteTGAwithRLE(savedMaterial.emissiveMapName, texturePath + stagedName + "_" + savedMaterial.name + "_emissive.tga");
 					savedMaterial.emissiveMapName = texturePath + newMaterialName + "_emissive.tga";
 				}
@@ -347,9 +347,6 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 				// save the new material to disk
 				savedMaterial.filePath = materialPath + newMaterialName + ".material";
 				savedMaterial.SaveToFile();
-
-				// update reference to the  material in the JSON
-				objectJSON["components"][1]["materials"][i] = materialPath + newMaterialName + ".material";
 			}
 		}
 	}
