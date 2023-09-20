@@ -37,6 +37,8 @@ void Crawl::DungeonDecoration::LoadDecoration()
 
 void Crawl::DungeonDecoration::UpdateShadowCasting()
 {
+	if (!renderer) return;
+
 	renderer->castsShadows = castsShadows;
 	Scene::s_instance->SetStaticObjectsDirty();
 }
