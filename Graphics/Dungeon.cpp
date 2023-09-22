@@ -549,6 +549,26 @@ bool Crawl::Dungeon::DoInteractable(ivec2 position, FACING_INDEX direction)
 			didInteract = true;
 		}
 	}
+
+	// Search for doors to wobble
+	for (int i = 0; i < activatable.size(); i++)
+	{
+		if (position == activatable[i]->position && direction == activatable[i]->orientation && !activatable[i]->open)
+		{
+			activatable[i]->PlayRattleSound();
+			activatable[i]->shouldWobble = true;
+			activatable[i]->wobbleTimeCurrent = 0.0f;
+		}
+		// doors on shared tile edge (move position in facing direction, and then reverse the checking direction)
+		if (position + directions[direction] == activatable[i]->position && facingIndexesReversed[direction] == activatable[i]->orientation && !activatable[i]->open)
+		{
+			activatable[i]->PlayRattleSound();
+			activatable[i]->shouldWobble = true;
+			activatable[i]->wobbleTimeCurrent = 0.0f;
+		}
+	}
+
+
 	return didInteract;
 }
 

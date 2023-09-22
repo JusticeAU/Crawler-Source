@@ -17,11 +17,18 @@ namespace Crawl
 		void UpdateVisuals(float delta);
 		void UpdateTransforms(bool instant = false);
 
+		void PlayRattleSound();
+
 		const float openEulerAngle = -120.0f;
 		
 		const float swingTime = 0.5f;
 		float swingTimeCurrent = 0.0f;
 		bool shouldSwing = false;
+
+		bool shouldWobble = false;
+		const float wobbleTime = 0.4f;
+		float wobbleTimeCurrent = 0.0f;
+		string wobbleSound = "crawler/sound/load/door_rattle.wav";
 
 		glm::ivec2 position = { 0, 0 };
 		int orientation = 0; // Use DIRECTION_MASK in DungeonHelpers.h

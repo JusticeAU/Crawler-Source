@@ -1,6 +1,9 @@
 #include "DungeonDoor.h"
 #include "Object.h"
 #include "MathUtils.h"
+#include "Window.h"
+#include "AudioManager.h"
+#include "DungeonHelpers.h"
 
 
 Crawl::DungeonDoor::~DungeonDoor()
@@ -73,6 +76,27 @@ void Crawl::DungeonDoor::UpdateVisuals(float delta)
 			swingTimeCurrent = 0.0f;
 		}
 	}
+	if (shouldWobble)
+	{
+		if (wobbleTimeCurrent < wobbleTime)
+		{
+			wobbleTimeCurrent += delta;
+
+			float accumulated = glfwGetTime();
+			float sin = glm::sin(accumulated * 50.0f);
+
+			float scale = 1 - (wobbleTimeCurrent / wobbleTime);
+			object->children[0]->children[1]->SetLocalRotationZ(sin * 5 * scale);
+			object->children[0]->children[2]->SetLocalRotationZ(-sin * 4 * scale);
+		}
+		else
+		{
+			object->children[0]->children[1]->SetLocalRotationZ(0);
+			object->children[0]->children[2]->SetLocalRotationZ(0);
+			shouldWobble = false;
+		}
+
+	}
 }
 
 void Crawl::DungeonDoor::UpdateTransforms(bool instant)
@@ -82,4 +106,10 @@ void Crawl::DungeonDoor::UpdateTransforms(bool instant)
 	else swingTimeCurrent = swingTime;
 	
 	shouldSwing = true;
+}
+
+void Crawl::DungeonDoor::PlayRattleSound()
+{
+
+	AudioManager::PlaySound(wobbleSound, dungeonPosToObjectScale(object->GetWorldSpacePosition()));
 }
