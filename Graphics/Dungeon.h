@@ -115,7 +115,7 @@ namespace Crawl
 		DungeonShootLaser* CreateShootLaser(ivec2 position, FACING_INDEX facing, unsigned int id);
 		void RemoveDungeonShootLaser(DungeonShootLaser* laser);
 
-		void CreateDamageVisual(ivec2 position, bool fromPlayer = false);
+		void CreateDamageVisual(ivec2 position, FACING_INDEX direction);
 		void CreateShootLaserProjectile(void* dealer, ivec2 position, FACING_INDEX direction);
 
 		DungeonEnemyBlocker* CreateEnemyBlocker(ivec2 position, FACING_INDEX direction);

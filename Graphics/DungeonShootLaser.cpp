@@ -6,6 +6,7 @@
 #include "ComponentRenderer.h"
 #include "MaterialManager.h"
 #include "AudioManager.h"
+#include "DungeonHelpers.h"
 
 Crawl::DungeonShootLaser::~DungeonShootLaser()
 {
@@ -98,7 +99,6 @@ void Crawl::DungeonShootLaser::Fire()
 		ivec2 currentPosition = position;
 		while (shouldContinue)
 		{
-			dungeon->CreateDamageVisual(currentPosition);
 			DungeonTile* tile = dungeon->GetTile(currentPosition);
 			if (!tile)
 				break;
@@ -122,8 +122,13 @@ void Crawl::DungeonShootLaser::Fire()
 					break;
 			}
 
+			dungeon->CreateDamageVisual(currentPosition, direction);
+
 			if (dungeon->CanSee(currentPosition, direction))
+			{
 				currentPosition += directions[direction];
+				dungeon->CreateDamageVisual(currentPosition, facingIndexesReversed[direction]);
+			}
 			else
 				break;
 		}

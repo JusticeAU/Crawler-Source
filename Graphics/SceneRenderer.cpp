@@ -26,6 +26,9 @@
 
 #include "LineRenderer.h"
 
+#include "ComponentRenderer.h"
+#include "Model.h"
+
 bool SceneRenderer::msaaEnabled = true;
 bool SceneRenderer::ssaoEnabled = true;
 ComponentCamera* SceneRenderer::frustumCullingCamera = nullptr;
@@ -36,6 +39,9 @@ vector<FrameBuffer*> SceneRenderer::pointLightCubeMapDynamic;
 CameraFrustum* SceneRenderer::cullingFrustum = nullptr;
 bool SceneRenderer::currentPassIsStatic = false;
 bool SceneRenderer::currentPassIsSplit = false;
+
+// Transparent rendering
+vector<std::pair<ComponentRenderer*, int>> SceneRenderer::transparentCalls;
 
 
 SceneRenderer::SceneRenderer()
@@ -257,7 +263,14 @@ void SceneRenderer::DrawGUI()
 	}
 
 	if (ImGui::Button("Reload Shaders"))
+	{
 		ShaderManager::RecompileAllShaderPrograms();
+		
+		// Reconfigure the SSAO Kernel as the shader got wiped.
+		ShaderProgram* ssaoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOTermPass");
+		ssaoShader->Bind();
+		ssaoShader->SetFloat3ArrayUniform("samples", ssaoKernelTaps, ssaoKernel.data());
+	}
 
 	ImGui::End();
 }
@@ -461,7 +474,7 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		// blit it to a non-multisampled FBO for texture attachment compatiability.
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, frameBufferRaw->GetID());
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBufferBlit->GetID());
-		glBlitFramebuffer(0, 0, frameBufferRaw->GetWidth(), frameBufferRaw->GetHeight(), 0, 0, frameBufferBlit->GetWidth(), frameBufferBlit->GetHeight(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		glBlitFramebuffer(0, 0, frameBufferRaw->GetWidth(), frameBufferRaw->GetHeight(), 0, 0, frameBufferBlit->GetWidth(), frameBufferBlit->GetHeight(), GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
 		// bind output of first pass (raw render with no processing)
 		frameBufferBlit->BindTexture(20);
@@ -471,6 +484,9 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	
 	if(blurBufferUsed) blurBufferUsed->BindTexture(21); // This is a bit crap, SSAO is kind of half backed in to the above pipeline and a postprocess effect on the camera.
 	c->RunPostProcess(frameBufferProcessed);
+
+	// Render Transparent Pass
+	RenderTransparent(scene, c);
 
 	CleanUp(scene);
 
@@ -561,6 +577,55 @@ void SceneRenderer::RenderSceneObjectPick(Scene* scene, ComponentCamera* c)
 
 	scene->objectPickedID = objectPickBuffer->GetObjectID(scene->requestedSelectionPosition.x,scene->requestedSelectionPosition.y);
 	scene->requestedObjectSelection = false;
+}
+
+void SceneRenderer::RenderTransparent(Scene* scene, ComponentCamera* camera)
+{
+	if (transparentCalls.size() > 0)
+	{
+		// set up
+		// blending
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		// do not cull any faces
+		glDisable(GL_CULL_FACE);
+
+		// depth
+		glDepthMask(GL_FALSE); // Disable writing to the depth buffer
+		// framebuffer
+		frameBufferProcessed->BindTarget();
+		
+		if(msaaEnabled) frameBufferBlit->BindAsDepthAttachment();
+		else frameBufferRaw->BindAsDepthAttachment();
+		// draw all components w/ transparent mode
+		glm::mat4 pv = camera->GetViewProjectionMatrix();
+		glm::vec3 pos = camera->GetWorldSpacePosition();
+
+		// probably do some sorting on these calls
+
+		// Soujaboy draw 'em
+		for (auto& c : transparentCalls)
+		{
+			ComponentRenderer* renderer = c.first;
+			int subMeshIndex = c.second;
+			renderer->material = renderer->materialArray[subMeshIndex];
+			renderer->BindShader();
+			renderer->ApplyMaterials();
+			renderer->BindMatricies(pv, pos);
+			renderer->model->DrawSubMesh(subMeshIndex);
+		}
+
+		// clean up
+		transparentCalls.resize(0);
+	}
+	// renable depth writing
+	glDepthMask(GL_TRUE);
+	// reenable face culling
+	glEnable(GL_CULL_FACE);
+
+	// disabling blending
+	glDisable(GL_BLEND);
 }
 
 void SceneRenderer::RenderSceneGizmos(Scene* scene, ComponentCamera* c)

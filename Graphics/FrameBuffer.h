@@ -34,6 +34,7 @@ public:
 
 	void BindTexture(int texture);
 	void BindDepth(int texture);
+	void BindAsDepthAttachment();
 	void BindGPosition(int texture);
 	void BindGNormal(int texture);
 	void BindGAlbedo(int texture);

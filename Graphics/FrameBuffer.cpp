@@ -327,6 +327,11 @@ void FrameBuffer::BindDepth(int texture)
 	glBindTexture(GL_TEXTURE_2D, m_depthID);
 }
 
+void FrameBuffer::BindAsDepthAttachment()
+{
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthID, 0);
+}
+
 void FrameBuffer::BindGPosition(int texture)
 {
 	glActiveTexture(GL_TEXTURE0 + texture);

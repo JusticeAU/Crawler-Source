@@ -75,8 +75,9 @@ Application::Application()
 	// Enable OGL depth testing.
 	glEnable(GL_DEPTH_TEST);
 	// Enable blending - only used by the dev transparent shader for now
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// Actually not required here, SceneRenderer will now handle this.
+	//glEnable(GL_BLEND);
+	//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	// enable face culling (backface culling is enabled by default).
 	glEnable(GL_CULL_FACE);
 

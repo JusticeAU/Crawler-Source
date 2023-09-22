@@ -4,6 +4,7 @@
 
 class Scene;
 class ComponentCamera;
+class ComponentRenderer;
 class FrameBuffer;
 class Texture;
 class CameraFrustum;
@@ -31,6 +32,7 @@ public:
 	void RenderSceneShadowCubeMaps(Scene* scene);
 	void RenderSceneShadowMaps(Scene* scene, ComponentCamera* camera);
 	void RenderSceneObjectPick(Scene* scene, ComponentCamera* camera);
+	void RenderTransparent(Scene* scene, ComponentCamera* camera);
 	void RenderSceneGizmos(Scene* scene, ComponentCamera* camera);
 	void RenderLines(ComponentCamera* camera);
 
@@ -145,5 +147,8 @@ public:
 	float aspect = 1.0f;
 	float nearNum = 0.000f;
 	float farNum = 15.0f;
+
+	// Transparent Rendering Dev - This will get factored in to the material batcher system.
+	static vector<std::pair<ComponentRenderer*, int>> transparentCalls;
 };
 

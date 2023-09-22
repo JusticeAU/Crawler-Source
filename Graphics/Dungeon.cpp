@@ -1170,16 +1170,16 @@ void Crawl::Dungeon::RemoveDungeonShootLaser(DungeonShootLaser* laser)
 	}
 }
 
-void Crawl::Dungeon::CreateDamageVisual(ivec2 position, bool fromPlayer)
+void Crawl::Dungeon::CreateDamageVisual(ivec2 position, FACING_INDEX direction)
 {
 	DungeonDamageVisual* visual = new DungeonDamageVisual();
 	visual->turnCreated = turn;
-	if (fromPlayer)
-		visual->turnCreated += 1;
 	visual->position = position;
 	visual->object = Scene::CreateObject();
-	visual->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/damage_visual.object"));
-	visual->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
+	//visual->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/damage_visual.object"));
+	visual->object->LoadFromJSON(ReadJSONFromDisk("crawler/model/vfx_shoot_laser_shot.object"));
+	visual->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 1.2 });
+	visual->object->SetLocalRotationZ(orientationEulersReversed[direction]);
 	damageVisuals.emplace_back(visual);
 }
 

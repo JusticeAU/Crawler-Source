@@ -96,6 +96,7 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 
 	if (model != nullptr && materialArray[0] != nullptr) // At minimum we need a model and a shader to draw something.
 	{
+
 		switch (mode)
 		{
 			case DrawMode::Standard:
@@ -109,6 +110,13 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 					
 					if (material->shader == nullptr)
 						continue;
+
+					// basic transparensy pass testing
+					if (materialArray[i]->blendMode == Material::BlendMode::Transparent)
+					{
+						SceneRenderer::transparentCalls.push_back(std::pair(this, i));
+						continue;
+					}
 
 					BindShader();
 					ApplyMaterials();
@@ -125,6 +133,9 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 			{
 				if (componentParent->id == 0) // Don't waste ur time buddy.
 					break;
+
+				// basic transparent stuff doesnt draw here
+				if (materialArray[0]->blendMode == Material::BlendMode::Transparent) return;
 
 				ShaderProgram* shader = isAnimated ? ShaderManager::GetShaderProgram("engine/shader/skinnedPicking") : ShaderManager::GetShaderProgram("engine/shader/picking");
 				shader->Bind();
@@ -144,8 +155,8 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 			}
 			case DrawMode::ShadowMapping:
 			{
-				if (!castsShadows)
-					return;
+				if (!castsShadows) return;
+				if (materialArray[0]->blendMode == Material::BlendMode::Transparent) return;
 
 				ShaderProgram* shader = isAnimated ? ShaderManager::GetShaderProgram("engine/shader/simpleDepthShaderSkinned") : ShaderManager::GetShaderProgram("engine/shader/simpleDepthShader");
 				shader->Bind();
@@ -162,8 +173,8 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 			}
 			case DrawMode::ShadowCubeMapping:
 			{
-				if (!castsShadows)
-					return;
+				if (!castsShadows) return;
+				if (materialArray[0]->blendMode == Material::BlendMode::Transparent) return;
 
 				ShaderProgram* shader = isAnimated ? ShaderManager::GetShaderProgram("engine/shader/lightPointShadowMapSkinned") : ShaderManager::GetShaderProgram("engine/shader/lightPointShadowMap");
 				shader->Bind();
@@ -193,6 +204,8 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 			}
 			case DrawMode::SSAOgBuffer:
 			{
+				if (materialArray[0]->blendMode == Material::BlendMode::Transparent) return;
+
 				ShaderProgram* ssaoGeoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOGeometryPass");
 				ssaoGeoShader->SetMatrixUniform("model", componentParent->transform * model->modelTransform);
 				if (isAnimated)
@@ -213,8 +226,22 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				}
 				break;
 			}
-		}
+			case DrawMode::Blended:
+			{
+				LogUtils::Log("Shouldn't get here now??");
 
+				if (materialArray[0] != nullptr)
+					material = materialArray[0];
+				else
+					return;
+
+				BindShader();
+				ApplyMaterials();
+				BindMatricies(pv, position);
+				DrawModel();
+				break;
+			}
+		}
 
 	}
 }

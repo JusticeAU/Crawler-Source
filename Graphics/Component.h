@@ -32,7 +32,8 @@ public:
 		ShadowMapping,
 		ShadowCubeMapping,
 		SSAOgBuffer,
-		SSAOColourPass
+		SSAOColourPass,
+		Blended
 	};
 	virtual ~Component() {};
 
