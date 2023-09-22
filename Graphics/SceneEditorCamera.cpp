@@ -24,12 +24,12 @@ SceneEditorCamera::SceneEditorCamera()
 	object->components.push_back(camera);
 	AudioManager::SetAudioListener(camera->GetAudioListener());
 
-	// Add to Scene Camera
-	string ppName = "engine/shader/postProcess/SSAO";
-	PostProcess* pp = new PostProcess(camera->GetComponentParentObject()->objectName + "_PP_" + ppName);
-	pp->SetShader(ShaderManager::GetShaderProgram(ppName));
-	pp->SetShaderName(ppName);
-	camera->m_postProcessStack.push_back(pp);
+	// Add to Scene Camera - this post process is now part of the rendering pipeline rahter than a specific camera effect. it needs to happen before the transparensy pass.
+	//string ppName = "engine/shader/postProcess/SSAO";
+	//PostProcess* pp = new PostProcess(camera->GetComponentParentObject()->objectName + "_PP_" + ppName);
+	//pp->SetShader(ShaderManager::GetShaderProgram(ppName));
+	//pp->SetShaderName(ppName);
+	//camera->m_postProcessStack.push_back(pp);
 }
 
 void SceneEditorCamera::Update(float deltaTime)

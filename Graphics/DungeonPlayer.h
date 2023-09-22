@@ -5,6 +5,7 @@
 
 class Object;
 class ComponentAnimator;
+class ComponentCamera;
 
 namespace Crawl
 {
@@ -16,7 +17,8 @@ namespace Crawl
 			IDLE,
 			MOVING,
 			TURNING,
-			STAIRBEARS
+			STAIRBEARS,
+			DYING
 		};
 		DungeonPlayer();
 
@@ -31,8 +33,9 @@ namespace Crawl
 		bool UpdateStateMoving(float delta);
 		bool UpdateStateTurning(float delta);
 		bool UpdateStateStairs(float delta);
+		bool UpdateStateDying(float delta);
 
-		void UpdatePointOfInterestTilt();
+		void UpdatePointOfInterestTilt(bool instant = false);
 		void ContinueResettingTilt(float delta);
 
 		ivec2 GetPosition() { return position; }
@@ -97,6 +100,7 @@ namespace Crawl
 		Object* object;
 		Object* objectView;
 		ComponentAnimator* animator;
+		ComponentCamera* camera;
 
 		bool didMove = false;
 
@@ -139,5 +143,22 @@ namespace Crawl
 		float stairTimeCurrent = 0.0f;
 		float playerZPosition = 0.0f;
 		bool facingStairs = false;
+
+
+		// Fading stuff
+		bool fadeIn = true;
+		float fadeTimeCurrent = 0.0f;
+		float fadeTimeTotal = 0.7f;
+
+		glm::vec3 deathColour = glm::vec3(0.121, 0.0, 0.0); // very dark red.
+		enum class KILLEDBY
+		{
+			SPIKES,
+			CHASER,
+			SAWARINA,
+			LASER
+		};
+		KILLEDBY killedBy = KILLEDBY::SPIKES;
+		FACING_INDEX killedFrom = FACING_INDEX::NORTH_INDEX;
 	};
 }

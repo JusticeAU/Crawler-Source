@@ -49,11 +49,14 @@ public:
 
 	float fieldOfView = 45;
 	float aspect = 16/(float)9;
+
+	glm::vec3 postProcessFadeColour = vec3(0, 0, 0);
+	float postProcessFadeAmount = 0.0f;
+
 protected:
 	glm::mat4 view;
 	glm::mat4 projection;
 	glm::mat4 matrix;
-
 
 	AudioListener m_audioListener;
 	void UpdateAudioListener();

@@ -61,6 +61,7 @@ protected:
 	FrameBuffer* frameBufferRaw;
 	FrameBuffer* frameBufferBlit;
 	FrameBuffer* frameBufferProcessed;
+	FrameBuffer* frameBufferCurrent = nullptr;
 
 	// VSync
 	bool vsyncEnabled = true;
@@ -81,6 +82,7 @@ protected:
 	FrameBuffer* ssaoFBO;
 	FrameBuffer* ssaoBlurFBO;
 	FrameBuffer* ssaoBlurFBO2;
+	FrameBuffer* ssaoPostProcess;
 	bool ssaoGaussianBlur = true;
 	bool ssaoBlur = true;
 	Texture* ssaoNoiseTexture;

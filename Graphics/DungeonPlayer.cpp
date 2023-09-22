@@ -6,6 +6,7 @@
 #include "LogUtils.h"
 #include "AudioManager.h"
 #include "ComponentAnimator.h"
+#include "ComponentCamera.h"
 
 #include "DungeonEnemySwitcher.h"
 #include "DungeonCheckpoint.h"
@@ -23,6 +24,7 @@ Crawl::DungeonPlayer::DungeonPlayer()
 	object->children[0]->children[0]->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/viewmodel_hands.object"));
 	animator = (ComponentAnimator*)object->children[0]->children[0]->children[0]->GetComponent(Component_Animator);
 	objectView = object->children[0];
+	camera = (ComponentCamera*)object->children[0]->GetComponent(Component_Camera);
 
 	// load the lobby second level
 	lobbyLevel2Dungeon = new Dungeon(true);
@@ -39,13 +41,6 @@ void Crawl::DungeonPlayer::SetDungeon(Dungeon* dungeonPtr)
 // Returns true if the player made a game-state changing action
 bool Crawl::DungeonPlayer::Update(float deltaTime)
 {
-	if (didJustRespawn) // This needs to be fixed - hack fix for lighting on level transport
-	{
-		Scene::s_instance->SetAllObjectsStatic();
-		Scene::s_instance->SetStaticObjectsDirty();
-		didJustRespawn = false;
-	}
-
 	FindLobbyLight();
 
 	// This gotta be moved to some game / global event manager
@@ -88,12 +83,28 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		UpdateStateStairs(deltaTime);
 		ContinueResettingTilt(deltaTime);
 	}
+	else if (state == DYING)
+	{
+		UpdateStateDying(deltaTime);
+		ContinueResettingTilt(deltaTime);
+	}
 
 	return false;
 }
 
 bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 {
+	// All these checks should move to a turn processors state machine.
+	if (hp <= 0)
+	{
+		LogUtils::Log("Died. Resetting & Respawning");
+		state = DYING;
+		camera->postProcessFadeColour = deathColour;
+		fadeTimeCurrent = 0.0f;
+		fadeIn = false;
+		return false;
+	}
+
 	if (Input::Mouse(1).Down()) Window::GetWindow()->SetMouseCursorHidden(true);
 	if (Input::Mouse(1).Pressed())
 	{
@@ -131,15 +142,6 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	{
 		if (isOnLobbyLevel2) lobbyLevel2Dungeon->GetTile(position)->occupied = false; // because this level doesnt reset, we need to keep it tidy!!
 		Respawn();
-	}
-
-	// All these checks should move to a turn processors state machine.
-	if (hp <= 0)
-	{
-		LogUtils::Log("Died. Resetting & Respawning");
-		dungeon->RebuildDungeonFromSerialised(dungeon->serialised);
-		Respawn();
-		return false;
 	}
 
 	if (currentDungeon->GetCheckpointAt(position))
@@ -433,7 +435,29 @@ bool Crawl::DungeonPlayer::UpdateStateStairs(float delta)
 	return false;
 }
 
-void Crawl::DungeonPlayer::UpdatePointOfInterestTilt()
+bool Crawl::DungeonPlayer::UpdateStateDying(float delta)
+{
+	if (fadeTimeCurrent < fadeTimeTotal)
+	{
+		fadeTimeCurrent += delta;
+		object->AddLocalPosition({ 0,0,-delta });
+		if (fadeTimeCurrent > fadeTimeTotal) fadeTimeCurrent = fadeTimeTotal;
+		float t = fadeTimeCurrent / fadeTimeTotal;
+		camera->postProcessFadeAmount = fadeIn ? 1 - t : t;
+	}
+	else
+	{
+		if (Input::Keyboard(GLFW_KEY_SPACE).Down()) // respawn
+		{
+			camera->postProcessFadeAmount = 0.0f;
+			dungeon->RebuildDungeonFromSerialised(dungeon->serialised);
+			Respawn();
+		}
+	}
+	return false;
+}
+
+void Crawl::DungeonPlayer::UpdatePointOfInterestTilt(bool instant)
 {
 	bool isPointOfInterest = dungeon->IsPlayerPointOfInterest(position + directions[facing]);
 	if (wasLookingAtPointOfInterest != isPointOfInterest)
@@ -442,7 +466,7 @@ void Crawl::DungeonPlayer::UpdatePointOfInterestTilt()
 		if (isPointOfInterest) lookRestX = lookRestXInterest;
 		else lookRestX = lookRestXDefault;
 		lookReturnFrom = objectView->localRotation;
-		lookReturnTimeCurrent = 0.0f;
+		if(!instant)lookReturnTimeCurrent = 0.0f;
 	}
 }
 
@@ -515,6 +539,7 @@ void Crawl::DungeonPlayer::Respawn()
 
 	hp = maxHp;
 	shouldSwitchWith = nullptr;
+	UpdatePointOfInterestTilt(true);
 }
 
 void Crawl::DungeonPlayer::MakeCheckpoint()

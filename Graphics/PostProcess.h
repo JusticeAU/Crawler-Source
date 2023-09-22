@@ -6,6 +6,7 @@
 class FrameBuffer;
 class ShaderProgram;
 class Mesh;
+class ComponentCamera;
 
 using std::string;
 
@@ -19,7 +20,7 @@ public:
 	const PostProcess& operator=(const PostProcess& other) = delete;
 
 	void BindFrameBuffer();
-	void Process();
+	void Process(ComponentCamera* camera);
 	void BindOutput();
 
 	void SetShader(ShaderProgram* shader) { m_shader = shader; }
@@ -28,7 +29,7 @@ public:
 
 	string GetName() { return m_name; }
 
-	static void PassThrough(ShaderProgram* shader = nullptr);
+	static void PassThrough(bool ownShaderBound = false);
 	string m_name;
 protected:
 	string m_shaderName;

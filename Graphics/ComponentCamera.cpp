@@ -206,7 +206,7 @@ void ComponentCamera::RunPostProcess(FrameBuffer* outBuffer)
 	for (auto postProcess : m_postProcessStack)
 	{
 		postProcess->BindFrameBuffer();
-		postProcess->Process();
+		postProcess->Process(this);
 		postProcess->BindOutput();
 	}
 	//finally, take the output and send to the processed framebuffer

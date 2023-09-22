@@ -43,7 +43,6 @@ bool SceneRenderer::currentPassIsSplit = false;
 // Transparent rendering
 vector<std::pair<ComponentRenderer*, int>> SceneRenderer::transparentCalls;
 
-
 SceneRenderer::SceneRenderer()
 {
 	// Initialise the Render Buffers
@@ -75,6 +74,9 @@ SceneRenderer::SceneRenderer()
 	TextureManager::s_instance->AddFrameBuffer("SSAOBlur", ssaoBlurFBO);
 	ssaoBlurFBO2 = new FrameBuffer(FrameBuffer::Type::SSAOColourBuffer);
 	TextureManager::s_instance->AddFrameBuffer("SSAOBlur2", ssaoBlurFBO2);
+	ssaoPostProcess = new FrameBuffer(FrameBuffer::Type::PostProcess);
+	TextureManager::s_instance->AddFrameBuffer("ssaoPostProcess", ssaoPostProcess);
+
 	// Generate the kernel - https://learnopengl.com/Advanced-Lighting/SSAO
 	// Both from <random>
 	ssaoGenerateKernel(ssaoKernelTaps);
@@ -123,6 +125,7 @@ void SceneRenderer::DrawGUI()
 	ImGui::SetNextWindowSize({ 315, 450 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowPos({ 1200, 300 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Graphics");
+
 	ImGui::BeginDisabled();
 	
 	float averageTotalRenderTime = 0.0f;
@@ -180,50 +183,51 @@ void SceneRenderer::DrawGUI()
 
 	if (ImGui::Checkbox("SSAO", &ssaoEnabled))
 	{
-		if (!ssaoEnabled)
-		{
-			for (int i = 0; i < Scene::s_editorCamera->camera->m_postProcessStack.size(); i++)
-			{
-				if (Scene::s_editorCamera->camera->m_postProcessStack[i]->GetShaderName() == "engine/shader/postProcess/SSAO")
-				{
-					delete Scene::s_editorCamera->camera->m_postProcessStack[i];
-					Scene::s_editorCamera->camera->m_postProcessStack.erase(Scene::s_editorCamera->camera->m_postProcessStack.begin() + i);
-					break;
-				}
-			}
+		
+		//if (!ssaoEnabled)
+		//{
+		//	for (int i = 0; i < Scene::s_editorCamera->camera->m_postProcessStack.size(); i++)
+		//	{
+		//		if (Scene::s_editorCamera->camera->m_postProcessStack[i]->GetShaderName() == "engine/shader/postProcess/SSAO")
+		//		{
+		//			delete Scene::s_editorCamera->camera->m_postProcessStack[i];
+		//			Scene::s_editorCamera->camera->m_postProcessStack.erase(Scene::s_editorCamera->camera->m_postProcessStack.begin() + i);
+		//			break;
+		//		}
+		//	}
 
-			for (auto& c : Scene::s_instance->componentCameras)
-			{
-				for (int i = 0; i < c->m_postProcessStack.size(); i++)
-				{
-					if (c->m_postProcessStack[i]->GetShaderName() == "engine/shader/postProcess/SSAO")
-					{
-						delete c->m_postProcessStack[i];
-						c->m_postProcessStack.erase(c->m_postProcessStack.begin() + i);
-						break;
-					}
-				}
-			}
-		}
-		else
-		{
-			// Add to Scene Camera
-			string ppName = "engine/shader/postProcess/SSAO";
-			PostProcess* pp = new PostProcess(Scene::s_editorCamera->camera->GetComponentParentObject()->objectName + "_PP_" + ppName);
-			pp->SetShader(ShaderManager::GetShaderProgram(ppName));
-			pp->SetShaderName(ppName);
-			Scene::s_editorCamera->camera->m_postProcessStack.push_back(pp);
+		//	for (auto& c : Scene::s_instance->componentCameras)
+		//	{
+		//		for (int i = 0; i < c->m_postProcessStack.size(); i++)
+		//		{
+		//			if (c->m_postProcessStack[i]->GetShaderName() == "engine/shader/postProcess/SSAO")
+		//			{
+		//				delete c->m_postProcessStack[i];
+		//				c->m_postProcessStack.erase(c->m_postProcessStack.begin() + i);
+		//				break;
+		//			}
+		//		}
+		//	}
+		//}
+		//else
+		//{
+		//	// Add to Scene Camera
+		//	string ppName = "engine/shader/postProcess/SSAO";
+		//	PostProcess* pp = new PostProcess(Scene::s_editorCamera->camera->GetComponentParentObject()->objectName + "_PP_" + ppName);
+		//	pp->SetShader(ShaderManager::GetShaderProgram(ppName));
+		//	pp->SetShaderName(ppName);
+		//	Scene::s_editorCamera->camera->m_postProcessStack.push_back(pp);
 
-			// Add to component Camaras in scene
-			for (auto& c : Scene::s_instance->componentCameras)
-			{
-				ppName = "engine/shader/postProcess/SSAO";
-				pp = new PostProcess(c->GetComponentParentObject()->objectName + "_PP_" + ppName);
-				pp->SetShader(ShaderManager::GetShaderProgram(ppName));
-				pp->SetShaderName(ppName);
-				c->m_postProcessStack.push_back(pp);
-			}
-		}
+		//	// Add to component Camaras in scene
+		//	for (auto& c : Scene::s_instance->componentCameras)
+		//	{
+		//		ppName = "engine/shader/postProcess/SSAO";
+		//		pp = new PostProcess(c->GetComponentParentObject()->objectName + "_PP_" + ppName);
+		//		pp->SetShader(ShaderManager::GetShaderProgram(ppName));
+		//		pp->SetShaderName(ppName);
+		//		c->m_postProcessStack.push_back(pp);
+		//	}
+		//}
 	}
 	if (ssaoEnabled)
 	{
@@ -414,7 +418,7 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		ssaoGBuffer->BindGPosition(0);
 		ssaoGBuffer->BindGNormal(1);
 		ssaoNoiseTexture->Bind(2);
-		PostProcess::PassThrough(ssaoShader);
+		PostProcess::PassThrough(true);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		FrameBuffer::UnBindTexture(0);
@@ -432,13 +436,13 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 				ssaoBlur->SetIntUniform("image", 0);
 				ssaoBlur->SetIntUniform("horizontal", true);
 				ssaoFBO->BindTexture(0);
-				PostProcess::PassThrough(ssaoBlur);
+				PostProcess::PassThrough(true);
 				FrameBuffer::UnBindTexture(0);
 
 				ssaoBlurFBO->BindTexture(0);
 				ssaoBlurFBO2->BindTarget();
 				ssaoBlur->SetIntUniform("horizontal", false);
-				PostProcess::PassThrough(ssaoBlur);
+				PostProcess::PassThrough(true);
 				FrameBuffer::UnBindTexture(0);
 
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -451,7 +455,7 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 				ssaoBlur->Bind();
 				ssaoBlur->SetIntUniform("ssaoInput", 0);
 				ssaoFBO->BindTexture(0);
-				PostProcess::PassThrough(ssaoBlur);
+				PostProcess::PassThrough(true);
 				FrameBuffer::UnBindTexture(0);
 
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -477,16 +481,34 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		glBlitFramebuffer(0, 0, frameBufferRaw->GetWidth(), frameBufferRaw->GetHeight(), 0, 0, frameBufferBlit->GetWidth(), frameBufferBlit->GetHeight(), GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
 		// bind output of first pass (raw render with no processing)
-		frameBufferBlit->BindTexture(20);
+		frameBufferCurrent = frameBufferBlit;
 	}
 	else
-		frameBufferRaw->BindTexture(20);
-	
-	if(blurBufferUsed) blurBufferUsed->BindTexture(21); // This is a bit crap, SSAO is kind of half backed in to the above pipeline and a postprocess effect on the camera.
-	c->RunPostProcess(frameBufferProcessed);
+		frameBufferCurrent = frameBufferRaw;
+
+	frameBufferCurrent->BindTexture(20);
+
+
+	// Apply SSAO buffer if it is enabled.
+	if (ssaoEnabled)
+	{
+		// SSAO application
+		ShaderProgram* SSAOshader = ShaderManager::GetShaderProgram("engine/shader/postProcess/SSAO");
+		SSAOshader->Bind();
+		SSAOshader->SetIntUniform("SSAO", 21); // previous post process step would have bound the texture.
+		SSAOshader->SetIntUniform("frame", 20);
+		blurBufferUsed->BindTexture(21); // This is a bit crap, SSAO is kind of half backed in to the above pipeline and a postprocess effect on the camera.
+		frameBufferCurrent = ssaoPostProcess;
+		frameBufferCurrent->BindTarget();
+		PostProcess::PassThrough(true);
+		ssaoPostProcess->BindTexture(20);
+	}
 
 	// Render Transparent Pass
 	RenderTransparent(scene, c);
+
+	// Run cameras post process effects.
+	c->RunPostProcess(frameBufferProcessed);
 
 	CleanUp(scene);
 
@@ -594,7 +616,7 @@ void SceneRenderer::RenderTransparent(Scene* scene, ComponentCamera* camera)
 		// depth
 		glDepthMask(GL_FALSE); // Disable writing to the depth buffer
 		// framebuffer
-		frameBufferProcessed->BindTarget();
+		frameBufferCurrent->BindTarget();
 		
 		if(msaaEnabled) frameBufferBlit->BindAsDepthAttachment();
 		else frameBufferRaw->BindAsDepthAttachment();
