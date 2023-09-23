@@ -41,7 +41,7 @@ void Crawl::DungeonPlayer::SetDungeon(Dungeon* dungeonPtr)
 // Returns true if the player made a game-state changing action
 bool Crawl::DungeonPlayer::Update(float deltaTime)
 {
-	FindLobbyLight();
+
 
 	// This gotta be moved to some game / global event manager
 	if (lobbyLightActivated && lobbyLight != nullptr && lobbyLightTimeCurrent < (lobbyLightTime + 0.15f))
@@ -540,6 +540,7 @@ void Crawl::DungeonPlayer::Respawn()
 	hp = maxHp;
 	shouldSwitchWith = nullptr;
 	UpdatePointOfInterestTilt(true);
+	FindLobbyLight();
 }
 
 void Crawl::DungeonPlayer::MakeCheckpoint()
@@ -577,6 +578,7 @@ void Crawl::DungeonPlayer::SetShouldActivateStairs(DungeonStairs* stairs)
 
 void Crawl::DungeonPlayer::FindLobbyLight()
 {
+	lobbyLight = nullptr;
 	for (auto& light : dungeon->pointLights)
 	{
 		if (light->isLobbyLight)

@@ -2227,12 +2227,12 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 		pillar.second->markedForDeletion = true;
 	pillars.clear();
 
-	for (auto& decoration : decorations)
-		decoration->object->markedForDeletion = true;
+	for (int i = 0; i < decorations.size(); i++)
+		delete decorations[i];
 	decorations.clear();
 	
-	for (auto& pointLight : pointLights)
-		pointLight->object->markedForDeletion = true;
+	for (int i = 0; i < pointLights.size(); i++)
+		delete pointLights[i];
 	pointLights.clear();
 
 	for (int i = 0; i < events.size(); i++)
@@ -2423,6 +2423,14 @@ void Crawl::Dungeon::Update()
 
 	if (activateTransporter)
 	{
+
+		// Mark tile as unoccupied - likely the level is going to be destroyed, but lobby 2 is persistant, and we might end up making that the case for all levels.
+		DungeonTile* tile;
+		if (player->isOnLobbyLevel2)
+		{
+			tile = player->lobbyLevel2Dungeon->GetTile(activateTransporter->position);
+			if (tile) tile->occupied = false;
+		}
 		// store this stuff because its about to be deleted from memory.
 		string dungeonToLoad = activateTransporter->toDungeon;
 		string TransporterToGoTo = activateTransporter->toTransporter;
