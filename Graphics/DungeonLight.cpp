@@ -4,7 +4,8 @@
 
 Crawl::DungeonLight::~DungeonLight()
 {
-	Scene::s_instance->RemovePointLight(light);
+	if (object)
+		object->markedForDeletion = true;
 }
 
 void Crawl::DungeonLight::Init()

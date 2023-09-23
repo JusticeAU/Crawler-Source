@@ -44,11 +44,7 @@ Scene::Scene(string name) : sceneName(name)
 }
 Scene::~Scene()
 {
-	for (auto o : objects)
-	{
-		o->DeleteAllChildren();
-		delete o;
-	}
+	for (auto o : objects) delete o;
 
 	objects.clear();
 }
@@ -80,6 +76,7 @@ void Scene::Update(float deltaTime)
 	for (auto& rendererComponent : m_rendererComponents)
 		rendererComponent->UpdateClosestLights();
 	UpdatePointLightData();
+
 }
 
 void Scene::UpdatePointLightData()
@@ -123,6 +120,8 @@ void Scene::DrawGUI()
 
 	int lightCount = m_pointLightComponents.size();
 	ImGui::InputInt("Lights", &lightCount);
+	int renderComponentCount = m_rendererComponents.size();
+	ImGui::InputInt("render component count", &renderComponentCount);
 	if (ImGui::Button("Save"))
 		SaveJSON();
 	ImGui::SameLine();
@@ -214,13 +213,16 @@ void Scene::CleanUp()
 {
 	for (int i = 0; i < objects.size(); i++)
 	{
-		objects[i]->CleanUpComponents();
-		objects[i]->CleanUpChildren();
 		if (objects[i]->markedForDeletion)
 		{
 			delete objects[i];
 			objects.erase(objects.begin() + i);
 			i--;
+		}
+		else
+		{
+			objects[i]->CleanUpComponents();
+			objects[i]->CleanUpChildren();
 		}
 	}
 }
@@ -228,7 +230,7 @@ void Scene::CleanUp()
 // Creates and object and adds it to the parent or scene hierarchy. If you want an object but dont want it added to the heirarchy, then call new Object.
 Object* Scene::CreateObject(Object* parent)
 {
-	Object* o = new Object(s_instance->objectCount++); // NOTE This was objectCount++ in order to increment all object numbers, but honestly we just dont need IDs for everything.. yet?
+	Object* o = new Object(s_instance->objectCount); // NOTE This was objectCount++ in order to increment all object numbers, but honestly we just dont need IDs for everything.. yet?
 	if (parent)
 	{
 		o->parent = parent;

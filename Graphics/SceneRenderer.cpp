@@ -695,13 +695,13 @@ void SceneRenderer::RenderLines(ComponentCamera* camera)
 void SceneRenderer::CleanUp(Scene* scene)
 {
 	// Remove any shadow cubemaps no longer required;
-	while (scene->m_pointLightComponents.size() < pointLightCubeMapStatic.size())
+	/*while (scene->m_pointLightComponents.size() < pointLightCubeMapStatic.size())
 	{
 		delete pointLightCubeMapStatic[pointLightCubeMapStatic.size() - 1];
 		pointLightCubeMapStatic.erase(pointLightCubeMapStatic.end() - 1);
 		delete pointLightCubeMapDynamic[pointLightCubeMapDynamic.size() - 1];
 		pointLightCubeMapDynamic.erase(pointLightCubeMapDynamic.end() - 1);
-	}
+	}*/
 }
 
 void SceneRenderer::DrawBackBuffer()

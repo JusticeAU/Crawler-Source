@@ -17,7 +17,7 @@ ComponentCamera::ComponentCamera(Object* parent, bool noGizmo) : Component("Came
 	// Hold on to your seatbelt.
 	// Set base matrix.
 	view = componentParent->transform;
-	projection = glm::perspective((float)3.14159 / 4, aspect, nearClip, farClip);
+	projection = glm::perspective(glm::radians(fieldOfView), aspect, nearClip, farClip);
 	matrix = projection * view;
 
 	// In Scene Editor Camera Gizmo - It'd be nice to move some of this info out of here. Perhaps a Gizmo factory or something.

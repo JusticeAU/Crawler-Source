@@ -38,18 +38,20 @@ Object::Object(int objectID, string name)
 
 Object::~Object()
 {
-	for (auto child = children.begin(); child != children.end(); child++)
+
+	for (int i = 0; i < children.size(); i++)
 	{
-		auto c = *child;
-		delete c;
+		delete children[i];
+		children.erase(children.begin() + i);
+		i--;
 	}
 
-	for (auto component = components.begin(); component != components.end(); component++)
+	for (int i = 0; i < components.size(); i++)
 	{
-		auto c = *component;
-		delete c;
+		delete components[i];
+		components.erase(components.begin() + i);
+		i--;
 	}
-
 }
 
 void Object::Update(float delta)
@@ -347,7 +349,7 @@ void Object::CleanUpComponents()
 {
 	for (int i = 0; i < components.size(); i++)
 	{
-		if (markedForDeletion || components[i]->markedForDeletion)
+		if (components[i]->markedForDeletion)
 		{
 			delete components[i];
 			components.erase(components.begin() + i);
@@ -360,24 +362,18 @@ void Object::CleanUpChildren()
 {
 	for (int i = 0; i < children.size(); i++)
 	{
-		children[i]->CleanUpComponents();
-		if (markedForDeletion || children[i]->markedForDeletion)
+		if (children[i]->markedForDeletion)
 		{
-			children[i]->DeleteAllChildren();
+			delete children[i];
 			children.erase(children.begin() + i);
 			i--;
 		}
 		else
+		{
+			children[i]->CleanUpComponents();
 			children[i]->CleanUpChildren();
+		}
 	}
-}
-
-void Object::DeleteAllChildren()
-{
-	for (auto c : children)
-		c->DeleteAllChildren();
-
-	children.clear();
 }
 
 void Object::LoadFromJSON(nlohmann::ordered_json j)
