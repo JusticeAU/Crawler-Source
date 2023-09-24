@@ -14,19 +14,16 @@ namespace Crawl
 	class DungeonCheckpoint
 	{
 	public:
-		~DungeonCheckpoint();
 		ivec2 position = {0,0};
 		FACING_INDEX facing = NORTH_INDEX;
 
 		bool IsActivated() { return activated; }
 		void SetCheckpoint(DungeonPlayer* player);
-		void SetActivatedMaterial();
 
 		string activateSound = "";
 		bool activated = false;
 
 		// Dependencies
-		Object* object = nullptr;
 		Dungeon* dungeon = nullptr;
 	};
 

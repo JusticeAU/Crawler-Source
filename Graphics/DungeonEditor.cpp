@@ -839,7 +839,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
 	if (ImGui::Checkbox("Is Open", &open))
 	{
 		MarkUnsavedChanges();
-		selectedDoor->Toggle(); // this could go out of sync.
+		selectedDoor->Toggle();
 	}
 
 	if (ImGui::Button("Delete"))
@@ -1037,11 +1037,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
 			if (ImGui::Selectable(orientationNames[i].c_str()))
 			{
 				selectedTransporter->fromOrientation = i;
-				if (selectedTransporter->fromOrientation != oldOrientation)
-				{
-					MarkUnsavedChanges();
-					selectedTransporter->object->SetLocalRotationZ(orientationEulers[i]);
-				}
+				if (selectedTransporter->fromOrientation != oldOrientation) MarkUnsavedChanges();
 			}
 		ImGui::EndCombo();
 	}
@@ -1139,11 +1135,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditCheckpoint()
 			if (ImGui::Selectable(orientationNames[i].c_str()))
 			{
 				selectedCheckpoint->facing = (FACING_INDEX)i;
-				if (selectedCheckpoint->facing != oldOrientation)
-				{
-					MarkUnsavedChanges();
-					selectedCheckpoint->object->SetLocalRotationZ(orientationEulers[i]);
-				}
+				if (selectedCheckpoint->facing != oldOrientation) MarkUnsavedChanges();
 			}
 		ImGui::EndCombo();
 	}
@@ -1717,6 +1709,7 @@ void Crawl::DungeonEditor::Update()
 	default:
 		break;
 	}
+	DrawGizmos();
 }
 void Crawl::DungeonEditor::UpdateModeTileBrush()
 {
@@ -2098,6 +2091,30 @@ void Crawl::DungeonEditor::RefreshDungeonFileNames()
 	dungeonFileName += dungeon->dungeonFileName;
 	dungeonFileNameSaveAs = dungeonFileName;
 	dungeonFilePath = dungeon->dungeonFilePath;
+}
+
+void Crawl::DungeonEditor::DrawGizmos()
+{
+	// All transporters
+	for (auto& transporter : dungeon->transporterPlates)
+	{
+		vec3 position = dungeonPosToObjectScale(transporter->position);
+		LineRenderer::DrawFlatBox(position, 0.3f);
+		LineRenderer::DrawFlatBox(position, 0.4f);
+		glm::vec2 direction = directions[transporter->fromOrientation];
+		LineRenderer::DrawLine(position, position + vec3(direction.x, direction.y, 0));
+	}
+
+	// All checkpoints
+	for (auto& checkpoint : dungeon->checkpoints)
+	{
+		vec3 position = dungeonPosToObjectScale(checkpoint->position);
+		LineRenderer::DrawFlatBox(position, 0.3f, { 0.2f,0.2f, 1 });
+		LineRenderer::DrawFlatBox(position, 0.4f, { 0.2f,0.2f, 1 });
+		glm::vec2 direction = directions[checkpoint->facing];
+		LineRenderer::DrawLine(position, position + vec3(direction.x, direction.y, 0), { 0.2f,0.2f, 1 });
+
+	}
 }
 
 int Crawl::DungeonEditor::GetNextAvailableLeverID()

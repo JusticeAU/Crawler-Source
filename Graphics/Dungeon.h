@@ -84,6 +84,7 @@ namespace Crawl
 		void DoActivate(unsigned int id, bool on = false);
 
 		bool ShouldActivateStairs(ivec2 position, FACING_INDEX direction);
+		bool ShouldActivateTransporter(ivec2 position, FACING_INDEX direction);
 
 		// Returns true if this hit something
 		bool DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer = false, DamageType damageType = DamageType::Physical);

@@ -9,6 +9,7 @@ class LineRenderer
 public:
 	static void Initialise();
 	static void DrawLine(glm::vec3 a, glm::vec3 b, glm::vec3 colour = { 1,1,1 });
+	static void DrawFlatBox(glm::vec3 position, float size, glm::vec3 colour = { 1,1,1 });
 
 	static void Render(glm::mat4 pvMatrix);
 

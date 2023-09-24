@@ -12,6 +12,7 @@
 #include "DungeonCheckpoint.h"
 #include "DungeonStairs.h"
 #include "DungeonLight.h"
+#include "DungeonTransporter.h"
 
 #include "gtx/spline.hpp"
 #include "gtx/easing.hpp"
@@ -41,8 +42,6 @@ void Crawl::DungeonPlayer::SetDungeon(Dungeon* dungeonPtr)
 // Returns true if the player made a game-state changing action
 bool Crawl::DungeonPlayer::Update(float deltaTime)
 {
-
-
 	// This gotta be moved to some game / global event manager
 	if (lobbyLightActivated && lobbyLight != nullptr && lobbyLightTimeCurrent < (lobbyLightTime + 0.15f))
 	{
@@ -88,6 +87,12 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		UpdateStateDying(deltaTime);
 		ContinueResettingTilt(deltaTime);
 	}
+	else if (state == TRANSPORTER)
+	{
+		UpdateStateTransporter(deltaTime);
+		ContinueResettingTilt(deltaTime);
+	}
+
 
 	return false;
 }
@@ -235,6 +240,18 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 					currentDungeon = dungeon;
 					playerZPosition = 0.0f;
 				}
+				return false;
+			}
+			if (currentDungeon->ShouldActivateTransporter(position, (FACING_INDEX)index))
+			{
+				if (index != facing)
+				{
+					facingTarget = false;
+					turnCurrent = 0.0f;
+					oldTurn = object->localRotation.z;
+					targetTurn = orientationEulers[index];
+				}
+				else facingTarget = true;
 				return false;
 			}
 			else if (currentDungeon->PlayerCanMove(position, index))
@@ -397,7 +414,7 @@ bool Crawl::DungeonPlayer::UpdateStateTurning(float delta)
 bool Crawl::DungeonPlayer::UpdateStateStairs(float delta)
 {
 	// If we're not facing the stairs, do that first.
-	if (!facingStairs)
+	if (!facingTarget)
 	{
 		// We need to turn towards the enter direction
 		turnCurrent += delta;
@@ -405,7 +422,7 @@ bool Crawl::DungeonPlayer::UpdateStateStairs(float delta)
 		if (turnCurrent > turnSpeed * 2)
 		{
 			object->SetLocalRotationZ(targetTurn);
-			facingStairs = true;
+			facingTarget = true;
 		}
 		else
 			object->SetLocalRotationZ(MathUtils::LerpDegrees(oldTurn, targetTurn, MathUtils::EaseOutBounceSubtle(t)));
@@ -449,12 +466,50 @@ bool Crawl::DungeonPlayer::UpdateStateDying(float delta)
 	{
 		if (Input::Keyboard(GLFW_KEY_SPACE).Down()) // respawn
 		{
-			camera->postProcessFadeAmount = 0.0f;
 			dungeon->RebuildDungeonFromSerialised(dungeon->serialised);
 			Respawn();
 		}
 	}
 	return false;
+}
+
+void Crawl::DungeonPlayer::UpdateStateTransporter(float delta)
+{
+	if (!facingTarget)
+	{
+		// We need to turn towards the enter direction
+		turnCurrent += delta;
+		float t = MathUtils::InverseLerp(0, turnSpeed * 2, turnCurrent);
+		if (turnCurrent > turnSpeed * 2)
+		{
+			object->SetLocalRotationZ(targetTurn);
+			facingTarget = true;
+		}
+		else
+			object->SetLocalRotationZ(MathUtils::LerpDegrees(oldTurn, targetTurn, MathUtils::EaseOutBounceSubtle(t)));
+	}
+
+	fadeTimeCurrent += delta;
+	if (fadeTimeCurrent < fadeTimeTotal)
+	{
+		if (fadeTimeCurrent > fadeTimeTotal) fadeTimeCurrent = fadeTimeTotal;
+		float t = fadeTimeCurrent / fadeTimeTotal;
+
+		// Walk player forward
+		object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, glm::sineEaseOut(t)));
+
+		// Fade Out
+		camera->postProcessFadeAmount = t;
+	}
+	else if (fadeTimeCurrent < fadeTimeTotal + 0.5f)
+	{
+		// just hold the fade for like a little bit.
+	}
+	else
+	{
+		LoadSelectedTransporter(transporterToActivate);
+	}
+
 }
 
 void Crawl::DungeonPlayer::UpdatePointOfInterestTilt(bool instant)
@@ -480,6 +535,72 @@ void Crawl::DungeonPlayer::ContinueResettingTilt(float delta)
 	objectView->SetLocalRotation(newRotation);
 
 	lookReturnTimeCurrent += delta;
+}
+
+void Crawl::DungeonPlayer::SetShouldActivateTransporter(DungeonTransporter* transporter)
+{
+	state = TRANSPORTER;
+	fadeTimeCurrent = 0.0f;
+	camera->postProcessFadeColour = transporterColour;
+	transporterToActivate = transporter;
+	oldPosition = dungeonPosToObjectScale(position);
+	targetPosition = dungeonPosToObjectScale(transporter->position);
+}
+
+void Crawl::DungeonPlayer::LoadSelectedTransporter(DungeonTransporter* transporter)
+{
+	// Mark tile as unoccupied - likely the level is going to be destroyed, but lobby 2 is persistant, and we might end up making that the case for all levels.
+	DungeonTile* tile;
+	if (isOnLobbyLevel2)
+	{
+		tile = lobbyLevel2Dungeon->GetTile(transporter->position);
+		if (tile) tile->occupied = false;
+	}
+	// store this stuff because its about to be deleted from memory.
+	string dungeonToLoad = transporter->toDungeon;
+	string TransporterToGoTo = transporter->toTransporter;
+	bool toLobbyLevel2 = transporter->toLobby2;
+
+	if (!dungeon->TestDungeonExists(dungeonToLoad + dungeon->dungeonFileExtension))
+	{
+		LogUtils::Log("Dungeon does not exist, bailing on loading:");
+		LogUtils::Log(dungeonToLoad.c_str());
+		return;
+	}
+
+	// Load dungeonName - the transporter we just activated is no longer in memory.
+	dungeon->Load(dungeonToLoad + ".dungeon");
+
+	// Get Transporter By Name
+	DungeonTransporter* gotoTransporter;
+	if (toLobbyLevel2)
+	{
+		gotoTransporter = lobbyLevel2Dungeon->GetTransporter(TransporterToGoTo);
+		SetLevel2(true);
+	}
+	else
+	{
+		gotoTransporter = dungeon->GetTransporter(TransporterToGoTo);
+		SetLevel2(false);
+	}
+
+	// Reset previous checkpoint
+	ClearCheckpoint();
+
+	// Set player Position
+	if (gotoTransporter)
+	{
+		SetRespawn(gotoTransporter->position, (FACING_INDEX)gotoTransporter->fromOrientation, toLobbyLevel2);
+		Respawn();
+	}
+	else
+	{
+		LogUtils::Log("Unable to find transporter in new dungeon:");
+		LogUtils::Log(TransporterToGoTo.c_str());
+		LogUtils::Log("Spawning at default dungeon position.");
+		SetRespawn(dungeon->defaultPlayerStartPosition, dungeon->defaultPlayerStartOrientation);
+		Respawn();
+	}
 }
 
 void Crawl::DungeonPlayer::Teleport(ivec2 position)
@@ -515,6 +636,7 @@ void Crawl::DungeonPlayer::Respawn()
 {
 	didJustRespawn = true;
 	AudioManager::PlaySound("crawler/sound/load/start.wav");
+	camera->postProcessFadeAmount = 0.0f;
 
 	if (checkpointExists)
 	{
@@ -543,11 +665,11 @@ void Crawl::DungeonPlayer::Respawn()
 	FindLobbyLight();
 }
 
-void Crawl::DungeonPlayer::MakeCheckpoint()
+void Crawl::DungeonPlayer::MakeCheckpoint(FACING_INDEX direction)
 {
 	checkpointSerialised = dungeon->GetDungeonSerialised();
 	checkpointPosition = position;
-	checkpointFacing = facing;
+	checkpointFacing = direction;
 	checkpointExists = true;
 }
 
@@ -567,13 +689,13 @@ void Crawl::DungeonPlayer::SetShouldActivateStairs(DungeonStairs* stairs)
 	activateStairs = stairs;
 	if (facing != activateStairs->directionStart)
 	{
-		facingStairs = false;
+		facingTarget = false;
 		turnCurrent = 0.0f;
 		oldTurn = object->localRotation.z;
 		targetTurn = orientationEulers[activateStairs->directionStart];
 	}
 	else
-		facingStairs = true;
+		facingTarget = true;
 }
 
 void Crawl::DungeonPlayer::FindLobbyLight()

@@ -18,35 +18,29 @@ namespace Crawl
 			MOVING,
 			TURNING,
 			STAIRBEARS,
-			DYING
+			DYING,
+			TRANSPORTER
 		};
 		DungeonPlayer();
 
 		void SetDungeon(Dungeon* dungeonPtr);
-		void SetPlayerObject(Object* objectPtr) { this->object = objectPtr; }
 
 		bool Update(float deltaTime);
-		bool UpdateStateIdle(float delta);
-		bool IsMoveDown();
-		bool IsMovePressedLongEnough(float delta);
-		int GetMoveIndex();
-		bool UpdateStateMoving(float delta);
-		bool UpdateStateTurning(float delta);
-		bool UpdateStateStairs(float delta);
-		bool UpdateStateDying(float delta);
-
 		void UpdatePointOfInterestTilt(bool instant = false);
 		void ContinueResettingTilt(float delta);
 
 		ivec2 GetPosition() { return position; }
 		FACING_INDEX GetOrientation() { return facing; }
+		
+		void SetShouldActivateTransporter(DungeonTransporter* transporter);
 		void Teleport(ivec2 position);
 		void Orient(FACING_INDEX facing);
+		
 		void SetRespawn(ivec2 position, FACING_INDEX orientation, bool isLevel2 = false);
 		void ClearRespawn();
 		void Respawn();
 
-		void MakeCheckpoint();
+		void MakeCheckpoint(FACING_INDEX direction);
 		void ClearCheckpoint();
 
 		void TakeDamage();
@@ -68,6 +62,17 @@ namespace Crawl
 		void DoEvent(int eventID);
 		bool didJustRespawn = false;
 	private:
+		bool UpdateStateIdle(float delta);
+		bool IsMoveDown();
+		bool IsMovePressedLongEnough(float delta);
+		int GetMoveIndex();
+		bool UpdateStateMoving(float delta);
+		bool UpdateStateTurning(float delta);
+		bool UpdateStateStairs(float delta);
+		bool UpdateStateDying(float delta);
+		void UpdateStateTransporter(float delta);
+		void LoadSelectedTransporter(DungeonTransporter* transporter);
+
 		glm::ivec2 position;
 		FACING_INDEX facing = EAST_INDEX;
 		
@@ -142,7 +147,7 @@ namespace Crawl
 		float stairTimeTotal = 3.0f;
 		float stairTimeCurrent = 0.0f;
 		float playerZPosition = 0.0f;
-		bool facingStairs = false;
+		bool facingTarget = false;
 
 
 		// Fading stuff
@@ -160,5 +165,9 @@ namespace Crawl
 		};
 		KILLEDBY killedBy = KILLEDBY::SPIKES;
 		FACING_INDEX killedFrom = FACING_INDEX::NORTH_INDEX;
+
+
+		glm::vec3 transporterColour = glm::vec3(0.0, 0.0, 0.0); // very dark red.
+		DungeonTransporter* transporterToActivate = nullptr;
 	};
 }

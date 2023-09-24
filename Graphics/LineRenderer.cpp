@@ -22,6 +22,14 @@ void LineRenderer::DrawLine(glm::vec3 a, glm::vec3 b, glm::vec3 colour)
 	s_instance->colours.push_back(colour);
 }
 
+void LineRenderer::DrawFlatBox(glm::vec3 position, float size, glm::vec3 colour)
+{
+	DrawLine(position + glm::vec3(-size, size, 0), position + glm::vec3(size, size, 0), colour);
+	DrawLine(position + glm::vec3(size, size, 0), position + glm::vec3(size, -size, 0), colour);
+	DrawLine(position + glm::vec3(size, -size, 0), position + glm::vec3(-size, -size, 0), colour);
+	DrawLine(position + glm::vec3(-size, -size, 0), position + glm::vec3(-size, size, 0), colour);
+}
+
 void LineRenderer::Render(glm::mat4 pvMatrix)
 {
 	// Test if there is anything to draw.

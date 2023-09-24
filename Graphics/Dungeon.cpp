@@ -652,6 +652,43 @@ bool Crawl::Dungeon::ShouldActivateStairs(ivec2 position, FACING_INDEX direction
 	return false;
 }
 
+bool Crawl::Dungeon::ShouldActivateTransporter(ivec2 position, FACING_INDEX direction)
+{
+	DungeonTransporter* activateTransporter = nullptr;
+	for (auto& transporter : transporterPlates)
+	{
+		if (transporter->position == player->GetPosition() + directions[direction])
+		{
+			activateTransporter = transporter;
+			break;
+		}
+	}
+
+	if (player->isOnLobbyLevel2)
+	{
+		for (auto& transporter : player->lobbyLevel2Dungeon->transporterPlates)
+		{
+			if (transporter->position == player->GetPosition() + directions[direction])
+			{
+				activateTransporter = transporter;
+				break;
+			}
+		}
+	}
+
+	if (activateTransporter)
+	{
+		// check its a valid dungeoowwnnn
+		if (TestDungeonExists(activateTransporter->toDungeon + dungeonFileExtension))
+		{
+			player->SetShouldActivateTransporter(activateTransporter);
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer, DamageType damageType)
 {
 	bool didDamage = false;
@@ -926,6 +963,7 @@ Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int dire
 		
 	
 	door->UpdateTransforms(true);
+	door->UpdateVisuals(0.0f);
 	activatable.push_back(door);
 	return door;
 }
@@ -986,9 +1024,9 @@ Crawl::DungeonTransporter* Crawl::Dungeon::CreateTransporter(ivec2 position)
 	transporter->position = position;
 	if (!fakeDungeon) // We dont need an object for this if its the fake lobby dungeon boiii
 	{
-		transporter->object = Scene::CreateObject();
+		/*transporter->object = Scene::CreateObject();
 		transporter->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/exit.object"));
-		transporter->object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 1 });
+		transporter->object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 1 });*/
 	}
 	transporterPlates.push_back(transporter);
 	return transporter;
@@ -1394,11 +1432,11 @@ Crawl::DungeonCheckpoint* Crawl::Dungeon::CreateCheckpoint(ivec2 position, FACIN
 	checkpoint->facing = facing;
 	checkpoint->activated = activated;
 	checkpoint->dungeon = this;
-	checkpoint->object = Scene::CreateObject();
+	/*checkpoint->object = Scene::CreateObject();
 	checkpoint->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/checkpoint.object"));
 	checkpoint->object->AddLocalPosition(dungeonPosToObjectScale(position));
 	if (checkpoint->activated)
-		checkpoint->SetActivatedMaterial();
+		checkpoint->SetActivatedMaterial();*/
 	checkpoints.push_back(checkpoint);
 	return checkpoint;
 }
@@ -2377,90 +2415,10 @@ void Crawl::Dungeon::Update()
 	for (auto& blocker : blockers)
 		blocker->Update();
 
-	// Test all transporters - This should probably be in the player controller rather than the dungeon.
 	for (auto& switcher : switchers)
 		switcher->Update();
 
-	DungeonTransporter* activateTransporter = nullptr;
-	for (auto& transporter : transporterPlates)
-	{
-		if (transporter->position == player->GetPosition())
-		{
-			activateTransporter = transporter;
-			break;
-		}
-	}
-
-	if (player->isOnLobbyLevel2)
-	{
-		for (auto& transporter : player->lobbyLevel2Dungeon->transporterPlates)
-		{
-			if (transporter->position == player->GetPosition())
-			{
-				activateTransporter = transporter;
-				break;
-			}
-		}
-	}
-
-	if (activateTransporter)
-	{
-
-		// Mark tile as unoccupied - likely the level is going to be destroyed, but lobby 2 is persistant, and we might end up making that the case for all levels.
-		DungeonTile* tile;
-		if (player->isOnLobbyLevel2)
-		{
-			tile = player->lobbyLevel2Dungeon->GetTile(activateTransporter->position);
-			if (tile) tile->occupied = false;
-		}
-		// store this stuff because its about to be deleted from memory.
-		string dungeonToLoad = activateTransporter->toDungeon;
-		string TransporterToGoTo = activateTransporter->toTransporter;
-		bool toLobbyLevel2 = activateTransporter->toLobby2;
-		
-		if (!TestDungeonExists(dungeonToLoad + ".dungeon"))
-		{
-			LogUtils::Log("Dungeon does not exist, bailing on loading:");
-			LogUtils::Log(dungeonToLoad.c_str());
-			return;
-		}
-
-		// Load dungeonName - the transporter we just activated is no longer in memory.
-		Load(dungeonToLoad + ".dungeon");
-
-		// Get Transporter By Name
-		DungeonTransporter* gotoTransporter;
-		if (toLobbyLevel2)
-		{
-			gotoTransporter = player->lobbyLevel2Dungeon->GetTransporter(TransporterToGoTo);
-			player->SetLevel2(true);
-		}
-		else
-		{
-			gotoTransporter = GetTransporter(TransporterToGoTo);
-			player->SetLevel2(false);
-		}
-
-		// Reset previous checkpoint
-		player->ClearCheckpoint();
-
-		// Set player Position
-		if (gotoTransporter)
-		{
-			player->SetRespawn(gotoTransporter->position, (FACING_INDEX)gotoTransporter->fromOrientation, toLobbyLevel2);
-			player->Respawn();
-		}
-		else
-		{
-			LogUtils::Log("Unable to find transporter in new dungeon:");
-			LogUtils::Log(TransporterToGoTo.c_str());
-			LogUtils::Log("Spawning at default dungeon position.");
-			player->SetRespawn(defaultPlayerStartPosition, defaultPlayerStartOrientation);
-			player->Respawn();
-		}
-	}
-	else
-		player->UpdatePointOfInterestTilt();
+	player->UpdatePointOfInterestTilt();
 }
 
 void Crawl::Dungeon::UpdateVisuals(float delta)

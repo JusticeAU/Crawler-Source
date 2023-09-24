@@ -64,6 +64,8 @@ namespace Crawl
 		void RefreshAvailableDecorations();
 		void RefreshDungeonFileNames();
 
+		void DrawGizmos();
+
 		int GetNextAvailableLeverID();
 		int GetNextAvailableDoorID();
 	protected:
