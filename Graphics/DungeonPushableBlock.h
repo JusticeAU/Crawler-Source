@@ -7,28 +7,36 @@ class Object;
 
 namespace Crawl
 {
+	class Dungeon;
 	class DungeonPushableBlock
 	{
 	public:
-		enum STATE
+		enum class STATE
 		{
 			IDLE,
-			MOVING
+			MOVING,
+			FALLING
 		};
 		~DungeonPushableBlock();
 		ivec2 position;
-		STATE state = IDLE;
+		STATE state = STATE::IDLE;
 
+		bool isOnSpikes = false;
 		bool isDead = false;
 		
 		Object* object;
+		Dungeon* dungeon;
 
 		// visuals
 		float moveSpeed = 0.15f;
 		float moveCurrent = 0.0f;
 		glm::vec3 oldPosition;
 		glm::vec3 targetPosition;
+		// falling on spikes
+		float fallSpeed = 0.25f;
+		float fallCurrent = 0.0f;
 
+		void MoveTo(ivec2 position);
 		void UpdateVisuals(float delta);
 	private:
 	};

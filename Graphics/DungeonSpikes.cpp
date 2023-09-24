@@ -7,14 +7,14 @@ Crawl::DungeonSpikes::~DungeonSpikes()
 {
 	if (object)
 		object->markedForDeletion = true;
+
+	// Delete Me when new asset goes in.
+	if (placeHolderContainerObject)
+		placeHolderContainerObject->markedForDeletion = true;
 }
 
 void Crawl::DungeonSpikes::Disable()
 {
-	dungeon->GetTile(position)->occupied = false;
 	disabled = true;
-	object->markedForDeletion = true;
-	object = Scene::CreateObject();
-	object->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_trap_spike_broken.object"));
-	object->SetLocalPosition(dungeonPosToObjectScale(position));
+	dungeon->GetTile(position)->occupied = false;
 }

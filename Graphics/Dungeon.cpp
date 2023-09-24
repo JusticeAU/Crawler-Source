@@ -671,7 +671,7 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 		{
 			if (pushableBlocks[i]->position == position)
 			{
-				pushableBlocks[i]->isDead = true;
+				if(!pushableBlocks[i]->isOnSpikes) pushableBlocks[i]->isDead = true;
 				break;
 			}
 		}
@@ -745,16 +745,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 	// see if theres anything kickable in that position
 
 	// push(kick)able blocks.
-	DungeonPushableBlock* pushable = nullptr;
-	for (auto& block : pushableBlocks)
-	{
-		if (block->position == targetPosition)
-		{
-			pushable = block;
-			break;
-		}
-	}
-	
+	DungeonPushableBlock* pushable = GetPushableBlockAtPosition(targetPosition);
 	if (pushable)
 	{
 		DungeonTile* kickTile = GetTile(targetPosition);
@@ -776,26 +767,12 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		// kick it in that direction
 		kickTile->occupied = false;
 		toTile->occupied = true;
-		pushable->oldPosition = dungeonPosToObjectScale(pushable->position);
-		pushable->position = moveToPos;
-		pushable->state = Crawl::DungeonPushableBlock::MOVING;
-		pushable->targetPosition = dungeonPosToObjectScale(moveToPos);
-		pushable->moveCurrent = 0.0f;
-		//pushable->object->AddLocalPosition({ directions[direction].x * DUNGEON_GRID_SCALE, directions[direction].y * DUNGEON_GRID_SCALE, 0 });
+		pushable->MoveTo(moveToPos);
 		return true;
 	}
 
 	// Kickable blockers
-	DungeonEnemyBlocker* kickableBlocker = nullptr;
-	for (auto& blocker : blockers)
-	{
-		if (blocker->position == targetPosition)
-		{
-			kickableBlocker = blocker;
-			break;
-		}
-	}
-
+	DungeonEnemyBlocker* kickableBlocker = GetEnemyBlockerAtPosition(targetPosition);
 	if (kickableBlocker)
 	{
 		DungeonTile* kickTile = GetTile(targetPosition);
@@ -824,16 +801,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 	}
 
 	// Kickable chasers
-	DungeonEnemyChase* kickableChaser = nullptr;
-	for (auto& chaser : chasers)
-	{
-		if (chaser->position == targetPosition)
-		{
-			kickableChaser = chaser;
-			break;
-		}
-	}
-
+	DungeonEnemyChase* kickableChaser = GetEnemyChaseAtPosition(targetPosition);
 	if (kickableChaser)
 	{
 		DungeonTile* kickTile = GetTile(targetPosition);
@@ -867,16 +835,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 	}
 
 	// Kickable Mirror
-	DungeonMirror* kickableMirror = nullptr;
-	for (auto& mirror : mirrors)
-	{
-		if (mirror->position == targetPosition)
-		{
-			kickableMirror = mirror;
-			break;
-		}
-	}
-
+	DungeonMirror* kickableMirror = GetMirrorAt(targetPosition);
 	if (kickableMirror)
 	{
 		DungeonTile* kickTile = GetTile(targetPosition);
@@ -905,16 +864,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 	}
 
 	// Kickable Switcher
-	DungeonEnemySwitcher* kickableSwitcher = nullptr;
-	for (auto& switcher : switchers)
-	{
-		if (switcher->position == targetPosition)
-		{
-			kickableSwitcher = switcher;
-			break;
-		}
-	}
-
+	DungeonEnemySwitcher* kickableSwitcher = GetEnemySwitcherAtPosition(targetPosition);
 	if (kickableSwitcher)
 	{
 		DungeonTile* kickTile = GetTile(targetPosition);
@@ -1067,7 +1017,24 @@ Crawl::DungeonSpikes* Crawl::Dungeon::CreateSpikes(ivec2 position, bool disabled
 	spikes->object->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_trap_spikes.object"));
 	if (spikes->disabled)
 		spikes->Disable();
-	spikes->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
+	//spikes->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
+	spikes->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, -1 }); // until new asset is in
+	spikes->object->SetLocalScale({ 2, 1.25, 2 }); // until new asset is in
+
+
+	// Should be able to remove this when new spike asset goes in. (and delete call in destructor)
+	// some hack to remove the floor from the tile we're on
+	DungeonTile* tile = GetTile(position);
+	if (tile && tile->object->children[0]->children[0])
+	{
+		tile->object->children[0]->children[0]->markedForDeletion = true;
+	}
+
+	// more hack for placeholder black box
+	spikes->placeHolderContainerObject = Scene::CreateObject();
+	spikes->placeHolderContainerObject->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_trap_spike_tempblackcontainer.object"));
+	spikes->placeHolderContainerObject->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 }); // until new asset is in
+
 	spikesPlates.push_back(spikes);
 	return spikes;
 }
@@ -1085,6 +1052,16 @@ void Crawl::Dungeon::RemoveSpikes(ivec2 position)
 	}
 }
 
+Crawl::DungeonSpikes* Crawl::Dungeon::GetSpikesAtPosition(ivec2 position)
+{
+	for (int i = 0; i < spikesPlates.size(); i++)
+	{
+		if (spikesPlates[i]->position == position) return spikesPlates[i];
+	}
+
+	return nullptr;
+}
+
 bool Crawl::Dungeon::IsSpikesAtPosition(ivec2 position)
 {
 	for (int i = 0; i < spikesPlates.size(); i++)
@@ -1098,6 +1075,7 @@ bool Crawl::Dungeon::IsSpikesAtPosition(ivec2 position)
 Crawl::DungeonPushableBlock* Crawl::Dungeon::CreatePushableBlock(ivec2 position)
 {
 	DungeonPushableBlock* pushable = new DungeonPushableBlock();
+	pushable->dungeon = this;
 	pushable->position = position;
 	pushable->object = Scene::CreateObject();
 	pushable->object->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_crate.object"));
@@ -1270,6 +1248,16 @@ bool Crawl::Dungeon::IsEnemyBlockerAtPosition(ivec2 position)
 	return false;
 }
 
+Crawl::DungeonEnemyBlocker* Crawl::Dungeon::GetEnemyBlockerAtPosition(ivec2 position)
+{
+	for (int i = 0; i < blockers.size(); i++)
+	{
+		if (blockers[i]->position == position) return blockers[i];
+	}
+
+	return nullptr;
+}
+
 Crawl::DungeonEnemyChase* Crawl::Dungeon::CreateEnemyChase(ivec2 position, FACING_INDEX facing)
 {
 	DungeonEnemyChase* chaser = new DungeonEnemyChase();
@@ -1387,6 +1375,16 @@ bool Crawl::Dungeon::IsEnemySwitcherAtPosition(ivec2 position)
 	}
 
 	return false;
+}
+
+Crawl::DungeonEnemySwitcher* Crawl::Dungeon::GetEnemySwitcherAtPosition(ivec2 position)
+{
+	for (int i = 0; i < switchers.size(); i++)
+	{
+		if (switchers[i]->position == position) return switchers[i];
+	}
+
+	return nullptr;
 }
 
 Crawl::DungeonCheckpoint* Crawl::Dungeon::CreateCheckpoint(ivec2 position, FACING_INDEX facing, bool activated)
@@ -1959,6 +1957,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		}
 		AddTile(tile);
 	}
+	if(!fakeDungeon) BuildSceneFromDungeonLayout(); // this creates all the 3D visuals for the tiles, based on their neighhbors etc.
 
 	auto& transporters_json = serialised["transporters"];
 	for (auto it = transporters_json.begin(); it != transporters_json.end(); it++)
@@ -2017,11 +2016,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		CreateSpikes(spikes.position, spikes.disabled);
 	}
 
-	if (!fakeDungeon) // Here we build the actual scene objects for the game and mark them all as static.
-	{
-		BuildSceneFromDungeonLayout();
-		Scene::s_instance->SetAllObjectsStatic();
-	}
+	if (!fakeDungeon) Scene::s_instance->SetAllObjectsStatic(); // None of this stuff moves, so can be marked as static.
 
 	// Dynamic Objects
 	auto& doors_json = serialised["doors"];
@@ -2288,12 +2283,12 @@ void Crawl::Dungeon::Update()
 			i--;
 		}
 	}
+
 	// Events
 	for (auto& event : events)
 	{
 		if (event->position == player->GetPosition()) event->Activate();
 	}
-
 
 	// slug logic
 	for (auto& slug : slugs)
@@ -2375,20 +2370,7 @@ void Crawl::Dungeon::Update()
 	// All spikes perform damage
 	for (auto& spikes : spikesPlates)
 	{
-		// check for pushable boxes at spikes
-		if (!spikes->disabled)
-		{
-			for (int i = 0; i < pushableBlocks.size(); i++)
-			{
-				if (pushableBlocks[i]->position == spikes->position)
-				{
-					spikes->Disable();
-					pushableBlocks[i]->isDead = true;
-					break;
-				}
-			}
-			DamageAtPosition(spikes->position, spikes);
-		}
+		if (!spikes->disabled) DamageAtPosition(spikes->position, spikes);
 	}
 
 	// All Sword Blocker Enemies Update
@@ -2513,7 +2495,7 @@ void Crawl::Dungeon::UpdateVisuals(float delta)
 	for (int i = 0; i < pushableBlocks.size(); i++)
 	{
 		pushableBlocks[i]->UpdateVisuals(delta);
-		if (pushableBlocks[i]->isDead && pushableBlocks[i]->state == Crawl::DungeonPushableBlock::IDLE)
+		if (pushableBlocks[i]->isDead && pushableBlocks[i]->state == DungeonPushableBlock::STATE::IDLE)
 		{
 			RemovePushableBlock(pushableBlocks[i]->position);
 			i--;

@@ -105,6 +105,7 @@ namespace Crawl
 
 		DungeonSpikes* CreateSpikes(ivec2 position, bool disabled = false);
 		void RemoveSpikes(ivec2 position);
+		DungeonSpikes* GetSpikesAtPosition(ivec2 position);
 		bool IsSpikesAtPosition(ivec2 position);
 
 		DungeonPushableBlock* CreatePushableBlock(ivec2 position);
@@ -121,6 +122,7 @@ namespace Crawl
 		DungeonEnemyBlocker* CreateEnemyBlocker(ivec2 position, FACING_INDEX direction);
 		void RemoveEnemyBlocker(DungeonEnemyBlocker* blocker);
 		bool IsEnemyBlockerAtPosition(ivec2 position);
+		DungeonEnemyBlocker* GetEnemyBlockerAtPosition(ivec2 position);
 
 		DungeonEnemyChase* CreateEnemyChase(ivec2 position, FACING_INDEX direction);
 		void RemoveEnemyChase(DungeonEnemyChase* chaser);
@@ -130,6 +132,7 @@ namespace Crawl
 		DungeonEnemySwitcher* CreateEnemySwitcher(ivec2 position, FACING_INDEX direction);
 		void RemoveEnemySwitcher(DungeonEnemySwitcher* switcher);
 		bool IsEnemySwitcherAtPosition(ivec2 position);
+		DungeonEnemySwitcher* GetEnemySwitcherAtPosition(ivec2 position);
 
 		DungeonCheckpoint* CreateCheckpoint(ivec2 position, FACING_INDEX direction, bool activated = false);
 		void RemoveCheckpoint(DungeonCheckpoint* checkpoint);
