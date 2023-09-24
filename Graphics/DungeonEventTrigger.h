@@ -13,6 +13,8 @@ namespace Crawl
 		bool repeats = false;
 		bool hasTriggered = false;
 		int eventID = -1;
+		bool mustBeFacing = false;
+		FACING_INDEX facing = NORTH_INDEX;
 
 		Dungeon* dungeon;
 
@@ -29,6 +31,12 @@ namespace Crawl
 	static void to_json(ordered_json& j, const DungeonEventTrigger& object)
 	{
 		j = { {"position", object.position}, {"repeats", object.repeats}, {"eventID", object.eventID} };
+		if (object.mustBeFacing)
+		{
+			j["mustBeFacing"] = object.mustBeFacing;
+			j["facing"] = object.facing;
+
+		}
 	}
 
 	static void from_json(const ordered_json& j, DungeonEventTrigger& object)
@@ -36,5 +44,10 @@ namespace Crawl
 		j.at("position").get_to(object.position);
 		j.at("repeats").get_to(object.repeats);
 		j.at("eventID").get_to(object.eventID);
+		if (j.contains("mustBeFacing"))
+		{
+			j.at("mustBeFacing").get_to(object.mustBeFacing);
+			j.at("facing").get_to(object.facing);
+		}
 	}
 }

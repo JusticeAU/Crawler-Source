@@ -164,6 +164,7 @@ namespace Crawl
 
 		DungeonEventTrigger* CreateEventTrigger(ivec2 position);
 		void RemoveEventTrigger(DungeonEventTrigger* trigger);
+		void DoEventTriggerFacing(ivec2 position, FACING_INDEX facing);
 	
 		void Save(std::string filename);
 		void ClearDungeon();

@@ -199,6 +199,7 @@ void Application::LaunchArgument(char* arg)
 void Application::InitGame()
 {
 	MaterialManager::PreloadAllFiles();
+	TextureManager::PreloadAllFilesContaining("prompt"); // preload the prompt textures because they arent referenced by materials atm.
 	dungeon->Load("crawler/dungeon/start.dungeon");
 	Scene::SetCameraByName("Player Camera");
 	dungeonPlayer->Respawn();

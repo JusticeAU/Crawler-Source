@@ -73,6 +73,11 @@ namespace Crawl
 		void UpdateStateTransporter(float delta);
 		void LoadSelectedTransporter(DungeonTransporter* transporter);
 
+		void UpdatePrompts(float delta);
+		void UpdateFTUE();
+		void SetFTUEPrompt(string prompt);
+		void ClearFTUEPrompt();
+
 		glm::ivec2 position;
 		FACING_INDEX facing = EAST_INDEX;
 		
@@ -166,6 +171,26 @@ namespace Crawl
 		KILLEDBY killedBy = KILLEDBY::SPIKES;
 		FACING_INDEX killedFrom = FACING_INDEX::NORTH_INDEX;
 
+		// FTUE
+		bool ftueEnabled = false;
+		bool ftueInitiated = false;
+		string promptCurrent = "";
+		string promptNext = "";
+		string promptTurn = "crawler/texture/gui/prompt_turn.tga";
+		string promptMove = "crawler/texture/gui/prompt_move.tga";
+		string promptLook = "crawler/texture/gui/prompt_look.tga";
+		string promptInteract = "crawler/texture/gui/prompt_interact.tga";
+		string promptReset = "crawler/texture/gui/prompt_reset.tga";
+		string promptWait = "crawler/texture/gui/prompt_wait.tga";
+		int ftueTurns = 0;
+		bool ftueHasTurned = false;
+		bool ftueHasLooked = false;
+		bool ftueHasInteracted = false;
+
+		bool promptFadeIn = false;
+
+		float promptAmount = 0.0f;
+		bool promptUse = false;
 
 		glm::vec3 transporterColour = glm::vec3(0.0, 0.0, 0.0); // very dark red.
 		DungeonTransporter* transporterToActivate = nullptr;

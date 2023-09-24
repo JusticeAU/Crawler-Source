@@ -53,6 +53,10 @@ public:
 	glm::vec3 postProcessFadeColour = vec3(0, 0, 0);
 	float postProcessFadeAmount = 0.0f;
 
+	string prompt = "";
+	float promptAmount = 0.0f;
+	bool promptUse = false;
+
 protected:
 	glm::mat4 view;
 	glm::mat4 projection;

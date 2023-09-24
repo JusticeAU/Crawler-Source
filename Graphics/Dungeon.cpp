@@ -1746,6 +1746,14 @@ void Crawl::Dungeon::RemoveEventTrigger(DungeonEventTrigger* event)
 	}
 }
 
+void Crawl::Dungeon::DoEventTriggerFacing(ivec2 position, FACING_INDEX facing)
+{
+	for (auto& event : events)
+	{
+		if (event->mustBeFacing && event->position == position && event->facing == player->GetOrientation()) event->Activate();
+	}
+}
+
 void Crawl::Dungeon::Save(std::string filename)
 {
 	SetDungeonNameFromFileName(filename);
@@ -2146,6 +2154,12 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		DungeonEventTrigger* newEvent = CreateEventTrigger(event.position);
 		newEvent->eventID = event.eventID;
 		newEvent->repeats = event.repeats;
+		if (event.mustBeFacing)
+		{
+			newEvent->mustBeFacing = event.mustBeFacing;
+			newEvent->facing = event.facing;
+
+		}
 	}
 
 	auto& stairs_json = serialised["stairs"];
@@ -2325,7 +2339,11 @@ void Crawl::Dungeon::Update()
 	// Events
 	for (auto& event : events)
 	{
-		if (event->position == player->GetPosition()) event->Activate();
+		if (event->position == player->GetPosition())
+		{
+			if(!event->mustBeFacing) event->Activate();
+			else if(event->facing == player->GetOrientation()) event->Activate();
+		}
 	}
 
 	// slug logic

@@ -1530,9 +1530,27 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditEventTrigger()
 		MarkUnsavedChanges();
 	if(ImGui::InputInt("Event ID", &selectedEventTrigger->eventID))
 		MarkUnsavedChanges();
+	if(ImGui::Checkbox("Must Be Facing", &selectedEventTrigger->mustBeFacing))
+		MarkUnsavedChanges();
+	if (selectedEventTrigger->mustBeFacing)
+	{
+		if (ImGui::BeginCombo("Facing Direction", orientationNames[selectedEventTrigger->facing].c_str()))
+		{
+			int oldOrientation = selectedEventTrigger->facing;
+			for (int i = 0; i < 4; i++)
+				if (ImGui::Selectable(orientationNames[i].c_str()))
+				{
+					selectedEventTrigger->facing = (FACING_INDEX)i;
+					if (selectedEventTrigger->facing != oldOrientation)
+					{
+						MarkUnsavedChanges();
+					}
+				}
+			ImGui::EndCombo();
+		}
+	}
 
 	ImGui::End();
-
 }
 void Crawl::DungeonEditor::DrawGUIModeTileEditSwitcher()
 {
@@ -2113,6 +2131,19 @@ void Crawl::DungeonEditor::DrawGizmos()
 		LineRenderer::DrawFlatBox(position, 0.4f, { 0.2f,0.2f, 1 });
 		glm::vec2 direction = directions[checkpoint->facing];
 		LineRenderer::DrawLine(position, position + vec3(direction.x, direction.y, 0), { 0.2f,0.2f, 1 });
+	}
+
+	// All Events
+	for (auto& event : dungeon->events)
+	{
+		vec3 position = dungeonPosToObjectScale(event->position);
+		LineRenderer::DrawFlatBox(position, 0.3f, { 1.0f, 0.5f, 0.5f });
+		LineRenderer::DrawFlatBox(position, 0.4f, { 1.0f, 0.5f, 0.5f });
+		glm::vec2 direction = directions[event->facing];
+		if (event->mustBeFacing)
+		{
+			LineRenderer::DrawLine(position, position + vec3(direction.x, direction.y, 0), { 1.0f, 0.5f, 0.5f });
+		}
 
 	}
 }

@@ -31,6 +31,7 @@ public:
 
 	static void FindAllFiles(string folder);
 	static void PreloadAllFiles();
+	static void PreloadAllFilesContaining(string contains);
 	void CreateTextureFromFile(const char* filename);
 
 	static void ListUnreferencedTextures();

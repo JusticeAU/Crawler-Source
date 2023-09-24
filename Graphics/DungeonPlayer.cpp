@@ -42,18 +42,26 @@ void Crawl::DungeonPlayer::SetDungeon(Dungeon* dungeonPtr)
 // Returns true if the player made a game-state changing action
 bool Crawl::DungeonPlayer::Update(float deltaTime)
 {
+	if (ftueEnabled)
+	{
+		UpdateFTUE();
+		UpdatePrompts(deltaTime);
+	}
+
 	// This gotta be moved to some game / global event manager
 	if (lobbyLightActivated && lobbyLight != nullptr && lobbyLightTimeCurrent < (lobbyLightTime + 0.15f))
 	{
 		float t = glm::bounceEaseIn(glm::clamp(lobbyLightTimeCurrent / lobbyLightTime, 0.0f, 1.0f));
 		t = glm::clamp(t, 0.0f, 1.0f);
-		lobbyLight->intensity = MathUtils::Lerp(0.0f,100.0f, t);
+		lobbyLight->intensity = MathUtils::Lerp(0.0f,1000.0f, t);
 		lobbyLight->UpdateLight();
 
 		lobbyLightTimeCurrent += deltaTime;
 	}
 	else
 	{
+		lobbyLightTimeCurrent = -rand() % 15;
+
 		if (lobbyLight != nullptr)
 		{
 			lobbyLight->intensity = 0.0f;
@@ -113,6 +121,11 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	if (Input::Mouse(1).Down()) Window::GetWindow()->SetMouseCursorHidden(true);
 	if (Input::Mouse(1).Pressed())
 	{
+		if (!ftueHasLooked && promptCurrent == promptLook);
+		{
+			ftueHasLooked = true;
+			ClearFTUEPrompt();
+		}
 		vec2 mouseDelta = -Input::GetMouseDelta() * lookSpeed;
 		objectView->AddLocalRotation({ mouseDelta.y, 0, mouseDelta.x });
 		objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -lookMaxX, lookMaxX);
@@ -141,7 +154,6 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 			return true;
 		}
 	}
-
 
 	if (Input::Keyboard(GLFW_KEY_R).Down())
 	{
@@ -206,6 +218,11 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	{
 		if (currentDungeon->DoInteractable(position, facing))
 		{
+			if (!ftueHasInteracted)
+			{
+				ftueHasInteracted = true;
+				ClearFTUEPrompt();
+			}
 			UpdatePointOfInterestTilt();
 			animator->BlendToAnimation(animationNamePush, 0.1f);
 			if (!currentDungeon->playerInteractIsFree)
@@ -280,6 +297,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	// Turning
 	if (Input::Keyboard(GLFW_KEY_E).Down())
 	{
+		
 		AudioManager::PlaySound("crawler/sound/load/turn.wav");
 		int faceInt = (int)facing;
 		faceInt++;
@@ -291,11 +309,16 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		oldTurn = object->localRotation.z;
 		targetTurn = object->localRotation.z - 90;
 		UpdatePointOfInterestTilt();
+
+		if (!ftueHasTurned) ftueTurns++;
+		dungeon->DoEventTriggerFacing(position, facing);
+		
 		if (!dungeon->playerTurnIsFree)
 			return true;
 	}
 	if (Input::Keyboard(GLFW_KEY_Q).Down())
 	{
+		
 		AudioManager::PlaySound("crawler/sound/load/turn.wav");
 		int faceInt = (int)facing;
 		faceInt--;
@@ -307,6 +330,10 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		oldTurn = object->localRotation.z;
 		targetTurn = object->localRotation.z + 90;
 		UpdatePointOfInterestTilt();
+		
+		if (!ftueHasTurned) ftueTurns++;
+		dungeon->DoEventTriggerFacing(position, facing);
+
 		if (!dungeon->playerTurnIsFree)
 			return true;
 	}
@@ -464,7 +491,7 @@ bool Crawl::DungeonPlayer::UpdateStateDying(float delta)
 	}
 	else
 	{
-		if (Input::Keyboard(GLFW_KEY_SPACE).Down()) // respawn
+		if (Input::Keyboard(GLFW_KEY_SPACE).Down() || Input::Keyboard(GLFW_KEY_R).Down()) // respawn
 		{
 			dungeon->RebuildDungeonFromSerialised(dungeon->serialised);
 			Respawn();
@@ -603,6 +630,74 @@ void Crawl::DungeonPlayer::LoadSelectedTransporter(DungeonTransporter* transport
 	}
 }
 
+void Crawl::DungeonPlayer::UpdatePrompts(float delta)
+{
+	if (promptCurrent == "" && promptNext != "")
+	{
+		promptCurrent = promptNext;
+		promptNext = "";
+		promptFadeIn = true;
+		camera->promptUse = true;
+	}
+
+	camera->prompt = promptCurrent;
+
+	if (promptFadeIn && promptNext == "")
+	{
+		if (promptAmount < 1.0f)
+		{
+			promptAmount += delta;
+			camera->promptAmount = promptAmount;
+		}
+		else
+			camera->promptAmount = 1.0f; 
+	}
+	else
+	{
+		if (promptAmount > 0.0f)
+		{
+			promptAmount -= delta;
+			camera->promptAmount = promptAmount;
+		}
+		else
+		{
+			camera->promptAmount = 0.0f;
+			if (promptNext != "")
+			{
+				promptCurrent = promptNext;
+				promptNext = "";
+				fadeIn = true;
+			}
+			else
+			{
+				promptCurrent = "";
+				camera->promptUse = false;
+			}
+		}
+	}
+}
+
+void Crawl::DungeonPlayer::UpdateFTUE()
+{
+	if (ftueTurns == 2 && !ftueHasTurned)
+	{
+		SetFTUEPrompt(promptMove);
+		ftueHasTurned = true;
+	}
+}
+
+void Crawl::DungeonPlayer::SetFTUEPrompt(string prompt)
+{
+	promptNext = prompt;
+	promptUse = true;
+}
+
+void Crawl::DungeonPlayer::ClearFTUEPrompt()
+{
+	promptFadeIn = false;
+	promptNext = "";
+}
+
 void Crawl::DungeonPlayer::Teleport(ivec2 position)
 {
 	state = IDLE;
@@ -634,6 +729,13 @@ void Crawl::DungeonPlayer::ClearRespawn()
 
 void Crawl::DungeonPlayer::Respawn()
 {
+	if (!ftueEnabled && !ftueInitiated && dungeon->dungeonFileName == "start")
+	{
+		ftueEnabled = true;
+		ftueInitiated = true;
+		SetFTUEPrompt(promptTurn);
+	}
+
 	didJustRespawn = true;
 	AudioManager::PlaySound("crawler/sound/load/start.wav");
 	camera->postProcessFadeAmount = 0.0f;
@@ -752,6 +854,37 @@ void Crawl::DungeonPlayer::DoEvent(int eventID)
 	case 1: // activate lighting in lobby
 	{
 		ActivateLobbyLight();
+		return;
+	}
+	case 2: // clear FTUE Event
+	{
+		ClearFTUEPrompt();
+		return;
+	}
+	case 3: // trigger Move FTUE
+	{
+		SetFTUEPrompt(promptMove);
+		return;
+	}
+
+	case 4: // trigger look prompt
+	{
+		if(!ftueHasLooked) SetFTUEPrompt(promptLook);
+		return;
+	}
+	case 5: // trigger Interact Prompt
+	{
+		SetFTUEPrompt(promptInteract);
+		return;
+	}
+	case 6: // Trigger Wait prompt
+	{
+		SetFTUEPrompt(promptWait);
+		return;
+	}
+	case 7: // Trigger Reset prompt
+	{
+		SetFTUEPrompt(promptReset);
 		return;
 	}
 

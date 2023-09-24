@@ -157,6 +157,15 @@ void TextureManager::PreloadAllFiles()
 	}
 }
 
+void TextureManager::PreloadAllFilesContaining(string contains)
+{
+	for (auto& texture : s_instance->textures)
+	{
+		if (texture.second != nullptr && !texture.second->loaded && texture.first.find(contains) != string::npos)
+			texture.second->Load();
+	}
+}
+
 void TextureManager::AddFrameBuffer(const char* name, FrameBuffer* fb)
 {
 	string texName = "framebuffers/";

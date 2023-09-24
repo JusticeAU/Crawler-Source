@@ -40,6 +40,16 @@ void PostProcess::Process(ComponentCamera* camera)
 	m_shader->SetVector3Uniform("fadeColour", camera->postProcessFadeColour);
 	m_shader->SetFloatUniform("fadeAmount", camera->postProcessFadeAmount);
 
+	// Fade Colour Shader prompt bullshit
+	if (camera->promptUse)
+	{
+		TextureManager::GetTexture(camera->prompt)->Bind(19);
+		m_shader->SetIntUniform("prompt", 19);
+		m_shader->SetFloatUniform("promptAmount", camera->promptAmount);
+		m_shader->SetBoolUniform("promptUse", camera->promptUse);
+	}
+	else m_shader->SetBoolUniform("promptUse", camera->promptUse);
+
 	// Draw the frame quad
 	glBindVertexArray(s_frame->vao);
 
