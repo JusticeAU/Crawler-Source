@@ -321,6 +321,8 @@ void SceneRenderer::DrawShadowMappingGUI()
 
 void SceneRenderer::Prepare(Scene* scene)
 {
+	scene->UpdatePointLightData();
+
 	// Check we have allocated cubemaps for each point light
 	while (scene->m_pointLightComponents.size() > pointLightCubeMapStatic.size())
 	{

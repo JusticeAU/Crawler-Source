@@ -72,15 +72,15 @@ void Scene::Update(float deltaTime)
 	// Update all Objects
 	for (auto o : objects)
 		o->Update(deltaTime);
-
-	for (auto& rendererComponent : m_rendererComponents)
-		rendererComponent->UpdateClosestLights();
-	UpdatePointLightData();
-
 }
 
 void Scene::UpdatePointLightData()
 {
+	// all renderers check the closest lights to them
+	for (auto& rendererComponent : m_rendererComponents)
+		rendererComponent->UpdateClosestLights();
+
+	// update the data sent to the gpu about each scene light
 	for (int i = 0; i < m_pointLightComponents.size(); i++)
 	{
 		m_pointLightColours[i] = glm::vec4(m_pointLightComponents[i]->colour * m_pointLightComponents[i]->intensity,0);

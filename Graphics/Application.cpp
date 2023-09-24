@@ -259,6 +259,8 @@ void Application::Update(float delta)
 		Scene::s_editorCamera->DrawGUI();
 		dungeonEditor->Update();
 		dungeonEditor->DrawGUI();
+		
+		dungeon->UpdateVisuals(delta);;
 		break;
 	}
 	case Mode::Art:
@@ -330,10 +332,9 @@ void Application::Update(float delta)
 	AudioManager::s_instance->Update();
 
 	Scene::s_instance->Update(delta);
+	Scene::s_instance->CleanUp();
 
 	Scene::s_instance->Render();
-	
-	Scene::s_instance->CleanUp();
 }
 
 Application::Mode Application::s_mode = Mode::Game;
