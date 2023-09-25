@@ -270,6 +270,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 					targetTurn = orientationEulers[index];
 				}
 				else facingTarget = true;
+				currentDungeon->GetTile(oldPlayerCoordinate)->occupied = false;
 				return false;
 			}
 			else if (currentDungeon->PlayerCanMove(position, index))
