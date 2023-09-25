@@ -21,7 +21,7 @@ void Crawl::DungeonPushableBlock::MoveTo(ivec2 toPosition)
 	targetPosition = dungeonPosToObjectScale(toPosition);
 	moveCurrent = 0.0f;
 	DungeonSpikes* spikes = dungeon->GetSpikesAtPosition(toPosition);
-	if (spikes)
+	if (spikes && !spikes->disabled) // Check if the box is on top of some spikes that havent been disabled.
 	{
 		isOnSpikes = true;
 		spikes->Disable();

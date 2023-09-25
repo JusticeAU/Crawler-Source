@@ -782,7 +782,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 	// see if theres anything kickable in that position
 
 	// push(kick)able blocks.
-	DungeonPushableBlock* pushable = GetPushableBlockAtPosition(targetPosition);
+	DungeonPushableBlock* pushable = GetPushableBlockAtPosition(targetPosition, false);
 	if (pushable)
 	{
 		DungeonTile* kickTile = GetTile(targetPosition);
@@ -1053,9 +1053,6 @@ Crawl::DungeonSpikes* Crawl::Dungeon::CreateSpikes(ivec2 position, bool disabled
 	spikes->dungeon = this;
 	spikes->object = Scene::CreateObject();
 	spikes->object->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_trap_spikes.object"));
-	if (spikes->disabled)
-		spikes->Disable();
-	//spikes->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
 	spikes->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, -1 }); // until new asset is in
 	spikes->object->SetLocalScale({ 2, 1.25, 2 }); // until new asset is in
 
@@ -1156,11 +1153,15 @@ bool Crawl::Dungeon::IsPushableBlockAtPosition(ivec2 position)
 	return false;
 }
 
-Crawl::DungeonPushableBlock* Crawl::Dungeon::GetPushableBlockAtPosition(ivec2 position)
+Crawl::DungeonPushableBlock* Crawl::Dungeon::GetPushableBlockAtPosition(ivec2 position, bool includeDisabled)
 {
 	for (int i = 0; i < pushableBlocks.size(); i++)
 	{
-		if (pushableBlocks[i]->position == position) return pushableBlocks[i];
+		if (pushableBlocks[i]->position == position)
+		{
+			if (includeDisabled)						return pushableBlocks[i];
+			else if (!pushableBlocks[i]->isOnSpikes)	return pushableBlocks[i];
+		}
 	}
 
 	return nullptr;
@@ -2059,7 +2060,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	for (auto it = spikes_json.begin(); it != spikes_json.end(); it++)
 	{
 		DungeonSpikes spikes = it.value().get<Crawl::DungeonSpikes>();
-		CreateSpikes(spikes.position, spikes.disabled);
+		CreateSpikes(spikes.position);
 	}
 
 	if (!fakeDungeon) Scene::s_instance->SetAllObjectsStatic(); // None of this stuff moves, so can be marked as static.
@@ -2090,7 +2091,10 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	for (auto it = blocks_json.begin(); it != blocks_json.end(); it++)
 	{
 		DungeonPushableBlock block = it.value().get<Crawl::DungeonPushableBlock>();
-		CreatePushableBlock(block.position);
+		DungeonPushableBlock* newBlock = CreatePushableBlock(block.position);
+		//newBlock->isOnSpikes = block.isOnSpikes;
+		newBlock->MoveTo(newBlock->position); // We call move here just to have it check if its on top of spikes and handle that.
+
 	}
 
 	auto& blockers_json = serialised["blockers"];

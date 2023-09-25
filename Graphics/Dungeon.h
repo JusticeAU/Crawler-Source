@@ -112,7 +112,7 @@ namespace Crawl
 		DungeonPushableBlock* CreatePushableBlock(ivec2 position);
 		void RemovePushableBlock(ivec2 position);
 		bool IsPushableBlockAtPosition(ivec2 position);
-		DungeonPushableBlock* GetPushableBlockAtPosition(ivec2 position);
+		DungeonPushableBlock* GetPushableBlockAtPosition(ivec2 position, bool includeDisabled = true);
 
 		DungeonShootLaser* CreateShootLaser(ivec2 position, FACING_INDEX facing, unsigned int id);
 		void RemoveDungeonShootLaser(DungeonShootLaser* laser);

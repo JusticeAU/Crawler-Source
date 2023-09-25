@@ -15,7 +15,7 @@ namespace Crawl
 		~DungeonSpikes();
 		ivec2 position = {0,0};
 		
-		bool disabled = false;
+		bool disabled = false; // We dont need to serialise this as it gets handled at runtime by boxes being placed in the world after.
 
 		void Disable();
 		
@@ -29,14 +29,10 @@ namespace Crawl
 	static void to_json(ordered_json& j, const DungeonSpikes& object)
 	{
 		j = { {"position", object.position } };
-		if(object.disabled)
-			j["disabled"] = object.disabled;
 	}
 
 	static void from_json(const ordered_json& j, DungeonSpikes& object)
 	{
 		j.at("position").get_to(object.position);
-		if (j.contains("disabled"))
-			j.at("disabled").get_to(object.disabled);
 	}
 }
