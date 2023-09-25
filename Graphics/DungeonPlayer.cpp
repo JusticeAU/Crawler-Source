@@ -574,7 +574,9 @@ void Crawl::DungeonPlayer::SetShouldActivateTransporter(DungeonTransporter* tran
 	camera->postProcessFadeColour = transporterColour;
 	transporterToActivate = transporter;
 	oldPosition = dungeonPosToObjectScale(position);
+	oldPosition.z = playerZPosition; // correct for lobby level 2 stuff
 	targetPosition = dungeonPosToObjectScale(transporter->position);
+	targetPosition.z = playerZPosition; // correct for lobby level 2 stuff
 }
 
 void Crawl::DungeonPlayer::LoadSelectedTransporter(DungeonTransporter* transporter)
