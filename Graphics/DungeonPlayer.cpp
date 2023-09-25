@@ -107,6 +107,14 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 
 bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 {
+	if (Input::Keyboard(GLFW_KEY_BACKSPACE).Down())
+	{
+		DungeonTransporter* lobbyTransporter = new DungeonTransporter();
+		lobbyTransporter->toDungeon = "crawler/dungeon/lobby";
+		lobbyTransporter->toTransporter = "TutExit";
+		LoadSelectedTransporter(lobbyTransporter);
+	}
+
 	// All these checks should move to a turn processors state machine.
 	if (hp <= 0)
 	{
