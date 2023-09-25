@@ -223,6 +223,6 @@ void ComponentCamera::UpdateAudioListener()
 	glm::mat4 transform = componentParent->transform;
 
 	const vec3 forward = normalize(glm::vec3(transform[2]));
-	m_audioListener.forward.x = -forward.x;
-	m_audioListener.forward.y = -forward.y;
+	m_audioListener.forward.x = forward.x;
+	m_audioListener.forward.y = forward.y;
 }

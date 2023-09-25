@@ -88,7 +88,7 @@ void Crawl::DungeonShootLaser::Prime()
 
 void Crawl::DungeonShootLaser::Fire()
 {
-	AudioManager::PlaySound("crawler/sound/load/laser_shoot.wav", object->localPosition);
+	AudioManager::PlaySound("crawler/sound/load/laser_shoot.wav", object->GetWorldSpacePosition());
 	if (!firesProjectile) // full line of sight attack
 	{
 		LogUtils::Log("Shooter Fired a full line of sight attack");
