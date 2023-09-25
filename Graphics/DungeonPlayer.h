@@ -76,7 +76,7 @@ namespace Crawl
 		void UpdatePrompts(float delta);
 		void UpdateFTUE();
 		void SetFTUEPrompt(string prompt);
-		void ClearFTUEPrompt();
+		void ClearFTUEPrompt(bool instant = false);
 
 		glm::ivec2 position;
 		FACING_INDEX facing = EAST_INDEX;
@@ -190,6 +190,7 @@ namespace Crawl
 		bool promptFadeIn = false;
 
 		float promptAmount = 0.0f;
+		const float promptFadeTime = 0.4f;
 		bool promptUse = false;
 
 		glm::vec3 transporterColour = glm::vec3(0.0, 0.0, 0.0); // very dark red.

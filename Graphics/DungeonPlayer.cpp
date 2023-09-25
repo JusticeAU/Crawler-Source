@@ -115,6 +115,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		camera->postProcessFadeColour = deathColour;
 		fadeTimeCurrent = 0.0f;
 		fadeIn = false;
+		SetFTUEPrompt(promptReset);
 		return false;
 	}
 
@@ -491,8 +492,10 @@ bool Crawl::DungeonPlayer::UpdateStateDying(float delta)
 	}
 	else
 	{
+		
 		if (Input::Keyboard(GLFW_KEY_SPACE).Down() || Input::Keyboard(GLFW_KEY_R).Down()) // respawn
 		{
+			ClearFTUEPrompt(true);
 			dungeon->RebuildDungeonFromSerialised(dungeon->serialised);
 			Respawn();
 		}
@@ -644,10 +647,11 @@ void Crawl::DungeonPlayer::UpdatePrompts(float delta)
 
 	if (promptFadeIn && promptNext == "")
 	{
-		if (promptAmount < 1.0f)
+		if (promptAmount < promptFadeTime)
 		{
 			promptAmount += delta;
-			camera->promptAmount = promptAmount;
+			float t = promptAmount / promptFadeTime;
+			camera->promptAmount = t;
 		}
 		else
 			camera->promptAmount = 1.0f; 
@@ -657,7 +661,8 @@ void Crawl::DungeonPlayer::UpdatePrompts(float delta)
 		if (promptAmount > 0.0f)
 		{
 			promptAmount -= delta;
-			camera->promptAmount = promptAmount;
+			float t = promptAmount / promptFadeTime;
+			camera->promptAmount = t;
 		}
 		else
 		{
@@ -692,10 +697,15 @@ void Crawl::DungeonPlayer::SetFTUEPrompt(string prompt)
 	promptUse = true;
 }
 
-void Crawl::DungeonPlayer::ClearFTUEPrompt()
+void Crawl::DungeonPlayer::ClearFTUEPrompt(bool instant)
 {
 	promptFadeIn = false;
 	promptNext = "";
+	if (instant)
+	{
+		promptCurrent = 0.0f;
+		camera->promptUse = false;
+	}
 }
 
 void Crawl::DungeonPlayer::Teleport(ivec2 position)
