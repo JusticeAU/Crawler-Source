@@ -24,7 +24,7 @@ namespace Crawl
 		bool detectsLineOfSight = true;
 		bool firesImmediately = false;
 		
-		unsigned int activateID = 0;
+		unsigned int activateID = -1;
 
 		Object* object;
 		Dungeon* dungeon = nullptr;
