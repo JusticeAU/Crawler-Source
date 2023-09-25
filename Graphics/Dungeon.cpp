@@ -2065,7 +2065,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	if (!fakeDungeon) Scene::s_instance->SetAllObjectsStatic(); // None of this stuff moves, so can be marked as static.
 
 	// Dynamic Objects
-	auto& doors_json = serialised["doors"];
+	auto& doors_json = serialised["doors"]; // Technically door frame are static, only the doors are dynamic - but the optimisation is not worth it
 	for (auto it = doors_json.begin(); it != doors_json.end(); it++)
 	{
 		DungeonDoor door = it.value().get<Crawl::DungeonDoor>();

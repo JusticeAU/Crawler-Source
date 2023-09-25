@@ -269,8 +269,12 @@ void Object::DrawGUI()
 				spawn->Update(0.0f);
 			}
 			ImGui::Indent();
-			for (auto c : children)
-				c->DrawGUI();
+			for (int i = 0; i < children.size(); i++)
+			{
+				ImGui::PushID(i);
+				children[i]->DrawGUI();
+				ImGui::PopID();
+			}
 			ImGui::Unindent();
 		}
 		else

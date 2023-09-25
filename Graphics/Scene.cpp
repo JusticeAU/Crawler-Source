@@ -422,6 +422,7 @@ Object* Scene::FindObjectWithName(string objectName)
 
 void Scene::SetAllObjectsStatic()
 {
+	for (auto& o : objects) o->Update(0.0f); // this fixes all dirty transforms.
 	for (auto& o : objects) o->SetStatic(true);
 }
 
