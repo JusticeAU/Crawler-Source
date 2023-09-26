@@ -363,6 +363,7 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	//shadowMap->BindTexture(5);
 
 	// Render any 'static' cubemaps that need to (They have been newly created, or the list of static and dynamic objects have changed)
+	glDisable(GL_BLEND);
 	currentPassIsStatic = true;
 	currentPassIsSplit = true;
 	RenderSceneShadowCubeMaps(scene);
@@ -393,10 +394,8 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		ssaoGeoShader->SetMatrixUniform("projection", c->GetProjectionMatrix());
 
 		// bind the shader for it
-		glDisable(GL_BLEND);
 		for (auto& o : scene->objects)
 			o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::SSAOgBuffer);
-		glEnable(GL_BLEND);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -412,7 +411,6 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		ssaoShader->SetVector2Uniform("screenSize", screenSize);
 		ssaoShader->SetIntUniform("kernelTaps", ssaoKernelTaps);
 
-		glDisable(GL_BLEND);
 		ssaoShader->SetIntUniform("gPosition", 0);
 		ssaoShader->SetIntUniform("gNormal", 1);
 		ssaoShader->SetIntUniform("texNoise", 2);
@@ -448,7 +446,6 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 				FrameBuffer::UnBindTexture(0);
 
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-				glEnable(GL_BLEND);
 				blurBufferUsed = ssaoBlurFBO2;
 			}
 			else
@@ -461,7 +458,6 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 				FrameBuffer::UnBindTexture(0);
 
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-				glEnable(GL_BLEND);
 				blurBufferUsed = ssaoBlurFBO;
 			}
 		}
@@ -526,7 +522,7 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 void SceneRenderer::RenderSceneShadowCubeMaps(Scene* scene)
 {
 	// if not prepass then we blit the prepasses to the regular pass, then those are the targets we're rendering (adding) too
-	glDisable(GL_BLEND);
+	//glDisable(GL_BLEND);
 	if (!currentPassIsStatic && scene->GetNumPointLights() > 0)
 	{
 		// blit the preepass to the active
@@ -570,7 +566,6 @@ void SceneRenderer::RenderSceneShadowCubeMaps(Scene* scene)
 	}
 	if (scene->rendererShouldRefreshStaticMaps) scene->rendererShouldRefreshStaticMaps = false;
 	FrameBuffer::UnBindTarget();
-	glEnable(GL_BLEND);
 }
 
 void SceneRenderer::RenderSceneShadowMaps(Scene* scene, ComponentCamera* camera)
@@ -607,16 +602,16 @@ void SceneRenderer::RenderTransparent(Scene* scene, ComponentCamera* camera)
 {
 	if (transparentCalls.size() > 0)
 	{
-		// set up
-		// blending
+		// set up blending
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 		// do not cull any faces
 		glDisable(GL_CULL_FACE);
 
 		// depth
 		glDepthMask(GL_FALSE); // Disable writing to the depth buffer
+
 		// framebuffer
 		frameBufferCurrent->BindTarget();
 		
@@ -626,7 +621,7 @@ void SceneRenderer::RenderTransparent(Scene* scene, ComponentCamera* camera)
 		glm::mat4 pv = camera->GetViewProjectionMatrix();
 		glm::vec3 pos = camera->GetWorldSpacePosition();
 
-		// probably do some sorting on these calls
+		// probably do some sorting on these calls maybe, depending on blend mode?
 
 		// Soujaboy draw 'em
 		for (auto& c : transparentCalls)
@@ -753,7 +748,6 @@ void SceneRenderer::ssaoGenerateKernel(int size)
 		scale = MathUtils::Lerp(0.1f, 1.0f, scale * scale);
 		sample *= scale;
 		ssaoKernel.push_back(sample);
-		//LogUtils::Log(to_string(sample.x) + " " + to_string(sample.y) + " " + to_string(sample.z));
 	}
 	// Upload the Kernel
 	ShaderProgram* ssaoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOTermPass");
