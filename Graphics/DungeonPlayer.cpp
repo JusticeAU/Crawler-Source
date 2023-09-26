@@ -268,21 +268,23 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 				}
 				return false;
 			}
-			if (currentDungeon->ShouldActivateTransporter(position, (FACING_INDEX)index))
-			{
-				if (index != facing)
-				{
-					facingTarget = false;
-					turnCurrent = 0.0f;
-					oldTurn = object->localRotation.z;
-					targetTurn = orientationEulers[index];
-				}
-				else facingTarget = true;
-				currentDungeon->GetTile(oldPlayerCoordinate)->occupied = false;
-				return false;
-			}
 			else if (currentDungeon->PlayerCanMove(position, index))
 			{
+				// Check for Transporter there!
+				if (currentDungeon->ShouldActivateTransporter(position, (FACING_INDEX)index))
+				{
+					if (index != facing)
+					{
+						facingTarget = false;
+						turnCurrent = 0.0f;
+						oldTurn = object->localRotation.z;
+						targetTurn = orientationEulers[index];
+					}
+					else facingTarget = true;
+					currentDungeon->GetTile(oldPlayerCoordinate)->occupied = false;
+					return false;
+				}
+
 				AudioManager::PlaySound(stepSounds[rand() % 4]);
 				position += directions[index];
 				currentDungeon->GetTile(position)->occupied = true;
