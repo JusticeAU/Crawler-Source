@@ -201,6 +201,7 @@ namespace Crawl
 	protected:
 		Object* tile_template;
 		Object* tilesParentObject = nullptr;
+		Object* pillarsParentObject = nullptr;
 
 		// Pillars
 		// https://stackoverflow.com/questions/62103494/using-stdmap-with-a-glmivec2-as-keyvalue

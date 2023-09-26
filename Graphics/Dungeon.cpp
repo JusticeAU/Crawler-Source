@@ -290,6 +290,7 @@ void Crawl::Dungeon::CreateTileObject(DungeonTile* tile)
 	tile->object = obj;
 
 	// Set up Pillars
+	if (pillarsParentObject == nullptr) pillarsParentObject = Scene::CreateObject("Pillars");
 	UpdatePillarsForTileCoordinate(tile->position);
 
 	// ceiling
@@ -2553,7 +2554,7 @@ void Crawl::Dungeon::UpdatePillarsForTileCoordinate(ivec2 coordinate)
 			// if not, add it
 			if (pillar == pillars.end())
 			{
-				Object* pillarObj = Scene::CreateObject();
+				Object* pillarObj = Scene::CreateObject(pillarsParentObject);
 				pillarObj->LoadFromJSON(ReadJSONFromDisk("crawler/model/tile_pillar.object"));
 				pillarObj->SetLocalPosition(dungeonPosToObjectScale(coordinate));
 				pillarObj->AddLocalPosition({ directionsDiagonal[i].x, directionsDiagonal[i].y, 0 });
