@@ -61,6 +61,8 @@ namespace Crawl
 
 		void DoEvent(int eventID);
 		bool didJustRespawn = false;
+
+		bool enableDebugUI = false;
 	private:
 		bool UpdateStateIdle(float delta);
 		bool IsMoveDown();
@@ -77,6 +79,8 @@ namespace Crawl
 		void UpdateFTUE();
 		void SetFTUEPrompt(string prompt);
 		void ClearFTUEPrompt(bool instant = false);
+
+		void DrawDebugUI();
 
 		glm::ivec2 position;
 		FACING_INDEX facing = EAST_INDEX;

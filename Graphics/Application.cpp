@@ -155,6 +155,7 @@ void Application::LaunchArgument(char* arg)
 		dungeonEditor->SetDungeon(dungeon);
 		dungeonEditor->Activate();
 		Window::SetWindowTitle("Crawler Editor");
+		dungeonPlayer->enableDebugUI = true;
 	}
 	else if (argument == "art")
 	{
@@ -193,6 +194,7 @@ void Application::LaunchArgument(char* arg)
 	{
 		developerMode = true;
 		Scene::CreateSceneEditorCamera();
+		dungeonPlayer->enableDebugUI = true;
 	}
 }
 

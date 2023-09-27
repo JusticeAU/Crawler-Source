@@ -42,6 +42,8 @@ void Crawl::DungeonPlayer::SetDungeon(Dungeon* dungeonPtr)
 // Returns true if the player made a game-state changing action
 bool Crawl::DungeonPlayer::Update(float deltaTime)
 {
+	if(enableDebugUI) DrawDebugUI();
+
 	if (ftueEnabled)
 	{
 		UpdateFTUE();
@@ -719,6 +721,26 @@ void Crawl::DungeonPlayer::ClearFTUEPrompt(bool instant)
 		promptCurrent = 0.0f;
 		camera->promptUse = false;
 	}
+}
+
+void Crawl::DungeonPlayer::DrawDebugUI()
+{
+	ImGui::SetNextWindowPos({ 0,0 });
+	ImGui::SetNextWindowSize({ 615, 30 });
+	ImGui::Begin("Debug Information", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize);
+	ImGui::BeginDisabled();
+	ImGui::PushItemWidth(200);
+	ImGui::InputText("Level", &currentDungeon->dungeonFileName);
+	ImGui::SameLine();
+	ImGui::PopItemWidth();
+	ImGui::PushItemWidth(75);
+	ImGui::InputInt2("Position", &position.x);
+	ImGui::SameLine();
+	ImGui::PopItemWidth();
+	ImGui::PushItemWidth(100);
+	ImGui::InputText("Facing", &orientationNames[facing]);
+	ImGui::PopItemWidth();
+	ImGui::EndDisabled();
 }
 
 void Crawl::DungeonPlayer::Teleport(ivec2 position)
