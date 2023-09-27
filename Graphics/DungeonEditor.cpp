@@ -1659,26 +1659,29 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 		ImGui::EndCombo();
 	}
 
-	if (ImGui::Checkbox("Player Turn is Free (Default is True)", &dungeon->playerTurnIsFree))
+	if (ImGui::Checkbox("No Roof", &dungeon->noRoof))
 		MarkUnsavedChanges();
 
-	if (ImGui::Checkbox("Player Interact is Free (Default is False)", &dungeon->playerInteractIsFree))
-		MarkUnsavedChanges();
+	//if (ImGui::Checkbox("Player Turn is Free (Default is True)", &dungeon->playerTurnIsFree))
+	//	MarkUnsavedChanges();
 
-	/*if (ImGui::Checkbox("Player can Knife (Default is False)", &dungeon->playerHasKnife))
-		MarkUnsavedChanges();*/
+	//if (ImGui::Checkbox("Player Interact is Free (Default is False)", &dungeon->playerInteractIsFree))
+	//	MarkUnsavedChanges();
 
-	if (ImGui::Checkbox("Player can Kick (Default is True)", &dungeon->playerCanKickBox))
-		MarkUnsavedChanges();
+	///*if (ImGui::Checkbox("Player can Knife (Default is False)", &dungeon->playerHasKnife))
+	//	MarkUnsavedChanges();*/
 
-	if (ImGui::Checkbox("Player Can Push Box (Default is False)", &dungeon->playerCanPushBox))
-		MarkUnsavedChanges();
+	//if (ImGui::Checkbox("Player can Kick (Default is True)", &dungeon->playerCanKickBox))
+	//	MarkUnsavedChanges();
 
-	if (ImGui::Checkbox("Switchers Must Be Looked At (Default is False)", &dungeon->switchersMustBeLookedAt))
-		MarkUnsavedChanges();
+	//if (ImGui::Checkbox("Player Can Push Box (Default is False)", &dungeon->playerCanPushBox))
+	//	MarkUnsavedChanges();
 
-	if (ImGui::Checkbox("Player Can Push Mirrors (Default is False)", &dungeon->playerCanPushMirror))
-		MarkUnsavedChanges();
+	//if (ImGui::Checkbox("Switchers Must Be Looked At (Default is False)", &dungeon->switchersMustBeLookedAt))
+	//	MarkUnsavedChanges();
+
+	//if (ImGui::Checkbox("Player Can Push Mirrors (Default is False)", &dungeon->playerCanPushMirror))
+	//	MarkUnsavedChanges();
 
 
 	if (ImGui::Button("Beauty Scene Quick Config"))
