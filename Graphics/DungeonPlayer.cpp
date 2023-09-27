@@ -741,6 +741,7 @@ void Crawl::DungeonPlayer::DrawDebugUI()
 	ImGui::InputText("Facing", &orientationNames[facing]);
 	ImGui::PopItemWidth();
 	ImGui::EndDisabled();
+	ImGui::End();
 }
 
 void Crawl::DungeonPlayer::Teleport(ivec2 position)

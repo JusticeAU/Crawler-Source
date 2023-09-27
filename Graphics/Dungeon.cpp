@@ -868,7 +868,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		kickableChaser->targetPosition = dungeonPosToObjectScale(moveToPos);
 		kickableChaser->position = moveToPos;
 		kickableChaser->positionWant = moveToPos;
-
+		kickableChaser->animator->StartAnimation(kickableChaser->animationKickBack);
 		return true;
 	}
 
@@ -2357,7 +2357,10 @@ void Crawl::Dungeon::Update()
 
 	// Chaser Logic
 	for (auto& chaser : chasers)
-		chaser->Update();
+	{
+
+		if(!chaser->isDead) chaser->Update();
+	}
 
 	// Check for chaser clashes
 	if (chasers.size() > 1)
@@ -2450,7 +2453,7 @@ void Crawl::Dungeon::UpdateVisuals(float delta)
 	{
 		chasers[i]->UpdateVisuals(delta);
 		{
-			if (chasers[i]->isDead)
+			if (chasers[i]->stateVisual == Crawl::DungeonEnemyChase::DYING && chasers[i]->isDead)
 			{
 				RemoveEnemyChase(chasers[i]);
 				i--;

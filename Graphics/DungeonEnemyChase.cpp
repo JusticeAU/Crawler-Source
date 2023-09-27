@@ -38,6 +38,7 @@ void Crawl::DungeonEnemyChase::Update()
 			{
 				LogUtils::Log("Chaser saw player - activating.");
 				state = IDLE;
+				stateVisual = IDLE;
 				if (animator) animator->StartAnimation(animationActivate);
 				return;
 			}
@@ -144,14 +145,28 @@ void Crawl::DungeonEnemyChase::UpdateVisuals(float delta)
 	switch (stateVisual)
 	{
 	case IDLE:
+		if (animator->current->IsFinished()) animator->StartAnimation(animationIdle, true);
 		break;
 	case TURNING:
 	{
+		if (isDead)
+		{
+			stateVisual = DYING;
+			return;
+		}
 		if (animator->current->IsFinished())
 		{
-			state = IDLE;
 			object->SetLocalRotationZ(targetTurn);
-			animator->SetPose(animationWalkForward);
+
+			if (animator->current->IsFinished())
+			{
+				if (!isDead)
+				{
+					animator->StartAnimation(animationIdle, true);
+					stateVisual = IDLE;
+				}
+				else stateVisual = DYING;
+			}
 		}
 		break;
 	}
@@ -159,9 +174,17 @@ void Crawl::DungeonEnemyChase::UpdateVisuals(float delta)
 	{
 		if (animator->current->IsFinished()) // animation has finished
 		{
-			state = IDLE;
 			object->SetLocalPosition(targetPosition);
-			animator->SetPose(animationWalkForward);
+			
+			if (animator->current->IsFinished())
+			{
+				if (!isDead)
+				{
+					animator->StartAnimation(animationIdle, true);
+					stateVisual = IDLE;
+				}
+				else stateVisual = DYING;
+			}
 		}
 		break;
 	}
@@ -172,7 +195,8 @@ void Crawl::DungeonEnemyChase::UpdateVisuals(float delta)
 		if (moveCurrent > kickedSpeed)
 		{
 			object->SetLocalPosition(targetPosition);
-			stateVisual = IDLE;
+			if (!isDead) stateVisual = IDLE;
+			else stateVisual = DYING;
 		}
 		else
 			object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, t));
@@ -185,7 +209,8 @@ void Crawl::DungeonEnemyChase::UpdateVisuals(float delta)
 		if (bounceCurrent > bounceSpeed)
 		{
 			object->SetLocalPosition(oldPosition);
-			stateVisual = IDLE;
+			if(!isDead) stateVisual = IDLE;
+			else stateVisual = DYING;
 		}
 		else
 		{
@@ -194,6 +219,10 @@ void Crawl::DungeonEnemyChase::UpdateVisuals(float delta)
 
 			object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, t));
 		}
+		break;
+	}
+	case DYING:
+	{
 		break;
 	}
 	}

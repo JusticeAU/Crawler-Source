@@ -19,7 +19,8 @@ namespace Crawl
 			TURNING,
 			BOUNCING,
 			STUN,
-			KICKED
+			KICKED,
+			DYING
 		};
 
 		const bool sightReflectsOffMirrors = true;
@@ -30,16 +31,19 @@ namespace Crawl
 		bool isDead = false;
 		
 		STATE state = INACTIVE;
-		STATE stateVisual = IDLE;
+		STATE stateVisual = INACTIVE;
 
 		const bool useAnimator = true;
 		string animationBaseName = "crawler/model/monster_chaser.fbx";
-		string animationIdle = animationBaseName + "chaser.rig|chaser_idle"; // We call this as a pose instead.
+		string animationIdle = animationBaseName + "chaser.rig|chaser_idle";
 		string animationActivate = animationBaseName + "chaser.rig|chaser_activate";
 		string animationWalkForward = animationBaseName + "chaser.rig|chaser_walk";
 		string animationTurnLeft = animationBaseName + "chaser.rig|chaser_turn_left";
 		string animationTurnRight = animationBaseName + "chaser.rig|chaser_turn_right";
-		string animationFlourish = "";
+		string animationKickFront = animationBaseName + "chaser.rig|chaser_idle";
+		string animationKickLeft = animationBaseName + "chaser.rig|chaser_idle";
+		string animationKickBack = animationBaseName + "chaser.rig|chaser_idle";
+		string animationKickRight = animationBaseName + "chaser.rig|chaser_idle";
 		string animationDeath = "";
 
 
