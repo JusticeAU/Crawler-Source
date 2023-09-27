@@ -18,6 +18,7 @@
 #include "DungeonStairs.h"
 #include "DungeonLight.h"
 #include "DungeonEventTrigger.h"
+#include "DungeonEnemySlugPath.h"
 
 #include "Object.h"
 #include "Input.h"
@@ -85,6 +86,16 @@ void Crawl::DungeonEditor::DrawGUI()
 		case Mode::TileEdit:
 		{
 			DrawGUIModeTileEdit();
+			break;
+		}
+		case Mode::MurderinaPathBrush:
+		{
+			DrawGUIModeRailBrush();
+			break;
+		}
+		case Mode::MurderinaPathEdit:
+		{
+			DrawGUIModeRailEdit();
 			break;
 		}
 		case Mode::DungeonProperties:
@@ -281,10 +292,8 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 }
 void Crawl::DungeonEditor::DrawGUIModeSelect()
 {
-	string mode = "Tile Brush";
 	if (ImGui::BeginCombo("Mode", editModeNames[(int)editMode].c_str()))
 	{
-		// Options here!
 		if (ImGui::Selectable(editModeNames[0].c_str()))
 		{
 			editMode = Mode::TileBrush;
@@ -297,20 +306,27 @@ void Crawl::DungeonEditor::DrawGUIModeSelect()
 			editMode = Mode::TileEdit;
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 			ImGui::SetTooltip("Edit specific configuration items on a tile.");
-		
-		/*ImGui::Selectable("Entity Editor");
+
+		if (ImGui::Selectable(editModeNames[2].c_str()))
+		{
+			editMode = Mode::MurderinaPathBrush;
+		}
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-			ImGui::SetTooltip("Add and edit entities in the world");*/
+			ImGui::SetTooltip("Build paths for the Murderina");
 
 		if (ImGui::Selectable(editModeNames[3].c_str()))
+		{
+			editMode = Mode::MurderinaPathEdit;
+			murderinaPathSelected = nullptr;
+		}
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("Tweak existing paths for the Murderina");
+
+		if (ImGui::Selectable(editModeNames[4].c_str()))
 			editMode = Mode::DungeonProperties;
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 			ImGui::SetTooltip("Edit specific configuration items about this particular dungeon");
 
-		if (ImGui::Selectable(editModeNames[4].c_str()))
-			editMode = Mode::SlugPathEditor;
-		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-			ImGui::SetTooltip("Build paths for the slugs");
 		ImGui::EndCombo();
 	}
 }
@@ -438,42 +454,6 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		ImGui::PopID();
 	}
 
-	// Path finding dev stuff.
-	/*int distance = dungeon->goodPath.size();
-	ImGui::InputInt("Distance", &distance);
-	ImGui::InputInt("Cost", &selectedTile->cost);
-	for (int i = 0; i < 4; i++)
-	{
-		if(selectedTile->neighbors[i])
-			ImGui::Text("neighbor");
-		else
-			ImGui::Text("nah");
-	}*/
-
-	// if yes, what wall variant - hidden for now, non-functional
-	/*ImGui::BeginDisabled();
-	if (!selectedTileUntraversableWalls[0])
-		ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[0] - 1].c_str());
-	else
-		ImGui::Text("Open");
-
-	if (!selectedTileUntraversableWalls[1])
-		ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[1] - 1].c_str());
-	else
-		ImGui::Text("Open");
-
-	if (!selectedTileUntraversableWalls[2])
-		ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[2] - 1].c_str());
-	else
-		ImGui::Text("Open");
-
-	if (!selectedTileUntraversableWalls[3])
-		ImGui::Text(dungeon->wallVariantPaths[selectedTile->wallVariants[3] - 1].c_str());
-	else
-		ImGui::Text("Open");
-
-	ImGui::EndDisabled();*/
-
 	// Buttons
 	ImGui::Spacing();
 	ImGui::Text("Tile Objects");
@@ -579,11 +559,11 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		}
 		if (maxChasers) ImGui::EndDisabled();
 		//ImGui::SameLine();
-		if (ImGui::Selectable("Slug"))
+		if (ImGui::Selectable("Murderina"))
 		{
 			MarkUnsavedChanges();
-			selectedSlugEnemy = dungeon->CreateSlug(selectedTile->position, NORTH_INDEX);
-			selectedSlugEnemyWindowOpen = true;
+			selectedMurderinaEnemy = dungeon->CreateMurderina(selectedTile->position, NORTH_INDEX);
+			selectedMurdurinaWindowOpen = true;
 			selectedTileOccupied = true;
 		}
 		//ImGui::SameLine();
@@ -720,9 +700,9 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	{
 		if (ImGui::Selectable("Chaser")) selectedChaseEnemyWindowOpen = true;
 	}
-	if (selectedSlugEnemy)
+	if (selectedMurderinaEnemy)
 	{
-		if (ImGui::Selectable("Slug")) selectedSlugEnemyWindowOpen = true;
+		if (ImGui::Selectable("Slug")) selectedMurdurinaWindowOpen = true;
 	}
 	if (selectedSwitcherEnemy)
 	{
@@ -791,8 +771,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		DrawGUIModeTileEditBlocker();
 	if (selectedChaseEnemyWindowOpen)
 		DrawGUIModeTileEditChase();
-	if (selectedSlugEnemyWindowOpen)
-		DrawGUIModeTileEditSlug();
+	if (selectedMurdurinaWindowOpen)
+		DrawGUIModeTileEditMurdurina();
 
 	if (selectedSwitcherEnemyWindowOpen)
 		DrawGUIModeTileEditSwitcher();
@@ -1263,39 +1243,39 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditChase()
 
 	ImGui::End();
 }
-void Crawl::DungeonEditor::DrawGUIModeTileEditSlug()
+void Crawl::DungeonEditor::DrawGUIModeTileEditMurdurina()
 {
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
-	ImGui::Begin("Edit Slug Enemy", &selectedSlugEnemyWindowOpen);
+	ImGui::Begin("Edit Murderina Enemy", &selectedMurdurinaWindowOpen);
 
-	if (ImGui::BeginCombo("Look Direction", orientationNames[selectedSlugEnemy->facing].c_str()))
+	if (ImGui::BeginCombo("Look Direction", orientationNames[selectedMurderinaEnemy->facing].c_str()))
 	{
-		int oldOrientation = selectedSlugEnemy->facing;
+		int oldOrientation = selectedMurderinaEnemy->facing;
 		for (int i = 0; i < 4; i++)
 			if (ImGui::Selectable(orientationNames[i].c_str()))
 			{
-				selectedSlugEnemy->facing = (FACING_INDEX)i;
-				if (selectedSlugEnemy->facing != oldOrientation)
+				selectedMurderinaEnemy->facing = (FACING_INDEX)i;
+				if (selectedMurderinaEnemy->facing != oldOrientation)
 				{
 					MarkUnsavedChanges();
-					selectedSlugEnemy->object->SetLocalRotationZ(orientationEulers[i]);
+					selectedMurderinaEnemy->object->SetLocalRotationZ(orientationEulers[i]);
 				}
 			}
 		ImGui::EndCombo();
 	}
 
 	if (ImGui::Button("Delete"))
-		ImGui::OpenPopup("delete_chaser_confirm");
-	if (ImGui::BeginPopupModal("delete_chaser_confirm"))
+		ImGui::OpenPopup("delete_murderina_confirm");
+	if (ImGui::BeginPopupModal("delete_murderina_confirm"))
 	{
-		ImGui::Text("Are you sure you want to delete the Slug?");
+		ImGui::Text("Are you sure you want to delete the Murderina?");
 		if (ImGui::Button("Yes"))
 		{
 			MarkUnsavedChanges();
-			dungeon->RemoveSlug(selectedSlugEnemy);
-			selectedSlugEnemy = nullptr;
-			selectedSlugEnemyWindowOpen = false;
+			dungeon->RemoveSlug(selectedMurderinaEnemy);
+			selectedMurderinaEnemy = nullptr;
+			selectedMurdurinaWindowOpen = false;
 			RefreshSelectedTile();
 		}
 		if (ImGui::Button("Cancel"))
@@ -1702,6 +1682,84 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 	}
 }
 
+
+void Crawl::DungeonEditor::DrawGUIModeRailBrush()
+{
+	ImGui::Checkbox("Auto Tile", &murderinaPathAutoTile);
+	if (!murderinaPathAutoTile) ImGui::BeginDisabled();
+	ImGui::Checkbox("Update Neighbors", &murderinaPathUpdateNeighbors);
+	if (!murderinaPathAutoTile) ImGui::EndDisabled();
+
+	DrawGUIModeRailLines();
+}
+void Crawl::DungeonEditor::DrawGUIModeRailEdit()
+{
+	if (!murderinaPathSelected)
+	{
+		ImGui::Text("No Path Piece Selected");
+	}
+	else
+	{
+		unsigned int oldMaskTraverse = murderinaPathSelected->maskTraverse;
+		ImGui::Indent();
+		if (ImGui::Checkbox("North", &murderinaSelectedPathTraversable[NORTH_INDEX]))
+			murderinaPathSelected->maskTraverse += murderinaSelectedPathTraversable[NORTH_INDEX] ? NORTH_MASK : -NORTH_MASK;
+		ImGui::Unindent();
+
+		if (ImGui::Checkbox("West", &murderinaSelectedPathTraversable[WEST_INDEX]))
+			murderinaPathSelected->maskTraverse += murderinaSelectedPathTraversable[WEST_INDEX] ? WEST_MASK : -WEST_MASK;
+		ImGui::SameLine();
+		if (ImGui::Checkbox("East", &murderinaSelectedPathTraversable[EAST_INDEX]))
+			murderinaPathSelected->maskTraverse += murderinaSelectedPathTraversable[EAST_INDEX] ? EAST_MASK : -EAST_MASK;
+
+		ImGui::SameLine();
+		ImGui::Text("  ");
+		ImGui::SameLine();
+		if (murderinaPathSelected->IsValidConfiguration())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+			ImGui::Text("Valid!");
+		}
+		else
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+			ImGui::Text("Invalid!");
+		}
+		ImGui::PopStyleColor();
+
+		ImGui::Indent();
+		if (ImGui::Checkbox("South", &murderinaSelectedPathTraversable[SOUTH_INDEX]))
+			murderinaPathSelected->maskTraverse += murderinaSelectedPathTraversable[SOUTH_INDEX] ? SOUTH_MASK : -SOUTH_MASK;
+		ImGui::Unindent();
+
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("Configure in what direction things can walk off this tile");
+		if (oldMaskTraverse != murderinaPathSelected->maskTraverse)
+		{
+			MarkUnsavedChanges();
+			murderinaPathSelected->RefreshObject();
+		}
+	}
+	DrawGUIModeRailLines();
+}
+
+void Crawl::DungeonEditor::DrawGUIModeRailLines()
+{
+	for (auto& slugPath : dungeon->slugPaths)
+	{
+		vec3 position = dungeonPosToObjectScale(slugPath->position);
+		vec3 colour = { 0,1,1 };
+		if (!slugPath->IsValidConfiguration()) colour = { 1, 0 ,0 };
+		for (int i = 0; i < 4; i++)
+		{
+			if ((slugPath->maskTraverse & orientationMasksIndex[i]) == orientationMasksIndex[i])
+			{
+				LineRenderer::DrawLine(position, position + (dungeonPosToObjectScale(directions[i]) * 0.5f), colour);
+			}
+		}
+	}
+}
+
 void Crawl::DungeonEditor::Update()
 {
 	// Draw Player Position
@@ -1714,8 +1772,10 @@ void Crawl::DungeonEditor::Update()
 		UpdateModeTileBrush();	break;
 	case Mode::TileEdit:
 		UpdateModeTileEdit();	break;
-	case Mode::SlugPathEditor:
-		UpdateModeSlugPathEdit();	break;
+	case Mode::MurderinaPathBrush:
+		UpdateModeMurderinaBrush();	break;
+	case Mode::MurderinaPathEdit:
+		UpdateModeMurderinaEdit();	break;
 	case Mode::DungeonProperties:
 	{
 		for (auto& column : dungeon->tiles)
@@ -1798,76 +1858,30 @@ void Crawl::DungeonEditor::UpdateModeTileEdit()
 		
 		RefreshSelectedTile();
 	}
-
-	//if (Input::Mouse(0).Down())
-	//{
-	//	// make new light
-
-	//	Object* obj = Scene::CreateObject("Light");
-	//	GetMousePosOnGrid();
-	//	groundPos.z = 1.5f;
-	//	obj->SetLocalPosition(groundPos);
-	//	ComponentLightPoint* light = new ComponentLightPoint(obj);
-	//	//obj->components.push_back(light);
-	//	light->colour.x = (rand() % 100) * 0.01;
-	//	light->colour.y = (rand() % 100) * 0.01;
-	//	light->colour.z = (rand() % 100) * 0.01;
-	//}
-
-	// path finding dev stuff
-	/*if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down())
-	{
-		from = GetMousePosOnGrid();
-		to = dungeon->player->GetPosition();
-		LogUtils::Log("Path finding with free turns");
-		for (auto& o : pathFindObjects)
-			o->markedForDeletion = true;
-		pathFindObjects.clear();
-
-		dungeon->FindPath(from, to);
-		for (auto& p : dungeon->goodPath)
-		{
-			Object* o = Scene::CreateObject();
-			o->LoadFromJSON(path_template);
-			o->AddLocalPosition({ p->position.x * DUNGEON_GRID_SCALE, p->position.y * DUNGEON_GRID_SCALE, 0 });
-			pathFindObjects.push_back(o);
-		}
-	}*/
-
-	/*if (Input::Keyboard(GLFW_KEY_SPACE).Down())
-	{
-		from = GetMousePosOnGrid();
-		to = dungeon->player->GetPosition();
-		LogUtils::Log("Path finding with turn cost");
-		for (auto& o : pathFindObjects)
-			o->markedForDeletion = true;
-		pathFindObjects.clear();
-
-		dungeon->FindPath(from, to, facingTest);
-		for (auto& p : dungeon->goodPath)
-		{
-			Object* o = Scene::CreateObject();
-			o->LoadFromJSON(path_template);
-			o->AddLocalPosition({ p->position.x * DUNGEON_GRID_SCALE, p->position.y * DUNGEON_GRID_SCALE, 0 });
-			pathFindObjects.push_back(o);
-		}
-	}*/
 }
-void Crawl::DungeonEditor::UpdateModeSlugPathEdit()
+void Crawl::DungeonEditor::UpdateModeMurderinaBrush()
 {
-	if (slugPathCursor == nullptr)
+	if (murderinaPathCursor == nullptr)
 	{
-		slugPathCursor = Scene::CreateObject();
-		slugPathCursor->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/slug_rail_nothing.object"));
+		murderinaPathCursor = Scene::CreateObject();
+		murderinaPathCursor->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/slug_rail_nothing.object"));
 	}
-	
+
 	gridSelected = GetMousePosOnGrid();
-	slugPathCursor->SetLocalPosition(dungeonPosToObjectScale(gridSelected));
+	murderinaPathCursor->SetLocalPosition(dungeonPosToObjectScale(gridSelected));
 
 	if (Input::Mouse(0).Down())
 	{
-		if (dungeon->CreateSlugPath(gridSelected))
+		DungeonEnemySlugPath* newPath = dungeon->CreateSlugPath(gridSelected);
+		if (newPath)
+		{
 			MarkUnsavedChanges();
+			if (murderinaPathAutoTile) newPath->AutoGenerateMask();
+			if (murderinaPathAutoTile && murderinaPathUpdateNeighbors) newPath->RefreshNeighbors();
+
+			newPath->RefreshObject();
+		}
+
 	}
 
 	if (Input::Mouse(2).Down())
@@ -1875,8 +1889,24 @@ void Crawl::DungeonEditor::UpdateModeSlugPathEdit()
 		DungeonEnemySlugPath* toDelete = dungeon->GetSlugPath(gridSelected);
 		if (toDelete)
 		{
+			if (murderinaPathAutoTile && murderinaPathUpdateNeighbors) toDelete->RemoveConnectionsFromNeighbors();
 			dungeon->RemoveSlugPath(toDelete);
 			MarkUnsavedChanges();
+		}
+	}
+}
+void Crawl::DungeonEditor::UpdateModeMurderinaEdit()
+{
+	if (Input::Mouse(0).Down())
+	{
+		murderinaPathSelected = dungeon->GetSlugPath(GetMousePosOnGrid());
+		if (murderinaPathSelected)
+		{
+			murderinaSelectedPathTraversable[NORTH_INDEX] = (murderinaPathSelected->maskTraverse & NORTH_MASK) == NORTH_MASK;
+			murderinaSelectedPathTraversable[WEST_INDEX] = (murderinaPathSelected->maskTraverse & WEST_MASK) == WEST_MASK;
+			murderinaSelectedPathTraversable[EAST_INDEX] = (murderinaPathSelected->maskTraverse & EAST_MASK) == EAST_MASK;
+			murderinaSelectedPathTraversable[SOUTH_INDEX] = (murderinaPathSelected->maskTraverse & SOUTH_MASK) == SOUTH_MASK;
+
 		}
 	}
 }
@@ -2014,12 +2044,12 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 		}
 	}
 
-	selectedSlugEnemy = nullptr;
+	selectedMurderinaEnemy = nullptr;
 	for (int i = 0; i < dungeon->slugs.size(); i++)
 	{
 		if (dungeon->slugs[i]->position == selectedTile->position)
 		{
-			selectedSlugEnemy = dungeon->slugs[i];
+			selectedMurderinaEnemy = dungeon->slugs[i];
 			selectedTileOccupied = true;
 		}
 	}
@@ -2148,6 +2178,14 @@ void Crawl::DungeonEditor::DrawGizmos()
 			LineRenderer::DrawLine(position, position + vec3(direction.x, direction.y, 0), { 1.0f, 0.5f, 0.5f });
 		}
 
+	}
+
+	if (murderinaPathSelected)
+	{
+		vec3 position = dungeonPosToObjectScale(murderinaPathSelected->position);
+		vec3 colour = { 0, 1,1 };
+		if (!murderinaPathSelected->IsValidConfiguration())  colour = { 1, 0, 0 };
+		LineRenderer::DrawFlatBox(position, 0.2f, colour);
 	}
 }
 
@@ -2316,11 +2354,12 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedSwitcherEnemy = nullptr;
 	selectedCheckpoint = nullptr;
 	selectedMirror = nullptr;
-	selectedSlugEnemy = nullptr;
+	selectedMurderinaEnemy = nullptr;
 	selectedTileDecoration = nullptr;
 	selectedStairs = nullptr;
 	selectedLight = nullptr;
 	selectedEventTrigger = nullptr;
+	murderinaPathSelected = nullptr;
 
 	selectedDoorWindowOpen = false;
 	selectedLeverWindowOpen = false;
@@ -2332,7 +2371,7 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedSwitcherEnemyWindowOpen = false;
 	selectedCheckpointWindowOpen = false;
 	selectedMirrorWindowOpen = false;
-	selectedSlugEnemyWindowOpen = false;
+	selectedMurdurinaWindowOpen = false;
 	selectedDecorationWindowOpen = false;
 	selectedStairsWindowOpen = false;
 	selectedLightWindowOpen = false;

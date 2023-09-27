@@ -145,7 +145,7 @@ namespace Crawl
 		bool IsMirrorAtPosition(ivec2 position);
 		void RotateMirror(DungeonMirror* mirror, int direction);
 
-		DungeonEnemySlug* CreateSlug(ivec2 position, FACING_INDEX direction);
+		DungeonEnemySlug* CreateMurderina(ivec2 position, FACING_INDEX direction);
 		void RemoveSlug(DungeonEnemySlug* slug);
 		
 		DungeonEnemySlugPath* CreateSlugPath(ivec2 position);
@@ -195,7 +195,7 @@ namespace Crawl
 		// After loading a dungeon, this will build it in the Scene graph based on tile adjacency. used on editor and playmode dungeon loading.
 		void BuildSceneFromDungeonLayout();
 
-		const int version = 2; // increment this when the .dungeon file schema changes and ensure backwards compatibility.
+		const int version = 3; // increment this when the .dungeon file schema changes and ensure backwards compatibility.
 	public:
 		std::map<int, Column> tiles;
 	protected:

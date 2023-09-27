@@ -1542,7 +1542,7 @@ void Crawl::Dungeon::RotateMirror(DungeonMirror* mirror, int direction)
 	mirror->object->SetLocalRotationZ(orientationEulers[(int)mirror->facing]);
 }
 
-Crawl::DungeonEnemySlug* Crawl::Dungeon::CreateSlug(ivec2 position, FACING_INDEX direction)
+Crawl::DungeonEnemySlug* Crawl::Dungeon::CreateMurderina(ivec2 position, FACING_INDEX direction)
 {
 	DungeonEnemySlug* slug = new DungeonEnemySlug();
 	slug->position = position;
@@ -1617,19 +1617,6 @@ Crawl::DungeonEnemySlugPath* Crawl::Dungeon::CreateSlugPath(ivec2 position)
 	slugPath->position = position;
 	slugPath->dungeon = this;
 	slugPaths.push_back(slugPath);
-
-	// create neighbor references
-	slugPath->RefreshNeighbors();
-	slugPath->RefreshObject();
-	for (int i = 0; i < 4; i++)
-	{
-		if (slugPath->neighbors[i])
-		{
-			slugPath->neighbors[i]->neighbors[facingIndexesReversed[i]] = slugPath;
-			slugPath->neighbors[i]->RefreshObject();
-		}
-	}
-
 	return slugPath;
 }
 
@@ -2055,6 +2042,20 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	{
 		DungeonEnemySlugPath slug = it.value().get<Crawl::DungeonEnemySlugPath>();
 		DungeonEnemySlugPath* newSlug = CreateSlugPath(slug.position);
+		newSlug->maskTraverse = slug.maskTraverse;
+		if (newSlug->maskTraverse != -1) newSlug->RefreshObject();
+	}
+
+	if (dungeonVersion < 3)
+	{
+		for (auto& slugPath : slugPaths)
+		{
+			if (slugPath->maskTraverse == -1)
+			{
+				slugPath->AutoGenerateMask();
+				slugPath->RefreshObject();
+			}
+		}
 	}
 
 	auto& spikes_json = serialised["spikes"];
@@ -2119,7 +2120,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	for (auto it = slugs_json.begin(); it != slugs_json.end(); it++)
 	{
 		DungeonEnemySlug slug = it.value().get<Crawl::DungeonEnemySlug>();
-		DungeonEnemySlug* newSlug = CreateSlug(slug.position, slug.facing);
+		DungeonEnemySlug* newSlug = CreateMurderina(slug.position, slug.facing);
 	}
 
 	auto& switchers_json = serialised["switchers"];

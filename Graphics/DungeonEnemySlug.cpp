@@ -22,35 +22,38 @@ void Crawl::DungeonEnemySlug::Update()
 	DungeonEnemySlugPath* onPath = dungeon->GetSlugPath(position);
 	if (onPath)
 	{
-		// Check there is a path at current position + facing
-		DungeonEnemySlugPath* toPath = dungeon->GetSlugPath(position + directions[facing]);
-
-		// check left, then right, otherwise turn around.
-		if (!toPath)
+		// forward, left, then right, otherwise turn around.
+		bool validPath = false;
+		for (int i = 0; i < 4; i++)
 		{
-			for (int i = 0; i < 3; i++)
+			FACING_INDEX testDirection = dungeonRotate(facing, slugTurns[i]);
+			if ((onPath->maskTraverse & orientationMasksIndex[testDirection]) == orientationMasksIndex[testDirection])
 			{
-				toPath = dungeon->GetSlugPath(position + directions[dungeonRotate(facing, slugTurns[i])]);
-				if (toPath)
-				{
-					facing = dungeonRotate(facing, slugTurns[i]);
-					break;
-				}
+				facing = testDirection;
+				validPath = true;
+				break;
 			}
 		}
 
 		DungeonTile* fromTile = dungeon->GetTile(position);
-		DungeonTile* toTile = dungeon->GetTile(position + directions[facing]);
-		fromTile->occupied = false;
-		toTile->occupied = true;
-		position += directions[facing];
+		DungeonTile* toTile;
+		if (validPath)
+		{
+			toTile = dungeon->GetTile(position + directions[facing]);
+			fromTile->occupied = false;
+			toTile->occupied = true;
+			position += directions[facing];
+		}
+		else toTile = fromTile;
+
 		state = MOVING;
 		targetPosition = dungeonPosToObjectScale(position);
-		moveCurrent = -0.0f;
-		dungeon->DamageAtPosition(position, this);
 	}
 	else
 		LogUtils::Log("Slug is not on a path");
+	
+	moveCurrent = 0.0f;
+	dungeon->DamageAtPosition(position, this);
 }
 
 void Crawl::DungeonEnemySlug::UpdateVisuals(float delta)

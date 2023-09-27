@@ -10,7 +10,7 @@ namespace Crawl
 	{
 	public:
 		glm::ivec2 position = { 0, 0 };
-		int maskTraverse = 0;
+		int maskTraverse = -1;
 		int maskSee = 0;
 		int wallVariants[4] = { -1, -1, -1 ,-1 }; // North, East, South, West. -1 is no wall, any other value is to index in to the dungeon wallVariantPaths array. visual only.
 

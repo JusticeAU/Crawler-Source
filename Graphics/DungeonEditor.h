@@ -13,9 +13,9 @@ namespace Crawl
 		{
 			TileBrush,
 			TileEdit,
-			EntityEdit,
+			MurderinaPathBrush,
+			MurderinaPathEdit,
 			DungeonProperties,
-			SlugPathEditor
 		};
 
 		DungeonEditor();
@@ -42,20 +42,27 @@ namespace Crawl
 		void DrawGUIModeTileEditChase();
 		void DrawGUIModeTileEditSwitcher();
 		void DrawGUIModeTileEditMirror();
-		void DrawGUIModeTileEditSlug();
+		void DrawGUIModeTileEditMurdurina();
 		void DrawGUIModeTileEditDecoration();
 
 		void DrawGUIModeTileEditStairs();
 		void DrawGUIModeTileEditLight();
 		void DrawGUIModeTileEditEventTrigger();
 
-
 		void DrawGUIModeDungeonProperties();
+
+		void DrawGUIModeRailBrush();
+		void DrawGUIModeRailEdit();
+
+		void DrawGUIModeRailLines();
+
 
 		void Update();
 		void UpdateModeTileBrush();
 		void UpdateModeTileEdit();
-		void UpdateModeSlugPathEdit();
+		void UpdateModeMurderinaBrush();
+		void UpdateModeMurderinaEdit();
+
 
 		void DrawTileInformation(DungeonTile* tile, bool drawBorder = false);
 
@@ -104,7 +111,7 @@ namespace Crawl
 		const int WALL_VARIANT_COUNT = 3;
 
 		Mode editMode = Mode::TileBrush;
-		std::string editModeNames[5]{ "Tile Brush", "Tile Edit", "Entity Edit", "Dungeon Properties", "Slug Path Editor"};
+		std::string editModeNames[5]{ "Tile Brush", "Tile Edit", "Rail Brush", "Rail Edit", "Dungeon Properties" };
 
 		// Brush Mode
 		Object* brushObject = nullptr;
@@ -162,8 +169,8 @@ namespace Crawl
 		DungeonEnemySwitcher* selectedSwitcherEnemy = nullptr;
 		bool selectedSwitcherEnemyWindowOpen = false;
 
-		DungeonEnemySlug* selectedSlugEnemy = nullptr;
-		bool selectedSlugEnemyWindowOpen = false;
+		DungeonEnemySlug* selectedMurderinaEnemy = nullptr;
+		bool selectedMurdurinaWindowOpen = false;
 
 		DungeonMirror* selectedMirror = nullptr;
 		bool selectedMirrorWindowOpen = false;
@@ -187,7 +194,11 @@ namespace Crawl
 		bool shouldConfirmSaveBeforeLoad = false;
 
 		// Slug Path Editor Mode
-		Object* slugPathCursor = nullptr;
+		Object* murderinaPathCursor = nullptr;
+		DungeonEnemySlugPath* murderinaPathSelected = nullptr;
+		bool murderinaPathAutoTile = true;
+		bool murderinaPathUpdateNeighbors = true;
+		bool murderinaSelectedPathTraversable[4] = { false, false, false, false };
 
 		//Path Finding Dev
 		ivec2 from = { 0,0 };

@@ -29,7 +29,7 @@ namespace Crawl
 
 		bool isDead = false;
 
-		int slugTurns[3] = { -1, 1, 2 }; // Left, Right, 180.
+		int slugTurns[4] = { 0, -1, 1, 2 }; // Forward,  Left, Right, 180.
 
 		Dungeon* dungeon;
 		Object* object;
