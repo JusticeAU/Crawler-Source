@@ -18,14 +18,18 @@ public:
 	static void PreloadAllFiles();
 
 	static Material* GetMaterial(string name);
-	static bool ReferenceMaterial(string name);
+
 	static void DrawGUI();
 	static MaterialManager* s_instance;
 	static const map<string, Material*>* Materials() { return &s_instance->materials; }
 	static void PushMaterial(string name, Material* material) { s_instance->materials.emplace(name, material); }
 	static void RemoveMaterial(string name);
 
-	static void ListUnreferencedMaterials();
+	void Audit_ScanFolderForMaterialReferences(string folder);
+	void Audit_ReferenceMaterial(string name);
+	void Audit_ListAllUnreferencedMaterials();
+	std::vector<string> Audit_missingMaterials;
+
 protected:
 	MaterialManager();
 	map<string, Material*> materials;
@@ -37,5 +41,6 @@ protected:
 
 	Material* selectedMaterial = nullptr;
 	bool selectedMaterialWindowOpen = false;
+
 };
 

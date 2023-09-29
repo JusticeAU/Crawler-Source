@@ -2,6 +2,7 @@
 #include <string>
 #include <map>
 #include "Texture.h"
+#include <vector>
 
 using std::string;
 using std::map;
@@ -15,8 +16,6 @@ public:
 	static void Init();
 
 	static Texture* GetTexture(string name);
-	static bool ReferenceTexture(string name);
-	static bool UnreferenceTexture(string name);
 
 	static FrameBuffer* GetFrameBuffer(string name);
 
@@ -33,13 +32,16 @@ public:
 	static void PreloadAllFiles();
 	static void PreloadAllFilesContaining(string contains);
 	void CreateTextureFromFile(const char* filename);
-
-	static void ListUnreferencedTextures();
 	
 	void AddFrameBuffer(const char* name, FrameBuffer* fb);
 	void RemoveFrameBuffer(const char* name);
 
 	static void RefreshFrameBuffers();
+
+	void Audit_ScanFolderForTextureReferences(string folder);
+	void Audit_ReferenceTexture(string name);
+	void Audit_ListAllUnreferencedTextures();
+	std::vector<string> Audit_missingTextures;
 
 protected:
 	TextureManager();

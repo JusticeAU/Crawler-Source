@@ -12,7 +12,6 @@ FrameBuffer::FrameBuffer(Type type)
 	m_type = type;
 	m_texture = new Texture();
 	m_texture->loaded = true;
-	m_texture->references++;
 	// generate frame buffer, texture buffer and depth buffer.
 
 	// Generate the texture

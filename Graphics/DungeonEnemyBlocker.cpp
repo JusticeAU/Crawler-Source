@@ -25,7 +25,8 @@ void Crawl::DungeonEnemyBlocker::Update()
 	{
 		LogUtils::Log("Down Swinging, attacking infront");
 		dungeon->DamageAtPosition(position + directions[facing], this);
-		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/monster_blocker_downSwing.material");
+		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/LambertRed.material");
+		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[1] = MaterialManager::GetMaterial("engine/model/materials/LambertRed.material");
 		state = State::DownSwing;
 		animator->BlendToAnimation(animationDownSwing, 0.0f);
 		animator->next->animationSpeedScale = 4.0f;
@@ -42,7 +43,8 @@ void Crawl::DungeonEnemyBlocker::Update()
 		{
 			LogUtils::Log("No Rapid Attack - Moving to Idle");
 			state = State::Idle;
-			((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/monster_blocker_idle.material");
+			((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
+			((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[1] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
 			animator->BlendToAnimation(animationIdle, 0.0f);
 			animator->next->animationSpeedScale = 4.0f;
 		}
@@ -66,7 +68,9 @@ void Crawl::DungeonEnemyBlocker::CheckShouldPrime()
 	if (tile->occupied)
 	{
 		LogUtils::Log("Object infront - Transition to Upswing");
-		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/monster_blocker_upSwing.material");
+		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/LambertAmber.material");
+		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[1] = MaterialManager::GetMaterial("engine/model/materials/LambertAmber.material");
+
 		state = State::UpSwing;
 		animator->BlendToAnimation(animationUpSwing, 0.0f);
 		animator->next->animationSpeedScale = 4.0f;
@@ -74,7 +78,8 @@ void Crawl::DungeonEnemyBlocker::CheckShouldPrime()
 	else
 	{
 		LogUtils::Log("Nothing infront");
-		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("crawler/material/prototype/monster_blocker_idle.material");
+		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
+		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[1] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
 		state = State::Idle;
 	}
 }

@@ -91,7 +91,6 @@ void Texture::CreateSSAONoiseTexture(glm::vec3* noiseTexData)
 {
 	name = "SSAO Noise Texture";
 	loaded = true;
-	references++;
 	glGenTextures(1, &texID);
 	glBindTexture(GL_TEXTURE_2D, texID);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4, 4, 0, GL_RGB, GL_FLOAT, noiseTexData);

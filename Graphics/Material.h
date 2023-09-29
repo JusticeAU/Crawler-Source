@@ -13,16 +13,14 @@ class Material
 {
 public:
 	void DrawGUI();
-	void ReferenceTextures();
-	void UnreferenceTextures();
 	void LoadTextures();
-	void Reference();
-	void Unreference();
 	void SaveToFile();
 
 	bool loaded = false;
 	bool isInGameData = false;
-	int references = 0;
+
+	bool Audit_referenced = false;
+
 	string name;
 	string filePath;
 

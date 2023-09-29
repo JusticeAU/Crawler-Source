@@ -37,6 +37,17 @@ static ordered_json ReadJSONFromDisk(string filename)
 	return input;
 }
 
+template<class UnaryFunction>
+void PerformFunctionOnMatchingKeysRecursive(const json& j, const string key, UnaryFunction f)
+{
+	for (auto it = j.begin(); it != j.end(); ++it)
+	{
+		if (it->contains(key))
+			f(it->at(key));
+		else if (it->is_structured())
+			PerformFunctionOnMatchingKeysRecursive(*it, key, f);
+	}
+}
 
 //Serialisation example
 //namespace glm

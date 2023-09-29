@@ -28,27 +28,8 @@ Material* MaterialManager::GetMaterial(string name)
 	if (matIt == s_instance->materials.end()) return nullptr;
 	else
 	{
-		if (matIt->second != nullptr) matIt->second->Reference();
-		else return nullptr;
-
 		if (!matIt->second->loaded) matIt->second->LoadTextures();
 
-		return matIt->second;
-	}
-}
-
-bool MaterialManager::ReferenceMaterial(string name)
-{
-	auto matIt = s_instance->materials.find(name);
-	if (matIt == s_instance->materials.end())
-	{
-		LogUtils::Log("Error: Material does not exist:" + name);
-		return false;
-	}
-	else
-	{
-		if (matIt->second != nullptr)
-			matIt->second->Reference();
 		return matIt->second;
 	}
 }
@@ -59,8 +40,12 @@ void MaterialManager::DrawGUI()
 	ImGui::SetNextWindowSize({ 400, 900 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Materials", nullptr);
-	if (ImGui::Button("Output Unreferenced Materials"))
-		ListUnreferencedMaterials();
+	/*if (ImGui::Button("Scan folder"))
+	{
+		s_instance->Audit_ScanFolderForMaterialReferences("crawler");
+		s_instance->Audit_ScanFolderForMaterialReferences("engine");
+		s_instance->Audit_ListAllUnreferencedMaterials();
+	}*/
 	if (ImGui::Button("New"))
 	{
 		// Write a material file to disk and then load it
@@ -85,12 +70,13 @@ void MaterialManager::DrawGUI()
 	for (auto m : s_instance->materials)
 	{
 		string name = m.first;
-		if (m.second != nullptr) name += " (refs: " + std::to_string(m.second->references) + ")";
+		//if (m.second && !m.second->Audit_referenced) ImGui::BeginDisabled();
 		if (ImGui::Selectable(name.c_str()))
 		{
 			s_instance->selectedMaterial = m.second;
 			s_instance->selectedMaterialWindowOpen = true;
 		}
+		//if (m.second && !m.second->Audit_referenced) ImGui::EndDisabled();
 	}
 
 	ImGui::End();
@@ -114,13 +100,45 @@ void MaterialManager::RemoveMaterial(string name)
 	}
 }
 
-void MaterialManager::ListUnreferencedMaterials()
+void MaterialManager::Audit_ScanFolderForMaterialReferences(string folder)
 {
-	LogUtils::Log("Unreferenced Materials:");
+	LogUtils::Log("Scanning for objects in: " + folder);
+	for (auto d : fs::recursive_directory_iterator(folder))
+	{
+		if (d.path().extension() == ".object")
+		{
+			ordered_json object = ReadJSONFromDisk(d.path().generic_string());
+			PerformFunctionOnMatchingKeysRecursive(object, "materials", [](ordered_json j) {
+				for (auto& mat : j)
+				{
+					string materialName = mat;
+					MaterialManager::s_instance->Audit_ReferenceMaterial(materialName);
+				}
+			});
+		}
+	}
+}
+
+void MaterialManager::Audit_ReferenceMaterial(string name)
+{
+	auto matIt = s_instance->materials.find(name);
+	if (matIt == s_instance->materials.end()) s_instance->Audit_missingMaterials.push_back(name);
+	else if (matIt->second) matIt->second->Audit_referenced = true;
+	return;
+}
+
+void MaterialManager::Audit_ListAllUnreferencedMaterials()
+{
+	LogUtils::Log("Unreferenced Materials");
 	for (auto& material : s_instance->materials)
 	{
-		if (material.second != nullptr && material.second->references < 1)
+		if (material.second && !material.second->Audit_referenced)
 			LogUtils::Log(material.first);
+	}
+	LogUtils::Log("Missing Materials");
+	for (auto& material : s_instance->Audit_missingMaterials)
+	{
+		LogUtils::Log(material);
 	}
 }
 
@@ -138,7 +156,6 @@ void MaterialManager::LoadFromFile(const char* filename)
 	
 	auto input = ReadJSONFromDisk(filename);
 	input.get_to<Material>(*material);
-	material->ReferenceTextures();
 	materials.emplace(filename, material);
 }
 void MaterialManager::FindAllFiles(string folder)

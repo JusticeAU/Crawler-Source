@@ -1306,7 +1306,7 @@ Crawl::DungeonEnemyChase* Crawl::Dungeon::CreateEnemyChase(ivec2 position, FACIN
 	chaser->facing = facing;
 	chaser->dungeon = this;
 	chaser->object = Scene::CreateObject();
-	chaser->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/chase.object"));
+	chaser->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/monster_chaser.object"));
 	chaser->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_chaser.object"));
 	chaser->object->children[0]->SetLocalRotationZ(180);
 	if (chaser->useAnimator)
@@ -1373,7 +1373,7 @@ Crawl::DungeonEnemySwitcher* Crawl::Dungeon::CreateEnemySwitcher(ivec2 position,
 	switcher->facing = facing;
 	switcher->dungeon = this;
 	switcher->object = Scene::CreateObject();
-	switcher->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/switch.object"));
+	switcher->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/monster_switcher.object"));
 	switcher->object->AddLocalPosition(dungeonPosToObjectScale(position));
 	switcher->object->SetLocalRotationZ(orientationEulers[facing]);
 	switcher->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_switchbitch.object"));

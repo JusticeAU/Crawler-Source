@@ -4,6 +4,7 @@
 #include "LogUtils.h"
 #include "FrameBuffer.h"
 #include "StringUtils.h"
+#include "serialisation.h"
 
 using std::vector;
 namespace fs = std::filesystem;
@@ -33,38 +34,6 @@ Texture* TextureManager::GetTexture(string name)
 	}
 }
 
-bool TextureManager::ReferenceTexture(string name)
-{
-	auto texIt = s_instance->textures.find(StringUtils::ToLower(name));
-	if (texIt == s_instance->textures.end())
-	{
-		LogUtils::Log("Error: Texture does not exist:" + name);
-		return false;
-	}
-	else
-	{
-		if (texIt->second != nullptr)
-			texIt->second->Reference();
-		return true;
-	}
-}
-
-bool TextureManager::UnreferenceTexture(string name)
-{
-	auto texIt = s_instance->textures.find(StringUtils::ToLower(name));
-	if (texIt == s_instance->textures.end())
-	{
-		LogUtils::Log("Error: Texture does not exist:" + name);
-		return false;
-	}
-	else
-	{
-		if (texIt->second != nullptr)
-			texIt->second->Unreference();
-		return true;
-	}
-}
-
 FrameBuffer* TextureManager::GetFrameBuffer(string name)
 {
 	auto fbIt = s_instance->frameBuffers.find(name);
@@ -80,8 +49,11 @@ void TextureManager::DrawGUI()
 	ImGui::SetNextWindowSize({ 400, 860 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Textures", nullptr);
-	if (ImGui::Button("Output Unreferenced Textures"))
-		ListUnreferencedTextures();
+	/*if (ImGui::Button("Scan folder"))
+	{
+		s_instance->Audit_ScanFolderForTextureReferences("crawler/material");
+		s_instance->Audit_ListAllUnreferencedTextures();
+	}*/
 	ImGui::BeginDisabled();
 	int texCount = (int)s_instance->textures.size();
 	ImGui::DragInt("Texture Count", &texCount);
@@ -89,7 +61,6 @@ void TextureManager::DrawGUI()
 	for (auto t : s_instance->textures)
 	{
 		string name = t.first;
-		if (t.second != nullptr) name += " (refs: " + std::to_string(t.second->references) + ")";
 		if (ImGui::Selectable(name.c_str()))
 		{
 			s_instance->selectedTexture = GetTexture(t.first); // Run it through the getter to ensure its loaded.
@@ -136,16 +107,6 @@ void TextureManager::CreateTextureFromFile(const char* filename)
 {
 	Texture* texture = new Texture(filename);
 	textures.emplace(StringUtils::ToLower(filename), texture);
-}
-
-void TextureManager::ListUnreferencedTextures()
-{
-	LogUtils::Log("Unreferenced Textures:");
-	for (auto& texture : s_instance->textures)
-	{
-		if (texture.second != nullptr && texture.second->references < 1)
-			LogUtils::Log(texture.first);
-	}
 }
 
 void TextureManager::PreloadAllFiles()
@@ -203,6 +164,48 @@ void TextureManager::RefreshFrameBuffers()
 	{
 		if (fb.second != nullptr && fb.second->isScreenBuffer())
 			fb.second->Resize();
+	}
+}
+
+void TextureManager::Audit_ScanFolderForTextureReferences(string folder)
+{
+	LogUtils::Log("Scanning for materials in: " + folder);
+	for (auto d : fs::recursive_directory_iterator(folder))
+	{
+		if (d.path().extension() == ".material")
+		{
+			ordered_json object = ReadJSONFromDisk(d.path().generic_string());
+			if (object.contains("albedoMap")) TextureManager::s_instance->Audit_ReferenceTexture(object["albedoMap"]);
+			if(object.contains("normalMap")) TextureManager::s_instance->Audit_ReferenceTexture(object["normalMap"]);
+			if(object.contains("metallicMap")) TextureManager::s_instance->Audit_ReferenceTexture(object["metallicMap"]);
+			if(object.contains("roughnessMap")) TextureManager::s_instance->Audit_ReferenceTexture(object["roughnessMap"]);
+			if (object.contains("aoMap")) TextureManager::s_instance->Audit_ReferenceTexture(object["aoMap"]);
+			if (object.contains("emissiveMap")) TextureManager::s_instance->Audit_ReferenceTexture(object["emissiveMap"]);
+		}
+	}
+}
+
+void TextureManager::Audit_ReferenceTexture(string name)
+{
+	if (name == "") return;
+	auto texIt = s_instance->textures.find(name);
+	if (texIt == s_instance->textures.end()) s_instance->Audit_missingTextures.push_back(name);
+	else if (texIt->second) texIt->second->Audit_referenced = true;
+	return;
+}
+
+void TextureManager::Audit_ListAllUnreferencedTextures()
+{
+	LogUtils::Log("Unreferenced Textures");
+	for (auto& texture : s_instance->textures)
+	{
+		if (texture.second && !texture.second->Audit_referenced)
+			LogUtils::Log(texture.first);
+	}
+	LogUtils::Log("Missing Textures");
+	for (auto& material : s_instance->Audit_missingTextures)
+	{
+		LogUtils::Log(material);
 	}
 }
 

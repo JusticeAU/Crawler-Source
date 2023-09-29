@@ -16,8 +16,6 @@ public:
 
 	void LoadFromFile(string filename);
 	void Load();
-	void Reference() { references++; };
-	void Unreference() { references--; };
 	void Bind(unsigned int slot);
 
 	void CreateSSAONoiseTexture(glm::vec3* noiseTexData);
@@ -26,8 +24,9 @@ public:
 
 public:
 	bool loaded = false;
-	int references = 0;
 	string name;
 	GLuint texID;
+
+	bool Audit_referenced = false;
 };
 
