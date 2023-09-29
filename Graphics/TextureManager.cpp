@@ -54,6 +54,10 @@ void TextureManager::DrawGUI()
 		s_instance->Audit_ScanFolderForTextureReferences("crawler/material");
 		s_instance->Audit_ListAllUnreferencedTextures();
 	}*/
+	/*if (ImGui::Button("Make All RLE"))
+	{
+		s_instance->MakeAllTGAsRLE("crawler/texture");
+	}*/
 	ImGui::BeginDisabled();
 	int texCount = (int)s_instance->textures.size();
 	ImGui::DragInt("Texture Count", &texCount);
@@ -206,6 +210,18 @@ void TextureManager::Audit_ListAllUnreferencedTextures()
 	for (auto& material : s_instance->Audit_missingTextures)
 	{
 		LogUtils::Log(material);
+	}
+}
+
+void TextureManager::MakeAllTGAsRLE(string folder)
+{
+	for (auto d : fs::recursive_directory_iterator(folder))
+	{
+		if (d.path().extension() == ".tga" )
+		{
+			Texture::RewriteTGAwithRLE(d.path().generic_string(), d.path().generic_string());
+		}
+
 	}
 }
 

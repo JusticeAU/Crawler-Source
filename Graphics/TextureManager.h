@@ -43,6 +43,8 @@ public:
 	void Audit_ListAllUnreferencedTextures();
 	std::vector<string> Audit_missingTextures;
 
+	void MakeAllTGAsRLE(string folder);
+
 protected:
 	TextureManager();
 	map<string, Texture*> textures;
