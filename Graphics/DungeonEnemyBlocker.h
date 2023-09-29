@@ -23,6 +23,9 @@ namespace Crawl
 		~DungeonEnemyBlocker();
 		ivec2 position = { 0, 0 };
 		FACING_INDEX facing = EAST_INDEX;
+
+		void UpdateTransform();
+
 		bool rapidAttack = false;
 		
 		State state = State::Idle;

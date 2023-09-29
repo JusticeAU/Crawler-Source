@@ -19,6 +19,7 @@ namespace Crawl
 		};
 		~DungeonPushableBlock();
 		ivec2 position;
+		void UpdateTransform();
 		STATE state = STATE::IDLE;
 
 		bool isOnSpikes = false;

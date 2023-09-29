@@ -25,6 +25,9 @@ namespace Crawl
 		~DungeonEnemySlug();
 		ivec2 position;
 		FACING_INDEX facing;
+
+		void UpdateTransform();
+
 		STATE state = INACTIVE;
 
 		bool isDead = false;

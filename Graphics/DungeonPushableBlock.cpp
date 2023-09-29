@@ -13,6 +13,11 @@ Crawl::DungeonPushableBlock::~DungeonPushableBlock()
 		object->markedForDeletion = true;
 }
 
+void Crawl::DungeonPushableBlock::UpdateTransform()
+{
+	object->SetLocalPosition(dungeonPosToObjectScale(position));
+}
+
 void Crawl::DungeonPushableBlock::MoveTo(ivec2 toPosition)
 {
 	oldPosition = dungeonPosToObjectScale(position);

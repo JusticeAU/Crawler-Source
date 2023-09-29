@@ -14,6 +14,12 @@ Crawl::DungeonShootLaser::~DungeonShootLaser()
 		object->markedForDeletion = true;
 }
 
+void Crawl::DungeonShootLaser::UpdateTransform()
+{
+	object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
+	object->SetLocalRotationZ(orientationEulersReversed[facing]);
+}
+
 void Crawl::DungeonShootLaser::Update()
 {
 	LogUtils::Log("Shooter Updated");

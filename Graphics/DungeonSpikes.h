@@ -14,7 +14,8 @@ namespace Crawl
 	public:
 		~DungeonSpikes();
 		ivec2 position = {0,0};
-		
+		void UpdateTransform();
+
 		bool disabled = false; // We dont need to serialise this as it gets handled at runtime by boxes being placed in the world after.
 
 		void Disable();

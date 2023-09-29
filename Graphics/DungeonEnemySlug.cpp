@@ -12,6 +12,12 @@ Crawl::DungeonEnemySlug::~DungeonEnemySlug()
 		object->markedForDeletion = true;
 }
 
+void Crawl::DungeonEnemySlug::UpdateTransform()
+{
+	object->AddLocalPosition(dungeonPosToObjectScale(position));
+	object->SetLocalRotationZ(orientationEulers[facing]);
+}
+
 void Crawl::DungeonEnemySlug::Update()
 {
 	object->SetLocalPosition(dungeonPosToObjectScale(position));

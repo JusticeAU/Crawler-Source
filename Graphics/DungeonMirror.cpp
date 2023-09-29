@@ -7,6 +7,12 @@ Crawl::DungeonMirror::~DungeonMirror()
 		object->markedForDeletion = true;
 }
 
+void Crawl::DungeonMirror::UpdateTransform()
+{
+	object->AddLocalPosition(dungeonPosToObjectScale(position));
+	object->SetLocalRotationZ(orientationEulers[facing]);
+}
+
 // Returns the bounce direction if its a valid approach direction. Returns -1 if the direction fails to bounce.
 int Crawl::DungeonMirror::ShouldReflect(FACING_INDEX approachFrom)
 {

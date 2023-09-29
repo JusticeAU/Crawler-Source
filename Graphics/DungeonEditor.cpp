@@ -359,99 +359,100 @@ void Crawl::DungeonEditor::DrawGUIModeTileBrush()
 		ImGui::Checkbox("West Wall", &brush_TileWest);
 		if (brush_AutoTileEnabled) ImGui::EndDisabled();
 	ImGui::Unindent();
-
-
-
 }
 void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 {
 	if (!selectedTile)
 	{
-		ImGui::Text("No Tile Selected");
-		return;
+		ImGui::Text("No Tile Here");
+		ImGui::BeginDisabled();
+		ImGui::DragInt2("Location", &selectedTilePosition.x);
+		ImGui::EndDisabled();
 	}
-
-	// selected tile coordinates
-	ImGui::Text("Selected Tile");
-	ImGui::BeginDisabled();
-	ImGui::DragInt2("Location", &selectedTile->position.x);
-	ImGui::Checkbox("Occupied", &selectedTile->occupied);
-	ImGui::EndDisabled();
-	if (ImGui::Checkbox("Permanently Occupied", &selectedTile->permanentlyOccupied))
-		MarkUnsavedChanges();
-	if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-		ImGui::SetTooltip("Marks the tile as completely untraversable. Takes precedence over any other settings.");
-
-	// Cardinal traversable/see yes/no
-	ImGui::Spacing();
-	ImGui::Text("Pathing");
-	unsigned int oldMaskTraverse = selectedTile->maskTraverse;
-	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-	if (ImGui::BeginCombo("Can Walk", maskToString[oldMaskTraverse].c_str()))
+	else
 	{
-		if (ImGui::Checkbox("Can Walk North", &selectedTileUntraversableWalls[0]))
-			selectedTile->maskTraverse += selectedTileUntraversableWalls[0] ? NORTH_MASK : -NORTH_MASK;
-		if (ImGui::Checkbox("Can Walk South", &selectedTileUntraversableWalls[1]))
-			selectedTile->maskTraverse += selectedTileUntraversableWalls[1] ? SOUTH_MASK : -SOUTH_MASK;
-		if (ImGui::Checkbox("Can Walk East", &selectedTileUntraversableWalls[2]))
-			selectedTile->maskTraverse += selectedTileUntraversableWalls[2] ? EAST_MASK : -EAST_MASK;
-		if (ImGui::Checkbox("Can Walk West", &selectedTileUntraversableWalls[3]))
-			selectedTile->maskTraverse += selectedTileUntraversableWalls[3] ? WEST_MASK : -WEST_MASK;
-		ImGui::EndCombo();
-	}
-	ImGui::PopStyleColor();
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-		ImGui::SetTooltip("Configure in what direction things can walk off this tile");
-	if (oldMaskTraverse != selectedTile->maskTraverse) MarkUnsavedChanges();
+		// selected tile coordinates
+		ImGui::Text("Selected Tile");
+		ImGui::BeginDisabled();
+		ImGui::DragInt2("Location", &selectedTile->position.x);
+		ImGui::Checkbox("Occupied", &selectedTile->occupied);
+		ImGui::EndDisabled();
+		if (ImGui::Checkbox("Permanently Occupied", &selectedTile->permanentlyOccupied))
+			MarkUnsavedChanges();
+		if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("Marks the tile as completely untraversable. Takes precedence over any other settings.");
 
-	unsigned int oldMaskSee = selectedTile->maskSee;
-	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(123, 123, 255, 255));
-	if (ImGui::BeginCombo("Can See", maskToString[oldMaskSee].c_str()))
-	{
-		if (ImGui::Checkbox("Can See North", &selectedTileSeeThroughWalls[0]))
-			selectedTile->maskSee += selectedTileSeeThroughWalls[0] ? NORTH_MASK : -NORTH_MASK;
-		if (ImGui::Checkbox("Can See South", &selectedTileSeeThroughWalls[1]))
-			selectedTile->maskSee += selectedTileSeeThroughWalls[1] ? SOUTH_MASK : -SOUTH_MASK;
-		if (ImGui::Checkbox("Can See East", &selectedTileSeeThroughWalls[2]))
-			selectedTile->maskSee += selectedTileSeeThroughWalls[2] ? EAST_MASK : -EAST_MASK;
-		if (ImGui::Checkbox("Can See West", &selectedTileSeeThroughWalls[3]))
-			selectedTile->maskSee += selectedTileSeeThroughWalls[3] ? WEST_MASK : -WEST_MASK;
-		ImGui::EndCombo();
-	}
-	ImGui::PopStyleColor();
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-		ImGui::SetTooltip("Configure in what direction things can see out of this tile");
-	if (oldMaskSee != selectedTile->maskSee) MarkUnsavedChanges();
-
-	// Wall Variants
-	ImGui::Spacing();
-	ImGui::Text("Wall Visuals");
-	for (int cardinal = 0; cardinal < 4; cardinal++)
-	{
-		ImGui::PushID(cardinal);
-		if (ImGui::BeginCombo(orientationNames[cardinal].c_str(), selectedTile->wallVariants[cardinal] == -1 ? "None" : wallVarientShortNames[selectedTile->wallVariants[cardinal]].c_str())) // lmao yuck
+		// Cardinal traversable/see yes/no
+		ImGui::Spacing();
+		ImGui::Text("Pathing");
+		unsigned int oldMaskTraverse = selectedTile->maskTraverse;
+		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
+		if (ImGui::BeginCombo("Can Walk", maskToString[oldMaskTraverse].c_str()))
 		{
-			if (ImGui::Selectable("None", -1 == selectedTile->wallVariants[cardinal]))
-			{
-				selectedTile->wallVariants[cardinal] = -1;
-				dungeon->CreateTileObject(selectedTile);
-				MarkUnsavedChanges();
-			}
+			if (ImGui::Checkbox("Can Walk North", &selectedTileUntraversableWalls[0]))
+				selectedTile->maskTraverse += selectedTileUntraversableWalls[0] ? NORTH_MASK : -NORTH_MASK;
+			if (ImGui::Checkbox("Can Walk South", &selectedTileUntraversableWalls[1]))
+				selectedTile->maskTraverse += selectedTileUntraversableWalls[1] ? SOUTH_MASK : -SOUTH_MASK;
+			if (ImGui::Checkbox("Can Walk East", &selectedTileUntraversableWalls[2]))
+				selectedTile->maskTraverse += selectedTileUntraversableWalls[2] ? EAST_MASK : -EAST_MASK;
+			if (ImGui::Checkbox("Can Walk West", &selectedTileUntraversableWalls[3]))
+				selectedTile->maskTraverse += selectedTileUntraversableWalls[3] ? WEST_MASK : -WEST_MASK;
+			ImGui::EndCombo();
+		}
+		ImGui::PopStyleColor();
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("Configure in what direction things can walk off this tile");
+		if (oldMaskTraverse != selectedTile->maskTraverse) MarkUnsavedChanges();
 
-			for (int i = 0; i < dungeon->wallVariantPaths.size(); i++)
+		unsigned int oldMaskSee = selectedTile->maskSee;
+		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(123, 123, 255, 255));
+		if (ImGui::BeginCombo("Can See", maskToString[oldMaskSee].c_str()))
+		{
+			if (ImGui::Checkbox("Can See North", &selectedTileSeeThroughWalls[0]))
+				selectedTile->maskSee += selectedTileSeeThroughWalls[0] ? NORTH_MASK : -NORTH_MASK;
+			if (ImGui::Checkbox("Can See South", &selectedTileSeeThroughWalls[1]))
+				selectedTile->maskSee += selectedTileSeeThroughWalls[1] ? SOUTH_MASK : -SOUTH_MASK;
+			if (ImGui::Checkbox("Can See East", &selectedTileSeeThroughWalls[2]))
+				selectedTile->maskSee += selectedTileSeeThroughWalls[2] ? EAST_MASK : -EAST_MASK;
+			if (ImGui::Checkbox("Can See West", &selectedTileSeeThroughWalls[3]))
+				selectedTile->maskSee += selectedTileSeeThroughWalls[3] ? WEST_MASK : -WEST_MASK;
+			ImGui::EndCombo();
+		}
+		ImGui::PopStyleColor();
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("Configure in what direction things can see out of this tile");
+		if (oldMaskSee != selectedTile->maskSee) MarkUnsavedChanges();
+
+		// Wall Variants
+		ImGui::Spacing();
+		ImGui::Text("Wall Visuals");
+		for (int cardinal = 0; cardinal < 4; cardinal++)
+		{
+			ImGui::PushID(cardinal);
+			if (ImGui::BeginCombo(orientationNames[cardinal].c_str(), selectedTile->wallVariants[cardinal] == -1 ? "None" : wallVarientShortNames[selectedTile->wallVariants[cardinal]].c_str())) // lmao yuck
 			{
-				if (ImGui::Selectable(wallVarientShortNames[i].c_str(), i == selectedTile->wallVariants[cardinal]))
+				if (ImGui::Selectable("None", -1 == selectedTile->wallVariants[cardinal]))
 				{
-					selectedTile->wallVariants[cardinal] = i;
+					selectedTile->wallVariants[cardinal] = -1;
 					dungeon->CreateTileObject(selectedTile);
 					MarkUnsavedChanges();
 				}
+
+				for (int i = 0; i < dungeon->wallVariantPaths.size(); i++)
+				{
+					if (ImGui::Selectable(wallVarientShortNames[i].c_str(), i == selectedTile->wallVariants[cardinal]))
+					{
+						selectedTile->wallVariants[cardinal] = i;
+						dungeon->CreateTileObject(selectedTile);
+						MarkUnsavedChanges();
+					}
+				}
+				ImGui::EndCombo();
 			}
-			ImGui::EndCombo();
+			if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+				ImGui::SetTooltip("Configure the configurations of the walls for this tile. Note this doesnt affect ability to traverse or see through the tile");
+			ImGui::PopID();
 		}
-		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-			ImGui::SetTooltip("Configure the configurations of the walls for this tile. Note this doesnt affect ability to traverse or see through the tile");
-		ImGui::PopID();
 	}
 
 	// Buttons
@@ -465,7 +466,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Door"))
 		{
 			MarkUnsavedChanges();
-			selectedDoor = dungeon->CreateDoor(selectedTile->position, 0, GetNextAvailableDoorID(), false);
+			selectedDoor = dungeon->CreateDoor(selectedTilePosition, 0, GetNextAvailableDoorID(), false);
 			selectedTileDoors.push_back(selectedDoor);
 			selectedDoorWindowOpen = true;
 		}
@@ -473,7 +474,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Lever"))
 		{
 			MarkUnsavedChanges();
-			selectedLever = dungeon->CreateLever(selectedTile->position, 0, GetNextAvailableLeverID(), 0, false);
+			selectedLever = dungeon->CreateLever(selectedTilePosition, 0, GetNextAvailableLeverID(), 0, false);
 			selectedTileLevers.push_back(selectedLever);
 			selectedLeverWindowOpen = true;
 		}
@@ -481,7 +482,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Shooter"))
 		{
 			MarkUnsavedChanges();
-			selectedTileShootLaser = dungeon->CreateShootLaser(selectedTile->position, (FACING_INDEX)0, GetNextAvailableDoorID());
+			selectedTileShootLaser = dungeon->CreateShootLaser(selectedTilePosition, (FACING_INDEX)0, GetNextAvailableDoorID());
 			selectedTileShootLasers.push_back(selectedTileShootLaser);
 			selectedShootLaserWindowOpen = true;
 		}
@@ -493,7 +494,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Activator Plate"))
 		{
 			MarkUnsavedChanges();
-			selectedActivatorPlate = dungeon->CreatePlate(selectedTile->position, 0);
+			selectedActivatorPlate = dungeon->CreatePlate(selectedTilePosition, 0);
 			selectedActivatorPlateWindowOpen = true;
 			selectedTileOccupied = true;
 		}
@@ -501,7 +502,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Spikes"))
 		{
 			MarkUnsavedChanges();
-			dungeon->CreateSpikes(selectedTile->position);
+			dungeon->CreateSpikes(selectedTilePosition);
 			selectedHasSpikes = true;
 			selectedTileOccupied = true;
 		}
@@ -509,7 +510,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Box"))
 		{
 			MarkUnsavedChanges();
-			dungeon->CreatePushableBlock(selectedTile->position);
+			dungeon->CreatePushableBlock(selectedTilePosition);
 			selectedHasBlock = true;
 			selectedTileOccupied = true;
 		}
@@ -517,7 +518,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Mirror"))
 		{
 			MarkUnsavedChanges();
-			selectedMirror = dungeon->CreateMirror(selectedTile->position, NORTH_INDEX);
+			selectedMirror = dungeon->CreateMirror(selectedTilePosition, NORTH_INDEX);
 			selectedMirrorWindowOpen = true;
 			selectedTileOccupied = true;
 		}
@@ -525,7 +526,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Transporter"))
 		{
 			MarkUnsavedChanges();
-			selectedTransporter = dungeon->CreateTransporter(selectedTile->position);
+			selectedTransporter = dungeon->CreateTransporter(selectedTilePosition);
 			selectedTransporterWindowOpen = true;
 			selectedTileOccupied = true;
 		}
@@ -533,7 +534,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Checkpoint"))
 		{
 			MarkUnsavedChanges();
-			selectedCheckpoint = dungeon->CreateCheckpoint(selectedTile->position, NORTH_INDEX);
+			selectedCheckpoint = dungeon->CreateCheckpoint(selectedTilePosition, NORTH_INDEX);
 			selectedCheckpointWindowOpen = true;
 			selectedTileOccupied = true;
 		}
@@ -543,7 +544,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Blocker"))
 		{
 			MarkUnsavedChanges();
-			selectedBlockerEnemy = dungeon->CreateEnemyBlocker(selectedTile->position, NORTH_INDEX);
+			selectedBlockerEnemy = dungeon->CreateEnemyBlocker(selectedTilePosition, NORTH_INDEX);
 			selectedBlockerEnemyWindowOpen = true;
 			selectedTileOccupied = true;
 		}
@@ -553,7 +554,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Chaser"))
 		{
 			MarkUnsavedChanges();
-			selectedChaseEnemy = dungeon->CreateEnemyChase(selectedTile->position, NORTH_INDEX);
+			selectedChaseEnemy = dungeon->CreateEnemyChase(selectedTilePosition, NORTH_INDEX);
 			selectedChaseEnemyWindowOpen = true;
 			selectedTileOccupied = true;
 		}
@@ -562,7 +563,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Murderina"))
 		{
 			MarkUnsavedChanges();
-			selectedMurderinaEnemy = dungeon->CreateMurderina(selectedTile->position, NORTH_INDEX);
+			selectedMurderinaEnemy = dungeon->CreateMurderina(selectedTilePosition, NORTH_INDEX);
 			selectedMurdurinaWindowOpen = true;
 			selectedTileOccupied = true;
 		}
@@ -570,7 +571,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Switcher"))
 		{
 			MarkUnsavedChanges();
-			selectedSwitcherEnemy = dungeon->CreateEnemySwitcher(selectedTile->position, NORTH_INDEX);
+			selectedSwitcherEnemy = dungeon->CreateEnemySwitcher(selectedTilePosition, NORTH_INDEX);
 			selectedSwitcherEnemyWindowOpen = true;
 			selectedTileOccupied = true;
 		}
@@ -581,7 +582,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Decoration"))
 		{
 			MarkUnsavedChanges();
-			selectedTileDecoration = dungeon->CreateDecoration(selectedTile->position, NORTH_INDEX);
+			selectedTileDecoration = dungeon->CreateDecoration(selectedTilePosition, NORTH_INDEX);
 			selectedTileDecorations.push_back(selectedTileDecoration);
 			selectedDecorationWindowOpen = true;
 		}
@@ -590,7 +591,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Light"))
 		{
 			MarkUnsavedChanges();
-			selectedLight = dungeon->CreateLight(selectedTile->position);
+			selectedLight = dungeon->CreateLight(selectedTilePosition);
 			selectedLightWindowOpen = true;
 		}
 		if (cantMakeLight) ImGui::EndDisabled();
@@ -600,7 +601,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Stairs"))
 		{
 			MarkUnsavedChanges();
-			selectedStairs = dungeon->CreateStairs(selectedTile->position);
+			selectedStairs = dungeon->CreateStairs(selectedTilePosition);
 			selectedStairsWindowOpen = true;
 		}
 		if (cantMakeStairs) ImGui::EndDisabled();
@@ -609,7 +610,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Event Trigger"))
 		{
 			MarkUnsavedChanges();
-			selectedEventTrigger = dungeon->CreateEventTrigger(selectedTile->position);
+			selectedEventTrigger = dungeon->CreateEventTrigger(selectedTilePosition);
 			selectedEventTriggerWindowOpen = true;
 		}
 		ImGui::Unindent();
@@ -617,8 +618,47 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	}
 	ImGui::PopID();
 	// Entity List
-	ImGui::Text("Modify/Remove Objects");
-	ImGui::PushID("Modify");
+	ImGui::PushID("Objects");
+	if (ImGui::Button("Delete All"))
+		ImGui::OpenPopup("confirm_delete_all");
+	if (ImGui::BeginPopupModal("confirm_delete_all"))
+	{
+		ImGui::Text("Are you sure you want to delete ALL objects on this tile?");
+		if (ImGui::Button("Yes"))
+		{
+			TileEditDeleteAllObjectsOnTile();
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("No"))
+			ImGui::CloseCurrentPopup();
+		ImGui::EndPopup();
+	}
+
+	ImGui::SameLine();
+	if (ImGui::Button("Move All"))
+		ImGui::OpenPopup("confirm_move_all");
+	if (ImGui::BeginPopupModal("confirm_move_all"))
+	{
+		ImGui::Text("Where do you want to move all objects to?");
+		ImGui::InputInt2("Coordinate", &selectedTileMoveObjectsTo.x);
+		if (ImGui::Button("Move"))
+		{
+			TileEditMoveAllObjectsOnTile(selectedTileMoveObjectsTo);
+			MarkUnsavedChanges();
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel"))
+			ImGui::CloseCurrentPopup();
+		
+		selectedTileMoveFlash += 0.01f; // This should use deltaTime but delta isn't yet globally accessable and really ought to be at this point.
+		LineRenderer::DrawFlatBox(dungeonPosToObjectScale(selectedTileMoveObjectsTo), 1.0f, { 0,selectedTileMoveFlash*2.0f,0 });
+		if (selectedTileMoveFlash > 0.5f) selectedTileMoveFlash = 0.0f;
+		
+		ImGui::EndPopup();
+	}
+
 	ImGui::Indent();
 	for (int i = 0; i < selectedTileDoors.size(); i++)
 	{
@@ -725,7 +765,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	{
 		ImGui::PushID(i);
 		string decoName = "Decoration (";
-		decoName += selectedTileDecorations[i]->modelName;
+		decoName += selectedTileDecorations[i]->modelNameShort;
 		decoName += ")";
 		if (ImGui::Selectable(decoName.c_str()))
 		{
@@ -786,7 +826,6 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		DrawGUIModeTileEditLight();
 	if (selectedEventTriggerWindowOpen)
 		DrawGUIModeTileEditEventTrigger();
-
 	ImGui::PopID();
 }
 
@@ -1844,21 +1883,143 @@ void Crawl::DungeonEditor::UpdateModeTileBrush()
 }
 void Crawl::DungeonEditor::UpdateModeTileEdit()
 {
-	if (selectedTile) DrawTileInformation(selectedTile, true);
-
-
 	if (Input::Mouse(0).Down())
 	{
-		TileEditUnselectAll();
-		glm::ivec2 selectionPos = GetMousePosOnGrid();
+		ivec2 selectedTilePositionPrevious = selectedTilePosition;
+		selectedTilePosition = GetMousePosOnGrid();
 
-		selectedTile = dungeon->GetTile(selectionPos);
-		if (!selectedTile)
-			return;
+		TileEditUnselectAll();
+
+		selectedTile = dungeon->GetTile(selectedTilePosition);
+
+		if (selectedTilePositionPrevious != selectedTilePosition)
+			selectedTileMoveObjectsTo = selectedTilePositionPrevious;
 		
 		RefreshSelectedTile();
 	}
 }
+
+void Crawl::DungeonEditor::TileEditDeleteAllObjectsOnTile()
+{
+	for(auto & lever : selectedTileLevers)	dungeon->RemoveLever(lever);
+	for (auto& door : selectedTileDoors)	dungeon->RemoveDoor(door);
+	dungeon->RemoveTransporter(selectedTransporter);
+	dungeon->RemovePlate(selectedActivatorPlate);
+	if (selectedHasSpikes) dungeon->RemoveSpikes(selectedTile->position);
+	if (selectedHasBlock) dungeon->RemovePushableBlock(selectedTile->position);
+	dungeon->RemoveDungeonShootLaser(selectedTileShootLaser);
+	dungeon->RemoveEnemyBlocker(selectedBlockerEnemy);
+	dungeon->RemoveEnemyChase(selectedChaseEnemy);
+	dungeon->RemoveEnemySwitcher(selectedSwitcherEnemy);
+	dungeon->RemoveCheckpoint(selectedCheckpoint);
+	dungeon->RemoveMirror(selectedMirror);
+	dungeon->RemoveSlug(selectedMurderinaEnemy);
+	for (auto& decoration : selectedTileDecorations)	dungeon->RemoveDecoration(decoration);
+	dungeon->RemoveLight(selectedLight);
+	dungeon->RemoveEventTrigger(selectedEventTrigger);
+	dungeon->RemoveStairs(selectedStairs);
+
+	ivec2 currentTile = selectedTile->position;
+	TileEditUnselectAll();
+	selectedTile = dungeon->GetTile(currentTile);
+	RefreshSelectedTile();
+}
+
+void Crawl::DungeonEditor::TileEditMoveAllObjectsOnTile(ivec2 position)
+{
+	for (auto& lever : selectedTileLevers)
+	{
+		lever->position = position;
+		lever->UpdateTransform();
+	}
+	for (auto& door : selectedTileDoors)
+	{
+		door->position = position;
+		door->UpdateTransforms();
+	}
+
+	if(selectedTransporter) selectedTransporter->position = position;
+	if (selectedActivatorPlate)
+	{
+		selectedActivatorPlate->position = position;
+		selectedActivatorPlate->UpdateTransforms();
+	}
+
+	if (selectedHasSpikes)
+	{
+		DungeonSpikes* spikes = dungeon->GetSpikesAtPosition(selectedTile->position);
+		spikes->position = position;
+		spikes->UpdateTransform();
+	}
+	if (selectedHasBlock)
+	{
+		DungeonPushableBlock* block = dungeon->GetPushableBlockAtPosition(selectedTile->position);
+		block->position = position;
+		block->UpdateTransform();
+	}
+
+	for (auto& laser : selectedTileShootLasers)
+	{
+		laser->position = position;
+		laser->UpdateTransform();
+	}
+
+	if (selectedBlockerEnemy)
+	{
+		selectedBlockerEnemy->position = position;
+		selectedBlockerEnemy->UpdateTransform();
+	}
+
+	if (selectedChaseEnemy)
+	{
+		selectedChaseEnemy->position = position;
+		selectedChaseEnemy->UpdateTransform();
+	}
+
+	if (selectedSwitcherEnemy)
+	{
+		selectedSwitcherEnemy->position = position;
+		selectedSwitcherEnemy->UpdateTransform();
+	}
+
+	if(selectedCheckpoint) selectedCheckpoint->position = position;
+
+	if (selectedMirror)
+	{
+
+	selectedMirror->position = position;
+	selectedMirror->UpdateTransform();
+	}
+
+	if (selectedMurderinaEnemy)
+	{
+
+	selectedMurderinaEnemy->position = position;
+	selectedMurderinaEnemy->UpdateTransform();
+	}
+
+	for (auto& decoration : selectedTileDecorations)
+	{
+		decoration->position = position;
+		decoration->UpdateTransform();
+	}
+
+	if (selectedLight)
+	{
+
+	selectedLight->position = position;
+	selectedLight->UpdateTransform();
+	}
+	
+	if(selectedEventTrigger)	selectedEventTrigger->position = position;
+
+
+	ivec2 currentTile = selectedTilePosition;
+	TileEditUnselectAll();
+	selectedTile = dungeon->GetTile(currentTile);
+	RefreshSelectedTile();
+}
+
 void Crawl::DungeonEditor::UpdateModeMurderinaBrush()
 {
 	if (murderinaPathCursor == nullptr)
@@ -1916,16 +2077,7 @@ void Crawl::DungeonEditor::DrawTileInformation(DungeonTile* tile, bool drawBorde
 	vec3 tilePos = dungeonPosToObjectScale(tile->position);
 	if (drawBorder)
 	{
-		// Highlight the tile
-		for (int i = 0; i < 4; i++)
-		{
-			int nextI = i + 1;
-			if (nextI == 4) nextI = 0;
-			vec3 a = dungeonPosToObjectScale(directionsDiagonal[i]) * 0.5f;;
-			vec3 b = dungeonPosToObjectScale(directionsDiagonal[nextI]) * 0.5f;;
-
-			LineRenderer::DrawLine(tilePos + a, tilePos + b, vec3(0.25, 0.25, 0.25));
-		}
+		LineRenderer::DrawFlatBox(dungeonPosToObjectScale(selectedTilePosition), 1, vec3(0.5, 0.5, 0.5));
 	}
 
 	if (!tile->permanentlyOccupied)
@@ -1955,15 +2107,18 @@ void Crawl::DungeonEditor::DrawTileInformation(DungeonTile* tile, bool drawBorde
 
 void Crawl::DungeonEditor::RefreshSelectedTile()
 {
-	selectedTileUntraversableWalls[0] = (selectedTile->maskTraverse & NORTH_MASK) == NORTH_MASK; // North Check
-	selectedTileUntraversableWalls[1] = (selectedTile->maskTraverse & SOUTH_MASK) == SOUTH_MASK; // South Check
-	selectedTileUntraversableWalls[2] = (selectedTile->maskTraverse & EAST_MASK) == EAST_MASK; // East Check
-	selectedTileUntraversableWalls[3] = (selectedTile->maskTraverse & WEST_MASK) == WEST_MASK; // West Check
+	if (selectedTile)
+	{
+		selectedTileUntraversableWalls[0] = (selectedTile->maskTraverse & NORTH_MASK) == NORTH_MASK; // North Check
+		selectedTileUntraversableWalls[1] = (selectedTile->maskTraverse & SOUTH_MASK) == SOUTH_MASK; // South Check
+		selectedTileUntraversableWalls[2] = (selectedTile->maskTraverse & EAST_MASK) == EAST_MASK; // East Check
+		selectedTileUntraversableWalls[3] = (selectedTile->maskTraverse & WEST_MASK) == WEST_MASK; // West Check
 
-	selectedTileSeeThroughWalls[0] = (selectedTile->maskSee & NORTH_MASK) == NORTH_MASK; // North Check
-	selectedTileSeeThroughWalls[1] = (selectedTile->maskSee & SOUTH_MASK) == SOUTH_MASK; // South Check
-	selectedTileSeeThroughWalls[2] = (selectedTile->maskSee & EAST_MASK) == EAST_MASK; // East Check
-	selectedTileSeeThroughWalls[3] = (selectedTile->maskSee & WEST_MASK) == WEST_MASK; // West Check
+		selectedTileSeeThroughWalls[0] = (selectedTile->maskSee & NORTH_MASK) == NORTH_MASK; // North Check
+		selectedTileSeeThroughWalls[1] = (selectedTile->maskSee & SOUTH_MASK) == SOUTH_MASK; // South Check
+		selectedTileSeeThroughWalls[2] = (selectedTile->maskSee & EAST_MASK) == EAST_MASK; // East Check
+		selectedTileSeeThroughWalls[3] = (selectedTile->maskSee & WEST_MASK) == WEST_MASK; // West Check
+	}
 
 	selectedTileOccupied = false;
 
@@ -1971,28 +2126,28 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 	selectedTileDoors.clear();
 	for (int i = 0; i < dungeon->activatable.size(); i++)
 	{
-		if (dungeon->activatable[i]->position == selectedTile->position)
+		if (dungeon->activatable[i]->position == selectedTilePosition)
 			selectedTileDoors.push_back(dungeon->activatable[i]);
 	}
 
 	selectedTileLevers.clear();
 	for (int i = 0; i < dungeon->interactables.size(); i++)
 	{
-		if (dungeon->interactables[i]->position == selectedTile->position)
+		if (dungeon->interactables[i]->position == selectedTilePosition)
 			selectedTileLevers.push_back(dungeon->interactables[i]);
 	}
 
 	selectedTileShootLasers.clear();
 	for (int i = 0; i < dungeon->shootLasers.size(); i++)
 	{
-		if (dungeon->shootLasers[i]->position == selectedTile->position)
+		if (dungeon->shootLasers[i]->position == selectedTilePosition)
 			selectedTileShootLasers.push_back(dungeon->shootLasers[i]);
 	}
 
 	selectedActivatorPlate = nullptr;
 	for (int i = 0; i < dungeon->activatorPlates.size(); i++)
 	{
-		if (dungeon->activatorPlates[i]->position == selectedTile->position)
+		if (dungeon->activatorPlates[i]->position == selectedTilePosition)
 		{
 			selectedActivatorPlate = dungeon->activatorPlates[i];
 			selectedTileOccupied = true;
@@ -2002,7 +2157,7 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 	selectedTransporter = nullptr;
 	for (int i = 0; i < dungeon->transporterPlates.size(); i++)
 	{
-		if (dungeon->transporterPlates[i]->position == selectedTile->position)
+		if (dungeon->transporterPlates[i]->position == selectedTilePosition)
 		{
 			selectedTransporter = dungeon->transporterPlates[i];
 			selectedTileOccupied = true;
@@ -2010,14 +2165,14 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 		}
 	}
 
-	selectedCheckpoint = dungeon->GetCheckpointAt(selectedTile->position); // holy smokes this is a little better!
+	selectedCheckpoint = dungeon->GetCheckpointAt(selectedTilePosition); // holy smokes this is a little better!
 	if (selectedCheckpoint)
 		selectedTileOccupied = true;
 
 	selectedHasSpikes = false;
 	for (int i = 0; i < dungeon->spikesPlates.size(); i++)
 	{
-		if (dungeon->spikesPlates[i]->position == selectedTile->position)
+		if (dungeon->spikesPlates[i]->position == selectedTilePosition)
 		{
 			selectedHasSpikes = true;
 			selectedTileOccupied = true;
@@ -2027,7 +2182,7 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 	selectedBlockerEnemy = nullptr;
 	for (int i = 0; i < dungeon->blockers.size(); i++)
 	{
-		if (dungeon->blockers[i]->position == selectedTile->position)
+		if (dungeon->blockers[i]->position == selectedTilePosition)
 		{
 			selectedBlockerEnemy = dungeon->blockers[i];
 			selectedTileOccupied = true;
@@ -2037,7 +2192,7 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 	selectedChaseEnemy = nullptr;
 	for (int i = 0; i < dungeon->chasers.size(); i++)
 	{
-		if (dungeon->chasers[i]->position == selectedTile->position)
+		if (dungeon->chasers[i]->position == selectedTilePosition)
 		{
 			selectedChaseEnemy = dungeon->chasers[i];
 			selectedTileOccupied = true;
@@ -2047,7 +2202,7 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 	selectedMurderinaEnemy = nullptr;
 	for (int i = 0; i < dungeon->slugs.size(); i++)
 	{
-		if (dungeon->slugs[i]->position == selectedTile->position)
+		if (dungeon->slugs[i]->position == selectedTilePosition)
 		{
 			selectedMurderinaEnemy = dungeon->slugs[i];
 			selectedTileOccupied = true;
@@ -2057,7 +2212,7 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 	selectedSwitcherEnemy = nullptr;
 	for (int i = 0; i < dungeon->switchers.size(); i++)
 	{
-		if (dungeon->switchers[i]->position == selectedTile->position)
+		if (dungeon->switchers[i]->position == selectedTilePosition)
 		{
 			selectedSwitcherEnemy = dungeon->switchers[i];
 			selectedTileOccupied = true;
@@ -2067,7 +2222,7 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 	selectedHasBlock = false;
 	for (int i = 0; i < dungeon->pushableBlocks.size(); i++)
 	{
-		if (dungeon->pushableBlocks[i]->position == selectedTile->position)
+		if (dungeon->pushableBlocks[i]->position == selectedTilePosition)
 		{
 			selectedHasBlock = true;
 			selectedTileOccupied = true;
@@ -2077,7 +2232,7 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 	selectedMirror = nullptr;
 	for (int i = 0; i < dungeon->mirrors.size(); i++)
 	{
-		if (dungeon->mirrors[i]->position == selectedTile->position)
+		if (dungeon->mirrors[i]->position == selectedTilePosition)
 		{
 			selectedMirror = dungeon->mirrors[i];
 			selectedTileOccupied = true;
@@ -2087,28 +2242,28 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 	selectedTileDecorations.clear();
 	for (int i = 0; i < dungeon->decorations.size(); i++)
 	{
-		if (dungeon->decorations[i]->position == selectedTile->position)
+		if (dungeon->decorations[i]->position == selectedTilePosition)
 			selectedTileDecorations.push_back(dungeon->decorations[i]);
 	}
 
 	selectedStairs = nullptr;
 	for (int i = 0; i < dungeon->stairs.size(); i++)
 	{
-		if (dungeon->stairs[i]->startPosition == selectedTile->position)
+		if (dungeon->stairs[i]->startPosition == selectedTilePosition)
 			selectedStairs = dungeon->stairs[i];
 	}
 
 	selectedLight = nullptr;
 	for (int i = 0; i < dungeon->pointLights.size(); i++)
 	{
-		if (dungeon->pointLights[i]->position == selectedTile->position)
+		if (dungeon->pointLights[i]->position == selectedTilePosition)
 			selectedLight = dungeon->pointLights[i];
 	}
 
 	selectedEventTrigger = nullptr;
 	for (int i = 0; i < dungeon->events.size(); i++)
 	{
-		if (dungeon->events[i]->position == selectedTile->position)
+		if (dungeon->events[i]->position == selectedTilePosition)
 			selectedEventTrigger = dungeon->events[i];
 	}
 }
@@ -2186,6 +2341,12 @@ void Crawl::DungeonEditor::DrawGizmos()
 		vec3 colour = { 0, 1,1 };
 		if (!murderinaPathSelected->IsValidConfiguration())  colour = { 1, 0, 0 };
 		LineRenderer::DrawFlatBox(position, 0.2f, colour);
+	}
+
+	if (editMode == Mode::TileEdit)
+	{
+		if (selectedTile) DrawTileInformation(selectedTile, true);
+		else LineRenderer::DrawFlatBox(dungeonPosToObjectScale(selectedTilePosition), 1, vec3(0.5, 0.5, 0.5));
 	}
 }
 

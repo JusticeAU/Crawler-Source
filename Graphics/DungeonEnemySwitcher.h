@@ -15,6 +15,8 @@ namespace Crawl
 		glm::ivec2 position = { 0,0 };
 		FACING_INDEX facing = NORTH_INDEX;
 
+		void UpdateTransform();
+
 		// dependencies
 		Object* object = nullptr;
 		Dungeon* dungeon = nullptr;

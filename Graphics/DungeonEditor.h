@@ -60,6 +60,10 @@ namespace Crawl
 		void Update();
 		void UpdateModeTileBrush();
 		void UpdateModeTileEdit();
+
+		void TileEditDeleteAllObjectsOnTile();
+		void TileEditMoveAllObjectsOnTile(ivec2 position);
+
 		void UpdateModeMurderinaBrush();
 		void UpdateModeMurderinaEdit();
 
@@ -129,6 +133,9 @@ namespace Crawl
 		// Tile edit mode
 		std::vector<std::string> wallVarientShortNames;
 		DungeonTile* selectedTile = nullptr;
+		ivec2 selectedTilePosition = { 0,0 };
+		ivec2 selectedTileMoveObjectsTo = { 0,0 };
+		float selectedTileMoveFlash = 0.0f;;
 		bool selectedTileUntraversableWalls[4] = { false, false, false, false };
 		bool selectedTileSeeThroughWalls[4] = { false, false, false, false };
 		bool selectedTileOccupied = false;

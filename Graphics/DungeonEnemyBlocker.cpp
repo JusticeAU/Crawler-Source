@@ -11,6 +11,12 @@ Crawl::DungeonEnemyBlocker::~DungeonEnemyBlocker()
 		object->markedForDeletion = true;
 }
 
+void Crawl::DungeonEnemyBlocker::UpdateTransform()
+{
+	object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
+	object->SetLocalRotationZ(orientationEulersReversed[facing]);
+}
+
 void Crawl::DungeonEnemyBlocker::Update()
 {
 	LogUtils::Log("Updating Blocker");

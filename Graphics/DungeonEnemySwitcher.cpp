@@ -15,6 +15,12 @@ Crawl::DungeonEnemySwitcher::~DungeonEnemySwitcher()
 		object->markedForDeletion = true;
 }
 
+void Crawl::DungeonEnemySwitcher::UpdateTransform()
+{
+	object->AddLocalPosition(dungeonPosToObjectScale(position));
+	object->SetLocalRotationZ(orientationEulers[facing]);
+}
+
 void Crawl::DungeonEnemySwitcher::Update()
 {
 	// check that player is in line of sight

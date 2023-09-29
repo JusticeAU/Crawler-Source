@@ -17,6 +17,7 @@ namespace Crawl
 		glm::vec3 localPosition = { 0,0,0 };
 		glm::vec3 localRotation = { 0,0,0 };
 		std::string modelName = "";
+		std::string modelNameShort = "";
 
 		bool castsShadows = true;
 

@@ -1054,8 +1054,7 @@ Crawl::DungeonSpikes* Crawl::Dungeon::CreateSpikes(ivec2 position, bool disabled
 	spikes->dungeon = this;
 	spikes->object = Scene::CreateObject();
 	spikes->object->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_trap_spikes.object"));
-	spikes->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, -1 }); // until new asset is in
-	spikes->object->SetLocalScale({ 2, 1.25, 2 }); // until new asset is in
+	spikes->UpdateTransform();
 
 
 	// Should be able to remove this when new spike asset goes in. (and delete call in destructor)
@@ -1115,7 +1114,7 @@ Crawl::DungeonPushableBlock* Crawl::Dungeon::CreatePushableBlock(ivec2 position)
 	pushable->position = position;
 	pushable->object = Scene::CreateObject();
 	pushable->object->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_crate.object"));
-	pushable->object->SetLocalPosition(dungeonPosToObjectScale(position));
+	pushable->UpdateTransform();
 	pushableBlocks.push_back(pushable);
 
 	// set tile its in to be occupied.
@@ -1185,8 +1184,7 @@ Crawl::DungeonShootLaser* Crawl::Dungeon::CreateShootLaser(ivec2 position, FACIN
 	shootLaser->facing = facing;
 	shootLaser->object = Scene::CreateObject();
 	shootLaser->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/monster_shootlaser.object"));
-	shootLaser->object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
-	shootLaser->object->SetLocalRotationZ(orientationEulersReversed[facing]);
+	shootLaser->UpdateTransform();
 
 	Object* gargoyle = Scene::CreateObject(shootLaser->object->children[0]);
 	gargoyle->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_gargoyle.object"));
@@ -1244,8 +1242,7 @@ Crawl::DungeonEnemyBlocker* Crawl::Dungeon::CreateEnemyBlocker(ivec2 position, F
 	blocker->dungeon = this;
 	blocker->object = Scene::CreateObject();
 	blocker->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/monster_blocker.object"));
-	blocker->object->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
-	blocker->object->SetLocalRotationZ(orientationEulersReversed[blocker->facing]);
+	blocker->UpdateTransform();
 	blocker->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_blocker_prototype.object"));
 	blocker->animator = (ComponentAnimator*)blocker->object->children[0]->GetComponent(Component_Animator);
 	blockers.emplace_back(blocker);
@@ -1324,8 +1321,7 @@ Crawl::DungeonEnemyChase* Crawl::Dungeon::CreateEnemyChase(ivec2 position, FACIN
 	else
 		LogUtils::Log("WARNING - ATTEMPTING TO ADD CHASER TO TILE THAT DOESN'T EXIST");
 
-	chaser->object->AddLocalPosition(dungeonPosToObjectScale(position));
-	chaser->object->SetLocalRotationZ(orientationEulers[facing]);
+	chaser->UpdateTransform();
 	return chaser;
 }
 
@@ -1374,10 +1370,9 @@ Crawl::DungeonEnemySwitcher* Crawl::Dungeon::CreateEnemySwitcher(ivec2 position,
 	switcher->dungeon = this;
 	switcher->object = Scene::CreateObject();
 	switcher->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/monster_switcher.object"));
-	switcher->object->AddLocalPosition(dungeonPosToObjectScale(position));
-	switcher->object->SetLocalRotationZ(orientationEulers[facing]);
 	switcher->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_switchbitch.object"));
 	switcher->object->children[0]->SetLocalRotationZ(180);
+	switcher->UpdateTransform();
 	switchers.emplace_back(switcher);
 
 	DungeonTile* tile = GetTile(position);
@@ -1477,8 +1472,7 @@ Crawl::DungeonMirror* Crawl::Dungeon::CreateMirror(ivec2 position, FACING_INDEX 
 	//mirror->dungeon = this;
 	mirror->object = Scene::CreateObject();
 	mirror->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/mirror.object"));
-	mirror->object->AddLocalPosition(dungeonPosToObjectScale(position));
-	mirror->object->SetLocalRotationZ(orientationEulers[direction]);
+	mirror->UpdateTransform();
 	mirrors.push_back(mirror);
 
 	DungeonTile* tile = GetTile(position);
@@ -1550,10 +1544,9 @@ Crawl::DungeonEnemySlug* Crawl::Dungeon::CreateMurderina(ivec2 position, FACING_
 	slug->dungeon = this;
 	slug->object = Scene::CreateObject();
 	slug->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/slug.object"));
-	slug->object->AddLocalPosition(dungeonPosToObjectScale(position));
-	slug->object->SetLocalRotationZ(orientationEulers[direction]);
 	slug->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_sawarina.object"));
 	slug->object->children[0]->SetLocalRotationZ(180);
+	slug->UpdateTransform();
 	slugs.push_back(slug);
 
 	DungeonTile* tile = GetTile(position);
@@ -1650,8 +1643,7 @@ Crawl::DungeonDecoration* Crawl::Dungeon::CreateDecoration(ivec2 position, FACIN
 	decoration->facing = facing;
 	decoration->object = Scene::CreateObject();
 	decoration->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/decoration.object"));
-	decoration->object->SetLocalPosition(dungeonPosToObjectScale(position));
-	decoration->object->SetLocalRotationZ(orientationEulersReversed[facing]);
+	decoration->UpdateTransform();
 	decorations.push_back(decoration);
 	return decoration;
 }

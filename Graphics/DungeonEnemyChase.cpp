@@ -15,6 +15,12 @@ Crawl::DungeonEnemyChase::~DungeonEnemyChase()
 		object->markedForDeletion = true;
 }
 
+void Crawl::DungeonEnemyChase::UpdateTransform()
+{
+	object->SetLocalPosition(dungeonPosToObjectScale(position));
+	object->SetLocalRotationZ(orientationEulers[facing]);
+}
+
 void Crawl::DungeonEnemyChase::Update()
 {
 	if (state == STUN)

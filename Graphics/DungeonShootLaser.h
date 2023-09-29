@@ -16,10 +16,12 @@ namespace Crawl
 	{
 	public:
 		~DungeonShootLaser();
-		
-		unsigned int id = 0;
 		ivec2 position = {0,0};
 		FACING_INDEX facing = NORTH_INDEX;
+		
+		void UpdateTransform();
+
+		unsigned int id = 0;
 		bool firesProjectile = false;
 		bool detectsLineOfSight = true;
 		bool firesImmediately = false;

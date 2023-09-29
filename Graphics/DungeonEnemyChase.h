@@ -27,6 +27,8 @@ namespace Crawl
 		~DungeonEnemyChase();
 		glm::ivec2 position = {0,0};
 		FACING_INDEX facing = NORTH_INDEX;
+
+		void UpdateTransform();
 		
 		bool isDead = false;
 		
