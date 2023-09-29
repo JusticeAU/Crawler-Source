@@ -62,7 +62,7 @@ namespace Crawl
 		void DoEvent(int eventID);
 		bool didJustRespawn = false;
 
-		bool enableDebugUI = false;
+		bool enableDebugUI = true;
 	private:
 		bool UpdateStateIdle(float delta);
 		bool IsMoveDown();

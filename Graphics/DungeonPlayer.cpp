@@ -726,19 +726,21 @@ void Crawl::DungeonPlayer::ClearFTUEPrompt(bool instant)
 void Crawl::DungeonPlayer::DrawDebugUI()
 {
 	ImGui::SetNextWindowPos({ 0,0 });
-	ImGui::SetNextWindowSize({ 615, 30 });
-	ImGui::Begin("Debug Information", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize);
+	ImGui::SetNextWindowSize({ 400, 30 });
+	ImGui::Begin("Debug Information", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground);
 	ImGui::BeginDisabled();
-	ImGui::PushItemWidth(200);
-	ImGui::InputText("Level", &currentDungeon->dungeonFileName);
+	ImGui::Text("Debug Build: ");
 	ImGui::SameLine();
-	ImGui::PopItemWidth();
-	ImGui::PushItemWidth(75);
-	ImGui::InputInt2("Position", &position.x);
-	ImGui::SameLine();
-	ImGui::PopItemWidth();
 	ImGui::PushItemWidth(100);
-	ImGui::InputText("Facing", &orientationNames[facing]);
+	ImGui::Text(currentDungeon->dungeonFileName.c_str());
+	ImGui::SameLine();
+	ImGui::PopItemWidth();
+	ImGui::PushItemWidth(50);
+	ImGui::InputInt2("", &position.x);
+	ImGui::SameLine();
+	ImGui::PopItemWidth();
+	ImGui::PushItemWidth(50);
+	ImGui::InputText("", &orientationNames[facing]);
 	ImGui::PopItemWidth();
 	ImGui::EndDisabled();
 	ImGui::End();
