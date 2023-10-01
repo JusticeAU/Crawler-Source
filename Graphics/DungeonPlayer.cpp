@@ -296,7 +296,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 					return false;
 				}
 
-				AudioManager::PlaySound(stepSounds[rand() % 4]);
+				SoundPlayFootstep();
 				position += directions[index];
 				currentDungeon->GetTile(position)->occupied = true;
 				didMove = true;
@@ -758,6 +758,14 @@ void Crawl::DungeonPlayer::DrawDebugUI()
 	ImGui::PopItemWidth();
 	ImGui::EndDisabled();
 	ImGui::End();
+}
+
+void Crawl::DungeonPlayer::SoundPlayFootstep()
+{
+	int stepIndex = rand() % 4;
+	while (stepIndex == lastStepIndex)	stepIndex = rand() % 4;
+	lastStepIndex = stepIndex;
+	AudioManager::PlaySound(stepSounds[lastStepIndex]);
 }
 
 void Crawl::DungeonPlayer::Teleport(ivec2 position)

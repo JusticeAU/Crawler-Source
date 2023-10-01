@@ -87,6 +87,8 @@ namespace Crawl
 
 		void DrawDebugUI();
 
+		void SoundPlayFootstep();
+
 		glm::ivec2 position;
 		FACING_INDEX facing = EAST_INDEX;
 		
@@ -148,6 +150,7 @@ namespace Crawl
 			"crawler/sound/load/step3.ogg",
 			"crawler/sound/load/step4.ogg"
 		};
+		int lastStepIndex = 0;
 
 		string animationNamePush = "crawler/model/viewmodel_hands.fbxarmature|armatureaction";
 
