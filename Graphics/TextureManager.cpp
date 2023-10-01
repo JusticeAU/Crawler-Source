@@ -118,8 +118,31 @@ void TextureManager::PreloadAllFiles()
 	for (auto& texture : s_instance->textures)
 	{
 		if (texture.second != nullptr && !texture.second->loaded)
+		{
 			texture.second->Load();
+			s_instance->m_preloadCount += 1;
+		}
 	}
+	s_instance->m_preloadComplete = true;
+}
+
+void TextureManager::PreloadNextFile()
+{
+	for (auto& texture : s_instance->textures)
+	{
+		if (texture.second != nullptr && !texture.second->loaded)
+		{
+			texture.second->Load();
+			s_instance->m_preloadCount += 1;
+			return;
+		}
+	}
+	s_instance->m_preloadComplete = true;
+}
+
+float TextureManager::GetPreloadPercentage()
+{
+	return (float)s_instance->m_preloadCount / (float)s_instance->textures.size();
 }
 
 void TextureManager::PreloadAllFilesContaining(string contains)

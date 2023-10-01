@@ -14,6 +14,8 @@
 #include "DungeonLight.h"
 #include "DungeonTransporter.h"
 
+#include "DungeonMenu.h"
+
 #include "gtx/spline.hpp"
 #include "gtx/easing.hpp"
 
@@ -42,6 +44,12 @@ void Crawl::DungeonPlayer::SetDungeon(Dungeon* dungeonPtr)
 // Returns true if the player made a game-state changing action
 bool Crawl::DungeonPlayer::Update(float deltaTime)
 {
+	if (Input::Keyboard(GLFW_KEY_ESCAPE).Down() && gameMenu && state == IDLE)
+	{
+		state = MENU;
+		return false;
+	}
+	
 	if(enableDebugUI) DrawDebugUI();
 
 	if (ftueEnabled)
@@ -71,8 +79,17 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		}
 	}
 
+	if (state == MENU)
+	{
+		gameMenu->DrawPauseMenu();
 
-	if (state == IDLE)
+		if (Input::Keyboard(GLFW_KEY_ESCAPE).Down())
+		{
+			SetStateIdle();
+			return false;
+		}
+	}
+	else if (state == IDLE)
 	{
 		if (UpdateStateIdle(deltaTime))
 			return true;
@@ -109,14 +126,6 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 
 bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 {
-	if (Input::Keyboard(GLFW_KEY_BACKSPACE).Down())
-	{
-		DungeonTransporter* lobbyTransporter = new DungeonTransporter();
-		lobbyTransporter->toDungeon = "crawler/dungeon/lobby";
-		lobbyTransporter->toTransporter = "TutExit";
-		LoadSelectedTransporter(lobbyTransporter);
-	}
-
 	// All these checks should move to a turn processors state machine.
 	if (hp <= 0)
 	{
@@ -646,6 +655,11 @@ void Crawl::DungeonPlayer::LoadSelectedTransporter(DungeonTransporter* transport
 		SetRespawn(dungeon->defaultPlayerStartPosition, dungeon->defaultPlayerStartOrientation);
 		Respawn();
 	}
+
+	if (TransporterToGoTo == "TutExit" && gameMenu)
+	{
+		gameMenu->SetLobbyReturnEnabled();
+	}
 }
 
 void Crawl::DungeonPlayer::UpdatePrompts(float delta)
@@ -760,6 +774,14 @@ void Crawl::DungeonPlayer::Orient(FACING_INDEX facing)
 	this->facing = facing;
 	objectView->localRotation.x = lookRestX;
 	object->SetLocalRotationZ(orientationEulers[facing]);
+}
+
+void Crawl::DungeonPlayer::ReturnToLobby()
+{
+	DungeonTransporter* lobbyTransporter = new DungeonTransporter();
+	lobbyTransporter->toDungeon = "crawler/dungeon/lobby";
+	lobbyTransporter->toTransporter = "TutExit";
+	LoadSelectedTransporter(lobbyTransporter);
 }
 
 void Crawl::DungeonPlayer::SetRespawn(ivec2 position, FACING_INDEX orientation, bool isLevel2)

@@ -1,3 +1,5 @@
+//#define AIE_SHOWCASE
+
 #pragma once
 class Camera;
 class Scene;
@@ -26,9 +28,22 @@ public:
 
 	Application();
 	~Application();
-	void LaunchArgument(char* arg);
+	void LaunchArgumentPreLoad(char* arg);
+	void LaunchArgumentPostLoad(char* arg);
+	void ConstructWindow();
+	void LoadResourceManagers();
 	void InitGame();
+	void DoLoadingScreen();
+	void PreloadAssetsAndRenderProgress();
+	void RenderLoadProgress(float percentageLoaded);
+	void InitialiseAdditionalGameAssets();
 	void Run();
+
+	void RefreshImGui();
+	void RenderImGui();
+
+	void SwapBuffers();
+
 	void Update(float delta);
 protected:
 	Window* window;

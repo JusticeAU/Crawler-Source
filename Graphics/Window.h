@@ -6,7 +6,8 @@
 class Window
 {
 public:
-	Window(int width, int height, const char* title, GLFWmonitor* = nullptr);
+	Window(const char* title); // Creates a fullscreen borderless window on the primary monitor
+	Window(int width, int height, const char* title);
 	static Window* GetWindow() { return s_instance; };
 	static const glm::ivec2 GetViewPortSize() { return s_instance->m_viewPortSize; };
 	static void SetViewPortSize(glm::ivec2 size) { s_instance->m_viewPortSize = size; };
@@ -17,12 +18,16 @@ public:
 	
 	void ToggleFullscreen();
 	bool GetFullscreen() { return fullScreen; };
+
+	void RecentreWindow();
+
 	void ToggleMouseCursor();
 	void SetMouseCursorHidden(bool hidden);
 	GLFWwindow* GetGLFWwindow() { return m_window; }
 	
 protected:
-	glm::ivec2 m_windowSize;
+	glm::ivec2 m_fullScreenSize;
+	glm::ivec2 m_windowSize = { 1600, 900 };
 	glm::ivec2 m_viewPortSize;
 	GLFWwindow* m_window;
 	
@@ -30,5 +35,6 @@ protected:
 	bool showMouseCursor = true;
 
 	glm::ivec2 m_windowPos;
+	bool m_windowHasPosition = false;
 	static Window* s_instance;
 };

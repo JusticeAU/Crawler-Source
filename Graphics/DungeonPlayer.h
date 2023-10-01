@@ -7,13 +7,16 @@ class Object;
 class ComponentAnimator;
 class ComponentCamera;
 
+
 namespace Crawl
 {
+	class DungeonMenu;
 	class DungeonPlayer
 	{
 	public:
 
 		enum STATE {
+			MENU,
 			IDLE,
 			MOVING,
 			TURNING,
@@ -24,6 +27,7 @@ namespace Crawl
 		DungeonPlayer();
 
 		void SetDungeon(Dungeon* dungeonPtr);
+		void SetStateIdle() { state = IDLE; }
 
 		bool Update(float deltaTime);
 		void UpdatePointOfInterestTilt(bool instant = false);
@@ -35,6 +39,7 @@ namespace Crawl
 		void SetShouldActivateTransporter(DungeonTransporter* transporter);
 		void Teleport(ivec2 position);
 		void Orient(FACING_INDEX facing);
+		void ReturnToLobby();
 		
 		void SetRespawn(ivec2 position, FACING_INDEX orientation, bool isLevel2 = false);
 		void ClearRespawn();
@@ -199,5 +204,7 @@ namespace Crawl
 
 		glm::vec3 transporterColour = glm::vec3(0.0, 0.0, 0.0); // very dark red.
 		DungeonTransporter* transporterToActivate = nullptr;
+
+		DungeonMenu* gameMenu = nullptr;
 	};
 }

@@ -30,6 +30,9 @@ public:
 
 	static void FindAllFiles(string folder);
 	static void PreloadAllFiles();
+	static void PreloadNextFile();
+	static bool IsPreloadComplete() { return s_instance->m_preloadComplete; };
+	static float GetPreloadPercentage();
 	static void PreloadAllFilesContaining(string contains);
 	void CreateTextureFromFile(const char* filename);
 	
@@ -49,6 +52,8 @@ protected:
 	TextureManager();
 	map<string, Texture*> textures;
 	map<string, FrameBuffer*> frameBuffers;
+	bool m_preloadComplete = false;
+	int m_preloadCount = 0;
 
 	Texture* selectedTexture = nullptr;
 	bool selectedTextureWindowOpen = false;
