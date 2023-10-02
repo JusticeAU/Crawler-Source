@@ -42,7 +42,7 @@ namespace Crawl
 		string textReturnToLobby = "Return to Lobby";
 
 	private:
-		glm::ivec2 titleMenuSize = { 200, 125 };
+		glm::ivec2 titleMenuSize = { 300, 225 };
 		int halfWidth;
 		int halfHeight;
 		Window* window = nullptr;

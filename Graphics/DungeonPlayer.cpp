@@ -44,12 +44,8 @@ void Crawl::DungeonPlayer::SetDungeon(Dungeon* dungeonPtr)
 // Returns true if the player made a game-state changing action
 bool Crawl::DungeonPlayer::Update(float deltaTime)
 {
-	if (Input::Keyboard(GLFW_KEY_ESCAPE).Down() && gameMenu && state == IDLE)
-	{
-		state = MENU;
-		return false;
-	}
-	
+	if(state != MENU)	HandleFreeLook(deltaTime);
+
 	if(enableDebugUI) DrawDebugUI();
 
 	if (ftueEnabled)
@@ -82,12 +78,6 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	if (state == MENU)
 	{
 		gameMenu->DrawPauseMenu();
-
-		if (Input::Keyboard(GLFW_KEY_ESCAPE).Down())
-		{
-			SetStateIdle();
-			return false;
-		}
 	}
 	else if (state == IDLE)
 	{
@@ -97,17 +87,17 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	else if (state == MOVING)
 	{
 		UpdateStateMoving(deltaTime);
-		ContinueResettingTilt(deltaTime);
+		//ContinueResettingTilt(deltaTime);
 	}
 	else if (state == TURNING)
 	{
 		UpdateStateTurning(deltaTime);
-		ContinueResettingTilt(deltaTime);
+		//ContinueResettingTilt(deltaTime);
 	}
 	else if (state == STAIRBEARS)
 	{
 		UpdateStateStairs(deltaTime);
-		ContinueResettingTilt(deltaTime);
+		//ContinueResettingTilt(deltaTime);
 	}
 	else if (state == DYING)
 	{
@@ -124,8 +114,64 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	return false;
 }
 
+bool Crawl::DungeonPlayer::HandleFreeLook(float delta)
+{
+	//if (Input::Mouse(1).Down()) Window::GetWindow()->SetMouseCursorHidden(true);
+	if (Input::Mouse(1).Pressed() || alwaysFreeLook)
+	{
+		if (!ftueHasLooked && promptCurrent == promptLook);
+		{
+			ftueHasLooked = true;
+			ClearFTUEPrompt();
+		}
+		vec2 mouseDelta = -Input::GetMouseDelta() * lookSpeed;
+		objectView->AddLocalRotation({ mouseDelta.y, 0, mouseDelta.x });
+		objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -lookMaxX, lookMaxX);
+		objectView->localRotation.z = glm::clamp(objectView->localRotation.z, -lookMaxZ, lookMaxZ);
+
+		if (!autoReOrientDuringFreeLook && !alwaysFreeLook) return false;
+
+		if (objectView->localRotation.z > 60 && state == IDLE)
+		{
+			TurnLeft(true);
+			return false;
+		}
+		else if (objectView->localRotation.z < -60 && state == IDLE)
+		{
+			TurnRight(true);
+			return false;
+		}
+
+	}
+
+	if (Input::Mouse(1).Up())
+	{
+		//Window::GetWindow()->SetMouseCursorHidden(false);
+		lookReturnFrom = objectView->localRotation;
+		lookReturnTimeCurrent = 0.0f;
+	}
+
+	return false;
+}
+
+void Crawl::DungeonPlayer::HandleLookTilt(float delta)
+{
+	if (alwaysFreeLook) return; // This doesnt run if we're we have freelook always on
+	if(Input::Mouse(1).Pressed()) return; // or if we're currently freelookin.
+	if (lookReturnTimeCurrent >= lookReturnTimeTotal) return; // We're done resetting
+
+	ContinueResettingTilt(delta);
+}
+
 bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 {
+	if (Input::Keyboard(GLFW_KEY_ESCAPE).Down() && gameMenu) // only perform this action if the gameMenu is initialised. This wont be the case in designer mode.
+	{
+		Window::GetWindow()->SetMouseCursorHidden(false);
+		state = MENU;
+		return false;
+	}
+
 	// All these checks should move to a turn processors state machine.
 	if (hp <= 0)
 	{
@@ -138,33 +184,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		return false;
 	}
 
-	if (Input::Mouse(1).Down()) Window::GetWindow()->SetMouseCursorHidden(true);
-	if (Input::Mouse(1).Pressed())
-	{
-		if (!ftueHasLooked && promptCurrent == promptLook);
-		{
-			ftueHasLooked = true;
-			ClearFTUEPrompt();
-		}
-		vec2 mouseDelta = -Input::GetMouseDelta() * lookSpeed;
-		objectView->AddLocalRotation({ mouseDelta.y, 0, mouseDelta.x });
-		objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -lookMaxX, lookMaxX);
-		objectView->localRotation.z = glm::clamp(objectView->localRotation.z, -lookMaxZ, lookMaxZ);
-		return false;
-	}
-
-	if (Input::Mouse(1).Up())
-	{
-		Window::GetWindow()->SetMouseCursorHidden(false);
-		lookReturnFrom = objectView->localRotation;
-		lookReturnTimeCurrent = 0.0f;
-	}
-
-	if (lookReturnTimeCurrent < lookReturnTimeTotal)
-	{
-		ContinueResettingTilt(delta);
-		return false; // disallow movement whilst this is resetting
-	}
+	HandleLookTilt(delta);
 
 	if (Input::Keyboard(GLFW_KEY_SPACE).Down() && currentDungeon->playerCanKickBox)
 	{
@@ -320,45 +340,13 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	// Turning
 	if (Input::Keyboard(GLFW_KEY_E).Down())
 	{
-		
-		AudioManager::PlaySound("crawler/sound/load/turn.wav");
-		int faceInt = (int)facing;
-		faceInt++;
-		if (faceInt == 4)
-			faceInt = 0;
-		facing = (FACING_INDEX)faceInt;
-		state = TURNING;
-		turnCurrent = 0.0f;
-		oldTurn = object->localRotation.z;
-		targetTurn = object->localRotation.z - 90;
-		UpdatePointOfInterestTilt();
-
-		if (!ftueHasTurned) ftueTurns++;
-		dungeon->DoEventTriggerFacing(position, facing);
-		
-		if (!dungeon->playerTurnIsFree)
-			return true;
+		TurnRight();
+		return false;
 	}
 	if (Input::Keyboard(GLFW_KEY_Q).Down())
 	{
-		
-		AudioManager::PlaySound("crawler/sound/load/turn.wav");
-		int faceInt = (int)facing;
-		faceInt--;
-		if (faceInt == -1)
-			faceInt = 3;
-		facing = (FACING_INDEX)faceInt;
-		state = TURNING;
-		turnCurrent = 0.0f;
-		oldTurn = object->localRotation.z;
-		targetTurn = object->localRotation.z + 90;
-		UpdatePointOfInterestTilt();
-		
-		if (!ftueHasTurned) ftueTurns++;
-		dungeon->DoEventTriggerFacing(position, facing);
-
-		if (!dungeon->playerTurnIsFree)
-			return true;
+		TurnLeft();
+		return false;
 	}
 
 	// Rotators - not in use
@@ -426,8 +414,48 @@ int Crawl::DungeonPlayer::GetMoveIndex()
 	return index;
 }
 
+void Crawl::DungeonPlayer::TurnLeft(bool updateFreeLook)
+{
+	turnShouldApplyDeltaToFreeLook = updateFreeLook;
+	AudioManager::PlaySound("crawler/sound/load/turn.wav");
+	int faceInt = (int)facing;
+	faceInt--;
+	if (faceInt == -1)
+		faceInt = 3;
+	facing = (FACING_INDEX)faceInt;
+	state = TURNING;
+	turnCurrent = 0.0f;
+	oldTurn = object->localRotation.z;
+	targetTurn = object->localRotation.z + 90;
+	UpdatePointOfInterestTilt();
+
+	if (!ftueHasTurned) ftueTurns++;
+	dungeon->DoEventTriggerFacing(position, facing);
+}
+
+void Crawl::DungeonPlayer::TurnRight(bool updateFreeLook)
+{
+	turnShouldApplyDeltaToFreeLook = updateFreeLook;
+	AudioManager::PlaySound("crawler/sound/load/turn.wav");
+	int faceInt = (int)facing;
+	faceInt++;
+	if (faceInt == 4)
+		faceInt = 0;
+	facing = (FACING_INDEX)faceInt;
+	state = TURNING;
+	turnCurrent = 0.0f;
+	oldTurn = object->localRotation.z;
+	targetTurn = object->localRotation.z - 90;
+	UpdatePointOfInterestTilt();
+
+	if (!ftueHasTurned) ftueTurns++;
+	dungeon->DoEventTriggerFacing(position, facing);
+}
+
 bool Crawl::DungeonPlayer::UpdateStateMoving(float delta)
 {
+	HandleLookTilt(delta);
+
 	moveCurrent += delta;
 	float t = MathUtils::InverseLerp(0, moveSpeed, moveCurrent);
 	if (moveCurrent > moveSpeed)
@@ -446,18 +474,25 @@ bool Crawl::DungeonPlayer::UpdateStateMoving(float delta)
 
 bool Crawl::DungeonPlayer::UpdateStateTurning(float delta)
 {
+	HandleLookTilt(delta);
+
 	float t = MathUtils::InverseLerp(0, turnSpeed, turnCurrent);
+	float turnPrevious = object->localRotation.z;
 	if (turnCurrent > turnSpeed)
 	{
-		object->SetLocalRotationZ(targetTurn);
 		state = IDLE;
+		turnDeltaPrevious = targetTurn - turnPrevious;
+		object->SetLocalRotationZ(targetTurn);
 	}
 	else
 	{
-		object->SetLocalRotationZ(MathUtils::Lerp(oldTurn, targetTurn, MathUtils::EaseOutBounceSubtle(t)));
+		float newTurnAngle = MathUtils::Lerp(oldTurn, targetTurn, MathUtils::EaseOutBounceSubtle(t));
+		turnDeltaPrevious = newTurnAngle - turnPrevious;
+		object->SetLocalRotationZ(newTurnAngle);
 	}
 
 	turnCurrent += delta;
+	if(turnShouldApplyDeltaToFreeLook) objectView->localRotation.z -= turnDeltaPrevious;
 	return false;
 }
 

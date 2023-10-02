@@ -68,11 +68,21 @@ namespace Crawl
 		bool didJustRespawn = false;
 
 		bool enableDebugUI = true;
+
+		// Accessability Options
+		bool autoReOrientDuringFreeLook = true;
+		bool alwaysFreeLook = false;
 	private:
+		bool HandleFreeLook(float delta);
+		void HandleLookTilt(float delta);
+
 		bool UpdateStateIdle(float delta);
 		bool IsMoveDown();
 		bool IsMovePressedLongEnough(float delta);
 		int GetMoveIndex();
+		void TurnLeft(bool updateFreeLook = false);
+		void TurnRight(bool updateFreeLook = false);
+
 		bool UpdateStateMoving(float delta);
 		bool UpdateStateTurning(float delta);
 		bool UpdateStateStairs(float delta);
@@ -114,6 +124,8 @@ namespace Crawl
 
 		float turnSpeed = 0.25f;
 		float turnCurrent = 0.0f;
+		bool turnShouldApplyDeltaToFreeLook = false;
+		float turnDeltaPrevious = 0.0f;
 		float oldTurn;
 		float targetTurn;
 		

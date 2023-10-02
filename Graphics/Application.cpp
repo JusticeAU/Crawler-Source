@@ -212,6 +212,7 @@ void Application::InitGame()
 	// Ayo this wont stay here for long.
 	dungeonPlayer->gameMenu = new Crawl::DungeonMenu();
 	dungeonPlayer->gameMenu->SetPlayer(dungeonPlayer);
+	Window::GetWindow()->SetMouseCursorHidden(true);
 }
 
 void Application::DoLoadingScreen()

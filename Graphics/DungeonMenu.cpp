@@ -2,6 +2,7 @@
 #include "DungeonPlayer.h"
 #include "graphics.h"
 #include "Application.h"
+#include "Input.h"
 
 Crawl::DungeonMenu::DungeonMenu()
 {
@@ -37,6 +38,12 @@ void Crawl::DungeonMenu::DrawMainMenu()
 
 void Crawl::DungeonMenu::DrawPauseMenu()
 {
+	if (Input::Keyboard(GLFW_KEY_ESCAPE).Down())
+	{
+		player->SetStateIdle();
+		return;
+	}
+
 	UpdatePositions();
 
 	ImGui::SetNextWindowSize({ (float)titleMenuSize.x, (float)titleMenuSize.y+50 });
@@ -51,6 +58,18 @@ void Crawl::DungeonMenu::DrawPauseMenu()
 	if (ImGui::Button(textToggleFullScreen.c_str()))	ExecuteToggleFullScreen();
 	if (ImGui::Button(textQuitGame.c_str()))			ExecuteQuitGame();
 
+	ImGui::Text("");
+	if (ImGui::Checkbox("Always Free-Look", &player->alwaysFreeLook))
+	{
+		player->autoReOrientDuringFreeLook = true;
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		ImGui::SetTooltip("The mouse will act like a traditional first person game");
+	if (player->alwaysFreeLook) ImGui::BeginDisabled();
+	ImGui::Checkbox("Auto-Orient during Free-Look", &player->autoReOrientDuringFreeLook);
+	if (player->alwaysFreeLook) ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		ImGui::SetTooltip("The player will automatically re-orient themselves to the closest cardinal direction when Free-Looking");
 
 	ImGui::End();
 }
@@ -65,6 +84,7 @@ void Crawl::DungeonMenu::UpdatePositions()
 
 void Crawl::DungeonMenu::ExecuteNewGame()
 {
+	Window::GetWindow()->SetMouseCursorHidden(true);
 	app->InitGame();
 	app->s_mode = Application::Mode::Game;
 }
@@ -76,6 +96,7 @@ void Crawl::DungeonMenu::ExecuteQuitGame()
 
 void Crawl::DungeonMenu::ExecuteResumeGame()
 {
+	Window::GetWindow()->SetMouseCursorHidden(true);
 	player->SetStateIdle();;
 }
 
@@ -86,6 +107,7 @@ void Crawl::DungeonMenu::ExecuteToggleFullScreen()
 
 void Crawl::DungeonMenu::ExecuteReturnToLobby()
 {
+	Window::GetWindow()->SetMouseCursorHidden(true);
 	player->SetStateIdle();
 	player->ReturnToLobby();
 }
