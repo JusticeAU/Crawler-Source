@@ -1704,6 +1704,15 @@ void Crawl::Dungeon::RemoveLight(DungeonLight* light)
 		}
 	}
 }
+// ID defaults to 0, if 0 is used, it will flicker all lights. Otherwise, just flicker lights with matching ID.
+void Crawl::Dungeon::FlickerLights(int id)
+{
+	for (auto& light : pointLights)
+	{
+		if(id == 0 ||light->id == id)
+			light->Flicker();
+	}
+}
 
 Crawl::DungeonEventTrigger* Crawl::Dungeon::CreateEventTrigger(ivec2 position)
 {
@@ -2139,10 +2148,15 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		newPointLight->localPosition = pointLight.localPosition;
 		newPointLight->colour = pointLight.colour;
 		newPointLight->intensity = pointLight.intensity;
+		newPointLight->id = pointLight.id;
 		newPointLight->isLobbyLight = pointLight.isLobbyLight;
+		newPointLight->flickerRepeat = pointLight.flickerRepeat;
+		newPointLight->flickerRepeatMin = pointLight.flickerRepeatMin;
+		newPointLight->flickerRepeatMax = pointLight.flickerRepeatMax;
+		newPointLight->flickerEnabled = pointLight.flickerEnabled;
 		newPointLight->UpdateLight();
 		newPointLight->UpdateTransform();
-
+		newPointLight->ConfigureFlickerState();
 	}
 
 	auto& events_json = serialised["events"];
@@ -2152,6 +2166,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		DungeonEventTrigger* newEvent = CreateEventTrigger(event.position);
 		newEvent->eventID = event.eventID;
 		newEvent->repeats = event.repeats;
+		newEvent->type = event.type;
 		if (event.mustBeFacing)
 		{
 			newEvent->mustBeFacing = event.mustBeFacing;
@@ -2484,6 +2499,9 @@ void Crawl::Dungeon::UpdateVisuals(float delta)
 
 	for (auto& lever : interactables)
 		lever->UpdateVisuals(delta);
+
+	for (auto& light : pointLights)
+		light->UpdateVisual(delta);
 }
 
 unsigned int Crawl::Dungeon::GetAutoTileMask(ivec2 position)

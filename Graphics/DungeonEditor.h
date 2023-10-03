@@ -48,6 +48,7 @@ namespace Crawl
 		void DrawGUIModeTileEditStairs();
 		void DrawGUIModeTileEditLight();
 		void DrawGUIModeTileEditEventTrigger();
+		string DrawGUIModeTileEditEventTriggerGetEventTypeString(DungeonEventTrigger* trigger);
 
 		void DrawGUIModeDungeonProperties();
 
@@ -79,6 +80,7 @@ namespace Crawl
 
 		int GetNextAvailableLeverID();
 		int GetNextAvailableDoorID();
+		int GetNextAvailableLightID();
 	protected:
 		glm::ivec2 GetMousePosOnGrid();
 		void UpdateMousePosOnGrid();

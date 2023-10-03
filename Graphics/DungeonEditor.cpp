@@ -118,11 +118,11 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 
 	if (ImGui::Button(!dirtyGameplayScene ? "Play" : "Resume"))
 	{
-		TileEditUnselectAll();
 		requestedGameMode = true;
 		if (!dirtyGameplayScene)
 			dungeon->player->Respawn();
 		dirtyGameplayScene = true;
+		TileEditUnselectAll();
 	}
 	if (unsavedChanges)
 	{
@@ -591,7 +591,9 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Light"))
 		{
 			MarkUnsavedChanges();
+			int newID = GetNextAvailableLightID();
 			selectedLight = dungeon->CreateLight(selectedTilePosition);
+			selectedLight->id = newID;
 			selectedLightWindowOpen = true;
 		}
 		if (cantMakeLight) ImGui::EndDisabled();
@@ -1489,22 +1491,35 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLight()
 {
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
+	if(selectedLight->flickerRepeat)
+		ImGui::SetNextWindowSize({ 300, 250 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Edit Point Light", &selectedLightWindowOpen);
 	if (ImGui::ColorEdit3("Colour", &selectedLight->colour.x))
 	{
 		MarkUnsavedChanges();
 		selectedLight->UpdateLight();
 	}
-	if (ImGui::DragFloat("Intensity", &selectedLight->intensity))
-	{
-		MarkUnsavedChanges();
-		selectedLight->UpdateLight();
-	}
+	if (ImGui::DragFloat("Intensity", &selectedLight->intensity)) MarkUnsavedChanges();
 	if (ImGui::DragFloat3("Position", &selectedLight->localPosition.x, 0.1f, -2.0f, 10.0f))
 	{
 		MarkUnsavedChanges();
 		selectedLight->UpdateTransform();
 	}
+	if (ImGui::InputInt("ID", &selectedLight->id)) MarkUnsavedChanges();
+	if (ImGui::Checkbox("Ignore Global Flicker", &selectedLight->flickerIgnoreGlobal))	MarkUnsavedChanges();
+	if (ImGui::Checkbox("Flickers Randomly", &selectedLight->flickerRepeat))
+	{
+		MarkUnsavedChanges();
+		selectedLight->flickerEnabled = true;
+	}
+	if (selectedLight->flickerRepeat)
+	{
+		if (ImGui::InputFloat("Min Repeat Delay", &selectedLight->flickerRepeatMin))
+			MarkUnsavedChanges();
+		if (ImGui::InputFloat("Max Repeat Delay", &selectedLight->flickerRepeatMax))
+			MarkUnsavedChanges();
+	}
+	
 	if (ImGui::Checkbox("Is Lobby trigger light", &selectedLight->isLobbyLight))
 		MarkUnsavedChanges();
 
@@ -1536,19 +1551,60 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLight()
 	}
 
 	ImGui::End();
-
-	ImGui::End();
 }
 void Crawl::DungeonEditor::DrawGUIModeTileEditEventTrigger()
 {
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 200 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("EditEvent Trigger", &selectedSwitcherEnemyWindowOpen);
 	
 	if (ImGui::Checkbox("Repeats", &selectedEventTrigger->repeats))
 		MarkUnsavedChanges();
-	if(ImGui::InputInt("Event ID", &selectedEventTrigger->eventID))
+
+	// Event Type Selection
+	if (ImGui::BeginCombo("Event Type", DrawGUIModeTileEditEventTriggerGetEventTypeString(selectedEventTrigger).c_str()))
+	{
+		if (ImGui::Selectable("Global Event"))
+		{
+			MarkUnsavedChanges();
+			selectedEventTrigger->type = DungeonEventTrigger::Type::GlobalEvent;
+		}
+		if (ImGui::Selectable("Light Flicker"))
+		{
+			MarkUnsavedChanges();
+			selectedEventTrigger->type = DungeonEventTrigger::Type::LightFlicker;
+		}
+		ImGui::EndCombo();
+	}
+
+
+	string eventTypeString;
+	switch (selectedEventTrigger->type)
+	{
+	case DungeonEventTrigger::Type::GlobalEvent:
+	{
+		eventTypeString = "Global Event ID";
+		break;
+	}
+	case DungeonEventTrigger::Type::LightFlicker:
+	{
+		eventTypeString = "Light ID";
+		break;
+	}
+	case DungeonEventTrigger::Type::FTUEPrompt:
+	{
+		eventTypeString = "FTUE ID";
+		break;
+	}
+
+	}
+	if(ImGui::InputInt(eventTypeString.c_str(), &selectedEventTrigger->eventID))
 		MarkUnsavedChanges();
+	if (selectedEventTrigger->type == DungeonEventTrigger::Type::LightFlicker)
+	{
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("A Light ID of 0 will flicker all lights in the dungeon.");
+	}
 	if(ImGui::Checkbox("Must Be Facing", &selectedEventTrigger->mustBeFacing))
 		MarkUnsavedChanges();
 	if (selectedEventTrigger->mustBeFacing)
@@ -1568,9 +1624,32 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditEventTrigger()
 			ImGui::EndCombo();
 		}
 	}
-
+	if (ImGui::Button("Delete (No Confirm)"))
+	{
+		MarkUnsavedChanges();
+		dungeon->RemoveEventTrigger(selectedEventTrigger);
+		selectedEventTrigger = nullptr;
+		selectedEventTriggerWindowOpen = false;
+		RefreshSelectedTile();
+	}
 	ImGui::End();
 }
+
+string Crawl::DungeonEditor::DrawGUIModeTileEditEventTriggerGetEventTypeString(DungeonEventTrigger* trigger)
+{
+	switch (trigger->type)
+	{
+	case DungeonEventTrigger::Type::GlobalEvent:
+		return "Global";
+	case DungeonEventTrigger::Type::LightFlicker:
+		return "Light Flicker";
+	case DungeonEventTrigger::Type::FTUEPrompt:
+		return "FTUE Prompt";
+	default:
+		return "ERROR";
+	}
+}
+
 void Crawl::DungeonEditor::DrawGUIModeTileEditSwitcher()
 {
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
@@ -2304,35 +2383,44 @@ void Crawl::DungeonEditor::DrawGizmos()
 	// All transporters
 	for (auto& transporter : dungeon->transporterPlates)
 	{
-		vec3 position = dungeonPosToObjectScale(transporter->position);
+		vec3 position = dungeonPosToObjectScale(transporter->position) + vec3(-0.5f, -0.5f, 0.0f);
+		LineRenderer::DrawFlatBox(position, 0.2f);
 		LineRenderer::DrawFlatBox(position, 0.3f);
-		LineRenderer::DrawFlatBox(position, 0.4f);
 		glm::vec2 direction = directions[transporter->fromOrientation];
-		LineRenderer::DrawLine(position, position + vec3(direction.x, direction.y, 0));
+		LineRenderer::DrawLine(position, position + vec3(direction.x, direction.y, 0) * 0.5f);
 	}
 
 	// All checkpoints
 	for (auto& checkpoint : dungeon->checkpoints)
 	{
-		vec3 position = dungeonPosToObjectScale(checkpoint->position);
+		vec3 position = dungeonPosToObjectScale(checkpoint->position) + vec3(-0.5f, 0.5f, 0.0f);
+		LineRenderer::DrawFlatBox(position, 0.2f, { 0.2f,0.2f, 1 });
 		LineRenderer::DrawFlatBox(position, 0.3f, { 0.2f,0.2f, 1 });
-		LineRenderer::DrawFlatBox(position, 0.4f, { 0.2f,0.2f, 1 });
 		glm::vec2 direction = directions[checkpoint->facing];
-		LineRenderer::DrawLine(position, position + vec3(direction.x, direction.y, 0), { 0.2f,0.2f, 1 });
+		LineRenderer::DrawLine(position, position + vec3(direction.x, direction.y, 0) * 0.5f, { 0.2f,0.2f, 1 });
 	}
 
 	// All Events
 	for (auto& event : dungeon->events)
 	{
-		vec3 position = dungeonPosToObjectScale(event->position);
+		vec3 position = dungeonPosToObjectScale(event->position) + vec3(0.5f, 0.5f, 0.0f);
+		LineRenderer::DrawFlatBox(position, 0.2f, { 1.0f, 0.5f, 0.5f });
 		LineRenderer::DrawFlatBox(position, 0.3f, { 1.0f, 0.5f, 0.5f });
-		LineRenderer::DrawFlatBox(position, 0.4f, { 1.0f, 0.5f, 0.5f });
 		glm::vec2 direction = directions[event->facing];
 		if (event->mustBeFacing)
 		{
-			LineRenderer::DrawLine(position, position + vec3(direction.x, direction.y, 0), { 1.0f, 0.5f, 0.5f });
+			LineRenderer::DrawLine(position, position + vec3(direction.x, direction.y, 0) * 0.5f, { 1.0f, 0.5f, 0.5f });
 		}
 
+	}
+
+	// All Lights
+	for (auto& light : dungeon->pointLights)
+	{
+		vec3 positionA = dungeonPosToObjectScale(light->position) + light->localPosition;
+		vec3 positionB = positionA;
+		positionA.z = 0.0f;
+		LineRenderer::DrawLine(positionA, positionB, light->colour);
 	}
 
 	if (murderinaPathSelected)
@@ -2380,6 +2468,26 @@ int Crawl::DungeonEditor::GetNextAvailableDoorID()
 		for (int i = 0; i < dungeon->activatable.size(); i++)
 		{
 			if (dungeon->activatable[i]->id == nextAvail)
+			{
+				unused = false;
+				nextAvail++;
+				break;
+			}
+		}
+	}
+	return nextAvail;
+}
+
+int Crawl::DungeonEditor::GetNextAvailableLightID()
+{
+	int nextAvail = 1;
+	bool unused = false;
+	while (!unused)
+	{
+		unused = true;
+		for (int i = 0; i < dungeon->pointLights.size(); i++)
+		{
+			if (dungeon->pointLights[i]->id == nextAvail)
 			{
 				unused = false;
 				nextAvail++;
@@ -2537,4 +2645,9 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedStairsWindowOpen = false;
 	selectedLightWindowOpen = false;
 	selectedEventTriggerWindowOpen = false;
+
+	selectedTileDoors.clear();
+	selectedTileLevers.clear();
+	selectedTileShootLasers.clear();
+	selectedTileDecorations.clear();
 }

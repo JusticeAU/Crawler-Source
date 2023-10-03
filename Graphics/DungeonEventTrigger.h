@@ -9,12 +9,21 @@ namespace Crawl
 	class DungeonEventTrigger
 	{
 	public:
+		enum class Type
+		{
+			GlobalEvent,
+			LightFlicker,
+			FTUEPrompt,
+			Count
+		};
 		ivec2 position = {0,0};
+		FACING_INDEX facing = NORTH_INDEX;
+
+		Type type = Type::GlobalEvent;
+		int eventID = -1;
 		bool repeats = false;
 		bool hasTriggered = false;
-		int eventID = -1;
 		bool mustBeFacing = false;
-		FACING_INDEX facing = NORTH_INDEX;
 
 		Dungeon* dungeon;
 
@@ -23,19 +32,30 @@ namespace Crawl
 			if (repeats || !hasTriggered)
 			{
 				hasTriggered = true;
-				dungeon->player->DoEvent(eventID);
+				switch (type)
+				{
+				case Type::GlobalEvent:
+				{
+					dungeon->player->DoEvent(eventID);
+					break;
+				}
+				case Type::LightFlicker:
+				{
+					dungeon->FlickerLights(eventID);
+					break;
+				}
+				}
 			}
 		}
 	};
 
 	static void to_json(ordered_json& j, const DungeonEventTrigger& object)
 	{
-		j = { {"position", object.position}, {"repeats", object.repeats}, {"eventID", object.eventID} };
+		j = { {"position", object.position}, {"repeats", object.repeats}, {"type", object.type}, {"eventID", object.eventID} };
 		if (object.mustBeFacing)
 		{
 			j["mustBeFacing"] = object.mustBeFacing;
 			j["facing"] = object.facing;
-
 		}
 	}
 
@@ -43,6 +63,7 @@ namespace Crawl
 	{
 		j.at("position").get_to(object.position);
 		j.at("repeats").get_to(object.repeats);
+		if (j.contains("type")) j.at("type").get_to(object.type);
 		j.at("eventID").get_to(object.eventID);
 		if (j.contains("mustBeFacing"))
 		{

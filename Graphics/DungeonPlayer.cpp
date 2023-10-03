@@ -785,11 +785,11 @@ void Crawl::DungeonPlayer::DrawDebugUI()
 	ImGui::SameLine();
 	ImGui::PopItemWidth();
 	ImGui::PushItemWidth(50);
-	ImGui::InputInt2("", &position.x);
+	ImGui::InputInt2("##Position", &position.x);
 	ImGui::SameLine();
 	ImGui::PopItemWidth();
 	ImGui::PushItemWidth(50);
-	ImGui::InputText("", &orientationNames[facing]);
+	ImGui::InputText("##Orientation", &orientationNames[facing]);
 	ImGui::PopItemWidth();
 	ImGui::EndDisabled();
 	ImGui::End();
@@ -962,6 +962,11 @@ void Crawl::DungeonPlayer::DoEvent(int eventID)
 	case -1:
 	{
 		LogUtils::Log("Attempted to trigger unassigned event (-1)");
+		return;
+	}
+	case 0: // No Longer In Use.
+	{
+		
 		return;
 	}
 	case 1: // activate lighting in lobby
