@@ -39,6 +39,7 @@ namespace Crawl
 		void SetShouldActivateTransporter(DungeonTransporter* transporter);
 		void Teleport(ivec2 position);
 		void Orient(FACING_INDEX facing);
+		void RestartGame();
 		void ReturnToLobby();
 		
 		void SetRespawn(ivec2 position, FACING_INDEX orientation, bool isLevel2 = false);
@@ -52,6 +53,8 @@ namespace Crawl
 
 		void SetShouldSwitchWith(DungeonEnemySwitcher* switcher) { shouldSwitchWith = switcher; }
 		void SetShouldActivateStairs(DungeonStairs* stairs);
+		
+		// This will get moved in to the Game Manager and light instance itself.
 		void FindLobbyLight();
 		void ActivateLobbyLight() { lobbyLightActivated = true; lobbyLightTimeCurrent = 0.0f; }
 		DungeonLight* lobbyLight = nullptr;
@@ -72,6 +75,7 @@ namespace Crawl
 		// Accessability Options
 		bool autoReOrientDuringFreeLook = true;
 		bool alwaysFreeLook = false;
+		bool invertYAxis = false;
 	private:
 		bool HandleFreeLook(float delta);
 		void HandleLookTilt(float delta);
@@ -195,7 +199,7 @@ namespace Crawl
 		KILLEDBY killedBy = KILLEDBY::SPIKES;
 		FACING_INDEX killedFrom = FACING_INDEX::NORTH_INDEX;
 
-		// FTUE
+		// FTUE - Move in to Game Manager once created.
 		bool ftueEnabled = false;
 		bool ftueInitiated = false;
 		string promptCurrent = "";
@@ -212,12 +216,11 @@ namespace Crawl
 		bool ftueHasInteracted = false;
 
 		bool promptFadeIn = false;
-
 		float promptAmount = 0.0f;
 		const float promptFadeTime = 0.4f;
 		bool promptUse = false;
 
-		glm::vec3 transporterColour = glm::vec3(0.0, 0.0, 0.0); // very dark red.
+		glm::vec3 transporterColour = glm::vec3(0.0, 0.0, 0.0);
 		DungeonTransporter* transporterToActivate = nullptr;
 
 		DungeonMenu* gameMenu = nullptr;

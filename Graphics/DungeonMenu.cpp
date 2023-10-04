@@ -40,7 +40,7 @@ void Crawl::DungeonMenu::DrawPauseMenu()
 {
 	if (Input::Keyboard(GLFW_KEY_ESCAPE).Down())
 	{
-		player->SetStateIdle();
+		ExecuteResumeGame();
 		return;
 	}
 
@@ -56,9 +56,11 @@ void Crawl::DungeonMenu::DrawPauseMenu()
 		if (ImGui::Button(textReturnToLobby.c_str()))	ExecuteReturnToLobby();
 	}
 	if (ImGui::Button(textToggleFullScreen.c_str()))	ExecuteToggleFullScreen();
+	if (ImGui::Button(textRestartGame.c_str()))			ExecuteRestartGame();
 	if (ImGui::Button(textQuitGame.c_str()))			ExecuteQuitGame();
 
 	ImGui::Text("");
+	ImGui::Checkbox("Invert Y Axis", &player->invertYAxis);
 	if (ImGui::Checkbox("Always Free-Look", &player->alwaysFreeLook))
 	{
 		player->autoReOrientDuringFreeLook = true;
@@ -110,4 +112,11 @@ void Crawl::DungeonMenu::ExecuteReturnToLobby()
 	Window::GetWindow()->SetMouseCursorHidden(true);
 	player->SetStateIdle();
 	player->ReturnToLobby();
+}
+
+void Crawl::DungeonMenu::ExecuteRestartGame()
+{
+	Window::GetWindow()->SetMouseCursorHidden(true);
+	player->SetStateIdle();
+	player->RestartGame();
 }

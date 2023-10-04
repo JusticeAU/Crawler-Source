@@ -116,7 +116,6 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 
 bool Crawl::DungeonPlayer::HandleFreeLook(float delta)
 {
-	//if (Input::Mouse(1).Down()) Window::GetWindow()->SetMouseCursorHidden(true);
 	if (Input::Mouse(1).Pressed() || alwaysFreeLook)
 	{
 		if (!ftueHasLooked && promptCurrent == promptLook);
@@ -125,6 +124,7 @@ bool Crawl::DungeonPlayer::HandleFreeLook(float delta)
 			ClearFTUEPrompt();
 		}
 		vec2 mouseDelta = -Input::GetMouseDelta() * lookSpeed;
+		if (invertYAxis) mouseDelta.y = -mouseDelta.y;
 		objectView->AddLocalRotation({ mouseDelta.y, 0, mouseDelta.x });
 		objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -lookMaxX, lookMaxX);
 		objectView->localRotation.z = glm::clamp(objectView->localRotation.z, -lookMaxZ, lookMaxZ);
@@ -146,7 +146,6 @@ bool Crawl::DungeonPlayer::HandleFreeLook(float delta)
 
 	if (Input::Mouse(1).Up())
 	{
-		//Window::GetWindow()->SetMouseCursorHidden(false);
 		lookReturnFrom = objectView->localRotation;
 		lookReturnTimeCurrent = 0.0f;
 	}
@@ -817,6 +816,22 @@ void Crawl::DungeonPlayer::Orient(FACING_INDEX facing)
 	this->facing = facing;
 	objectView->localRotation.x = lookRestX;
 	object->SetLocalRotationZ(orientationEulers[facing]);
+}
+
+void Crawl::DungeonPlayer::RestartGame()
+{
+	DungeonTransporter* startTransporter = new DungeonTransporter();
+	startTransporter->toDungeon = "crawler/dungeon/start";
+	startTransporter->toTransporter = "TutExit";
+	ftueInitiated = false;
+	ftueEnabled = false;
+	ftueHasInteracted = false;
+	ftueHasLooked = false;
+	ftueHasTurned = false;
+	ftueTurns = 0;
+	lobbyLight = nullptr;
+	lobbyLightActivated = false;
+	LoadSelectedTransporter(startTransporter);
 }
 
 void Crawl::DungeonPlayer::ReturnToLobby()

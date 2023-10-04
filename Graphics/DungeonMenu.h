@@ -34,12 +34,14 @@ namespace Crawl
 		void ExecuteResumeGame();
 		void ExecuteToggleFullScreen();
 		void ExecuteReturnToLobby();
+		void ExecuteRestartGame();
 
 		string textNewGame = "New Game";
 		string textQuitGame = "Quit Game";
 		string textResumeGame = "Resume Game";
 		string textToggleFullScreen = "Toggle FullScreen";
 		string textReturnToLobby = "Return to Lobby";
+		string textRestartGame = "Restart Game";
 
 	private:
 		glm::ivec2 titleMenuSize = { 300, 225 };
