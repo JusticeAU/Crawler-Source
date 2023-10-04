@@ -809,34 +809,34 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		return true;
 	}
 
-	// Kickable blockers
-	DungeonEnemyBlocker* kickableBlocker = GetEnemyBlockerAtPosition(targetPosition);
-	if (kickableBlocker)
-	{
-		DungeonTile* kickTile = GetTile(targetPosition);
+	// Kickable blockers - Blockers are no longer kickable
+	//DungeonEnemyBlocker* kickableBlocker = GetEnemyBlockerAtPosition(targetPosition);
+	//if (kickableBlocker)
+	//{
+	//	DungeonTile* kickTile = GetTile(targetPosition);
 
-		// see if the thing can move
-		ivec2 moveToPos = targetPosition + directions[direction];
+	//	// see if the thing can move
+	//	ivec2 moveToPos = targetPosition + directions[direction];
 
-		if (!CanTraverse(targetPosition, direction))
-			return false;
+	//	if (!CanTraverse(targetPosition, direction))
+	//		return false;
 
-		// is there a tile?
-		DungeonTile* toTile = GetTile(moveToPos);
-		if (!toTile)
-			return false;
-		// is it occupied?
-		if (toTile->occupied)
-			return false; // We coudl do damage and shit here.
+	//	// is there a tile?
+	//	DungeonTile* toTile = GetTile(moveToPos);
+	//	if (!toTile)
+	//		return false;
+	//	// is it occupied?
+	//	if (toTile->occupied)
+	//		return false; // We coudl do damage and shit here.
 
-		// kick it in that direction
-		kickTile->occupied = false;
-		toTile->occupied = true;
-		kickableBlocker->position = moveToPos;
-		kickableBlocker->object->SetLocalPosition(dungeonPosToObjectScale(kickableBlocker->position));
+	//	// kick it in that direction
+	//	kickTile->occupied = false;
+	//	toTile->occupied = true;
+	//	kickableBlocker->position = moveToPos;
+	//	kickableBlocker->object->SetLocalPosition(dungeonPosToObjectScale(kickableBlocker->position));
 
-		return true;
-	}
+	//	return true;
+	//}
 
 	// Kickable chasers
 	DungeonEnemyChase* kickableChaser = GetEnemyChaseAtPosition(targetPosition);
