@@ -35,12 +35,6 @@ void Texture::Load()
 
 	// Load with stb_image
 	int width, height, channels;
-	/*stbi_info(name.c_str(), &width, &height, &channels);
-
-	if (channels < 3)
-	{
-		LogUtils::Log("Error: Trying to load file with less than");
-	}*/
 	stbi_set_flip_vertically_on_load(true); // OpenGL expect y=0 to be the bottom of the texture.
 	unsigned char* data = stbi_load(name.c_str(), &width, &height, &channels, 4);
 
@@ -53,7 +47,12 @@ void Texture::Load()
 	glGenerateMipmap(GL_TEXTURE_2D);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_MAX_TEXTURE_MAX_ANISOTROPY, 16.0f); // need to do some tests on this one.
+	
+	// Enable Anisotropic Filtering
+	GLfloat value, max_anisotropy = 8.0f; /* don't exceed this value...*/
+	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &value);
+	value = (value > max_anisotropy) ? max_anisotropy : value;
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY , value); // need to do some tests on this one.
 
 	// clean up
 	glBindTexture(GL_TEXTURE_2D, 0);
