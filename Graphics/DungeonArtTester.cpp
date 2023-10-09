@@ -122,11 +122,10 @@ void Crawl::ArtTester::DrawGUIStaging()
 	ImGui::SetNextWindowSize({ 500, 600 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Staging");
-	
-	// configure
+
+	// Configure
 	if (ImGui::InputText("Name", &stagedName))
 		UpdateStagingFolders();
-
 	
 	if (ImGui::BeginCombo("Asset Type", stagedType.c_str()))
 	{
@@ -147,20 +146,22 @@ void Crawl::ArtTester::DrawGUIStaging()
 		ImGui::EndCombo();
 	}
 
-	// preview
+	// Preview
 	ImGui::Text("Output Preview");
 	ImGui::BeginDisabled();
 	ImGui::Text("Model");
 		ImGui::Indent();
 		for (string& str : stagingModels)
 			ImGui::Selectable(str.c_str());	
-		if (stagingModels.size() > 0)
+		
+		if (ShouldWriteObjectFile())
 		{
 			string objectName = modelPath + stagedName + ".object";
 			ImGui::Selectable(objectName.c_str());
 		}
 		ImGui::Unindent();
-	ImGui::Text("Materials");
+	
+		ImGui::Text("Materials");
 		ImGui::Indent();
 		for (string& str : stagingMaterials)
 			ImGui::Selectable(str.c_str());
@@ -175,7 +176,18 @@ void Crawl::ArtTester::DrawGUIStaging()
 	// Save
 	ImGui::Text("");
 	if (ImGui::Button("Add To Game Data"))
+	{
 		ExportStaging(false);
+		ImGui::OpenPopup("Added Assets to Game Data");
+	}
+
+
+	if (ImGui::BeginPopupModal("Added Assets to Game Data"))
+	{
+		ImGui::Text("Added Staged Assets to Game Data - Check your Source Control Changes.");
+		if (ImGui::Button("OK."))
+			ImGui::CloseCurrentPopup();
+	}
 
 	ImGui::End();
 }
@@ -197,11 +209,13 @@ void Crawl::ArtTester::DrawModelSelector()
 				Object* o = model->GetComponentParentObject();
 				o->Update(0);
 				Scene::s_instance->objects[1]->LoadFromJSON(ReadJSONFromDisk(path));
-				Scene::s_instance->objects[1]->dirtyTransform = true;
+				Scene::s_instance->objects[1]->SetDirtyTransform();
 
 				RefreshComponentReferences();
 				if(animator) // If there is an animator, force it to update so that there's a 'current' animation created.
 					animator->Update(0);
+
+				SetStagingFromExistingAsset();
 			}
 			if (selected) ImGui::SetItemDefaultFocus();
 		}
@@ -216,6 +230,9 @@ void Crawl::ArtTester::RefreshComponentReferences()
 	animator = (ComponentAnimator*)Scene::s_instance->objects[1]->GetComponent(Component_Animator);
 }
 
+// This function is dual purpose based on the 'preview' parameter.
+// Because the logic is so similar it'd be a lot of redundant code to seperate updating the preview of the staging area vs actually exporting the staged area.
+// Essentially, if preview is false, then an actual export is done. If it's not, then all the work is done and fields are populared, but no data is written to the filesystem.
 void Crawl::ArtTester::ExportStaging(bool preview)
 {
 	// Clear the staging data.
@@ -354,19 +371,71 @@ void Crawl::ArtTester::ExportStaging(bool preview)
 	if (preview)
 		return;
 
-	if(stagingModels.size() > 0)
+	if(ShouldWriteObjectFile())
 		WriteJSONToDisk(modelPath + stagedName + ".object", objectJSON);
 }
 
 void Crawl::ArtTester::UpdateStagingFolders()
 {
-	//stagingFolder = "staging/model/";						// staging/model/monster_name/
-	//stagingPath = "staging/model/" + typesFolders[type];	// staging/model/monster_name/monster_
-	
-	modelPath = "crawler/model/" + typesFolders[type];		// crawler/model/monster_name/monster_
-	materialPath = "crawler/material/" + typesFolders[type];		// crawler/model/monster_name/monster_
-	texturePath = "crawler/texture/" + typesFolders[type];		// crawler/model/monster_name/monster_
+	modelPath = "crawler/model/" + typesFolders[type];			// crawler/model/monster_
+	materialPath = "crawler/material/" + typesFolders[type];	// crawler/material/monster_
+	texturePath = "crawler/texture/" + typesFolders[type];		// crawler/texture/monster_
 	ExportStaging(true);
+}
+
+// This function is some simple logic to cehck if we should be creating a new .object file for an existing asset. It's pretty hacky but does the job.
+bool Crawl::ArtTester::ShouldWriteObjectFile()
+{
+	return renderer->modifiedMaterials && model->modelName != "crawler/model/arttest_plane/arttest_plane.fbx";
+}
+
+// This function is called when the user selects a model from the list of existing models. Its updates the staging name to reflect how this model was configured.
+// It helps the user ensure the names are the same so their updated assets match and overwrite correctly.
+void Crawl::ArtTester::SetStagingFromExistingAsset()
+{
+	// Get the index of the last slash, so that we can ignore subdirectories.
+	int lastSlashIndex = selectedModel.find_last_of('/');
+	string fullAssetName = selectedModel.substr(lastSlashIndex + 1, selectedModel.size() - lastSlashIndex);
+
+	// Ge the index of the first underscore within so we can seperate the asset type from its name.
+	int firstUnderscore = fullAssetName.find_first_of('_');
+	string assetType = fullAssetName.substr(0, firstUnderscore);
+	string assetName = fullAssetName.substr(firstUnderscore + 1, fullAssetName.size() - firstUnderscore - 7 - 1); // the -7 is ".object"
+
+	// Do some pretty basic logic to reconfigure the staging area based on the name of type. If there is no match then its assumed to be an 'other' type.
+	if (assetType == "monster")
+	{
+		type = 0;
+		stagedType = types[0];
+	}
+	else if(assetType == "tile")
+	{
+		type = 1;
+		stagedType = types[1];
+	}
+	else if(assetType == "interactable")
+	{
+		type = 2;
+		stagedType = types[2];
+	}
+	else if(assetType == "door")
+	{
+		type = 3;
+		stagedType = types[3];
+	}
+	else if(assetType == "decoration")
+	{
+		type = 4;
+		stagedType = types[4];
+	}
+	else // other
+	{
+		type = 5;
+		stagedType = types[5];
+		assetName = fullAssetName.substr(0, fullAssetName.size() - 7);
+	}
+
+	stagedName = assetName;
 }
 
 void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)

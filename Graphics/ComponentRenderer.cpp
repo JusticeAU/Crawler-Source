@@ -248,7 +248,7 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 
 void ComponentRenderer::DrawGUI()
 {
-	ImGui::Checkbox("Do Not Cull (Chloe Only)", &dontFrustumCull);
+	ImGui::Checkbox("Do Not Frustum Cull", &dontFrustumCull);
 
 	// material settings per submesh
 	for (int i = 0; i < materialArray.size(); i++)
@@ -265,7 +265,10 @@ void ComponentRenderer::DrawGUI()
 			{
 				const bool is_selected = (m.second == materialArray[i]);
 				if (ImGui::Selectable(m.first.c_str(), is_selected))
+				{
 					materialArray[i] = MaterialManager::GetMaterial(m.first);
+					modifiedMaterials = true;
+				}
 
 				// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
 				if (is_selected)

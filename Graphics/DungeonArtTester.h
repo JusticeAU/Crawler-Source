@@ -41,6 +41,9 @@ namespace Crawl
 		
 		void ExportStaging(bool preview);
 		void UpdateStagingFolders();
+		bool ShouldWriteObjectFile();
+		void SetStagingFromExistingAsset();
+
 
 		void ModelDropCallBack(int count, const char** paths);
 
@@ -70,8 +73,6 @@ namespace Crawl
 
 		// Staging names and paths
 		string stagedName = "name";	// Managed by ImGui and UpdateStagingFolders function
-		//string stagingFolder = "";	// staging/model/monster_name/
-		//string stagingPath = "";	// staging/model/monster_name/monster_
 		
 		string modelPath = "";
 		string materialPath = "";
@@ -83,6 +84,8 @@ namespace Crawl
 
 		vector<string> models;
 		string selectedModel;
+
+		bool changedMaterials = false;
 	};
 
 	void ModelDropCallback(GLFWwindow* window, int count, const char** paths);
