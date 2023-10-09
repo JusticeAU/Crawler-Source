@@ -1072,7 +1072,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
 	}
 
 	if (selectedTransporter->toLobby2) ImGui::BeginDisabled();
-	if (ImGui::BeginCombo("To Dungeon", selectedTransporter->toDungeon.c_str()))
+	if (ImGui::BeginCombo("To Dungeon", selectedTransporter->toDungeon.c_str(), ImGuiComboFlags_HeightLargest))
 	{
 		for (auto d : fs::recursive_directory_iterator(dungeon->dungeonFileLocation))
 		{
@@ -1334,7 +1334,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDecoration()
 	ImGui::SetNextWindowSize({ 450, 170 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Edit Decoration", &selectedDecorationWindowOpen, ImGuiWindowFlags_NoResize);
 
-	if (ImGui::BeginCombo("Select Decoration", selectedTileDecoration->modelName.c_str()))
+	if (ImGui::BeginCombo("Select Decoration", selectedTileDecoration->modelName.c_str(), ImGuiComboFlags_HeightLargest))
 	{
 		for (auto& path : decorations)
 		{

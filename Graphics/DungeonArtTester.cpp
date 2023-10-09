@@ -194,7 +194,7 @@ void Crawl::ArtTester::DrawGUIStaging()
 
 void Crawl::ArtTester::DrawModelSelector()
 {
-	if (ImGui::BeginCombo("Load Existing Model", selectedModel == "" ? "Select Object" : selectedModel.c_str(), ImGuiComboFlags_HeightLarge))
+	if (ImGui::BeginCombo("Load Existing Model", selectedModel == "" ? "Select Object" : selectedModel.c_str(), ImGuiComboFlags_HeightLargest))
 	{
 		for (auto& path : models)
 		{

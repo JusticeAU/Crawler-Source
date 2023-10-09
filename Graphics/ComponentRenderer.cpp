@@ -259,7 +259,7 @@ void ComponentRenderer::DrawGUI()
 
 		// Material
 		string materialStr = "Mesh Material";
-		if (ImGui::BeginCombo(materialStr.c_str(), materialArray[i] != nullptr ? materialArray[i]->name.c_str() : "NULL"))
+		if (ImGui::BeginCombo(materialStr.c_str(), materialArray[i] != nullptr ? materialArray[i]->name.c_str() : "NULL", ImGuiComboFlags_HeightLargest))
 		{
 			for (auto m : *MaterialManager::Materials())
 			{
