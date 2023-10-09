@@ -18,7 +18,7 @@ void Crawl::DungeonPushableBlock::UpdateTransform()
 	object->SetLocalPosition(dungeonPosToObjectScale(position));
 }
 
-void Crawl::DungeonPushableBlock::MoveTo(ivec2 toPosition)
+void Crawl::DungeonPushableBlock::MoveTo(ivec2 toPosition, bool snap)
 {
 	oldPosition = dungeonPosToObjectScale(position);
 	position = toPosition;
@@ -30,6 +30,15 @@ void Crawl::DungeonPushableBlock::MoveTo(ivec2 toPosition)
 	{
 		isOnSpikes = true;
 		spikes->Disable();
+	}
+
+	if (snap)
+	{
+		if (isOnSpikes)
+			object->SetLocalPosition({ targetPosition.x, targetPosition.y, fallPosition });
+		else
+			object->SetLocalPosition(targetPosition);
+		state = STATE::IDLE;
 	}
 }
 
@@ -63,13 +72,13 @@ void Crawl::DungeonPushableBlock::UpdateVisuals(float delta)
 		fallCurrent += delta;
 		if (fallCurrent > fallSpeed)
 		{
-			object->SetLocalPosition({ targetPosition.x, targetPosition.y, -1 });
+			object->SetLocalPosition({ targetPosition.x, targetPosition.y, fallPosition });
 			state = STATE::IDLE;
 		}
 		else
 		{
 			float t = fallCurrent / fallSpeed;
-			object->SetLocalPosition({ targetPosition.x, targetPosition.y, -glm::sineEaseOut(t) });
+			object->SetLocalPosition({ targetPosition.x, targetPosition.y, glm::sineEaseOut(t) * fallPosition });
 		}
 		break;
 	}

@@ -36,8 +36,9 @@ namespace Crawl
 		// falling on spikes
 		float fallSpeed = 0.25f;
 		float fallCurrent = 0.0f;
+		const float fallPosition = -1.2f;
 
-		void MoveTo(ivec2 position);
+		void MoveTo(ivec2 position, bool snap = false);
 		void UpdateVisuals(float delta);
 	private:
 	};

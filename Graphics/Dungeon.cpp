@@ -2095,9 +2095,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	{
 		DungeonPushableBlock block = it.value().get<Crawl::DungeonPushableBlock>();
 		DungeonPushableBlock* newBlock = CreatePushableBlock(block.position);
-		//newBlock->isOnSpikes = block.isOnSpikes;
-		newBlock->MoveTo(newBlock->position); // We call move here just to have it check if its on top of spikes and handle that.
-
+		newBlock->MoveTo(newBlock->position, true); // We call move here just to have it check if its on top of spikes and handle that.
 	}
 
 	auto& blockers_json = serialised["blockers"];
