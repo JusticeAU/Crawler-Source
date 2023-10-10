@@ -326,7 +326,7 @@ bool Crawl::Dungeon::CanTraverse(ivec2 fromPos, int directionIndex)
 
 	bool canMove = true;
 	DungeonTile* currentTile = GetTile(fromPos);
-	if (!currentTile) return false; // early out if we're not a tile. We goofed up design wise and cant really resolve this, and shouldn't. Fix the level!
+	if (!currentTile || currentTile->permanentlyOccupied) return false; // early out if we're not a tile. We goofed up design wise and cant really resolve this, and shouldn't. Fix the level!
 
 	// Check if the tile we're on allows us to move in the requested direction - Maybe I could just create some Masks for each cardinal direction and pass those around instead.
 	canMove = (currentTile->maskTraverse & directionMask) == directionMask;
@@ -335,10 +335,13 @@ bool Crawl::Dungeon::CanTraverse(ivec2 fromPos, int directionIndex)
 		return canMove;
 
 	// check for edge blocked - Doors!
-
 	canMove = !IsDoorBlocking(currentTile, directionIndex);
 	if (!canMove)
 		return canMove;
+
+	// check if the tile we want to move to is occupied??
+	DungeonTile* toTile = GetTile(toPos);;
+	if (toTile && toTile->permanentlyOccupied) return false;
 
 	return canMove;
 }
