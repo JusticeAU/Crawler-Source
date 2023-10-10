@@ -145,6 +145,26 @@ namespace Crawl
 		"East, South, West",
 		"North, East, South, West"
 	};
+	
+	static std::string maskToStringShort[16]
+	{
+		"None",
+		"N",
+		"W",
+		"N, W",
+		"E",
+		"N, E",
+		"E, W",
+		"N, E, W",
+		"S",
+		"N, S",
+		"S, W",
+		"N, S, W",
+		"E, S",
+		"N, E, S",
+		"E, S, W",
+		"N, E, S, W"
+	};
 
 
 	static glm::vec3 dungeonPosToObjectScale(glm::ivec2 pos)

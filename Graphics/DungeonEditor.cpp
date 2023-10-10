@@ -387,26 +387,36 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		ImGui::Text("Pathing");
 		unsigned int oldMaskTraverse = selectedTile->maskTraverse;
 		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-		if (ImGui::BeginCombo("Can Walk", maskToString[oldMaskTraverse].c_str()))
+		if (ImGui::BeginCombo("Walk", maskToString[oldMaskTraverse].c_str()))
 		{
 			if (ImGui::Checkbox("Can Walk North", &selectedTileUntraversableWalls[0]))
 				selectedTile->maskTraverse += selectedTileUntraversableWalls[0] ? NORTH_MASK : -NORTH_MASK;
-			if (ImGui::Checkbox("Can Walk South", &selectedTileUntraversableWalls[1]))
-				selectedTile->maskTraverse += selectedTileUntraversableWalls[1] ? SOUTH_MASK : -SOUTH_MASK;
 			if (ImGui::Checkbox("Can Walk East", &selectedTileUntraversableWalls[2]))
 				selectedTile->maskTraverse += selectedTileUntraversableWalls[2] ? EAST_MASK : -EAST_MASK;
+			if (ImGui::Checkbox("Can Walk South", &selectedTileUntraversableWalls[1]))
+				selectedTile->maskTraverse += selectedTileUntraversableWalls[1] ? SOUTH_MASK : -SOUTH_MASK;
 			if (ImGui::Checkbox("Can Walk West", &selectedTileUntraversableWalls[3]))
 				selectedTile->maskTraverse += selectedTileUntraversableWalls[3] ? WEST_MASK : -WEST_MASK;
+			if (ImGui::Button("All"))
+				selectedTile->maskTraverse = 15;
+			ImGui::SameLine();
+			if (ImGui::Button("None"))
+				selectedTile->maskTraverse = 0;
 			ImGui::EndCombo();
 		}
 		ImGui::PopStyleColor();
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 			ImGui::SetTooltip("Configure in what direction things can walk off this tile");
-		if (oldMaskTraverse != selectedTile->maskTraverse) MarkUnsavedChanges();
+
+		if (oldMaskTraverse != selectedTile->maskTraverse)
+		{
+			RefreshSelectedTile();
+			MarkUnsavedChanges();
+		}
 
 		unsigned int oldMaskSee = selectedTile->maskSee;
 		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(123, 123, 255, 255));
-		if (ImGui::BeginCombo("Can See", maskToString[oldMaskSee].c_str()))
+		if (ImGui::BeginCombo("See", maskToString[oldMaskSee].c_str()))
 		{
 			if (ImGui::Checkbox("Can See North", &selectedTileSeeThroughWalls[0]))
 				selectedTile->maskSee += selectedTileSeeThroughWalls[0] ? NORTH_MASK : -NORTH_MASK;
@@ -416,12 +426,21 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 				selectedTile->maskSee += selectedTileSeeThroughWalls[2] ? EAST_MASK : -EAST_MASK;
 			if (ImGui::Checkbox("Can See West", &selectedTileSeeThroughWalls[3]))
 				selectedTile->maskSee += selectedTileSeeThroughWalls[3] ? WEST_MASK : -WEST_MASK;
+			if (ImGui::Button("All"))
+				selectedTile->maskSee = 15;
+			ImGui::SameLine();
+			if (ImGui::Button("None"))
+				selectedTile->maskSee = 0;
 			ImGui::EndCombo();
 		}
 		ImGui::PopStyleColor();
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 			ImGui::SetTooltip("Configure in what direction things can see out of this tile");
-		if (oldMaskSee != selectedTile->maskSee) MarkUnsavedChanges();
+		if (oldMaskSee != selectedTile->maskSee)
+		{
+			RefreshSelectedTile();
+			MarkUnsavedChanges();
+		}
 
 		// Wall Variants
 		ImGui::Spacing();
