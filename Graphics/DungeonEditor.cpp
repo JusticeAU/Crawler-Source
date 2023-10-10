@@ -1349,6 +1349,26 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditMurdurina()
 }
 void Crawl::DungeonEditor::DrawGUIModeTileEditDecoration()
 {
+	// Handle 3D Gizmo
+	ImGuizmo::SetRect(0, 0, Window::GetViewPortSize().x, Window::GetViewPortSize().y);
+	mat4 view = Scene::GetCurrentCamera()->GetViewMatrix();
+	mat4 projection = Scene::GetCurrentCamera()->GetProjectionMatrix();
+	mat4 position = selectedTileDecoration->object->children[0]->transform;
+	mat4 delta;
+	if (ImGuizmo::Manipulate((float*)&view, (float*)&projection, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, (float*)&position, (float*)&delta, 0, 0, 0))
+	{
+		// This is the most bullshit hacked thing that I don't have time to really clean up at the moment!
+		// I think the co-ordinate spaces are wrong here, but this check flips it and makes it work and we're cool move on nothing to see here.
+		if (selectedTileDecoration->facing == 0 || selectedTileDecoration->facing == 2)
+			delta = glm::rotate(glm::mat4(1), glm::radians(orientationEulersReversed[selectedTileDecoration->facing]), { 0,0,1 }) * delta;
+		else
+			delta = glm::rotate(glm::mat4(1), glm::radians(orientationEulers[selectedTileDecoration->facing]), { 0,0,1 }) * delta;
+		vec3 moveDelta = delta[3];
+		selectedTileDecoration->localPosition += moveDelta;
+		selectedTileDecoration->UpdateTransform();
+		MarkUnsavedChanges();
+	}
+
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize({ 450, 170 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Edit Decoration", &selectedDecorationWindowOpen, ImGuiWindowFlags_NoResize);
@@ -1383,8 +1403,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDecoration()
 			}
 		ImGui::EndCombo();
 	}
-
-	if (ImGui::DragFloat3("Position", &selectedTileDecoration->localPosition.x,0.1f, -5, 5, "%.3f", ImGuiSliderFlags_AlwaysClamp))
+	if (ImGui::DragFloat3("Position", &selectedTileDecoration->localPosition.x, 0.1f, -5, 5, "%.3f", ImGuiSliderFlags_AlwaysClamp))
 	{
 		MarkUnsavedChanges();
 		selectedTileDecoration->UpdateTransform();
@@ -1425,6 +1444,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDecoration()
 
 	ImGui::End();
 }
+
 void Crawl::DungeonEditor::DrawGUIModeTileEditStairs()
 {
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
@@ -2440,6 +2460,14 @@ void Crawl::DungeonEditor::DrawGizmos()
 		vec3 positionB = positionA;
 		positionA.z = 0.0f;
 		LineRenderer::DrawLine(positionA, positionB, light->colour);
+	}
+
+	// All decorations
+	for (auto& decoration : dungeon->decorations)
+	{
+		vec3 position = dungeonPosToObjectScale(decoration->position) + vec3(0.5f, -0.5f, 0.0f);
+		LineRenderer::DrawFlatBox(position, 0.2f, { 1.0f, 0.0f, 1.0f });
+		LineRenderer::DrawFlatBox(position, 0.3f, { 1.0f, 0.0f, 1.0f });
 	}
 
 	if (murderinaPathSelected)
