@@ -39,14 +39,12 @@ bool Crawl::DungeonActivatorPlate::TestPosition()
 void Crawl::DungeonActivatorPlate::UpdateTransforms()
 {
 	// No height change for now
-	/*if (!down)
+	if (!down)
 	{
-		object->localPosition.z = heightUnactivated;
-		object->dirtyTransform = true;
+		object->children[1]->SetLocalPosition({ 0,0, heightUnactivated });
 	}
 	else
 	{
-		object->localPosition.z = heightActivated;
-		object->dirtyTransform = true;
-	}*/
+		object->children[1]->SetLocalPosition({ 0,0, heightActivated });
+	}
 }

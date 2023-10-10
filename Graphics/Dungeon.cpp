@@ -993,8 +993,9 @@ Crawl::DungeonActivatorPlate* Crawl::Dungeon::CreatePlate(ivec2 position, unsign
 	plate->dungeon = this;
 	plate->object = Scene::CreateObject();
 	plate->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/interactable_floortile.object"));
-	plate->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_pressureplate.object"));
+	plate->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_pressureplate_rim.object"));
 	plate->object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
+	plate->object->children[1]->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_pressureplate_button.object"));
 	activatorPlates.push_back(plate);
 	return plate;
 }
@@ -1067,11 +1068,6 @@ Crawl::DungeonSpikes* Crawl::Dungeon::CreateSpikes(ivec2 position, bool disabled
 	{
 		tile->object->children[0]->children[0]->markedForDeletion = true;
 	}
-
-	// more hack for placeholder black box
-	spikes->placeHolderContainerObject = Scene::CreateObject();
-	spikes->placeHolderContainerObject->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_trap_spike_tempblackcontainer.object"));
-	spikes->placeHolderContainerObject->AddLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 }); // until new asset is in
 
 	spikesPlates.push_back(spikes);
 	return spikes;

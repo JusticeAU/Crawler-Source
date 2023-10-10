@@ -22,7 +22,6 @@ namespace Crawl
 		
 		Dungeon* dungeon = nullptr;
 		Object* object = nullptr;
-		Object* placeHolderContainerObject = nullptr;
 
 	private:
 	};

@@ -21,7 +21,7 @@ namespace Crawl
 		unsigned int activateID = 1;
 
 		float heightUnactivated = 0.0f;
-		float heightActivated = -0.095f;
+		float heightActivated = -0.030f;
 		
 		bool down = false;
 		

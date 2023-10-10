@@ -386,7 +386,7 @@ void Crawl::ArtTester::UpdateStagingFolders()
 // This function is some simple logic to cehck if we should be creating a new .object file for an existing asset. It's pretty hacky but does the job.
 bool Crawl::ArtTester::ShouldWriteObjectFile()
 {
-	return renderer->modifiedMaterials && model->modelName != "crawler/model/arttest_plane/arttest_plane.fbx";
+	return stagingModels.size() > 0 || renderer->modifiedMaterials && model->modelName != "crawler/model/arttest_plane/arttest_plane.fbx";
 }
 
 // This function is called when the user selects a model from the list of existing models. Its updates the staging name to reflect how this model was configured.
