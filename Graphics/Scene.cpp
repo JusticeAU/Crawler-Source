@@ -184,8 +184,12 @@ void Scene::DrawGUI()
 		Scene::CreateObject();
 
 	drawn3DGizmo = false;
-	for (auto o : objects)
-		o->DrawGUI();
+	for (int i = 0; i < objects.size(); i++)
+	{
+		ImGui::PushID(i);
+		objects[i]->DrawGUI();
+		ImGui::PopID();
+	}
 
 	ImGui::End();
 

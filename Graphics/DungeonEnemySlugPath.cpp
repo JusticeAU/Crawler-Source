@@ -36,7 +36,11 @@ void Crawl::DungeonEnemySlugPath::RefreshObject()
 	if (object != nullptr)
 		object->markedForDeletion = true;
 
-	object = Scene::CreateObject();
+	Object* parent = Scene::FindObjectWithName("Slug Paths");
+	if (parent == nullptr)
+		parent = Scene::CreateObject("Slug Paths");
+
+	object = Scene::CreateObject(parent);
 	object->LoadFromJSON(ReadJSONFromDisk(DungeonEnemySlugPath::autoTileObjects[maskTraverse]));
 	object->SetLocalPosition(dungeonPosToObjectScale(position));
 	object->SetLocalRotationZ(DungeonEnemySlugPath::autoTileOrientations[maskTraverse]);
@@ -73,37 +77,37 @@ bool Crawl::DungeonEnemySlugPath::IsValidConfiguration()
 string Crawl::DungeonEnemySlugPath::autoTileObjects[16] = 
 {
 	"crawler/object/prototype/slug_rail_nothing.object",
-	"crawler/object/prototype/slug_rail_end.object",
-	"crawler/object/prototype/slug_rail_end.object",
-	"crawler/object/prototype/slug_rail_corner.object",
-	"crawler/object/prototype/slug_rail_end.object",
-	"crawler/object/prototype/slug_rail_corner.object",
-	"crawler/object/prototype/slug_rail_straight.object",
+	"crawler/model/monster_rail_end.object",
+	"crawler/model/monster_rail_end.object",
+	"crawler/model/monster_rail_turn.object",
+	"crawler/model/monster_rail_end.object",
+	"crawler/model/monster_rail_turn.object",
+	"crawler/model/monster_rail.object",
 	"crawler/object/prototype/slug_rail_nothing.object",
-	"crawler/object/prototype/slug_rail_end.object",
-	"crawler/object/prototype/slug_rail_straight.object",
-	"crawler/object/prototype/slug_rail_corner.object",
+	"crawler/model/monster_rail_end.object",
+	"crawler/model/monster_rail.object",
+	"crawler/model/monster_rail_turn.object",
 	"crawler/object/prototype/slug_rail_nothing.object",
-	"crawler/object/prototype/slug_rail_corner.object",
+	"crawler/model/monster_rail_turn.object",
 	"crawler/object/prototype/slug_rail_nothing.object",
 	"crawler/object/prototype/slug_rail_nothing.object",
-	"crawler/object/prototype/slug_rail_nothing.object"
+	"crawler/model/monster_rail_intersection.object"
 };
 float Crawl::DungeonEnemySlugPath::autoTileOrientations[16] =
 {
 	0.0f,
-	-90.0f,
+	90.0f,
+	180.0f,
+	90.0f,
+	0.0f,
+	0.0f,
+	0.0f,
 	0.0f,
 	-90.0f,
-	-180.0f,
+	90.0f,
 	180.0f,
 	0.0f,
-	0.0f,
-	90.0f,
-	90.0f,
-	0.0f,
-	0.0f,
-	90.0f,
+	-90.0f,
 	0.0f,
 	0.0f,
 	0.0f,
