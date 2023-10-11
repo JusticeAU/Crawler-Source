@@ -251,7 +251,8 @@ void Object::DrawGUI()
 			{
 				if (ImGui::Selectable(ComponentFactory::GetComponentName(i).c_str()))
 				{
-					ComponentFactory::NewComponent(this,(ComponentType)i);
+					Component* compy = ComponentFactory::NewComponent(this,(ComponentType)i);
+					components.push_back(compy);
 					for (auto component : components)
 						component->OnParentChange();
 				}

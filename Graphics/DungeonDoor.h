@@ -11,13 +11,15 @@ namespace Crawl
 	public:
 		~DungeonDoor();
 		void Toggle();
-		void Toggle(bool on);
+		void Open(bool instant = false);
+		void Close(bool instance = false);
 
-		void Update();
 		void UpdateVisuals(float delta);
 		void UpdateTransforms(bool instant = false);
 
-		void PlayRattleSound();
+		void Interact();
+
+		void MakeBarricaded();
 
 		const float openEulerAngle = -120.0f;
 		
@@ -39,6 +41,8 @@ namespace Crawl
 		bool open = false;
 		
 		Object* object = nullptr;
+
+		bool isBarricaded = false;
 	};
 
 	static void to_json(ordered_json& j, const DungeonDoor& door)

@@ -1,8 +1,10 @@
 #pragma once
 #include "DungeonHelpers.h"
+#include "DungeonGameManagerEvent.h"
 #include "glm.hpp"
 #include "serialisation.h"
 #include <string>
+#include <vector>
 
 using std::string;
 using glm::ivec2;
@@ -15,6 +17,8 @@ namespace Crawl
 	{
 	public:
 		~DungeonTransporter();
+
+		void ProcessGameManagerInteractions();
 		string name = "";
 		ivec2 position = { 0,0 };
 		unsigned int fromOrientation = NORTH_INDEX;
@@ -26,22 +30,13 @@ namespace Crawl
 
 		// Level lobby 2 hack stuff
 		bool toLobby2 = false;
+
+		// Game Manager Activations
+		bool gameManagerInteraction = false;
+		std::vector<DungeonGameManagerEvent> gameManagerEvents;
 	};
 
-	static void to_json(ordered_json& j, const DungeonTransporter& object)
-	{
-		j = { {"name", object.name }, {"position", object.position }, {"fromOrientation", object.fromOrientation }, {"toDungeon", object.toDungeon }, {"toTransporter", object.toTransporter } };
-		if (object.toLobby2) j["toLobby2"] = true;
-	}
-
-	static void from_json(const ordered_json& j, DungeonTransporter& object)
-	{
-		j.at("name").get_to(object.name);
-		j.at("position").get_to(object.position);
-		j.at("fromOrientation").get_to(object.fromOrientation);
-		j.at("toDungeon").get_to(object.toDungeon);
-		j.at("toTransporter").get_to(object.toTransporter);
-		if(j.contains("toLobby2")) j.at("toLobby2").get_to(object.toLobby2);
-	}
+	extern void to_json(ordered_json& j, const DungeonTransporter& object);
+	extern void from_json(const ordered_json& j, DungeonTransporter& object);
 }
 

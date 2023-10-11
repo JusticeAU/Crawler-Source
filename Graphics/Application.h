@@ -9,6 +9,7 @@ namespace Crawl
 {
 	class Dungeon;
 	class DungeonPlayer;
+	class DungeonGameManager;
 	class DungeonEditor;
 	class DungeonMenu;
 	class ArtTester;
@@ -56,6 +57,7 @@ public:
 	static Mode s_modeOld;
 	Crawl::Dungeon* dungeon = nullptr;
 	Crawl::DungeonPlayer* dungeonPlayer = nullptr;
+	Crawl::DungeonGameManager* gameManager = nullptr;
 	
 	// Dev stuff
 	Crawl::DungeonEditor* dungeonEditor = nullptr;

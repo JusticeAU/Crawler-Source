@@ -16,6 +16,7 @@ namespace Crawl
 			MurderinaPathBrush,
 			MurderinaPathEdit,
 			DungeonProperties,
+			GameManager,
 		};
 
 		DungeonEditor();
@@ -50,13 +51,12 @@ namespace Crawl
 		void DrawGUIModeTileEditEventTrigger();
 		string DrawGUIModeTileEditEventTriggerGetEventTypeString(DungeonEventTrigger* trigger);
 
-		void DrawGUIModeDungeonProperties();
 
 		void DrawGUIModeRailBrush();
 		void DrawGUIModeRailEdit();
-
 		void DrawGUIModeRailLines();
-
+		void DrawGUIModeDungeonProperties();
+		void DrawGUIModeGameManager();
 
 		void Update();
 		void UpdateModeTileBrush();
@@ -117,7 +117,7 @@ namespace Crawl
 		const int WALL_VARIANT_COUNT = 3;
 
 		Mode editMode = Mode::TileBrush;
-		std::string editModeNames[5]{ "Tile Brush", "Tile Edit", "Rail Brush", "Rail Edit", "Dungeon Properties" };
+		std::string editModeNames[6]{ "Tile Brush", "Tile Edit", "Rail Brush", "Rail Edit", "Dungeon Properties", "Game Manager"};
 
 		// Brush Mode
 		Object* brushObject = nullptr;

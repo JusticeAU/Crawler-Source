@@ -5,6 +5,8 @@
 #include "AudioManager.h"
 #include "DungeonHelpers.h"
 
+#include "Scene.h"
+
 
 Crawl::DungeonDoor::~DungeonDoor()
 {
@@ -18,26 +20,16 @@ void Crawl::DungeonDoor::Toggle()
 	UpdateTransforms();
 }
 
-void Crawl::DungeonDoor::Toggle(bool on)
+void Crawl::DungeonDoor::Open(bool instant)
 {
-	if (on)
-		power += 1;
-	else
-		power -= 1;
-
-	Update();
+	open = true;
+	UpdateTransforms(instant);
 }
 
-void Crawl::DungeonDoor::Update()
+void Crawl::DungeonDoor::Close(bool instant)
 {
-	/*bool oldState = open;
-	if (power > 0 && !open)
-		open = true;
-	if (power == 0 && open)
-		open = false;
-
-	if(oldState != open)
-		UpdateTransforms();*/
+	open = false;
+	UpdateTransforms(instant);
 }
 
 void Crawl::DungeonDoor::UpdateVisuals(float delta)
@@ -106,8 +98,25 @@ void Crawl::DungeonDoor::UpdateTransforms(bool instant)
 	shouldSwing = true;
 }
 
-void Crawl::DungeonDoor::PlayRattleSound()
+void Crawl::DungeonDoor::Interact()
 {
+	if (!isBarricaded)
+	{
+		AudioManager::PlaySound(wobbleSound, dungeonPosToObjectScale(object->GetWorldSpacePosition()));
+		shouldWobble = true;
+		wobbleTimeCurrent = 0.0f;
+	}
+}
 
-	AudioManager::PlaySound(wobbleSound, dungeonPosToObjectScale(object->GetWorldSpacePosition()));
+void Crawl::DungeonDoor::MakeBarricaded()
+{
+	if (!isBarricaded)
+	{
+		isBarricaded = true;
+		Object* barricade = Scene::CreateObject(object->children[0]);
+		barricade->LoadFromJSON(ReadJSONFromDisk("crawler/model/door_barricade.object"));
+		barricade->SetLocalPosition({ 0.0f, -0.05f ,0.0f });
+		Close();
+		UpdateTransforms(true);
+	}
 }

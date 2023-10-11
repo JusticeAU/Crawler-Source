@@ -27,6 +27,9 @@ namespace Crawl
 		DungeonPlayer();
 
 		void SetDungeon(Dungeon* dungeonPtr);
+		Dungeon* GetDungeonLoaded() { return dungeon; }
+		Dungeon* GetDungeonLobbyLevel2() { return lobbyLevel2Dungeon; }
+
 		void SetStateIdle() { state = IDLE; }
 
 		bool Update(float deltaTime);
@@ -53,14 +56,6 @@ namespace Crawl
 
 		void SetShouldSwitchWith(DungeonEnemySwitcher* switcher) { shouldSwitchWith = switcher; }
 		void SetShouldActivateStairs(DungeonStairs* stairs);
-		
-		// This will get moved in to the Game Manager and light instance itself.
-		void FindLobbyLight();
-		void ActivateLobbyLight() { lobbyLightActivated = true; lobbyLightTimeCurrent = 0.0f; }
-		DungeonLight* lobbyLight = nullptr;
-		bool lobbyLightActivated = false;
-		float lobbyLightTime = .5f;
-		float lobbyLightTimeCurrent = 0.0f;
 
 		// combines our requested direction with our facing direction to return the actual direction.
 		unsigned int GetMoveCardinalIndex(DIRECTION_INDEX dir);
@@ -94,11 +89,12 @@ namespace Crawl
 		void UpdateStateTransporter(float delta);
 		void LoadSelectedTransporter(DungeonTransporter* transporter);
 
+	public:
 		void UpdatePrompts(float delta);
 		void UpdateFTUE();
 		void SetFTUEPrompt(string prompt);
 		void ClearFTUEPrompt(bool instant = false);
-
+	private:
 		void DrawDebugUI();
 
 		void SoundPlayFootstep();
@@ -133,7 +129,8 @@ namespace Crawl
 		float oldTurn;
 		float targetTurn;
 		
-		Dungeon* dungeon;
+		Dungeon* dungeon;	// This is a pointer to the currently loaded dungeon.
+							// The player stores the level level 2 in memory, and currentDungeon will either be this pointer, or lobbyLevel2.
 		Object* object;
 		Object* objectView;
 		ComponentAnimator* animator;
@@ -174,7 +171,7 @@ namespace Crawl
 	public:
 		bool isOnLobbyLevel2 = false;
 		Dungeon* lobbyLevel2Dungeon = nullptr;
-		Dungeon* currentDungeon = nullptr;
+		Dungeon* currentDungeon = nullptr; // This just changes between dungeon and lobbyLevel2Dungeon. dungeon stores the actual dungeon we have loaded.
 		
 		float lobbyLevel2Floor = 3.2f;
 		float stairTimeTotal = 3.0f;
@@ -204,12 +201,7 @@ namespace Crawl
 		bool ftueInitiated = false;
 		string promptCurrent = "";
 		string promptNext = "";
-		string promptTurn = "crawler/texture/gui/prompt_turn.tga";
-		string promptMove = "crawler/texture/gui/prompt_move.tga";
-		string promptLook = "crawler/texture/gui/prompt_look.tga";
-		string promptInteract = "crawler/texture/gui/prompt_interact.tga";
-		string promptReset = "crawler/texture/gui/prompt_reset.tga";
-		string promptWait = "crawler/texture/gui/prompt_wait.tga";
+
 		int ftueTurns = 0;
 		bool ftueHasTurned = false;
 		bool ftueHasLooked = false;

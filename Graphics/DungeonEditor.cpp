@@ -1,4 +1,6 @@
 #include "DungeonEditor.h"
+#include "DungeonGameManager.h"
+#include "DungeonGameManagerEvent.h"
 #include "DungeonDoor.h"
 #include "DungeonInteractableLever.h"
 #include "DungeonActivatorPlate.h"
@@ -101,6 +103,11 @@ void Crawl::DungeonEditor::DrawGUI()
 		case Mode::DungeonProperties:
 		{
 			DrawGUIModeDungeonProperties();
+			break;
+		}
+		case Mode::GameManager:
+		{
+			DrawGUIModeGameManager();
 			break;
 		}
 	}
@@ -326,6 +333,11 @@ void Crawl::DungeonEditor::DrawGUIModeSelect()
 			editMode = Mode::DungeonProperties;
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 			ImGui::SetTooltip("Edit specific configuration items about this particular dungeon");
+
+		if (ImGui::Selectable(editModeNames[5].c_str()))
+			editMode = Mode::GameManager;
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("The GameManager contains configuration items specific to the lobby state. These values change over time, but you can mess with them here for testing purposes.");
 
 		ImGui::EndCombo();
 	}
@@ -613,6 +625,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 			int newID = GetNextAvailableLightID();
 			selectedLight = dungeon->CreateLight(selectedTilePosition);
 			selectedLight->id = newID;
+			selectedLight->Enable();
 			selectedLightWindowOpen = true;
 		}
 		if (cantMakeLight) ImGui::EndDisabled();
@@ -882,6 +895,11 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
 		selectedDoor->Toggle();
 	}
 
+	if (ImGui::Button("Make Barricaded Test"))
+	{
+		selectedDoor->MakeBarricaded();
+	}
+
 	if (ImGui::Button("Delete"))
 		ImGui::OpenPopup("delete_door_confirm");
 
@@ -1065,7 +1083,12 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditPlate()
 void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
 {
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize({ 500, 165 }, ImGuiCond_FirstUseEver);
+	
+	// Should this window be expanded to fit the gameManager stuff.
+	if(!selectedTransporter->gameManagerInteraction)
+		ImGui::SetNextWindowSize({ 500, 170 }, ImGuiCond_Always);
+	else
+		ImGui::SetNextWindowSize({ 500, 310 }, ImGuiCond_Always);
 	ImGui::Begin("Edit Transporter", &selectedTransporterWindowOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 	if (ImGui::InputText("Name", &selectedTransporter->name))
 		MarkUnsavedChanges();
@@ -1139,6 +1162,35 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
 		ImGui::EndCombo();
 	}
 	if (!selectedTransporterToDungeonLoaded) ImGui::EndDisabled();
+
+	// Game Manager triggers
+	if (ImGui::Checkbox("Game Manager Interactions", &selectedTransporter->gameManagerInteraction)) MarkUnsavedChanges();
+	if (selectedTransporter->gameManagerInteraction)
+	{
+		for (int i = 0; i < selectedTransporter->gameManagerEvents.size(); i++)
+		{
+			ImGui::PushID(i);
+			if (ImGui::Button("Del"))
+			{
+				selectedTransporter->gameManagerEvents.erase(selectedTransporter->gameManagerEvents.begin() + i);
+				MarkUnsavedChanges();
+				i--;
+				if (i == selectedTransporter->gameManagerEvents.size() - 1)
+				{
+					ImGui::PopID();
+					break;
+				}
+			}
+			ImGui::SameLine();
+			if (selectedTransporter->gameManagerEvents[i].DrawGUIInternal()) MarkUnsavedChanges();
+			ImGui::PopID();
+		}
+		if (ImGui::Button("Add"))
+		{
+			selectedTransporter->gameManagerEvents.emplace_back();
+			MarkUnsavedChanges();
+		}
+	}
 
 	if (ImGui::Button("Delete"))
 		ImGui::OpenPopup("delete_transporter_confirm");
@@ -1546,6 +1598,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLight()
 	}
 	if (ImGui::InputInt("ID", &selectedLight->id)) MarkUnsavedChanges();
 	if (ImGui::Checkbox("Ignore Global Flicker", &selectedLight->flickerIgnoreGlobal))	MarkUnsavedChanges();
+	if (ImGui::Checkbox("Starts Disabled", &selectedLight->startDisabled)) MarkUnsavedChanges();
 	if (ImGui::Checkbox("Flickers Randomly", &selectedLight->flickerRepeat))
 	{
 		MarkUnsavedChanges();
@@ -1566,6 +1619,11 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLight()
 	glm::vec3 offset(0, 0, 0.1f);
 	LineRenderer::DrawLine(worldPos, worldPos + offset, selectedLight->colour);
 
+	if (ImGui::Button("Enable")) selectedLight->Enable();
+	ImGui::SameLine();
+	if (ImGui::Button("Disable")) selectedLight->Disable();
+	ImGui::SameLine();
+	ImGui::Text("For testing purposes");
 
 	if (ImGui::Button("Delete"))
 		ImGui::OpenPopup("delete_light_confirm");
@@ -1840,6 +1898,11 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 
 		dungeon->player->Respawn();
 	}
+}
+
+void Crawl::DungeonEditor::DrawGUIModeGameManager()
+{
+	DungeonGameManager::Get()->DrawGUIInternal();
 }
 
 

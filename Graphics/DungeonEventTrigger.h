@@ -3,6 +3,7 @@
 #include "serialisation.h"
 #include "Dungeon.h"
 #include "DungeonPlayer.h"
+#include "DungeonGameManager.h"
 
 namespace Crawl
 {
@@ -36,7 +37,7 @@ namespace Crawl
 				{
 				case Type::GlobalEvent:
 				{
-					dungeon->player->DoEvent(eventID);
+					DungeonGameManager::Get()->DoEvent(eventID);
 					break;
 				}
 				case Type::LightFlicker:

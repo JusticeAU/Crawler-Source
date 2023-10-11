@@ -21,6 +21,7 @@
 #include "DungeonHelpers.h"
 #include "DungeonEditor.h"
 #include "DungeonPlayer.h"
+#include "DungeonGameManager.h"
 #include "DungeonArtTester.h"
 #include "DungeonMenu.h"
 
@@ -268,6 +269,8 @@ void Application::InitialiseAdditionalGameAssets()
 	dungeonPlayer = new Crawl::DungeonPlayer();
 	dungeon->SetPlayer(dungeonPlayer);
 	dungeonPlayer->SetDungeon(dungeon);
+	Crawl::DungeonGameManager::Init();
+	Crawl::DungeonGameManager::Get()->SetPlayer(dungeonPlayer);
 }
 
 void Application::Run()
@@ -330,6 +333,8 @@ void Application::Update(float delta)
 		if(dungeonPlayer->Update(delta))
 			dungeon->Update();
 
+		Crawl::DungeonGameManager::Get()->Update(delta);
+
 		dungeon->UpdateVisuals(delta);
 		break;
 	}
@@ -340,7 +345,7 @@ void Application::Update(float delta)
 		dungeonEditor->Update();
 		dungeonEditor->DrawGUI();
 		
-		dungeon->UpdateVisuals(delta);;
+		dungeon->UpdateVisuals(delta);
 		break;
 	}
 	case Mode::Art:

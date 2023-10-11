@@ -1,4 +1,5 @@
 #include "DungeonPlayer.h"
+#include "DungeonGameManager.h"
 #include "Input.h"
 #include "Window.h"
 #include "Scene.h"
@@ -54,27 +55,6 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		UpdatePrompts(deltaTime);
 	}
 
-	// This gotta be moved to some game / global event manager
-	if (lobbyLightActivated && lobbyLight != nullptr && lobbyLightTimeCurrent < (lobbyLightTime + 0.15f))
-	{
-		float t = glm::bounceEaseIn(glm::clamp(lobbyLightTimeCurrent / lobbyLightTime, 0.0f, 1.0f));
-		t = glm::clamp(t, 0.0f, 1.0f);
-		lobbyLight->intensity = MathUtils::Lerp(0.0f,1000.0f, t);
-		lobbyLight->UpdateLight();
-
-		lobbyLightTimeCurrent += deltaTime;
-	}
-	else
-	{
-		lobbyLightTimeCurrent = -rand() % 15;
-
-		if (lobbyLight != nullptr)
-		{
-			lobbyLight->intensity = 0.0f;
-			lobbyLight->UpdateLight();
-		}
-	}
-
 	if (state == MENU)
 	{
 		gameMenu->DrawPauseMenu();
@@ -118,11 +98,11 @@ bool Crawl::DungeonPlayer::HandleFreeLook(float delta)
 {
 	if (Input::Mouse(1).Pressed() || alwaysFreeLook)
 	{
-		if (!ftueHasLooked && promptCurrent == promptLook);
+		/*if (!ftueHasLooked && promptCurrent == promptLook);
 		{
 			ftueHasLooked = true;
 			ClearFTUEPrompt();
-		}
+		}*/
 		vec2 mouseDelta = -Input::GetMouseDelta() * lookSpeed;
 		if (invertYAxis) mouseDelta.y = -mouseDelta.y;
 		objectView->AddLocalRotation({ mouseDelta.y, 0, mouseDelta.x });
@@ -179,7 +159,8 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		camera->postProcessFadeColour = deathColour;
 		fadeTimeCurrent = 0.0f;
 		fadeIn = false;
-		SetFTUEPrompt(promptReset);
+		
+		DungeonGameManager::Get()->DoFTUEEvent(DungeonGameManager::FTUEEvent::Reset);
 		return false;
 	}
 
@@ -749,7 +730,7 @@ void Crawl::DungeonPlayer::UpdateFTUE()
 {
 	if (ftueTurns == 2 && !ftueHasTurned)
 	{
-		SetFTUEPrompt(promptMove);
+		DungeonGameManager::Get()->DoFTUEEvent(DungeonGameManager::FTUEEvent::Move);
 		ftueHasTurned = true;
 	}
 }
@@ -829,8 +810,8 @@ void Crawl::DungeonPlayer::RestartGame()
 	ftueHasLooked = false;
 	ftueHasTurned = false;
 	ftueTurns = 0;
-	lobbyLight = nullptr;
-	lobbyLightActivated = false;
+	//lobbyLight = nullptr;
+	//lobbyLightActivated = false;
 	LoadSelectedTransporter(startTransporter);
 }
 
@@ -861,7 +842,7 @@ void Crawl::DungeonPlayer::Respawn()
 	{
 		ftueEnabled = true;
 		ftueInitiated = true;
-		SetFTUEPrompt(promptTurn);
+		DungeonGameManager::Get()->DoFTUEEvent(DungeonGameManager::FTUEEvent::Turn);
 	}
 
 	didJustRespawn = true;
@@ -892,7 +873,6 @@ void Crawl::DungeonPlayer::Respawn()
 	hp = maxHp;
 	shouldSwitchWith = nullptr;
 	UpdatePointOfInterestTilt(true);
-	FindLobbyLight();
 }
 
 void Crawl::DungeonPlayer::MakeCheckpoint(FACING_INDEX direction)
@@ -928,19 +908,6 @@ void Crawl::DungeonPlayer::SetShouldActivateStairs(DungeonStairs* stairs)
 		facingTarget = true;
 }
 
-void Crawl::DungeonPlayer::FindLobbyLight()
-{
-	lobbyLight = nullptr;
-	for (auto& light : dungeon->pointLights)
-	{
-		if (light->isLobbyLight)
-		{
-			lobbyLight = light;
-			break;
-		}
-	}
-}
-
 // Take the requested direction and offset by the direction we're facing, check for overflow, then index in to the directions array.
 unsigned int Crawl::DungeonPlayer::GetMoveCardinalIndex(DIRECTION_INDEX dir)
 {
@@ -972,59 +939,5 @@ void Crawl::DungeonPlayer::SetLevel2(bool level2)
 
 void Crawl::DungeonPlayer::DoEvent(int eventID)
 {
-	switch (eventID)
-	{
-	case -1:
-	{
-		LogUtils::Log("Attempted to trigger unassigned event (-1)");
-		return;
-	}
-	case 0: // No Longer In Use.
-	{
-		
-		return;
-	}
-	case 1: // activate lighting in lobby
-	{
-		ActivateLobbyLight();
-		return;
-	}
-	case 2: // clear FTUE Event
-	{
-		ClearFTUEPrompt();
-		return;
-	}
-	case 3: // trigger Move FTUE
-	{
-		SetFTUEPrompt(promptMove);
-		return;
-	}
-
-	case 4: // trigger look prompt
-	{
-		if(!ftueHasLooked) SetFTUEPrompt(promptLook);
-		return;
-	}
-	case 5: // trigger Interact Prompt
-	{
-		SetFTUEPrompt(promptInteract);
-		return;
-	}
-	case 6: // Trigger Wait prompt
-	{
-		SetFTUEPrompt(promptWait);
-		return;
-	}
-	case 7: // Trigger Reset prompt
-	{
-		SetFTUEPrompt(promptReset);
-		return;
-	}
-
-	default:
-	{
-		LogUtils::Log("Attempted to trigger event that doesnt exist (" + to_string(eventID) + ")");
-		return;
-	}
-	}
+	
 }

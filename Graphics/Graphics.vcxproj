@@ -219,6 +219,8 @@
     <ClCompile Include="DungeonEnemySlug.cpp" />
     <ClCompile Include="DungeonEnemySlugPath.cpp" />
     <ClCompile Include="DungeonEnemySwitcher.cpp" />
+    <ClCompile Include="DungeonGameManager.cpp" />
+    <ClCompile Include="DungeonGameManagerEvent.cpp" />
     <ClCompile Include="DungeonInteractableLever.cpp" />
     <ClCompile Include="DungeonLight.cpp" />
     <ClCompile Include="DungeonMenu.cpp" />
@@ -297,6 +299,8 @@
     <ClInclude Include="DungeonEnemySlugPath.h" />
     <ClInclude Include="DungeonEnemySwitcher.h" />
     <ClInclude Include="DungeonEventTrigger.h" />
+    <ClInclude Include="DungeonGameManager.h" />
+    <ClInclude Include="DungeonGameManagerEvent.h" />
     <ClInclude Include="DungeonHelpers.h" />
     <ClInclude Include="DungeonInteractable.h" />
     <ClInclude Include="DungeonInteractableLever.h" />

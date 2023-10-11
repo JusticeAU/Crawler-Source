@@ -10,11 +10,24 @@ Crawl::DungeonLight::~DungeonLight()
 		object->markedForDeletion = true;
 }
 
-void Crawl::DungeonLight::Init()
+void Crawl::DungeonLight::Enable()
 {
+	if (isEnabled) return;
+
+	isEnabled = true;
 	object = Scene::CreateObject("Light");
 	light = (ComponentLightPoint*)ComponentFactory::NewComponent(object, Component_LightPoint);
 	UpdateLight();
+	UpdateTransform();
+}
+
+void Crawl::DungeonLight::Disable()
+{
+	if (!isEnabled) return;
+	isEnabled = false;
+	if (object)
+		object->markedForDeletion = true;
+	object = nullptr;
 }
 
 void Crawl::DungeonLight::UpdateTransform()
@@ -31,13 +44,15 @@ void Crawl::DungeonLight::UpdateLight()
 
 void Crawl::DungeonLight::Flicker()
 {
+	if (!isEnabled) return;
+
 	flickerEnabled = true;
 	flickerCurrent = -0.3f;
 }
 
 void Crawl::DungeonLight::ConfigureFlickerState()
 {
-	flickerBaseIntensity = light->intensity;
+	flickerBaseIntensity = intensity;
 }
 
 void Crawl::DungeonLight::ResetRandomFlickerTime()

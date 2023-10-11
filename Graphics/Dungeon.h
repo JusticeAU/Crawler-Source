@@ -95,6 +95,7 @@ namespace Crawl
 
 		DungeonDoor* CreateDoor(ivec2 position, unsigned int directionMask, unsigned int id, bool startOpen);
 		void RemoveDoor(DungeonDoor* door);
+		DungeonDoor* GetDoorWithID(int id);
 
 		DungeonActivatorPlate* CreatePlate(ivec2 position, unsigned int activateID);
 		void RemovePlate(DungeonActivatorPlate* plate);
@@ -160,6 +161,7 @@ namespace Crawl
 		void RemoveStairs(DungeonStairs* stairs);
 
 		DungeonLight* CreateLight(ivec2 position);
+		DungeonLight* GetLightWithID(int id);
 		void RemoveLight(DungeonLight* light);
 		void FlickerLights(int id = 0);
 

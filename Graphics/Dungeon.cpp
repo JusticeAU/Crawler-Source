@@ -1,4 +1,5 @@
 #include "Dungeon.h"
+#include "DungeonGameManager.h"
 #include "DungeonHelpers.h"
 #include "DungeonInteractableLever.h"
 #include "DungeonDoor.h"
@@ -558,20 +559,12 @@ bool Crawl::Dungeon::DoInteractable(ivec2 position, FACING_INDEX direction)
 	for (int i = 0; i < activatable.size(); i++)
 	{
 		if (position == activatable[i]->position && direction == activatable[i]->orientation && !activatable[i]->open)
-		{
-			activatable[i]->PlayRattleSound();
-			activatable[i]->shouldWobble = true;
-			activatable[i]->wobbleTimeCurrent = 0.0f;
-		}
+			activatable[i]->Interact();
+
 		// doors on shared tile edge (move position in facing direction, and then reverse the checking direction)
 		if (position + directions[direction] == activatable[i]->position && facingIndexesReversed[direction] == activatable[i]->orientation && !activatable[i]->open)
-		{
-			activatable[i]->PlayRattleSound();
-			activatable[i]->shouldWobble = true;
-			activatable[i]->wobbleTimeCurrent = 0.0f;
-		}
+			activatable[i]->Interact();
 	}
-
 
 	return didInteract;
 }
@@ -660,6 +653,7 @@ bool Crawl::Dungeon::ShouldActivateTransporter(ivec2 position, FACING_INDEX dire
 	{
 		if (transporter->position == player->GetPosition() + directions[direction])
 		{
+			transporter->ProcessGameManagerInteractions();
 			activateTransporter = transporter;
 			break;
 		}
@@ -982,6 +976,16 @@ void Crawl::Dungeon::RemoveDoor(DungeonDoor* door)
 			return;
 		}
 	}
+}
+
+Crawl::DungeonDoor* Crawl::Dungeon::GetDoorWithID(int id)
+{
+	for (auto* door : activatable)
+	{
+		if (door->id == id) return door;
+	}
+
+	return nullptr;
 }
 
 Crawl::DungeonActivatorPlate* Crawl::Dungeon::CreatePlate(ivec2 position, unsigned int activateID)
@@ -1685,9 +1689,19 @@ Crawl::DungeonLight* Crawl::Dungeon::CreateLight(ivec2 position)
 	DungeonLight* light = new DungeonLight();
 	light->position = position;
 	pointLights.push_back(light);
-	light->Init();
-	light->UpdateTransform();
 	return light;
+}
+
+Crawl::DungeonLight* Crawl::Dungeon::GetLightWithID(int id)
+{
+	for (int i = 0; i < pointLights.size(); i++)
+	{
+		if (pointLights[i]->id == id)
+		{
+			return pointLights[i];
+		}
+	}
+	return nullptr;
 }
 
 void Crawl::Dungeon::RemoveLight(DungeonLight* light)
@@ -1923,8 +1937,13 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 
 void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 {
-	if(!isLobbyLevel2)
+	if (!isLobbyLevel2)
+	{
 		DestroySceneFromDungeonLayout();
+		DungeonGameManager::Get()->ClearLocksObject();
+		player->lobbyLevel2Dungeon->ClearDungeon();
+		player->lobbyLevel2Dungeon->DestroySceneFromDungeonLayout();
+	}
 
 	int dungeonVersion = serialised["version"];
 
@@ -2006,6 +2025,10 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		newTransporter->toTransporter = transporter.toTransporter;
 		newTransporter->fromOrientation = transporter.fromOrientation;
 		newTransporter->toLobby2 = transporter.toLobby2;
+		
+		// Game Manager hacks
+		newTransporter->gameManagerInteraction = transporter.gameManagerInteraction;
+		newTransporter->gameManagerEvents.swap(transporter.gameManagerEvents);
 	}
 
 	auto& checkpoints_json = serialised["checkpoints"];
@@ -2153,9 +2176,10 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		newPointLight->flickerRepeatMin = pointLight.flickerRepeatMin;
 		newPointLight->flickerRepeatMax = pointLight.flickerRepeatMax;
 		newPointLight->flickerEnabled = pointLight.flickerEnabled;
-		newPointLight->UpdateLight();
-		newPointLight->UpdateTransform();
+		newPointLight->startDisabled = pointLight.startDisabled;
 		newPointLight->ConfigureFlickerState();
+		
+		if (!newPointLight->startDisabled) newPointLight->Enable();
 	}
 
 	auto& events_json = serialised["events"];
@@ -2189,15 +2213,15 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		newStair->endOffset = stair.endOffset;
 	}
 
-	if(!isLobbyLevel2) Scene::s_instance->SetStaticObjectsDirty();
-
 	// If this dungeon is the lobby, then also perform the hybrid loading on the second level
-	if (isLobby) player->lobbyLevel2Dungeon->Load("crawler/dungeon/lobby2.dungeon");
-	else if (!isLobbyLevel2)
+	if (isLobby)
 	{
-		player->lobbyLevel2Dungeon->ClearDungeon();
-		player->lobbyLevel2Dungeon->DestroySceneFromDungeonLayout();
+		player->lobbyLevel2Dungeon->Load("crawler/dungeon/lobby2.dungeon");
+		DungeonGameManager::Get()->ConfigureLobby();
 	}
+	
+	if (!isLobbyLevel2)
+		Scene::s_instance->SetStaticObjectsDirty();
 }
 
 void Crawl::Dungeon::InitialiseTileMap()
@@ -2427,9 +2451,6 @@ void Crawl::Dungeon::Update()
 	for (auto& tileTest : activatorPlates)
 		tileTest->TestPosition();
 
-	// update all doors
-	for (auto& door : activatable)
-		door->Update();
 
 	// make all projectiles update and destroy them if they have collided
 	for (int i = 0; i < shootLaserProjectiles.size(); i++)

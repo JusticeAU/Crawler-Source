@@ -332,6 +332,12 @@
     <ClCompile Include="ComponentLightPoint.cpp">
       <Filter>Source Files\Application\Scene\Components</Filter>
     </ClCompile>
+    <ClCompile Include="DungeonGameManager.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonGameManagerEvent.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -602,6 +608,12 @@
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
     <ClInclude Include="DungeonMenu.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonGameManager.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonGameManagerEvent.h">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
   </ItemGroup>
