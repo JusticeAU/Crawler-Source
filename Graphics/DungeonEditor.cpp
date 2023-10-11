@@ -490,7 +490,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 			selectedDoorWindowOpen = true;
 		}
 		//ImGui::SameLine();
-		if (ImGui::Selectable("Lever"))
+		if (ImGui::Selectable("Button"))
 		{
 			MarkUnsavedChanges();
 			selectedLever = dungeon->CreateLever(selectedTilePosition, 0, GetNextAvailableLeverID(), 0, false);
@@ -697,7 +697,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	for (int i = 0; i < selectedTileLevers.size(); i++)
 	{
 		ImGui::PushID(i);
-		string leverName = "Lever (ID: ";
+		string leverName = "Button (ID: ";
 		leverName += to_string(selectedTileLevers[i]->id);
 		leverName += ", Activates ID: ";
 		leverName += to_string(selectedTileLevers[i]->activateID);
@@ -910,7 +910,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLever()
 {
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize({ 300, 170 }, ImGuiCond_FirstUseEver);
-	ImGui::Begin("Edit Lever", &selectedLeverWindowOpen);
+	ImGui::Begin("Edit Button", &selectedLeverWindowOpen);
 
 	if (ImGui::InputInt("ID", (int*)&selectedLever->id))
 	{
@@ -946,12 +946,12 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLever()
 		MarkUnsavedChanges();
 
 	if (ImGui::Button("Delete"))
-		ImGui::OpenPopup("delete_lever_confirm");
+		ImGui::OpenPopup("delete_button_confirm");
 
 
-	if (ImGui::BeginPopupModal("delete_lever_confirm"))
+	if (ImGui::BeginPopupModal("delete_button_confirm"))
 	{
-		ImGui::Text("Are you sure you want to delete the lever?");
+		ImGui::Text("Are you sure you want to delete the Button?");
 		if (ImGui::Button("Yes"))
 		{
 			MarkUnsavedChanges();

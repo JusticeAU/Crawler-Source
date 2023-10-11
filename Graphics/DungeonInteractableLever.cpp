@@ -12,9 +12,9 @@ Crawl::DungeonInteractableLever::~DungeonInteractableLever()
 void Crawl::DungeonInteractableLever::Toggle()
 {
 	status = !status;
-	UpdateTransform();
 
 	dungeon->DoActivate(activateID);
+	state = State::In;
 }
 
 void Crawl::DungeonInteractableLever::SetID(unsigned int newID)
@@ -23,45 +23,67 @@ void Crawl::DungeonInteractableLever::SetID(unsigned int newID)
 	object->children[0]->children[0]->id = newID;
 }
 
-void Crawl::DungeonInteractableLever::UpdateTransform(bool instant)
+void Crawl::DungeonInteractableLever::UpdateTransform()
 {
-	if (!instant) swingTimeCurrent = 0.0f;
-	else swingTimeCurrent = swingTime;
-
-	shouldSwing = true;
+	object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 1.5 });
+	object->SetLocalRotationZ(orientationEulers[orientation]);
 }
 
 void Crawl::DungeonInteractableLever::UpdateVisuals(float delta)
 {
-	if (shouldSwing)
-	{
-		if (swingTimeCurrent < swingTime)
-		{
-			float t = swingTimeCurrent / swingTime;
-			if (status)
-			{
-				t = glm::elasticEaseOut(t);
-				float currentAngle = MathUtils::Lerp(0.0f, onRotationEuler, t);
-				object->children[0]->localRotation.x = currentAngle;
-			}
-			else
-			{
-				t = glm::elasticEaseOut(t);
-				float currentAngle = MathUtils::Lerp(onRotationEuler, 0.0f, t);
-				object->children[0]->localRotation.x = currentAngle;
-			}
-			object->children[0]->SetDirtyTransform();
+	float depression = 0.0f;
 
-			swingTimeCurrent += delta;
+	if(state != State::Idle)
+		buttonTime += delta;
+
+	switch (state)
+	{
+	case State::Idle:
+	{
+		break;
+	}
+	case State::In:
+	{
+		if (buttonTime < buttonInTime)
+		{
+			float t = buttonTime / buttonInTime;
+			depression = MathUtils::Lerp(0.0f, buttonMaxPress, t);
 		}
 		else
 		{
-			float finalAngle = status ? onRotationEuler : 0.0f;
-			object->children[0]->localRotation.x = finalAngle;
-			object->children[0]->SetDirtyTransform();
-
-			shouldSwing = false;
-			swingTimeCurrent = 0.0f;
+			depression = buttonMaxPress;
+			state = State::Hold;
+			buttonTime = 0.0f;
 		}
+		break;
 	}
+	case State::Hold:
+	{
+		depression = buttonMaxPress;
+		if (buttonTime >= buttonHoldTime)
+		{
+			state = State::Out;
+			buttonTime = 0.0f;
+		}
+		break;
+	}
+	case State::Out:
+	{
+		if (buttonTime < buttonOutTime)
+		{
+			float t = buttonTime / buttonOutTime;
+			depression = MathUtils::Lerp(buttonMaxPress, 0, t);
+		}
+		else
+		{
+			depression = 0;
+			state = State::Idle;
+			buttonTime = 0.0f;
+		}
+		break;
+	}
+	}
+
+	object->children[0]->children[0]->localPosition.y = depression;
+	object->children[0]->children[0]->SetDirtyTransform();
 }

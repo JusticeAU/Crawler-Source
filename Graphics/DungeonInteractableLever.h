@@ -15,14 +15,24 @@ namespace Crawl
 		void Toggle() override;
 		void SetID(unsigned int newID);
 		
-		void UpdateTransform(bool instant = false);
+		void UpdateTransform();
+
 		void UpdateVisuals(float delta);
 
-		float onRotationEuler = 60.0f;
+		float buttonMaxPress = 0.06f;
 
-		const float swingTime = 0.5f;
-		float swingTimeCurrent = 0.0f;
-		bool shouldSwing = false;
+		float buttonInTime = 0.1f;
+		float buttonHoldTime = 0.5f;
+		float buttonOutTime = 0.3f;
+		enum class State
+		{
+			Idle,
+			In,
+			Hold,
+			Out
+		};
+		State state = State::Idle;
+		float buttonTime = 0.0f;
 
 		bool status = false;
 

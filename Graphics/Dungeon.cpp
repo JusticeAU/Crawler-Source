@@ -584,26 +584,23 @@ Crawl::DungeonInteractableLever* Crawl::Dungeon::CreateLever(ivec2 position, uns
 	lever->dungeon = this;
 	lever->status = status;
 
-	// Load lever Objects from JSON
-	ordered_json lever_objectJSON = ReadJSONFromDisk("crawler/object/interactable_lever.object");
-	ordered_json lever_modelJSON = ReadJSONFromDisk("crawler/model/interactable_lever.object");
-	ordered_json lever_modelBracketJSON = ReadJSONFromDisk("crawler/model/interactable_lever_bracket.object");
-
+	// Load Button object
+	ordered_json lever_objectJSON = ReadJSONFromDisk("crawler/object/interactable_button.object");
+	ordered_json lever_modelJSON = ReadJSONFromDisk("crawler/model/interactable_button.object");
+	ordered_json lever_modelBracketJSON = ReadJSONFromDisk("crawler/model/interactable_button_liner.object");
 
 	// load Model object in to Model child object
 	Object* lever_object = Scene::CreateObject();
 	lever_object->LoadFromJSON(lever_objectJSON);
 	lever->object = lever_object;
-	lever_object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 1.5 });
 	Object* lever_model = Scene::CreateObject(lever_object->children[0]);
 	lever_model->LoadFromJSON(lever_modelJSON);
 	Object* lever_modelBracket = Scene::CreateObject(lever_object->children[1]);
 	lever_modelBracket->LoadFromJSON(lever_modelBracketJSON);
 
-	lever_object->SetLocalRotationZ(orientationEulers[directionIndex]);
+	lever->UpdateTransform();
 	lever->SetID(id);
 	lever->activateID = doorID;
-	lever->UpdateTransform(true);
 	
 	interactables.push_back(lever);
 	return lever;
