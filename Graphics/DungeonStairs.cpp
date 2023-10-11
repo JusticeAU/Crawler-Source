@@ -13,15 +13,15 @@ void Crawl::DungeonStairs::BuildDefaultSpline()
 	startWorldPosition = dungeonPosToObjectScale(startPosition) - startOffset;
 	if (!up)
 	{
-		startOffset.z = 3.0f;
-		startWorldPosition.z = 3.0f;
+		startOffset.z = 3.2f;
+		startWorldPosition.z = 3.2f;
 	}
 
 	endOffset = dungeonPosToObjectScale(directionsReversed[directionEnd]);
 	endWorldPosition = dungeonPosToObjectScale(endPosition) - endOffset;
 	if (up)
 	{
-		endOffset.z = 3.0f;
-		endWorldPosition.z = 3.0f;
+		endOffset.z = 3.2f;
+		endWorldPosition.z = 3.2f;
 	}
 }

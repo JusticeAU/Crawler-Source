@@ -48,7 +48,7 @@ namespace Crawl
 			Physical,
 			Energy
 		};
-		Dungeon(bool fakeDungeon = false);
+		Dungeon(bool isLobbyLevel2 = false);
 		// Tile manipulation
 		DungeonTile* AddTile(ivec2 position);
 		DungeonTile* AddTile(DungeonTile& dungeonTile);
@@ -274,8 +274,9 @@ namespace Crawl
 		std::vector<DungeonTile*> badNodes;
 
 		// Lobby stuff
-		bool fakeDungeon = false;
 		bool noRoof = false;
+		bool isLobby = false;
+		bool isLobbyLevel2 = false;
 	};
 }
 

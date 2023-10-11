@@ -176,7 +176,7 @@ namespace Crawl
 		Dungeon* lobbyLevel2Dungeon = nullptr;
 		Dungeon* currentDungeon = nullptr;
 		
-		float lobbyLevel2Floor = 3.0f;
+		float lobbyLevel2Floor = 3.2f;
 		float stairTimeTotal = 3.0f;
 		float stairTimeCurrent = 0.0f;
 		float playerZPosition = 0.0f;

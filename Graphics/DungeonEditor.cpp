@@ -1799,6 +1799,9 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 	if (ImGui::Checkbox("No Roof", &dungeon->noRoof))
 		MarkUnsavedChanges();
 
+	if (ImGui::Checkbox("Is Lobby (Don't mess with this!)", &dungeon->isLobby))
+		MarkUnsavedChanges();
+
 	//if (ImGui::Checkbox("Player Turn is Free (Default is True)", &dungeon->playerTurnIsFree))
 	//	MarkUnsavedChanges();
 

@@ -33,9 +33,9 @@
 #include "serialisation.h"
 #include <algorithm>
 
-Crawl::Dungeon::Dungeon(bool fakeDungeon) : fakeDungeon(fakeDungeon)
+Crawl::Dungeon::Dungeon(bool isLobbyLevel2) : isLobbyLevel2(isLobbyLevel2)
 {
-	if (fakeDungeon)
+	if (isLobbyLevel2)
 		return;
 
 	wallVariantPaths.push_back("crawler/model/tile_wall_1.object");
@@ -943,12 +943,14 @@ Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int dire
 	door->orientation = directionIndex;
 	door->id = id;
 	door->open = open;
+	float doorZPosition = 0;
+	if (isLobbyLevel2) doorZPosition = player->lobbyLevel2Floor;
 
 	ordered_json door_objectJSON = ReadJSONFromDisk("crawler/object/interactable_door.object");
 	Object* door_object = Scene::CreateObject();
 	door_object->LoadFromJSON(door_objectJSON);
 	door->object = door_object;
-	door_object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
+	door_object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, doorZPosition });
 	
 	ordered_json door_modelJSON = ReadJSONFromDisk("crawler/model/door_door_frame.object");
 	Object* door_model = door_object->children[0]->children[0];
@@ -1027,7 +1029,7 @@ Crawl::DungeonTransporter* Crawl::Dungeon::CreateTransporter(ivec2 position)
 {
 	DungeonTransporter* transporter = new DungeonTransporter();
 	transporter->position = position;
-	if (!fakeDungeon) // We dont need an object for this if its the fake lobby dungeon boiii
+	if (!isLobbyLevel2) // We dont need an object for this if its the fake lobby dungeon boiii
 	{
 		/*transporter->object = Scene::CreateObject();
 		transporter->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/exit.object"));
@@ -1807,7 +1809,7 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 	dungeon_serialised["defaultPosition"] = defaultPlayerStartPosition;
 	dungeon_serialised["defaultOrientation"] = defaultPlayerStartOrientation;
 	if (noRoof) dungeon_serialised["noRoof"] = true;
-
+	if (isLobby) dungeon_serialised["isLobby"] = true;
 
 	// These settings are now just stored on the player and locked in.
 	/*dungeon_serialised["playerTurnIsFree"] = playerTurnIsFree;
@@ -1924,7 +1926,7 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 
 void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 {
-	if(!fakeDungeon)
+	if(!isLobbyLevel2)
 		DestroySceneFromDungeonLayout();
 
 	int dungeonVersion = serialised["version"];
@@ -1941,6 +1943,9 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 
 	if (serialised.contains("noRoof")) noRoof = true;
 	else noRoof = false;
+
+	if (serialised.contains("isLobby")) isLobby = true;
+	else isLobby = false;
 
 	// Player settings are no longer stored in dungeon files.
 	/*if (serialised.contains("playerTurnIsFree"))
@@ -1992,7 +1997,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		}
 		AddTile(tile);
 	}
-	if(!fakeDungeon) BuildSceneFromDungeonLayout(); // this creates all the 3D visuals for the tiles, based on their neighhbors etc.
+	if(!isLobbyLevel2) BuildSceneFromDungeonLayout(); // this creates all the 3D visuals for the tiles, based on their neighhbors etc.
 
 	auto& transporters_json = serialised["transporters"];
 	for (auto it = transporters_json.begin(); it != transporters_json.end(); it++)
@@ -2065,7 +2070,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		CreateSpikes(spikes.position);
 	}
 
-	if (!fakeDungeon) Scene::s_instance->SetAllObjectsStatic(); // None of this stuff moves, so can be marked as static.
+	if (!isLobbyLevel2) Scene::s_instance->SetAllObjectsStatic(); // None of this stuff moves, so can be marked as static.
 
 	// Dynamic Objects
 	auto& doors_json = serialised["doors"]; // Technically door frame are static, only the doors are dynamic - but the optimisation is not worth it
@@ -2187,7 +2192,15 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		newStair->endOffset = stair.endOffset;
 	}
 
-	if(!fakeDungeon) Scene::s_instance->SetStaticObjectsDirty();
+	if(!isLobbyLevel2) Scene::s_instance->SetStaticObjectsDirty();
+
+	// If this dungeon is the lobby, then also perform the hybrid loading on the second level
+	if (isLobby) player->lobbyLevel2Dungeon->Load("crawler/dungeon/lobby2.dungeon");
+	else if (!isLobbyLevel2)
+	{
+		player->lobbyLevel2Dungeon->ClearDungeon();
+		player->lobbyLevel2Dungeon->DestroySceneFromDungeonLayout();
+	}
 }
 
 void Crawl::Dungeon::InitialiseTileMap()
@@ -2210,7 +2223,8 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 		for (auto& y : x.second.row)
 		{
 			Crawl::DungeonTile* tile = &y.second;
-			tile->object->markedForDeletion = true;
+			if(tile->object)
+				tile->object->markedForDeletion = true;
 		}
 	}
 	tiles.clear();
@@ -2499,6 +2513,8 @@ void Crawl::Dungeon::UpdateVisuals(float delta)
 
 	for (auto& light : pointLights)
 		light->UpdateVisual(delta);
+
+	if (isLobby) player->lobbyLevel2Dungeon->UpdateVisuals(delta);
 }
 
 unsigned int Crawl::Dungeon::GetAutoTileMask(ivec2 position)

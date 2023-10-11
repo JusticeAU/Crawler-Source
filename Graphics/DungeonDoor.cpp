@@ -20,8 +20,6 @@ void Crawl::DungeonDoor::Toggle()
 
 void Crawl::DungeonDoor::Toggle(bool on)
 {
-	//open = on;
-	//UpdateTransforms();
 	if (on)
 		power += 1;
 	else

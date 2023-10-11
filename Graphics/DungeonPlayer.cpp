@@ -29,9 +29,9 @@ Crawl::DungeonPlayer::DungeonPlayer()
 	objectView = object->children[0];
 	camera = (ComponentCamera*)object->children[0]->GetComponent(Component_Camera);
 
-	// load the lobby second level
+	// Create the lobby second level
 	lobbyLevel2Dungeon = new Dungeon(true);
-	lobbyLevel2Dungeon->Load("crawler/dungeon/lobby2.dungeon");
+	//lobbyLevel2Dungeon->Load("crawler/dungeon/lobby2.dungeon");
 	lobbyLevel2Dungeon->player = this;
 }
 
