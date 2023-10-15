@@ -18,6 +18,7 @@ namespace Crawl
 		enum STATE {
 			MENU,
 			IDLE,
+			WAIT,
 			MOVING,
 			TURNING,
 			STAIRBEARS,
@@ -37,6 +38,8 @@ namespace Crawl
 		void ContinueResettingTilt(float delta);
 
 		ivec2 GetPosition() { return position; }
+		ivec2 GetPositionPrevious() { return positionPrevious; }
+
 		FACING_INDEX GetOrientation() { return facing; }
 		
 		void SetShouldActivateTransporter(DungeonTransporter* transporter);
@@ -63,6 +66,8 @@ namespace Crawl
 		void SetLevel2(bool level2);
 
 		void DoEvent(int eventID);
+		bool PostUpdateComplete = false;
+		
 		bool didJustRespawn = false;
 
 		bool enableDebugUI = true;
@@ -100,6 +105,7 @@ namespace Crawl
 		void SoundPlayFootstep();
 
 		glm::ivec2 position;
+		glm::ivec2 positionPrevious;
 		FACING_INDEX facing = EAST_INDEX;
 		
 		STATE state = IDLE;

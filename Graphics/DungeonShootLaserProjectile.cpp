@@ -18,7 +18,7 @@ void Crawl::DungeonShootLaserProjectile::Update()
 	{
 		position += directions[facing];
 		object->AddLocalPosition({ directions[facing].x * DUNGEON_GRID_SCALE, directions[facing].y * DUNGEON_GRID_SCALE, 0 });
-		if (dungeon->DamageAtPosition(position, this, false, Dungeon::DamageType::Physical))
+		if (dungeon->DamageAtPosition(position, this, false, Dungeon::DamageType::Shooter))
 			shouldDestroySelf = true;
 	}
 	else // if it collides, it should delete itself magically

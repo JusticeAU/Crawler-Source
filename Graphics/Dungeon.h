@@ -45,8 +45,12 @@ namespace Crawl
 	public:
 		enum class DamageType
 		{
-			Physical,
-			Energy
+			Chaser,
+			Blocker,
+			Murderina,
+			Shooter,
+			Spikes,
+			Generic
 		};
 		Dungeon(bool isLobbyLevel2 = false);
 		// Tile manipulation
@@ -87,7 +91,7 @@ namespace Crawl
 		bool ShouldActivateTransporter(ivec2 position, FACING_INDEX direction);
 
 		// Returns true if this hit something
-		bool DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer = false, DamageType damageType = DamageType::Physical);
+		bool DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer = false, DamageType damageType = DamageType::Generic);
 		bool DoKick(ivec2 position, FACING_INDEX facing);
 		
 		DungeonInteractableLever* CreateLever(ivec2 position, unsigned int directionMask, unsigned int id, unsigned int doorID, bool startStatus);
@@ -147,6 +151,7 @@ namespace Crawl
 		void RotateMirror(DungeonMirror* mirror, int direction);
 
 		DungeonEnemySlug* CreateMurderina(ivec2 position, FACING_INDEX direction);
+		DungeonEnemySlug* GetMurderinaAtPosition(ivec2 position);
 		void RemoveSlug(DungeonEnemySlug* slug);
 		
 		DungeonEnemySlugPath* CreateSlugPath(ivec2 position);
@@ -188,6 +193,7 @@ namespace Crawl
 		static unsigned int GetReverseDirectionMask(unsigned int direction);
 
 		void Update();
+		void PostUpdate();
 		void UpdateVisuals(float delta);
 
 	protected:

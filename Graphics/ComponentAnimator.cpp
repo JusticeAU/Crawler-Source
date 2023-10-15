@@ -259,6 +259,11 @@ void ComponentAnimator::SetPose(string name, float offset)
 	isPlaying = false;
 }
 
+bool ComponentAnimator::IsFinished()
+{
+	return (current->IsFinished() && next == nullptr);
+}
+
 void ComponentAnimator::AnimationState::Update(float delta)
 {
 	position += delta * animationSpeedScale * animation->ticksPerSecond;

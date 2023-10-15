@@ -53,6 +53,12 @@ void Crawl::DungeonShootLaser::Update()
 				break;
 			}
 
+			if (dungeon->GetMurderinaAtPosition(currentPosition))
+			{
+				Prime();
+				break;
+			}
+
 			if (dungeon->CanSee(currentPosition, facing))
 				currentPosition += directions[facing];
 			else
@@ -120,9 +126,9 @@ void Crawl::DungeonShootLaser::Fire()
 			}
 			else
 			{
-				bool wasOccupied = tile->occupied;
+				bool wasOccupied = tile->occupied || (dungeon->GetMurderinaAtPosition(currentPosition) != nullptr);
 
-				dungeon->DamageAtPosition(currentPosition, this, false, Dungeon::DamageType::Energy);
+				dungeon->DamageAtPosition(currentPosition, this, false, Dungeon::DamageType::Shooter);
 
 				if (wasOccupied)
 					break;

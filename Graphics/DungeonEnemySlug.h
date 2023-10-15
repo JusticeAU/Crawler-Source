@@ -31,8 +31,8 @@ namespace Crawl
 		STATE state = INACTIVE;
 
 		bool isDead = false;
-
 		int slugTurns[4] = { 0, -1, 1, 2 }; // Forward,  Left, Right, 180.
+		ivec2 positionPrevious; // need to track previous position so we can test if the player tried to move through us.
 
 		Dungeon* dungeon;
 		Object* object;
@@ -42,7 +42,7 @@ namespace Crawl
 		void UpdateVisuals(float delta);
 
 		// visuals
-		float moveSpeed = 1.0f;
+		float moveSpeed = 0.75f;
 		float moveCurrent = 0.0f;
 		glm::vec3 oldPosition;
 		glm::vec3 targetPosition;

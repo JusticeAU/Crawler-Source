@@ -44,8 +44,7 @@ void Crawl::DungeonEnemyChase::Update()
 			{
 				LogUtils::Log("Chaser saw player - activating.");
 				state = IDLE;
-				stateVisual = IDLE;
-				if (animator) animator->StartAnimation(animationActivate);
+				NewAnimationState(AnimationState::Activating);
 				return;
 			}
 
@@ -75,11 +74,9 @@ void Crawl::DungeonEnemyChase::Update()
 	}
 	else // Activated.
 	{
-		stateVisual = IDLE;
+		state = IDLE;
 		object->SetLocalPosition(dungeonPosToObjectScale(position));
-		oldPosition = dungeonPosToObjectScale(position);
 		object->SetLocalRotationZ(orientationEulers[facing]);
-		oldTurn = orientationEulers[facing];
 
 		// calculate path to player
 		bool canPath = dungeon->FindPath(position, dungeon->player->GetPosition(), facing);
@@ -105,22 +102,14 @@ void Crawl::DungeonEnemyChase::Update()
 				positionWant = position;
 				return;
 			}
-
+			state = MOVING;
 		}
 		else // Yoo we gotta turn.
 		{
-			bool isClockwise(IsClockWiseTurn(facing, (FACING_INDEX)myTile->toDestination->enterDirection));
+			animationTurnIsRight = IsClockWiseTurn(facing, (FACING_INDEX)myTile->toDestination->enterDirection);
 			facing = dungeonRotateTowards(facing, (FACING_INDEX)myTile->toDestination->enterDirection);
-			stateVisual = TURNING;
-			targetTurn = orientationEulers[facing];
-			turnCurrent = 0.0f;
+			NewAnimationState(AnimationState::Turning);
 			LogUtils::Log("Start Animation Turn");
-			
-			if (animator)
-			{
-				if(isClockwise)	animator->StartAnimation(animationTurnRight); // need to differentiate between left and right turn here.
-				else animator->StartAnimation(animationTurnLeft);
-			}
 		}
 		// else turn to face it
 	}
@@ -130,106 +119,314 @@ void Crawl::DungeonEnemyChase::ExecuteMove()
 {
 	DungeonTile* myTile = dungeon->GetTile(position);
 	myTile->occupied = false;
-	oldPosition = dungeonPosToObjectScale(position);
+	positionPrevious = position;
 	position = positionWant;
 	myTile = dungeon->GetTile(position);
 	myTile->occupied = true;
-	stateVisual = MOVING;
-	targetPosition = dungeonPosToObjectScale(position);
-	moveCurrent = -0.0f;
-	LogUtils::Log("Start Animation Walk");
-	if (animator) animator->StartAnimation(animationWalkForward);
+	NewAnimationState(AnimationState::Walking);
 }
 
 void Crawl::DungeonEnemyChase::ExecuteDamage()
 {
-	dungeon->DamageAtPosition(position, this);
+	dungeon->DamageAtPosition(position, this, false, Dungeon::DamageType::Chaser);
+}
+
+void Crawl::DungeonEnemyChase::Kick(FACING_INDEX inDirection)
+{
+	state = DungeonEnemyChase::STUN;
+	// Clean up from any unfinished animations
+	object->SetLocalPosition(dungeonPosToObjectScale(position));
+	object->SetLocalRotationZ(orientationEulers[facing]);
+	animator->StartAnimation(animationIdle, true);
+
+	//targetPosition = dungeonPosToObjectScale(position + directions[inDirection]);
+	position = position + directions[inDirection];
+	positionWant = position + directions[inDirection];
+
+	// Compute which animation to play
+	switch (facing)
+	{
+	case NORTH_INDEX:
+	{
+		switch (inDirection)
+		{
+		case NORTH_INDEX:
+		{
+			stunAnimationToUse = animationPushFront;
+			break;
+		}
+		case EAST_INDEX:
+		{
+			stunAnimationToUse = animationPushRight;
+			break;
+		}
+		case SOUTH_INDEX:
+		{
+			stunAnimationToUse = animationPushBack;
+			break;
+		}
+		case WEST_INDEX:
+		{
+			stunAnimationToUse = animationPushLeft;
+			break;
+		}
+		}
+		break;
+	}
+	case EAST_INDEX:
+	{
+		switch (inDirection)
+		{
+		case NORTH_INDEX:
+		{
+			stunAnimationToUse = animationPushLeft;
+			break;
+		}
+		case EAST_INDEX:
+		{
+			stunAnimationToUse = animationPushFront;
+			break;
+		}
+		case SOUTH_INDEX:
+		{
+			stunAnimationToUse = animationPushRight;
+			break;
+		}
+		case WEST_INDEX:
+		{
+			stunAnimationToUse = animationPushBack;
+			break;
+		}
+		}
+		break;
+	}
+	case SOUTH_INDEX:
+	{
+		switch (inDirection)
+		{
+		case NORTH_INDEX:
+		{
+			stunAnimationToUse = animationPushBack;
+			break;
+		}
+		case EAST_INDEX:
+		{
+			stunAnimationToUse = animationPushLeft;
+			break;
+		}
+		case SOUTH_INDEX:
+		{
+			stunAnimationToUse = animationPushFront;
+			break;
+		}
+		case WEST_INDEX:
+		{
+			stunAnimationToUse = animationPushRight;
+			break;
+		}
+		}
+		break;
+	}
+	case WEST_INDEX:
+	{
+		switch (inDirection)
+		{
+		case NORTH_INDEX:
+		{
+			stunAnimationToUse = animationPushRight;
+			break;
+		}
+		case EAST_INDEX:
+		{
+			stunAnimationToUse = animationPushBack;
+			break;
+		}
+		case SOUTH_INDEX:
+		{
+			stunAnimationToUse = animationPushLeft;
+			break;
+		}
+		case WEST_INDEX:
+		{
+			stunAnimationToUse = animationPushFront;
+			break;
+		}
+		}
+		break;
+	}
+
+	}
+	NewAnimationState(AnimationState::Stunned);
+	//animator->BlendToAnimation(animToPlay, 0.1f); // little bit of blend cause this could be from inactive or idle (or any other animation actually)
+}
+
+void Crawl::DungeonEnemyChase::Bonk()
+{
+	animationState = DungeonEnemyChase::AnimationState::Bonked;
+	animator->StartAnimation(animationBonk);
+	positionWant = position;
+}
+
+void Crawl::DungeonEnemyChase::Kill(Dungeon::DamageType damageType)
+{
+	isDead = true;
+	diedTo = damageType;
+	switch (diedTo)
+	{
+	case Dungeon::DamageType::Spikes:
+	{
+		deathAnimationToUse = animationDeathSpike;
+		break;
+	}
+	case Dungeon::DamageType::Shooter:
+	{
+		deathAnimationToUse = animationDeathLaser;
+		break;
+	}
+	case Dungeon::DamageType::Blocker:
+	{
+		deathAnimationToUse = animationDeathBlocker;
+		break;
+	}
+	default:
+	{
+		deathAnimationToUse = animationDeathBlocker;
+		break;
+	}
+
+	}
+	dungeon->GetTile(position)->occupied = false;
 }
 
 void Crawl::DungeonEnemyChase::UpdateVisuals(float delta)
 {
-	switch (stateVisual)
+	animationTime += delta;
+	switch (animationState)
 	{
-	case IDLE:
-		if (animator->current->IsFinished()) animator->StartAnimation(animationIdle, true);
-		break;
-	case TURNING:
+	case AnimationState::Inactive:
 	{
 		if (isDead)
 		{
-			stateVisual = DYING;
-			return;
-		}
-		if (animator->current->IsFinished())
-		{
-			object->SetLocalRotationZ(targetTurn);
-
-			if (animator->current->IsFinished())
-			{
-				if (!isDead)
-				{
-					animator->StartAnimation(animationIdle, true);
-					stateVisual = IDLE;
-				}
-				else stateVisual = DYING;
-			}
+			NewAnimationState(AnimationState::Dying);
 		}
 		break;
 	}
-	case MOVING:
+	case AnimationState::Idle:
+		if (animator->current->IsFinished()) animator->StartAnimation(animationIdle, true);
+		break;
+	case AnimationState::Turning:
+	{
+		if (animator->current->IsFinished())
+		{
+			object->SetLocalRotationZ(orientationEulers[facing]);
+			NewAnimationState(AnimationState::Idle);
+		}
+
+		if(isDead) NewAnimationState(AnimationState::Dying);
+
+		break;
+	}
+	case AnimationState::Walking:
 	{
 		if (animator->current->IsFinished()) // animation has finished
 		{
-			object->SetLocalPosition(targetPosition);
+			object->SetLocalPosition(dungeonPosToObjectScale(position));
 			
-			if (animator->current->IsFinished())
-			{
-				if (!isDead)
-				{
-					animator->StartAnimation(animationIdle, true);
-					stateVisual = IDLE;
-				}
-				else stateVisual = DYING;
-			}
+			if (!isDead) NewAnimationState(AnimationState::Idle);
+			else NewAnimationState(AnimationState::Dying);
 		}
 		break;
 	}
-	case KICKED:
+	case AnimationState::Stunned:
 	{
-		moveCurrent += delta;
-		float t = MathUtils::InverseLerp(0, kickedSpeed, glm::max(0.0f, moveCurrent));
-		if (moveCurrent > kickedSpeed)
+		if (animator->current->IsFinished() || (animationTime > animationMinStunTime && isDead)) // animation has finished
 		{
-			object->SetLocalPosition(targetPosition);
-			if (!isDead) stateVisual = IDLE;
-			else stateVisual = DYING;
+			object->SetLocalPosition(dungeonPosToObjectScale(position));
+			
+			if (!isDead) NewAnimationState(AnimationState::Idle);
+			else NewAnimationState(AnimationState::Dying);
 		}
-		else
-			object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, t));
-		break;
-	}
-	case BOUNCING:
-	{
-		bounceCurrent += delta;
-		float t = MathUtils::InverseLerp(0, bounceSpeed, glm::max(0.0f, bounceCurrent));
-		if (bounceCurrent > bounceSpeed)
-		{
-			object->SetLocalPosition(oldPosition);
-			if(!isDead) stateVisual = IDLE;
-			else stateVisual = DYING;
-		}
-		else
-		{
-			if (t > 0.5f)
-				t -= (t - 0.5) * 2;
 
-			object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, t));
+		break;
+	}
+	case AnimationState::Bonked:
+	{
+		if (animator->current->IsFinished()) // animation has finished
+		{
+			object->SetLocalPosition(dungeonPosToObjectScale(position));
+			
+			if (!isDead) NewAnimationState(AnimationState::Idle);
+			else NewAnimationState(AnimationState::Dying);
 		}
 		break;
 	}
-	case DYING:
+	case AnimationState::Dying:
 	{
+		if (animator->IsFinished() && animationTime > 2.0f) // animations have finished
+		{
+			canRemove = true;
+		}
 		break;
 	}
+	}
+}
+
+void Crawl::DungeonEnemyChase::NewAnimationState(AnimationState newState, bool blend)
+{
+	animationTime = 0.0f;
+	switch (newState)
+	{
+	case AnimationState::Inactive:
+	{
+
+		break;
+	}
+	case AnimationState::Activating:
+	{
+		if (animator) animator->StartAnimation(animationActivate);
+		break;
+	}
+
+	case AnimationState::Idle:
+	{
+		animator->StartAnimation(animationIdle, true);
+		animationState = AnimationState::Idle;
+		break;
+	}
+	case AnimationState::Walking:
+	{
+		animationState = AnimationState::Walking;
+		if (animator) animator->StartAnimation(animationWalkForward);
+		break;
+	}
+	case AnimationState::Turning:
+	{
+		if (animator)
+		{
+			if (animationTurnIsRight)	animator->StartAnimation(animationTurnRight); // need to differentiate between left and right turn here.
+			else animator->StartAnimation(animationTurnLeft);
+		}
+		animationState = AnimationState::Turning;
+		break;
+	}
+	case AnimationState::Bonked:
+	{
+
+		break;
+	}
+	case AnimationState::Stunned:
+	{
+		animator->BlendToAnimation(stunAnimationToUse, 0.1f); // little bit of blend cause this could be from inactive or idle (or any other animation actually)
+		animationState = AnimationState::Stunned;
+		break;
+	}
+	case AnimationState::Dying:
+	{
+		if(blend) animator->BlendToAnimation(deathAnimationToUse, 0.1f);
+		else animator->StartAnimation(deathAnimationToUse);
+		animationState = AnimationState::Dying;
+		break;
+	}
+
 	}
 }

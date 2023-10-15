@@ -52,7 +52,7 @@ void Texture::Load()
 	GLfloat value, max_anisotropy = 8.0f; /* don't exceed this value...*/
 	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &value);
 	value = (value > max_anisotropy) ? max_anisotropy : value;
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY , value); // need to do some tests on this one.
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY , 2); // need to do some tests on this one.
 
 	// clean up
 	glBindTexture(GL_TEXTURE_2D, 0);

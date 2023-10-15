@@ -6,6 +6,9 @@
 #include "MathUtils.h"
 #include "LogUtils.h"
 
+#include "DungeonPlayer.h"
+#include "DungeonEnemyChase.h"
+
 Crawl::DungeonEnemySlug::~DungeonEnemySlug()
 {
 	if (object)
@@ -46,8 +49,9 @@ void Crawl::DungeonEnemySlug::Update()
 		if (validPath)
 		{
 			toTile = dungeon->GetTile(position + directions[facing]);
-			fromTile->occupied = false;
-			toTile->occupied = true;
+			//fromTile->occupied = false;
+			//toTile->occupied = true;
+			positionPrevious = position;
 			position += directions[facing];
 		}
 		else toTile = fromTile;
@@ -57,9 +61,20 @@ void Crawl::DungeonEnemySlug::Update()
 	}
 	else
 		LogUtils::Log("Slug is not on a path");
+
+	// Check if player moved through us
+	if (dungeon->player->GetPositionPrevious() == position && dungeon->player->GetPosition() == positionPrevious)
+		dungeon->player->TakeDamage();
+
+	// Check if a chaser has moved through us
+	for (auto& chaser : dungeon->chasers)
+	{
+		if (dungeon->player->GetPositionPrevious() == chaser->position && dungeon->player->GetPosition() == chaser->positionPrevious)
+			chaser->Kill(Dungeon::DamageType::Murderina);
+	}
 	
 	moveCurrent = 0.0f;
-	dungeon->DamageAtPosition(position, this);
+	// Damage has been moved to PostUpdate
 }
 
 void Crawl::DungeonEnemySlug::UpdateVisuals(float delta)
@@ -75,12 +90,17 @@ void Crawl::DungeonEnemySlug::UpdateVisuals(float delta)
 		if (moveCurrent > moveSpeed)
 		{
 			object->SetLocalPosition(targetPosition);
+			object->SetLocalRotationZ(-180);
 			state = IDLE;
 		}
 		else
+		{
 			object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, t));
+			object->SetLocalRotationZ(MathUtils::Lerp(-180, 180, t));
 
-		object->AddLocalRotation({ 0,0, delta * 200.0f });
+		}
+
+		
 		break;
 	}
 	}

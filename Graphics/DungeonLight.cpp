@@ -17,6 +17,7 @@ void Crawl::DungeonLight::Enable()
 	isEnabled = true;
 	object = Scene::CreateObject("Light");
 	light = (ComponentLightPoint*)ComponentFactory::NewComponent(object, Component_LightPoint);
+	object->components.push_back(light);
 	UpdateLight();
 	UpdateTransform();
 }

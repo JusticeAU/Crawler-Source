@@ -81,8 +81,6 @@ void Crawl::DungeonEnemySwitcher::Update()
 				object->SetLocalRotationZ(orientationEulers[facing]);
 				chaser->object->SetLocalPosition(dungeonPosToObjectScale(chaser->position));
 				chaser->object->SetLocalRotationZ(orientationEulers[chaser->facing]);
-				chaser->targetPosition = dungeonPosToObjectScale(chaser->position);
-				chaser->oldPosition = dungeonPosToObjectScale(chaser->position);
 				chaser->positionWant = chaser->position;
 				return;
 			}

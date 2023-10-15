@@ -330,7 +330,7 @@ void Application::Update(float delta)
 	{
 	case Mode::Game:
 	{
-		if(dungeonPlayer->Update(delta))
+		if (dungeonPlayer->Update(delta))
 			dungeon->Update();
 
 		Crawl::DungeonGameManager::Get()->Update(delta);

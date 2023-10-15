@@ -59,6 +59,15 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	{
 		gameMenu->DrawPauseMenu();
 	}
+	else if (state == WAIT)
+	{
+		moveCurrent += deltaTime;
+		if (moveCurrent >= moveSpeed)
+		{
+			state = IDLE;
+			moveCurrent = 0.0f;
+		}
+	}
 	else if (state == IDLE)
 	{
 		if (UpdateStateIdle(deltaTime))
@@ -144,6 +153,12 @@ void Crawl::DungeonPlayer::HandleLookTilt(float delta)
 
 bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 {
+	if (PostUpdateComplete)
+	{
+		PostUpdateComplete = false;
+		dungeon->PostUpdate();
+	}
+
 	if (Input::Keyboard(GLFW_KEY_ESCAPE).Down() && gameMenu) // only perform this action if the gameMenu is initialised. This wont be the case in designer mode.
 	{
 		Window::GetWindow()->SetMouseCursorHidden(false);
@@ -203,7 +218,11 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	glm::ivec2 coordinateUnchanged = { 0, 0 }; // TO DO this sucks
 
 	if (Input::Keyboard(GLFW_KEY_LEFT_ALT).Down())
+	{
+		state = WAIT;
+		moveCurrent = 0.0f;
 		return true;
+	}
 
 	// Old Stab mechanic
 	/*if ((Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Down() || Input::Mouse(1).Down()) && dungeon->playerHasKnife)
@@ -297,6 +316,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 				}
 
 				SoundPlayFootstep();
+				positionPrevious = position;
 				position += directions[index];
 				currentDungeon->GetTile(position)->occupied = true;
 				didMove = true;

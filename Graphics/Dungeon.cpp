@@ -171,7 +171,7 @@ bool Crawl::Dungeon::FindPath(ivec2 from, ivec2 to, int facing)
 						if (IsPushableBlockAtPosition(connectingTile->position)) shouldSkip = true;
 						if (IsEnemySwitcherAtPosition(connectingTile->position)) shouldSkip = true;
 						if (IsSpikesAtPosition(connectingTile->position)) shouldSkip = true;
-						if (IsSlugPath(connectingTile->position)) shouldSkip = true;
+						//if (IsSlugPath(connectingTile->position)) shouldSkip = true;
 						if (IsMirrorAtPosition(connectingTile->position)) shouldSkip = true;
 
 						if (shouldSkip)
@@ -697,7 +697,7 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 	}
 
 	// check boxes - We dont do this any more
-	if (damageType == DamageType::Physical)
+	if (damageType == DamageType::Murderina || damageType == DamageType::Blocker)
 	{
 		for (int i = 0; i < pushableBlocks.size(); i++)
 		{
@@ -710,7 +710,7 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 	}
 
 	// check blockers
-	if (damageType == DamageType::Physical)
+	if (false)
 	{
 		for (int i = 0; i < blockers.size(); i++)
 		{
@@ -731,13 +731,13 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 			if (dealer == chasers[i])
 				continue;
 			didDamage = true;
-			chasers[i]->isDead = true;
+			chasers[i]->Kill(damageType);
 			break;
 		}
 	}
 
 	// Check for slugs
-	if (damageType == DamageType::Physical)
+	if (damageType == DamageType::Blocker)
 	{
 		for (int i = 0; i < slugs.size(); i++)
 		{
@@ -855,14 +855,7 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 		// kick it in that direction
 		kickTile->occupied = false;
 		toTile->occupied = true;
-		kickableChaser->state = DungeonEnemyChase::STUN;
-		kickableChaser->stateVisual = DungeonEnemyChase::KICKED;
-		kickableChaser->moveCurrent = 0.0f;
-		kickableChaser->oldPosition = dungeonPosToObjectScale(kickableChaser->position);
-		kickableChaser->targetPosition = dungeonPosToObjectScale(moveToPos);
-		kickableChaser->position = moveToPos;
-		kickableChaser->positionWant = moveToPos;
-		kickableChaser->animator->StartAnimation(kickableChaser->animationKickBack);
+		kickableChaser->Kick(direction);
 		return true;
 	}
 
@@ -1223,7 +1216,7 @@ void Crawl::Dungeon::CreateDamageVisual(ivec2 position, FACING_INDEX direction)
 
 void Crawl::Dungeon::CreateShootLaserProjectile(void* dealer, ivec2 position, FACING_INDEX direction)
 {
-	DamageAtPosition(position, dealer);
+	DamageAtPosition(position, dealer, false, DamageType::Shooter);
 	
 	DungeonShootLaserProjectile* projectile = new DungeonShootLaserProjectile();
 	projectile->dungeon = this;
@@ -1308,11 +1301,10 @@ Crawl::DungeonEnemyChase* Crawl::Dungeon::CreateEnemyChase(ivec2 position, FACIN
 	chaser->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/monster_chaser.object"));
 	chaser->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_chaser.object"));
 	chaser->object->children[0]->SetLocalRotationZ(180);
-	if (chaser->useAnimator)
-	{
-		chaser->animator = (ComponentAnimator*)chaser->object->children[0]->GetComponent(Component_Animator);
-		chaser->animator->SetPose(chaser->animationActivate);
-	}
+
+	chaser->animator = (ComponentAnimator*)chaser->object->children[0]->GetComponent(Component_Animator);
+	chaser->animator->SetPose(chaser->animationActivate);
+
 	chasers.emplace_back(chaser);
 
 	DungeonTile* tile = GetTile(position);
@@ -1550,17 +1542,17 @@ Crawl::DungeonEnemySlug* Crawl::Dungeon::CreateMurderina(ivec2 position, FACING_
 	slug->object->children[0]->SetLocalRotationZ(180);
 	slug->UpdateTransform();
 	slugs.push_back(slug);
-
-	DungeonTile* tile = GetTile(position);
-	if (tile)
-	{
-		tile->occupied = true;
-	}
-	else
-		LogUtils::Log("WARNING - ATTEMPTING TO ADD SLUG TO TILE THAT DOESN'T EXIST");
-
 	return slug;
 }
+
+Crawl::DungeonEnemySlug* Crawl::Dungeon::GetMurderinaAtPosition(ivec2 position)
+{
+	for (auto& slug : slugs)
+		if (slug->position == position) return slug;
+
+	return nullptr;
+}
+
 
 void Crawl::Dungeon::RemoveSlug(DungeonEnemySlug* slug)
 {
@@ -2398,7 +2390,6 @@ void Crawl::Dungeon::Update()
 	// Chaser Logic
 	for (auto& chaser : chasers)
 	{
-
 		if(!chaser->isDead) chaser->Update();
 	}
 
@@ -2416,23 +2407,8 @@ void Crawl::Dungeon::Update()
 					if (chasers[a]->positionWant == chasers[b]->positionWant)
 					{
 						clash = true;
-						if (chasers[a]->positionWant != chasers[a]->position)
-						{
-							chasers[a]->oldPosition = chasers[a]->object->localPosition;
-							chasers[a]->targetPosition = dungeonPosToObjectScale(chasers[a]->positionWant);
-							chasers[a]->stateVisual = DungeonEnemyChase::BOUNCING;
-							chasers[a]->positionWant = chasers[a]->position;
-							chasers[a]->bounceCurrent = 0.0f;
-						}
-						
-						if (chasers[b]->positionWant != chasers[b]->position)
-						{
-							chasers[b]->oldPosition = chasers[b]->object->localPosition;
-							chasers[b]->targetPosition = dungeonPosToObjectScale(chasers[b]->positionWant);
-							chasers[b]->stateVisual = DungeonEnemyChase::BOUNCING;
-							chasers[b]->positionWant = chasers[b]->position;
-							chasers[b]->bounceCurrent = 0.0f;
-						}
+						if (chasers[a]->positionWant != chasers[a]->position) chasers[a]->Bonk();
+						if (chasers[b]->positionWant != chasers[b]->position) chasers[b]->Bonk();
 					}
 				}
 			}
@@ -2441,11 +2417,13 @@ void Crawl::Dungeon::Update()
 
 	for (auto& chaser : chasers)
 	{
-		if(chaser->positionWant != chaser->position)
+		if(chaser->state == DungeonEnemyChase::MOVING && chaser->positionWant != chaser->position)
 			chaser->ExecuteMove();
 	}
 	for (auto& chaser : chasers)
-		chaser->ExecuteDamage();
+	{
+		if (!chaser->isDead) chaser->ExecuteDamage();
+	}
 
 	// test all activator plates
 	for (auto& tileTest : activatorPlates)
@@ -2464,6 +2442,13 @@ void Crawl::Dungeon::Update()
 		}
 	}
 
+
+	player->UpdatePointOfInterestTilt();
+	player->PostUpdateComplete = true;
+}
+
+void Crawl::Dungeon::PostUpdate()
+{
 	// have all shooters update
 	for (auto& shooters : shootLasers)
 		shooters->Update();
@@ -2471,7 +2456,7 @@ void Crawl::Dungeon::Update()
 	// All spikes perform damage
 	for (auto& spikes : spikesPlates)
 	{
-		if (!spikes->disabled) DamageAtPosition(spikes->position, spikes);
+		if (!spikes->disabled) DamageAtPosition(spikes->position, spikes, false, DamageType::Spikes);
 	}
 
 	// All Sword Blocker Enemies Update
@@ -2481,7 +2466,9 @@ void Crawl::Dungeon::Update()
 	for (auto& switcher : switchers)
 		switcher->Update();
 
-	player->UpdatePointOfInterestTilt();
+	// All Murderinas perform damage
+	for (auto& murderina : slugs)
+		DamageAtPosition(murderina->position, this, false, Dungeon::DamageType::Murderina);
 }
 
 void Crawl::Dungeon::UpdateVisuals(float delta)
@@ -2490,7 +2477,7 @@ void Crawl::Dungeon::UpdateVisuals(float delta)
 	{
 		chasers[i]->UpdateVisuals(delta);
 		{
-			if (chasers[i]->stateVisual == Crawl::DungeonEnemyChase::DYING && chasers[i]->isDead)
+			if (chasers[i]->canRemove)
 			{
 				RemoveEnemyChase(chasers[i]);
 				i--;
