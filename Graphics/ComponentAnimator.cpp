@@ -92,7 +92,7 @@ void ComponentAnimator::DrawGUI()
 			ImGui::Checkbox("Next Anim Should Loop?", &transitionsShouldLoop);
 			ImGui::InputFloat("Next Anim Blend Time", &transitionBlendTime);
 			string animationNameStr = "Animation##" + to_string(componentParent->id);
-			if (ImGui::BeginCombo(animationNameStr.c_str(), current->animation->name.c_str()))
+			if (ImGui::BeginCombo(animationNameStr.c_str(), current->animation->name.c_str(), ImGuiComboFlags_HeightLargest))
 			{
 				for (auto a : *ModelManager::Animations())
 				{
