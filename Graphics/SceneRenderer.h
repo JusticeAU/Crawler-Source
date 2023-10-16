@@ -75,7 +75,7 @@ protected:
 	int msaaSamples = 4;
 
 	// SSAO
-	float ssaoRadius = 0.5f;
+	float ssaoRadius = 0.25f;
 	float ssaoBias = 0.025f;
 	int ssaoKernelTaps = 16;
 	FrameBuffer* ssaoGBuffer;

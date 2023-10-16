@@ -211,10 +211,11 @@ void Object::DrawGUI()
 					ImGui::SameLine();
 					if (ImGui::Button("Delete"))
 					{
-						Component* comp = components[i];
-						delete comp;
-						components.erase(components.begin() + i);
-						i--;
+						components[i]->markedForDeletion = true;
+						//Component* comp = components[i];
+						//delete comp;
+						//components.erase(components.begin() + i);
+						//i--;
 					}
 					else
 						components[i]->DrawGUI();
@@ -224,11 +225,12 @@ void Object::DrawGUI()
 					ImGui::SameLine();
 					if (ImGui::Button("Delete"))
 					{
-						Component* comp = components[i];
-						comp->markedForDeletion = true;
-						delete comp;
-						components.erase(components.begin() + i);
-						i--;
+						components[i]->markedForDeletion = true;
+						//Component* comp = components[i];
+						//comp->markedForDeletion = true;
+						//delete comp;
+						//components.erase(components.begin() + i);
+						//i--;
 					}
 				}
 				ImGui::PopID();

@@ -3,7 +3,7 @@
 
 ComponentLightPoint::ComponentLightPoint(Object* parent) : Component("Point Light", Component_LightPoint, parent)
 {
-	parent->components.push_back(this);
+	//parent->components.push_back(this);
 	Scene::s_instance->AddPointLight(this);
 }
 
