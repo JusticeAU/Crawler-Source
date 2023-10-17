@@ -140,8 +140,8 @@ void Crawl::DungeonEnemyChase::Kick(FACING_INDEX inDirection)
 	animator->StartAnimation(animationIdle, true);
 
 	//targetPosition = dungeonPosToObjectScale(position + directions[inDirection]);
-	position = position + directions[inDirection];
 	positionWant = position + directions[inDirection];
+	position = position + directions[inDirection];
 
 	// Compute which animation to play
 	switch (facing)

@@ -726,7 +726,7 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 	// check chasers
 	for (int i = 0; i < chasers.size(); i++)
 	{
-		if (chasers[i]->position == position)
+		if (chasers[i]->position == position && !chasers[i]->isDead)
 		{
 			if (dealer == chasers[i])
 				continue;
@@ -2402,12 +2402,15 @@ void Crawl::Dungeon::Update()
 			clash = false;
 			for (int a = 0; a < chasers.size()-1; a++)
 			{
+				if (chasers[a]->isDead) continue;
 				for (int b = 1; b < chasers.size(); b++)
 				{
+					if (chasers[b]->isDead) continue;
 					if (chasers[a]->positionWant == chasers[b]->positionWant)
 					{
 						clash = true;
-						if (chasers[a]->positionWant != chasers[a]->position) chasers[a]->Bonk();
+						// Only bonk the chaser if it is trying to change its position. If its already there, then it is allowed to stay there.
+						if (chasers[a]->positionWant != chasers[a]->position) chasers[a]->Bonk(); 
 						if (chasers[b]->positionWant != chasers[b]->position) chasers[b]->Bonk();
 					}
 				}
