@@ -168,9 +168,9 @@ bool Crawl::Dungeon::FindPath(ivec2 from, ivec2 to, int facing)
 						// Check if the tile is occupied by something that isnt the player or another chaser/enemy
 						bool shouldSkip = false;
 						if (IsEnemyBlockerAtPosition(connectingTile->position)) shouldSkip = true;
-						if (IsPushableBlockAtPosition(connectingTile->position)) shouldSkip = true;
+						if (IsPushableBlockAtPosition(connectingTile->position) && !GetPushableBlockAtPosition(connectingTile->position)->isOnSpikes) shouldSkip = true;
 						if (IsEnemySwitcherAtPosition(connectingTile->position)) shouldSkip = true;
-						if (IsSpikesAtPosition(connectingTile->position)) shouldSkip = true;
+						if (IsSpikesAtPosition(connectingTile->position) && !GetSpikesAtPosition(connectingTile->position)->disabled) shouldSkip = true;
 						//if (IsSlugPath(connectingTile->position)) shouldSkip = true;
 						if (IsMirrorAtPosition(connectingTile->position)) shouldSkip = true;
 
