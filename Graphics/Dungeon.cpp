@@ -1762,6 +1762,9 @@ void Crawl::Dungeon::ClearDungeon()
 	dungeonSubFolder = "";
 	defaultPlayerStartPosition = { 0,0 };
 	defaultPlayerStartOrientation = EAST_INDEX;
+	isLobby = false;
+	//isLobbyLevel2 = false;
+	noRoof = false;
 	
 	serialised.clear();
 
