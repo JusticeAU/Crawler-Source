@@ -193,6 +193,7 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 			dungeonFileName = "";
 			dungeonFileNameSaveAs = "";
 			dungeonFilePath = "";
+			MarkUnsavedChanges();
 		}
 	}
 

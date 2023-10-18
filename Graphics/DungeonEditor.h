@@ -112,6 +112,8 @@ namespace Crawl
 		bool saveAsPrompt = false;
 		bool confirmOverwritePrompt = false;
 		bool didSaveAs = false;
+		bool unsavedChanges = true;
+		bool shouldConfirmSaveBeforeLoad = false;
 
 		// Wall Variants
 		const int WALL_VARIANT_COUNT = 3;
@@ -198,9 +200,6 @@ namespace Crawl
 
 		DungeonEventTrigger* selectedEventTrigger = nullptr;
 		bool selectedEventTriggerWindowOpen = false;
-
-		bool unsavedChanges = true;
-		bool shouldConfirmSaveBeforeLoad = false;
 
 		// Slug Path Editor Mode
 		Object* murderinaPathCursor = nullptr;
