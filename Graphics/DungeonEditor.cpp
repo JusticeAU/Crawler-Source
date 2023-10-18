@@ -2091,7 +2091,7 @@ void Crawl::DungeonEditor::TileEditDeleteAllObjectsOnTile()
 	dungeon->RemovePlate(selectedActivatorPlate);
 	if (selectedHasSpikes) dungeon->RemoveSpikes(selectedTile->position);
 	if (selectedHasBlock) dungeon->RemovePushableBlock(selectedTile->position);
-	dungeon->RemoveDungeonShootLaser(selectedTileShootLaser);
+	for(auto& laser : selectedTileShootLasers) dungeon->RemoveDungeonShootLaser(laser);
 	dungeon->RemoveEnemyBlocker(selectedBlockerEnemy);
 	dungeon->RemoveEnemyChase(selectedChaseEnemy);
 	dungeon->RemoveEnemySwitcher(selectedSwitcherEnemy);
