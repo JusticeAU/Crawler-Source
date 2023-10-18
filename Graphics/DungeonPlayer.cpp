@@ -25,8 +25,9 @@ Crawl::DungeonPlayer::DungeonPlayer()
 	// Initialise the player Scene Object;
 	object = Scene::CreateObject();
 	object->LoadFromJSON(ReadJSONFromDisk("crawler/object/player.object"));
-	object->children[0]->children[0]->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/viewmodel_hands.object"));
+	object->children[0]->children[0]->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/viewmodel.object"));
 	animator = (ComponentAnimator*)object->children[0]->children[0]->children[0]->GetComponent(Component_Animator);
+	animator->StartAnimation(animationRHIdle, true);
 	objectView = object->children[0];
 	camera = (ComponentCamera*)object->children[0]->GetComponent(Component_Camera);
 
@@ -45,6 +46,8 @@ void Crawl::DungeonPlayer::SetDungeon(Dungeon* dungeonPtr)
 // Returns true if the player made a game-state changing action
 bool Crawl::DungeonPlayer::Update(float deltaTime)
 {
+	//animator->DrawGUI();
+
 	if(state != MENU)	HandleFreeLook(deltaTime);
 
 	if(enableDebugUI) DrawDebugUI();
@@ -54,6 +57,8 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		UpdateFTUE();
 		UpdatePrompts(deltaTime);
 	}
+
+	UpdateStateRH(deltaTime);
 
 	if (state == MENU)
 	{
@@ -76,17 +81,14 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	else if (state == MOVING)
 	{
 		UpdateStateMoving(deltaTime);
-		//ContinueResettingTilt(deltaTime);
 	}
 	else if (state == TURNING)
 	{
 		UpdateStateTurning(deltaTime);
-		//ContinueResettingTilt(deltaTime);
 	}
 	else if (state == STAIRBEARS)
 	{
 		UpdateStateStairs(deltaTime);
-		//ContinueResettingTilt(deltaTime);
 	}
 	else if (state == DYING)
 	{
@@ -98,8 +100,6 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		UpdateStateTransporter(deltaTime);
 		ContinueResettingTilt(deltaTime);
 	}
-
-
 	return false;
 }
 
@@ -185,7 +185,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	{
 		if (currentDungeon->DoKick(position, facing))
 		{
-			animator->BlendToAnimation(animationNamePush, 0.1f);
+			//animator->BlendToAnimation(animationNamePush, 0.1f);
 			return true;
 		}
 	}
@@ -263,7 +263,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 				ClearFTUEPrompt();
 			}
 			UpdatePointOfInterestTilt();
-			animator->BlendToAnimation(animationNamePush, 0.1f);
+			//animator->BlendToAnimation(animationNamePush, 0.1f);
 			if (!currentDungeon->playerInteractIsFree)
 				return true;
 		}
@@ -284,6 +284,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 				state = STAIRBEARS;
 				position = activateStairs->endPosition;
 				stairTimeCurrent = 0.0f;
+				SetStateRH(RHState::Stairs);
 				if (activateStairs->up)
 				{
 					isOnLobbyLevel2 = true;
@@ -314,7 +315,24 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 					currentDungeon->GetTile(oldPlayerCoordinate)->occupied = false;
 					return false;
 				}
-
+				if (!wasLookingAtPointOfInterest)
+				{
+					switch (GetMoveDirection())
+					{
+					case DIRECTION_INDEX::FORWARD_INDEX:
+						SetStateRH(RHState::WalkForward);
+						break;
+					case DIRECTION_INDEX::BACK_INDEX:
+						SetStateRH(RHState::WalkBack);
+						break;
+					case DIRECTION_INDEX::LEFT_INDEX:
+						SetStateRH(RHState::WalkLeft);
+						break;
+					case DIRECTION_INDEX::RIGHT_INDEX:
+						SetStateRH(RHState::WalkRight);
+						break;
+					}
+				}
 				SoundPlayFootstep();
 				positionPrevious = position;
 				position += directions[index];
@@ -400,18 +418,19 @@ bool Crawl::DungeonPlayer::IsMovePressedLongEnough(float delta)
 	return false;
 }
 
+int Crawl::DungeonPlayer::GetMoveDirection()
+{
+	if (Input::Keyboard(GLFW_KEY_W).Pressed()) return FORWARD_INDEX;
+	if (Input::Keyboard(GLFW_KEY_S).Pressed()) return BACK_INDEX;
+	if (Input::Keyboard(GLFW_KEY_A).Pressed()) return LEFT_INDEX;
+	if (Input::Keyboard(GLFW_KEY_D).Pressed()) return RIGHT_INDEX;
+
+	return -1;
+}
+
 int Crawl::DungeonPlayer::GetMoveIndex()
 {
-	int index = -1;
-	if (Input::Keyboard(GLFW_KEY_W).Pressed())
-		index = GetMoveCardinalIndex(FORWARD_INDEX);
-	if (Input::Keyboard(GLFW_KEY_S).Pressed())
-		index = GetMoveCardinalIndex(BACK_INDEX);
-	if (Input::Keyboard(GLFW_KEY_A).Pressed())
-		index = GetMoveCardinalIndex(LEFT_INDEX);
-	if (Input::Keyboard(GLFW_KEY_D).Pressed())
-		index = GetMoveCardinalIndex(RIGHT_INDEX);
-	return index;
+	return GetMoveCardinalIndex((DIRECTION_INDEX)GetMoveDirection());
 }
 
 void Crawl::DungeonPlayer::TurnLeft(bool updateFreeLook)
@@ -483,6 +502,10 @@ bool Crawl::DungeonPlayer::UpdateStateTurning(float delta)
 		state = IDLE;
 		turnDeltaPrevious = targetTurn - turnPrevious;
 		object->SetLocalRotationZ(targetTurn);
+		if (wasLookingAtPointOfInterest)
+			SetStateRH(RHState::MoveDown);
+		else
+			SetStateRH(RHState::Idle);
 	}
 	else
 	{
@@ -599,14 +622,129 @@ void Crawl::DungeonPlayer::UpdateStateTransporter(float delta)
 
 }
 
+void Crawl::DungeonPlayer::SetStateRH(RHState newState)
+{
+	stateRH = newState;
+	switch (newState)
+	{
+	case RHState::Idle:
+	{
+		animator->BlendToAnimation(animationRHIdle, 0.1f, 0.0f, true);
+		break;
+	}
+	case RHState::DownIdle:
+	{
+		animator->BlendToAnimation(animationRHDownIdle, 0.1f, 0.0f, true);
+		break;
+	}
+	case RHState::WalkForward:
+	{
+		animator->BlendToAnimation(animationRHWalkForward, 0.1f);
+		break;
+	}
+	case RHState::WalkBack:
+	{
+		animator->BlendToAnimation(animationRHWalkBack, 0.1f);
+		break;
+	}
+	case RHState::WalkLeft:
+	{
+		animator->BlendToAnimation(animationRHWalkLeft, 0.1f);
+		break;
+	}
+	case RHState::WalkRight:
+	{
+		animator->BlendToAnimation(animationRHWalkRight, 0.1f);
+		break;
+	}
+	case RHState::MoveUp:
+	{
+		animator->BlendToAnimation(animationRHIdle, 0.1f);
+		break;
+	}
+	case RHState::DownWalk:
+	{
+		animator->BlendToAnimation(animationRHWalkForward, 0.1f, 0.0f, true);
+		break;
+	}
+	case RHState::MoveDown:
+	{
+		animator->BlendToAnimation(animationRHDown, 0.1f);
+		break;
+	}
+	case RHState::Stairs:
+	{
+		animator->BlendToAnimation(animationRHStairs, 0.1f);
+		break;
+	}
+	}
+}
+
+void Crawl::DungeonPlayer::UpdateStateRH(float delta)
+{
+	switch (stateRH)
+	{
+	case RHState::Idle:
+	{
+		// we wall
+		break;
+	}
+	case RHState::DownIdle:
+	{
+		// We ball
+		break;
+	}
+	case RHState::WalkForward:
+	case RHState::WalkBack :
+	case RHState::WalkLeft:
+	case RHState::WalkRight:
+	{
+		if (animator->IsFinished())
+		{
+			if (wasLookingAtPointOfInterest)
+				SetStateRH(RHState::MoveDown);
+			else
+				SetStateRH(RHState::Idle);
+		}
+		break;
+	}
+	case RHState::MoveUp:
+	{
+		if (animator->IsFinished()) SetStateRH(RHState::Idle);
+		break;
+	}
+	case RHState::DownWalk:
+	{
+		if (animator->IsFinished())  SetStateRH(RHState::DownIdle);
+		break;
+	}
+	case RHState::MoveDown:
+	{
+		if (animator->IsFinished())  SetStateRH(RHState::DownIdle);
+		break;
+	}
+	case RHState::Stairs:
+	{
+		if (animator->IsFinished())  SetStateRH(RHState::Idle);
+		break;
+	}
+	}
+}
+
 void Crawl::DungeonPlayer::UpdatePointOfInterestTilt(bool instant)
 {
 	bool isPointOfInterest = dungeon->IsPlayerPointOfInterest(position + directions[facing]);
 	if (wasLookingAtPointOfInterest != isPointOfInterest)
 	{
 		wasLookingAtPointOfInterest = isPointOfInterest;
-		if (isPointOfInterest) lookRestX = lookRestXInterest;
-		else lookRestX = lookRestXDefault;
+		if (isPointOfInterest)
+		{
+			lookRestX = lookRestXInterest;
+		}
+		else
+		{
+			lookRestX = lookRestXDefault;
+		}
 		lookReturnFrom = objectView->localRotation;
 		if(!instant)lookReturnTimeCurrent = 0.0f;
 	}

@@ -25,6 +25,20 @@ namespace Crawl
 			DYING,
 			TRANSPORTER
 		};
+
+		enum class RHState
+		{
+			Idle,
+			DownIdle,
+			WalkForward,
+			WalkBack,
+			WalkLeft,
+			WalkRight,
+			DownWalk,
+			MoveDown,
+			MoveUp,
+			Stairs
+		};
 		DungeonPlayer();
 
 		void SetDungeon(Dungeon* dungeonPtr);
@@ -83,6 +97,8 @@ namespace Crawl
 		bool UpdateStateIdle(float delta);
 		bool IsMoveDown();
 		bool IsMovePressedLongEnough(float delta);
+		
+		int GetMoveDirection();
 		int GetMoveIndex();
 		void TurnLeft(bool updateFreeLook = false);
 		void TurnRight(bool updateFreeLook = false);
@@ -92,6 +108,10 @@ namespace Crawl
 		bool UpdateStateStairs(float delta);
 		bool UpdateStateDying(float delta);
 		void UpdateStateTransporter(float delta);
+		
+		void SetStateRH(RHState state);
+		void UpdateStateRH(float delta);
+
 		void LoadSelectedTransporter(DungeonTransporter* transporter);
 
 	public:
@@ -171,7 +191,6 @@ namespace Crawl
 		};
 		int lastStepIndex = 0;
 
-		string animationNamePush = "crawler/model/viewmodel_hands.fbxarmature|armatureaction";
 
 		// Lobby Scene Stuff
 	public:
@@ -222,5 +241,26 @@ namespace Crawl
 		DungeonTransporter* transporterToActivate = nullptr;
 
 		DungeonMenu* gameMenu = nullptr;
+
+		// viewmodel stuff
+		// Right hand
+		RHState stateRH = RHState::Idle;
+		string animationRHBaseName = "crawler/model/viewmodel.fbxviewmodel_rig|";
+
+		string animationRHIdle = animationRHBaseName + "idle";
+		string animationRHWalkForward = animationRHBaseName + "grid_move_forward";
+		string animationRHWalkBack = animationRHBaseName + "grid_move_back";
+		string animationRHWalkLeft = animationRHBaseName + "grid_move_left";
+		string animationRHWalkRight = animationRHBaseName + "grid_move_right";
+
+		string animationRHDown = animationRHBaseName + "down";
+		string animationRHDownIdle = animationRHBaseName + "down_idle";
+		string animationRHDownWalk = animationRHBaseName + "down_walk";
+		string animationRHUp = animationRHBaseName + "down_reverse";
+		string animationRHStairs = animationRHBaseName + "walk_stairs";
+
+
+		
+		string animationNamePush = "crawler/model/viewmodel_hands.fbxarmature|armatureaction";
 	};
 }
