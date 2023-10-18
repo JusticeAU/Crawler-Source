@@ -254,7 +254,7 @@ void Application::RenderLoadProgress(float percentageLoaded)
 #else
 	ImGui::SetNextWindowPos({ barPosition.x, barPosition.y });
 	ImGui::SetNextWindowSize({ barWidth, barHeight });
-	ImGui::Begin("", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration);
+	ImGui::Begin("Loading", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration);
 	ImGui::Image((ImTextureID)loadingBarTexID, { barWidth * percentageLoaded, barHeight });
 	ImGui::End();
 #endif
