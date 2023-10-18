@@ -2486,6 +2486,8 @@ void Crawl::DungeonEditor::RefreshDungeonFileNames()
 
 void Crawl::DungeonEditor::DrawGizmos()
 {
+	DrawCompassAtCoordinate(GetMousePosOnGrid());
+
 	// All transporters
 	for (auto& transporter : dungeon->transporterPlates)
 	{
@@ -2550,6 +2552,37 @@ void Crawl::DungeonEditor::DrawGizmos()
 		if (selectedTile) DrawTileInformation(selectedTile, true);
 		else LineRenderer::DrawFlatBox(dungeonPosToObjectScale(selectedTilePosition), 1, vec3(0.5, 0.5, 0.5));
 	}
+}
+
+void Crawl::DungeonEditor::DrawCompassAtCoordinate(ivec2 coordinate)
+{
+	vec3 colourNorth = { 1,0,0 };
+	vec3 colourSouth = { 0,0,1 };
+	float pinLength = 0.5f;
+
+	vec3 position = dungeonPosToObjectScale(coordinate);
+	vec3 northDirection = dungeonPosToObjectScale(NORTH_COORDINATE) * pinLength;
+	vec3 eastDirection = dungeonPosToObjectScale(EAST_COORDINATE) * pinLength * pinLength;
+
+	LineRenderer::DrawLine(position, position + northDirection, colourNorth);
+	LineRenderer::DrawLine(position, position - northDirection, colourSouth);
+	LineRenderer::DrawLine(position, position + eastDirection);
+	LineRenderer::DrawLine(position, position - eastDirection);
+}
+
+void Crawl::DungeonEditor::DrawCompassAtPosition(vec3 position)
+{
+	vec3 colourNorth = { 1,0,0 };
+	vec3 colourSouth = { 0,0,1 };
+	float pinLength = 0.5f;
+
+	vec3 northDirection = dungeonPosToObjectScale(NORTH_COORDINATE);
+	vec3 eastDirection = dungeonPosToObjectScale(EAST_COORDINATE);
+
+	LineRenderer::DrawLine(position, position + northDirection, colourNorth);
+	LineRenderer::DrawLine(position, position - northDirection, colourSouth);
+	LineRenderer::DrawLine(position, position + eastDirection);
+	LineRenderer::DrawLine(position, position - eastDirection);
 }
 
 int Crawl::DungeonEditor::GetNextAvailableLeverID()

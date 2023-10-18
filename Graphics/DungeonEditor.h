@@ -77,6 +77,8 @@ namespace Crawl
 		void RefreshDungeonFileNames();
 
 		void DrawGizmos();
+		void DrawCompassAtCoordinate(ivec2 coordinate);
+		void DrawCompassAtPosition(glm::vec3 position);
 
 		int GetNextAvailableLeverID();
 		int GetNextAvailableDoorID();
