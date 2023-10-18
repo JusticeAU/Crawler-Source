@@ -710,7 +710,7 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 	}
 
 	// check blockers
-	if (false)
+	if (damageType == DamageType::Murderina)
 	{
 		for (int i = 0; i < blockers.size(); i++)
 		{

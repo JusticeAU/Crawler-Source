@@ -71,7 +71,7 @@ void Crawl::DungeonEnemyBlocker::CheckShouldPrime()
 	if (!tile)
 		return;
 
-	if (tile->occupied)
+	if (tile->occupied || dungeon->GetMurderinaAtPosition(tile->position))
 	{
 		LogUtils::Log("Object infront - Transition to Upswing");
 		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/LambertAmber.material");
