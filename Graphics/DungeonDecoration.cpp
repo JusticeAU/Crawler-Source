@@ -2,6 +2,8 @@
 #include "Object.h"
 #include "Scene.h"
 #include "ComponentRenderer.h"
+#include "FileUtils.h"
+#include "LogUtils.h"
 
 Crawl::DungeonDecoration::~DungeonDecoration()
 {
@@ -29,6 +31,11 @@ void Crawl::DungeonDecoration::LoadDecoration()
 	if (object->children[0]->children.size() > 0)
 		object->children[0]->children[0]->markedForDeletion = true;
 
+	if (!FileUtils::CheckFileExists(modelName))
+	{
+		LogUtils::Log("File Does Not Exist: " + modelName);
+		return;
+	}
 
 	Object* model = Scene::CreateObject(object->children[0]);
 	model->LoadFromJSON(ReadJSONFromDisk(modelName));
