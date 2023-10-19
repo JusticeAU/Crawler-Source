@@ -33,6 +33,7 @@
 #include "MaterialManager.h"
 #include "serialisation.h"
 #include <algorithm>
+#include "ComponentCamera.h"
 
 Crawl::Dungeon::Dungeon(bool isLobbyLevel2) : isLobbyLevel2(isLobbyLevel2)
 {
@@ -44,7 +45,7 @@ Crawl::Dungeon::Dungeon(bool isLobbyLevel2) : isLobbyLevel2(isLobbyLevel2)
 	//wallVariantPaths.push_back("crawler/model/tile_wall_window_arch.object");
 	//wallVariantPaths.push_back("crawler/model/tile_wall_window_square.object");
 
-
+	doorsParentObject = Scene::CreateObject("Doors");
 	tilesParentObject = Scene::CreateObject("Tiles");
 
 	InitialiseTileMap();
@@ -934,7 +935,7 @@ Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int dire
 	if (isLobbyLevel2) doorZPosition = player->lobbyLevel2Floor;
 
 	ordered_json door_objectJSON = ReadJSONFromDisk("crawler/object/interactable_door.object");
-	Object* door_object = Scene::CreateObject();
+	Object* door_object = Scene::CreateObject(doorsParentObject);
 	door_object->LoadFromJSON(door_objectJSON);
 	door->object = door_object;
 	door_object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, doorZPosition });
@@ -2363,6 +2364,8 @@ unsigned int Crawl::Dungeon::GetReverseDirectionMask(unsigned int direction)
 
 void Crawl::Dungeon::Update()
 {
+	SortGameObjects();
+
 	turn++;
 	string turnMessage = "Turn: " + std::to_string(turn);
 	LogUtils::Log(turnMessage.c_str());
@@ -2560,6 +2563,23 @@ void Crawl::Dungeon::BuildSceneFromDungeonLayout()
 			CreateTileObject(tile);
 		}
 	}
+}
+
+void Crawl::Dungeon::SortGameObjects()
+{
+	std::sort(
+		tilesParentObject->children.begin(),
+		tilesParentObject->children.end(),
+		[](Object* a, Object* b) {
+			glm::vec3 cameraPos = Scene::GetCurrentCamera()->GetWorldSpacePosition();
+			glm::vec3 aPos = a->GetWorldSpacePosition();
+			glm::vec3 bPos = b->GetWorldSpacePosition();
+			float aDistance = glm::distance2(aPos, cameraPos);
+			float bDistance = glm::distance2(bPos, cameraPos);
+
+			return aDistance < bDistance;
+		}
+	);
 }
 
 bool Crawl::Dungeon::ShouldHavePillar(ivec2 coordinate)
