@@ -41,6 +41,9 @@ Crawl::Dungeon::Dungeon(bool isLobbyLevel2) : isLobbyLevel2(isLobbyLevel2)
 
 	wallVariantPaths.push_back("crawler/model/tile_wall_1.object");
 	wallVariantPaths.push_back("crawler/model/tile_wall_seethrough.object");
+	//wallVariantPaths.push_back("crawler/model/tile_wall_window_arch.object");
+	//wallVariantPaths.push_back("crawler/model/tile_wall_window_square.object");
+
 
 	tilesParentObject = Scene::CreateObject("Tiles");
 
