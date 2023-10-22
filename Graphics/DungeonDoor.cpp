@@ -113,10 +113,22 @@ void Crawl::DungeonDoor::MakeBarricaded()
 	if (!isBarricaded)
 	{
 		isBarricaded = true;
-		Object* barricade = Scene::CreateObject(object->children[0]);
-		barricade->LoadFromJSON(ReadJSONFromDisk("crawler/model/door_barricade.object"));
-		barricade->SetLocalPosition({ 0.0f, -0.05f ,0.0f });
+		objectBarricade = Scene::CreateObject(object->children[0]);
+		objectBarricade->LoadFromJSON(ReadJSONFromDisk(objectBarricadeJSON));
+		objectBarricade->SetLocalPosition({ 0.0f, -0.05f ,0.0f });
 		Close();
 		UpdateTransforms(true);
+	}
+}
+
+void Crawl::DungeonDoor::RemoveBarricaded()
+{
+	if (isBarricaded)
+	{
+		isBarricaded = false;
+		if (objectBarricade)
+		{
+			objectBarricade->markedForDeletion = true;
+		}
 	}
 }

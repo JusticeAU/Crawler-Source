@@ -2096,7 +2096,8 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	for (auto it = doors_json.begin(); it != doors_json.end(); it++)
 	{
 		DungeonDoor door = it.value().get<Crawl::DungeonDoor>();
-		CreateDoor(door.position, door.orientation, door.id, door.open);
+		DungeonDoor* newDoor = CreateDoor(door.position, door.orientation, door.id, door.open);
+		if (door.isBarricaded) newDoor->MakeBarricaded();
 	}
 
 	auto& levers_json = serialised["levers"];

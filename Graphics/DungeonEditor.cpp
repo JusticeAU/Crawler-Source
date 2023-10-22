@@ -896,9 +896,15 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
 		selectedDoor->Toggle();
 	}
 
-	if (ImGui::Button("Make Barricaded Test"))
+	bool barricaded = selectedDoor->isBarricaded;
+	if (ImGui::Checkbox("Is Barricaded", &barricaded))
 	{
-		selectedDoor->MakeBarricaded();
+		if (barricaded)
+			selectedDoor->MakeBarricaded();
+		else
+			selectedDoor->RemoveBarricaded();
+
+		MarkUnsavedChanges();
 	}
 
 	if (ImGui::Button("Delete"))
