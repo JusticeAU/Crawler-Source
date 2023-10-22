@@ -49,7 +49,7 @@ void TextureManager::DrawGUI()
 	ImGui::SetNextWindowSize({ 400, 860 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Textures", nullptr);
-	/*if (ImGui::Button("Scan folder"))
+	/*if (ImGui::Button("Scan for Unreferenced Textures"))
 	{
 		s_instance->Audit_ScanFolderForTextureReferences("crawler/material");
 		s_instance->Audit_ListAllUnreferencedTextures();

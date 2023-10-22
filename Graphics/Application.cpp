@@ -53,7 +53,6 @@ void Application::LaunchArgumentPreLoad(char* arg)
 		s_mode = Mode::Art;
 	}
 	else if (argument == "scene") developerMode = true;
-	else if (argument == "menutest") developerMode = true;
 	else if (argument == "dev") developerMode = true;
 }
 
@@ -94,14 +93,6 @@ void Application::LaunchArgumentPostLoad(char* arg)
 		Scene::s_instance = Scene::NewScene("New Scene");
 		Scene::SetCameraIndex(-1);
 	}
-	else if (argument == "menutest")
-	{
-		Scene::CreateSceneEditorCamera();
-		Scene::SetCameraIndex(-1);
-		s_mode = Mode::Scene;
-		menu = new Crawl::DungeonMenu();
-		menu->SetApplication(this);
-	}
 	else if (argument == "dev")
 	{
 		Scene::CreateSceneEditorCamera();
@@ -121,7 +112,11 @@ void Application::ConstructWindow()
 		LogUtils::Log("Sucessfully initialised GLFW.");
 
 	// Create GLFWwindow Wrapper (class Window).
-	if(developerMode) window = new Window(1600, 900, "Crawler");
+	if (developerMode)
+	{
+		window = new Window(1600, 900, "Crawler");
+		//window = new Window(1920, 1080, "Crawler");
+	}
 	else window = new Window("Crawler");
 	
 	if (!window->GetGLFWwindow())
@@ -204,18 +199,6 @@ void Application::LoadResourceManagers()
 	Scene::renderer = new SceneRenderer();
 }
 
-void Application::InitGame()
-{
-	dungeon->Load("crawler/dungeon/start.dungeon");
-	Scene::SetCameraByName("Player Camera");
-	dungeonPlayer->Respawn();
-
-	// Ayo this wont stay here for long.
-	dungeonPlayer->gameMenu = new Crawl::DungeonMenu();
-	dungeonPlayer->gameMenu->SetPlayer(dungeonPlayer);
-	Window::GetWindow()->SetMouseCursorHidden(true);
-}
-
 void Application::DoLoadingScreen()
 {
 	if (!developerMode)
@@ -223,6 +206,7 @@ void Application::DoLoadingScreen()
 		PreloadAssetsAndRenderProgress();
 		//TextureManager::PreloadAllFilesContaining("prompt"); // preload the prompt textures because they arent referenced by materials atm.
 	}
+	RefreshImGui();
 }
 
 void Application::PreloadAssetsAndRenderProgress()
@@ -267,10 +251,19 @@ void Application::InitialiseAdditionalGameAssets()
 {
 	dungeon = new Crawl::Dungeon();
 	dungeonPlayer = new Crawl::DungeonPlayer();
+	menu = new Crawl::DungeonMenu();
+	menu->SetPlayer(dungeonPlayer);
+	menu->SetApplication(this);
 	dungeon->SetPlayer(dungeonPlayer);
 	dungeonPlayer->SetDungeon(dungeon);
+	dungeonPlayer->SetMenu(menu);
 	Crawl::DungeonGameManager::Init();
 	Crawl::DungeonGameManager::Get()->SetPlayer(dungeonPlayer);
+}
+
+void Application::InitialiseMenu()
+{
+	menu->ExecuteReturnToMainMenu();
 }
 
 void Application::Run()
@@ -328,6 +321,11 @@ void Application::Update(float delta)
 {
 	switch (s_mode)
 	{
+	case Mode::MainMenu:
+	{
+		menu->Update(delta);
+		break;
+	}
 	case Mode::Game:
 	{
 		if (dungeonPlayer->Update(delta))
@@ -377,11 +375,10 @@ void Application::Update(float delta)
 	}
 	case Mode::Scene:
 	{
-		menu->DrawMainMenu();
+		
 	}
 
 	}
-
 
 	Input::Update();
 

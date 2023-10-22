@@ -338,6 +338,12 @@
     <ClCompile Include="DungeonGameManagerEvent.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
+    <ClCompile Include="ComponentCameraShaker.cpp">
+      <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="DungeonMenuButton.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -614,6 +620,12 @@
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
     <ClInclude Include="DungeonGameManagerEvent.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentCameraShaker.h">
+      <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonMenuButton.h">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
   </ItemGroup>

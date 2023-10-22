@@ -20,10 +20,11 @@ int main(int argc, char * argv[])
 
 	if (argc > 1)
 		app->LaunchArgumentPostLoad(argv[1]);
-
 	// This is the default mode without any command line arguments. It launches the game proper for the standard user experieance.
-	if(app->s_mode == Application::Mode::Game)
-		app->InitGame();
+	if (app->s_mode == Application::Mode::Game)
+	{
+		app->InitialiseMenu();
+	}
 	
 	app->Run();
 }

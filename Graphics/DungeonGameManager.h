@@ -95,6 +95,8 @@ namespace Crawl
 
 		int lobbyLightningLightID = 6969;
 		DungeonLight* lobbyLightingLight = nullptr;
+		string lightningSfx = "crawler/sound/load/lightning_strike.wav";
+		bool playedSfx = false;
 		float lobbyLightningTimeCurrent = 0.0f;
 		const float lobbyLightningStrikeTime = 0.5f;
 

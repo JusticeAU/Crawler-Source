@@ -15,9 +15,9 @@ public:
         if (easedT > 1.0f) easedT -= (easedT - 1.0f) * 0.85f;
         return easedT;
     }
-	static vec3 Lerp(vec3 a, vec3 b, float t)
+	static glm::vec3 Lerp(glm::vec3 a, glm::vec3 b, float t)
 	{
-		vec3 out;
+        glm::vec3 out;
 		out.x = Lerp(a.x, b.x, t);
 		out.y = Lerp(a.y, b.y, t);
 		out.z = Lerp(a.z, b.z, t);

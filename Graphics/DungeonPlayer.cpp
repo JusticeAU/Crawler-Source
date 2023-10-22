@@ -33,7 +33,6 @@ Crawl::DungeonPlayer::DungeonPlayer()
 
 	// Create the lobby second level
 	lobbyLevel2Dungeon = new Dungeon(true);
-	//lobbyLevel2Dungeon->Load("crawler/dungeon/lobby2.dungeon");
 	lobbyLevel2Dungeon->player = this;
 }
 
@@ -62,7 +61,7 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 
 	if (state == MENU)
 	{
-		gameMenu->DrawPauseMenu();
+		gameMenu->DrawPauseMenu(deltaTime);
 	}
 	else if (state == WAIT)
 	{

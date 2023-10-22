@@ -31,6 +31,11 @@ namespace Crawl
 			Hold,
 			Out
 		};
+		// Audio
+		string sfxIn = "crawler/sound/load/button_in.wav";
+		string sfxOut = "crawler/sound/load/button_out.wav";
+
+
 		State state = State::Idle;
 		float buttonTime = 0.0f;
 

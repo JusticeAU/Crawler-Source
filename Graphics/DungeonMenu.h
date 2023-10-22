@@ -5,6 +5,8 @@
 using std::string;
 
 class Application;
+class Texture;
+class Object;
 
 /// <summary>
 /// DungeonMeny is the base class for handling all game meny operations.
@@ -16,42 +18,114 @@ class Application;
 namespace Crawl
 {
 	class DungeonPlayer;
+	class DungeonMenuButton;
 	class DungeonMenu
 	{
 	public:
+		enum class IntroStage
+		{
+			Idle,
+			Turn,
+			Fly,
+			Text
+		};
 		DungeonMenu();
-		void DrawMainMenu();
-		void DrawPauseMenu();
+		void Update(float delta);
+		void DrawMainMenu(float delta);
+		void DrawPauseMenu(float delta);
+
+		void DrawBlackScreen(float alpha, bool onTop = false);
+		void DrawImage(Texture* tex, float alpha);
 
 		void UpdatePositions();
+
+		void UpdateMainMenuCamera(float delta);
 
 		void SetApplication(Application* app) { this->app = app; }
 		void SetPlayer(DungeonPlayer* player) { this->player = player; }
 		void SetLobbyReturnEnabled() { lobbyReturnEnabled = true; }
+		void SetMenuCameraObject(Object* cameraObject) { this->cameraObject = cameraObject; }
 
-		void ExecuteNewGame();
+		void ExecuteNewGameButton();
+		void StartNewGame();
 		void ExecuteQuitGame();
 		void ExecuteResumeGame();
 		void ExecuteToggleFullScreen();
 		void ExecuteReturnToLobby();
-		void ExecuteRestartGame();
+		void ExecuteReturnToMainMenu();
 
-		string textNewGame = "New Game";
-		string textQuitGame = "Quit Game";
-		string textResumeGame = "Resume Game";
+
 		string textToggleFullScreen = "Toggle FullScreen";
-		string textReturnToLobby = "Return to Lobby";
-		string textRestartGame = "Restart Game";
+
+		// Menu Texture Paths
+		string menuTitleCardTexPath = "crawler/texture/gui/menu/title.tga";
+
+		string menuNewGameTexPath = "crawler/texture/gui/menu/new.tga";
+		string menuSettingsTexPath = "crawler/texture/gui/menu/settings.tga";
+		string menuQuitTexPath = "crawler/texture/gui/menu/quit.tga";
+		
+		string menuResumeGameTexPath = "crawler/texture/gui/menu/resume.tga";
+		string menuReturnToLobbyPath = "crawler/texture/gui/menu/returnToLobby.tga";
+		string menuReturnToMenuTexPath = "crawler/texture/gui/menu/returnToMenu.tga";
+
+
+		// Main
+		DungeonMenuButton* buttonNewGame;
+		DungeonMenuButton* buttonSettings;
+		DungeonMenuButton* buttonQuit;
+
+		// Pause
+		DungeonMenuButton* pauseButtonResumeGame;
+		DungeonMenuButton* pauseButtonReturnLobby;
+		DungeonMenuButton* pauseButtonReturnToMenu;
+		DungeonMenuButton* pauseButtonQuit;
+
+
+		// Main Menu camera
+		Object* cameraObject = nullptr;
+		IntroStage introStage = IntroStage::Idle;
+		bool newGameSequenceStarted = false;
+		float newGameSequenceTime = 0.0f;
+		string blackTexPath = "engine/texture/black1x1.tga";
+		Texture* blackTex = nullptr;
+
+		Texture* intro01 = nullptr;
+		Texture* intro02 = nullptr;
+		Texture* intro03 = nullptr;
+		Texture* intro04 = nullptr;
+		Texture* intro05 = nullptr;
+		Texture* introPressSpace = nullptr;
+
 
 	private:
-		glm::ivec2 titleMenuSize = { 300, 225 };
-		int halfWidth;
-		int halfHeight;
+		glm::ivec2 titleMenuSize = { 600, 300 };
+		glm::ivec2 pauseMenuSize = { 600, 600 };
+
+		int mainMenuXOffset;
+		int mainMenuYOffset;
 		Window* window = nullptr;
 		Application* app = nullptr;
 		DungeonPlayer* player = nullptr;
 
 		bool lobbyReturnEnabled = false;
+		bool indent = false;
+
+		float blackScreenFraction = 1.0f;
+
+		float noiseAccumulator = 0.0f;
+		glm::vec3 menuCameraPositionMax = { 0.03f, 0.02f, 0.03f };
+		glm::vec3 menuCameraPositionFrequency = { 0.05f, 0.05f, 0.03f };
+		glm::vec3 menuCameraPositionAccumulatorOffset = { 0.0f, 50.0f, 100.0f };
+
+		glm::vec3 menuCameraRotationMax = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 menuCameraRotationFrequency = { 1.0f, 1.0f, 1.0f };
+		glm::vec3 menuCameraRotationAccumulatorOffset = { 150.0f, 200.0f, 250.0f };
+
+		// Audio
+		string musicFolder = "crawler/sound/stream/";
+		string sfxFolder = "crawler/sound/load/";
+
+		string menuMusic = musicFolder + "main_menu.ogg";
+
 	};
 }
-

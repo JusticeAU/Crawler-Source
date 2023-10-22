@@ -22,6 +22,8 @@ public:
 
 	static void RewriteTGAwithRLE(string from, string to);
 
+	int width, height, channels;
+
 public:
 	bool loaded = false;
 	string name;

@@ -123,7 +123,8 @@ void AudioManager::StartMusic()
 void AudioManager::ChangeMusic(string name)
 {
 	s_instance->gSoloud.fadeVolume(s_instance->m_currentTrack, 0.0f, 1.0f);
-	s_instance->m_currentTrack = s_instance->gSoloud.play3d(*s_instance->m_stream[name], 0,0,0);
+	s_instance->m_currentTrack = s_instance->gSoloud.play(*s_instance->m_stream[name]);
+	s_instance->gSoloud.setLooping(s_instance->m_currentTrack, true);
 }
 
 void AudioManager::StopMusic()
@@ -217,7 +218,7 @@ void AudioManager::LoadAllFiles(string folder)
 
 	for (auto d : fs::recursive_directory_iterator(folder + "/sound/stream"))
 	{
-		if (d.path().extension() == ".wav" || d.path().extension() == ".mp3")
+		if (d.path().extension() == ".wav" || d.path().extension() == ".mp3" || d.path().extension() == ".ogg")
 		{
 			string output = "Prepping for streaming: " + d.path().generic_string();
 			LogUtils::Log(output.c_str());

@@ -33,6 +33,10 @@ namespace Crawl
 		float moveCurrent = 0.0f;
 		glm::vec3 oldPosition;
 		glm::vec3 targetPosition;
+
+		// Audio
+		string sfxName = "crawler/sound/load/sliding_box.wav";
+
 		// falling on spikes
 		float fallSpeed = 0.25f;
 		float fallCurrent = 0.0f;

@@ -2,6 +2,7 @@
 #include "Dungeon.h"
 #include "Object.h"
 #include "MathUtils.h"
+#include "AudioManager.h"
 
 Crawl::DungeonInteractableLever::~DungeonInteractableLever()
 {
@@ -15,6 +16,7 @@ void Crawl::DungeonInteractableLever::Toggle()
 
 	dungeon->DoActivate(activateID);
 	state = State::In;
+	AudioManager::PlaySound(sfxIn, object->GetWorldSpacePosition());
 }
 
 void Crawl::DungeonInteractableLever::SetID(unsigned int newID)
@@ -64,6 +66,7 @@ void Crawl::DungeonInteractableLever::UpdateVisuals(float delta)
 		{
 			state = State::Out;
 			buttonTime = 0.0f;
+			AudioManager::PlaySound(sfxOut, object->GetWorldSpacePosition());
 		}
 		break;
 	}

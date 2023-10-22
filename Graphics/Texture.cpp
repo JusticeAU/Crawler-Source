@@ -34,7 +34,6 @@ void Texture::Load()
 		glDeleteTextures(1, &texID);
 
 	// Load with stb_image
-	int width, height, channels;
 	stbi_set_flip_vertically_on_load(true); // OpenGL expect y=0 to be the bottom of the texture.
 	unsigned char* data = stbi_load(name.c_str(), &width, &height, &channels, 4);
 
@@ -52,7 +51,7 @@ void Texture::Load()
 	GLfloat value, max_anisotropy = 8.0f; /* don't exceed this value...*/
 	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &value);
 	value = (value > max_anisotropy) ? max_anisotropy : value;
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY , 2); // need to do some tests on this one.
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY , value); // need to do some tests on this one.
 
 	// clean up
 	glBindTexture(GL_TEXTURE_2D, 0);

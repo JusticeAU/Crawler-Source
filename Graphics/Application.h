@@ -20,6 +20,7 @@ class Application
 public:
 	enum class Mode
 	{
+		MainMenu,
 		Game,
 		Design,
 		Art,
@@ -33,11 +34,11 @@ public:
 	void LaunchArgumentPostLoad(char* arg);
 	void ConstructWindow();
 	void LoadResourceManagers();
-	void InitGame();
 	void DoLoadingScreen();
 	void PreloadAssetsAndRenderProgress();
 	void RenderLoadProgress(float percentageLoaded);
 	void InitialiseAdditionalGameAssets();
+	void InitialiseMenu();
 	void Run();
 
 	void RefreshImGui();

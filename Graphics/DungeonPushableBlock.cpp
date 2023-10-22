@@ -7,6 +7,8 @@
 #include "Dungeon.h"
 #include "DungeonSpikes.h"
 
+#include "AudioManager.h"
+
 Crawl::DungeonPushableBlock::~DungeonPushableBlock()
 {
 	if (object)
@@ -40,6 +42,8 @@ void Crawl::DungeonPushableBlock::MoveTo(ivec2 toPosition, bool snap)
 			object->SetLocalPosition(targetPosition);
 		state = STATE::IDLE;
 	}
+	else
+		AudioManager::PlaySound(sfxName, targetPosition);
 }
 
 void Crawl::DungeonPushableBlock::UpdateVisuals(float delta)

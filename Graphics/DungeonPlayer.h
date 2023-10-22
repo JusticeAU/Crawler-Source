@@ -47,6 +47,8 @@ namespace Crawl
 
 		void SetStateIdle() { state = IDLE; }
 
+		void SetMenu(DungeonMenu* menu) { gameMenu = menu; }
+
 		bool Update(float deltaTime);
 		void UpdatePointOfInterestTilt(bool instant = false);
 		void ContinueResettingTilt(float delta);
@@ -190,7 +192,6 @@ namespace Crawl
 			"crawler/sound/load/step4.ogg"
 		};
 		int lastStepIndex = 0;
-
 
 		// Lobby Scene Stuff
 	public:

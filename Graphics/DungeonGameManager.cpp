@@ -8,6 +8,7 @@
 #include "gtx/easing.hpp"
 
 #include "LogUtils.h"
+#include "AudioManager.h"
 
 Crawl::DungeonGameManager* Crawl::DungeonGameManager::instance = nullptr;
 
@@ -265,13 +266,19 @@ void Crawl::DungeonGameManager::UpdateLobbyVisuals(float delta)
 		t = glm::clamp(t, 0.0f, 1.0f);
 		lobbyLightingLight->intensity = MathUtils::Lerp(0.0f, 1000.0f, t);
 		lobbyLightingLight->UpdateLight();
-
+		
+		if (t > 0.3f && !playedSfx)
+		{
+			AudioManager::PlaySound(lightningSfx);
+			playedSfx = true;
+		}
 		lobbyLightningTimeCurrent += delta;
+
 	}
 	else
 	{
-		lobbyLightningTimeCurrent = -rand() % 15;
-
+		lobbyLightningTimeCurrent = (-rand() % 15) - 5.0f;
+		playedSfx = false;
 		if (lobbyLightingLight != nullptr)
 		{
 			lobbyLightingLight->intensity = 0.0f;
