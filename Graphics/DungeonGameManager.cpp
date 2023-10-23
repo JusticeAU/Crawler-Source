@@ -147,8 +147,8 @@ void Crawl::DungeonGameManager::ConfigureLobby()
 	}
 
 	// Get Door references
-	doors[0] = lobby1->GetDoorWithID(2);
-	doors[1] = lobby1->GetDoorWithID(3);
+	doors[0] = lobby1->GetDoorWithID(3);
+	doors[1] = lobby1->GetDoorWithID(2);
 	doors[2] = lobby2->GetDoorWithID(1);
 	doors[3] = lobby2->GetDoorWithID(2);
 	doors[4] = lobby2->GetDoorWithID(3);
