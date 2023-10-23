@@ -344,6 +344,9 @@
     <ClCompile Include="DungeonMenuButton.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
+    <ClCompile Include="DungeonCollectableKey.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -626,6 +629,9 @@
       <Filter>Source Files\Application\Scene\Components</Filter>
     </ClInclude>
     <ClInclude Include="DungeonMenuButton.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonCollectableKey.h">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
   </ItemGroup>

@@ -35,6 +35,7 @@ namespace Crawl
 	class DungeonStairs;
 	class DungeonLight;
 	class DungeonEventTrigger;
+	class DungeonCollectableKey;
 
 	struct Column
 	{
@@ -173,6 +174,10 @@ namespace Crawl
 		DungeonEventTrigger* CreateEventTrigger(ivec2 position);
 		void RemoveEventTrigger(DungeonEventTrigger* trigger);
 		void DoEventTriggerFacing(ivec2 position, FACING_INDEX facing);
+
+		DungeonCollectableKey* CreateKey(ivec2 position);
+		DungeonCollectableKey* GetKeyAtPosition(ivec2 position);
+		void RemoveKey(DungeonCollectableKey* key);
 	
 		void Save(std::string filename);
 		void ClearDungeon();
@@ -276,6 +281,8 @@ namespace Crawl
 
 		std::vector<DungeonLight*> pointLights;
 		std::vector<DungeonEventTrigger*> events;
+
+		std::vector<DungeonCollectableKey*> keys;
 		
 		DungeonPlayer* player = nullptr;
 

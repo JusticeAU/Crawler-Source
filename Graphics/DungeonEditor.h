@@ -34,6 +34,7 @@ namespace Crawl
 		void DrawGUIModeTileEdit();
 		void DrawGUIModeTileEditDoor();
 		void DrawGUIModeTileEditLever();
+		void DrawGUIModeTileEditKey();
 		void DrawGUIModeTileEditPlate();
 		void DrawGUIModeTileEditTransporter();
 		void DrawGUIModeTileEditCheckpoint();
@@ -43,7 +44,7 @@ namespace Crawl
 		void DrawGUIModeTileEditChase();
 		void DrawGUIModeTileEditSwitcher();
 		void DrawGUIModeTileEditMirror();
-		void DrawGUIModeTileEditMurdurina();
+		void DrawGUIModeTileEditMurderina();
 		void DrawGUIModeTileEditDecoration();
 
 		void DrawGUIModeTileEditStairs();
@@ -153,6 +154,9 @@ namespace Crawl
 		std::vector<DungeonInteractableLever*> selectedTileLevers;
 		DungeonInteractableLever* selectedLever = nullptr;
 		bool selectedLeverWindowOpen = false;
+
+		DungeonCollectableKey* selectedTileKey;
+		bool selectedKeyWindowOpen = false;
 
 		DungeonActivatorPlate* selectedActivatorPlate = nullptr;
 		bool selectedActivatorPlateWindowOpen = false;

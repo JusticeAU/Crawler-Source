@@ -58,7 +58,7 @@ namespace Crawl
 		void EnableLight(int lightIndex) { enabledLights[lightIndex] = true; }
 		void DisableLight(int lightIndex) { enabledLights[lightIndex] = false; }
 
-		void RemoveFrontDoorLock(int lockID) { frontDoorUnlocked[lockID] = true; }
+		void RemoveFrontDoorLock(int lockID) { frontDoorUnlocked[lockID-1] = true; }
 		void ClearLocksObject();
 
 		void ConfigureLobby();

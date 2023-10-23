@@ -212,6 +212,7 @@
     <ClCompile Include="ComponentRenderer.cpp" />
     <ClCompile Include="Dungeon.cpp" />
     <ClCompile Include="DungeonCheckpoint.cpp" />
+    <ClCompile Include="DungeonCollectableKey.cpp" />
     <ClCompile Include="DungeonDecoration.cpp" />
     <ClCompile Include="DungeonDoor.cpp" />
     <ClCompile Include="DungeonEditor.cpp" />
@@ -293,6 +294,7 @@
     <ClInclude Include="ComponentRenderer.h" />
     <ClInclude Include="Dungeon.h" />
     <ClInclude Include="DungeonCheckpoint.h" />
+    <ClInclude Include="DungeonCollectableKey.h" />
     <ClInclude Include="DungeonDecoration.h" />
     <ClInclude Include="DungeonDoor.h" />
     <ClInclude Include="DungeonEditor.h" />

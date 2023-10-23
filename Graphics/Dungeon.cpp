@@ -23,6 +23,7 @@
 #include "DungeonStairs.h"
 #include "DungeonLight.h"
 #include "DungeonEventTrigger.h"
+#include "DungeonCollectableKey.h"
 
 #include "FileUtils.h"
 #include "LogUtils.h"
@@ -572,6 +573,13 @@ bool Crawl::Dungeon::DoInteractable(ivec2 position, FACING_INDEX direction)
 		// doors on shared tile edge (move position in facing direction, and then reverse the checking direction)
 		if (position + directions[direction] == activatable[i]->position && facingIndexesReversed[direction] == activatable[i]->orientation && !activatable[i]->open)
 			activatable[i]->Interact();
+	}
+
+	// Search for keys to collect
+	for (int i = 0; i < keys.size(); i++)
+	{
+		if (position == keys[i]->position && direction == keys[i]->facing)
+			keys[i]->Interact();
 	}
 
 	return didInteract;
@@ -1756,6 +1764,43 @@ void Crawl::Dungeon::DoEventTriggerFacing(ivec2 position, FACING_INDEX facing)
 	}
 }
 
+Crawl::DungeonCollectableKey* Crawl::Dungeon::CreateKey(ivec2 position)
+{
+	DungeonCollectableKey* key = new DungeonCollectableKey();
+	keys.push_back(key);
+	key->position = position;
+	key->dungeon = this;
+	key->object = Scene::CreateObject();
+	key->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/collectable_key.object"));
+	key->UpdateTransform();
+	return key;
+}
+
+Crawl::DungeonCollectableKey* Crawl::Dungeon::GetKeyAtPosition(ivec2 position)
+{
+	for (int i = 0; i < keys.size(); i++)
+	{
+		if (keys[i]->position == position)
+		{
+			return keys[i];
+		}
+	}
+	return nullptr;
+}
+
+void Crawl::Dungeon::RemoveKey(DungeonCollectableKey* key)
+{
+	for (int i = 0; i < keys.size(); i++)
+	{
+		if (keys[i] == key)
+		{
+			delete keys[i];
+			keys.erase(keys.begin() + i);
+			return;
+		}
+	}
+}
+
 void Crawl::Dungeon::Save(std::string filename)
 {
 	SetDungeonNameFromFileName(filename);
@@ -1911,6 +1956,11 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 	for (auto& mirror : mirrors)
 		mirrors_json.push_back(*mirror);
 	dungeon_serialised["mirrors"] = mirrors_json;
+
+	ordered_json keys_json;
+	for (auto& key : keys)
+		keys_json.push_back(*key);
+	dungeon_serialised["keys"] = keys_json;
 
 	ordered_json decorations_json;
 	for (auto& decoration : decorations)
@@ -2164,6 +2214,17 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		DungeonMirror* newMirror = CreateMirror(mirror.position, mirror.facing);
 	}
 
+	auto& keys_json = serialised["keys"];
+	for (auto it = keys_json.begin(); it != keys_json.end(); it++)
+	{
+		DungeonCollectableKey key = it.value().get<Crawl::DungeonCollectableKey>();
+		DungeonCollectableKey* newKey = CreateKey(key.position);
+		newKey->facing = key.facing;
+		newKey->doorActivateID = key.doorActivateID;
+		newKey->lockReleaseID = key.lockReleaseID;
+		newKey->UpdateTransform();
+	}
+
 	// Invisible objects
 	auto& pointLights_json = serialised["pointLights"];
 	for (auto it = pointLights_json.begin(); it != pointLights_json.end(); it++)
@@ -2261,6 +2322,10 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 	for (int i = 0; i < activatable.size(); i++)
 		delete activatable[i];
 	activatable.clear();
+
+	for (int i = 0; i < keys.size(); i++)
+		delete keys[i];
+	keys.clear();
 
 	for (int i = 0; i < activatorPlates.size(); i++)
 		delete activatorPlates[i];

@@ -21,6 +21,7 @@
 #include "DungeonLight.h"
 #include "DungeonEventTrigger.h"
 #include "DungeonEnemySlugPath.h"
+#include "DungeonCollectableKey.h"
 
 #include "Object.h"
 #include "Input.h"
@@ -518,6 +519,12 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 			selectedTileShootLasers.push_back(selectedTileShootLaser);
 			selectedShootLaserWindowOpen = true;
 		}
+		if (ImGui::Selectable("Key"))
+		{
+			MarkUnsavedChanges();
+			selectedTileKey = dungeon->CreateKey(selectedTilePosition);
+			selectedKeyWindowOpen = true;
+		}
 		ImGui::Unindent();
 		ImGui::Text("Basic");
 		ImGui::Indent();
@@ -736,6 +743,15 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		}
 		ImGui::PopID();
 	}
+	if (selectedTileKey)
+	{
+		string keyName = "Key (Lock: ";
+		keyName += to_string(selectedTileKey->lockReleaseID);
+		keyName += ", Activates: ";
+		keyName += to_string(selectedTileKey->doorActivateID);
+		keyName += ")";
+		if (ImGui::Selectable(keyName.c_str())) selectedKeyWindowOpen = true;
+	}
 	if (selectedActivatorPlate)
 	{
 		string plateName = "Plate (Activates ID: ";
@@ -834,6 +850,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		DrawGUIModeTileEditDoor();
 	if (selectedLeverWindowOpen)
 		DrawGUIModeTileEditLever();
+	if (selectedKeyWindowOpen)
+		DrawGUIModeTileEditKey();
 	if (selectedActivatorPlateWindowOpen)
 		DrawGUIModeTileEditPlate();
 	if (selectedTransporterWindowOpen)
@@ -847,7 +865,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	if (selectedChaseEnemyWindowOpen)
 		DrawGUIModeTileEditChase();
 	if (selectedMurdurinaWindowOpen)
-		DrawGUIModeTileEditMurdurina();
+		DrawGUIModeTileEditMurderina();
 
 	if (selectedSwitcherEnemyWindowOpen)
 		DrawGUIModeTileEditSwitcher();
@@ -992,6 +1010,57 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLever()
 		}
 		ImGui::EndPopup();
 	}
+	ImGui::End();
+}
+void Crawl::DungeonEditor::DrawGUIModeTileEditKey()
+{
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Edit Key", &selectedKeyWindowOpen);
+	if (ImGui::BeginCombo("Orientation", orientationNames[selectedTileKey->facing].c_str()))
+	{
+		int oldOrientation = selectedTileKey->facing;
+		for (int i = 0; i < 4; i++)
+			if (ImGui::Selectable(orientationNames[i].c_str()))
+			{
+				selectedTileKey->facing = (FACING_INDEX)i;
+				if (selectedTileKey->facing != oldOrientation)
+				{
+					MarkUnsavedChanges();
+					selectedTileKey->object->SetLocalRotationZ(orientationEulers[i]);
+				}
+			}
+		ImGui::EndCombo();
+	}
+
+	if (ImGui::InputInt("Key ID", (int*)&selectedTileKey->lockReleaseID))
+		MarkUnsavedChanges();
+
+	if (ImGui::InputInt("Door Open ID", (int*)&selectedTileKey->doorActivateID))
+		MarkUnsavedChanges();
+
+	if (ImGui::Button("Delete"))
+		ImGui::OpenPopup("delete_key_confirm");
+
+
+	if (ImGui::BeginPopupModal("delete_key_confirm"))
+	{
+		ImGui::Text("Are you sure you want to delete the key?");
+		if (ImGui::Button("Yes"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemoveKey(selectedTileKey);
+			selectedTileKey = nullptr;
+			selectedKeyWindowOpen = false;
+			RefreshSelectedTile();
+		}
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
 	ImGui::End();
 }
 void Crawl::DungeonEditor::DrawGUIModeTileEditShootLaser()
@@ -1362,7 +1431,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditChase()
 
 	ImGui::End();
 }
-void Crawl::DungeonEditor::DrawGUIModeTileEditMurdurina()
+void Crawl::DungeonEditor::DrawGUIModeTileEditMurderina()
 {
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
@@ -2094,6 +2163,7 @@ void Crawl::DungeonEditor::TileEditDeleteAllObjectsOnTile()
 {
 	for(auto & lever : selectedTileLevers)	dungeon->RemoveLever(lever);
 	for (auto& door : selectedTileDoors)	dungeon->RemoveDoor(door);
+	dungeon->RemoveKey(selectedTileKey);
 	dungeon->RemoveTransporter(selectedTransporter);
 	dungeon->RemovePlate(selectedActivatorPlate);
 	if (selectedHasSpikes) dungeon->RemoveSpikes(selectedTile->position);
@@ -2127,6 +2197,11 @@ void Crawl::DungeonEditor::TileEditMoveAllObjectsOnTile(ivec2 position)
 	{
 		door->position = position;
 		door->UpdateTransforms();
+	}
+	if (selectedTileKey)
+	{
+		selectedTileKey->position = position;
+		selectedTileKey->UpdateTransform();
 	}
 
 	if(selectedTransporter) selectedTransporter->position = position;
@@ -2314,6 +2389,8 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 	selectedTileOccupied = false;
 
 	// update list of tiles doors and levers / interactabes
+	selectedTileKey = dungeon->GetKeyAtPosition(selectedTilePosition);
+
 	selectedTileDoors.clear();
 	for (int i = 0; i < dungeon->activatable.size(); i++)
 	{
@@ -2768,6 +2845,7 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedTile = nullptr;
 	selectedLever = nullptr;
 	selectedDoor = nullptr;
+	selectedTileKey = nullptr;
 	selectedTransporter = nullptr;
 	selectedActivatorPlate = nullptr;
 	selectedTileShootLaser = nullptr;
@@ -2784,6 +2862,7 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	murderinaPathSelected = nullptr;
 
 	selectedDoorWindowOpen = false;
+	selectedKeyWindowOpen = false;
 	selectedLeverWindowOpen = false;
 	selectedActivatorPlateWindowOpen = false;
 	selectedTransporterWindowOpen = false;
