@@ -192,7 +192,7 @@ void Crawl::DungeonGameManager::ConfigureLobby()
 		frontDoorLocksSceneObject->LoadFromJSON(ReadJSONFromDisk(frontDoorLocksObjectFilePath));
 		for (int i = 0; i < 4; i++)
 		{
-			if (frontDoorUnlocked[i]) frontDoorLocksSceneObject->children[i]->children[0]->markedForDeletion = true;
+			//if (frontDoorUnlocked[i]) frontDoorLocksSceneObject->children[i]->children[0]->markedForDeletion = true;
 		}
 	}
 }

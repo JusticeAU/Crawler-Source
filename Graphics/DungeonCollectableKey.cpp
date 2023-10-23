@@ -21,6 +21,7 @@ void Crawl::DungeonCollectableKey::Interact()
 
 	// remove key
 	object->children[0]->children[1]->markedForDeletion = true;
+	object->children[0]->children[2]->markedForDeletion = true;
 
 	// play key animation on player
 	// TO DO

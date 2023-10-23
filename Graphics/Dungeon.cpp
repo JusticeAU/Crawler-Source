@@ -1772,6 +1772,9 @@ Crawl::DungeonCollectableKey* Crawl::Dungeon::CreateKey(ivec2 position)
 	key->dungeon = this;
 	key->object = Scene::CreateObject();
 	key->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/collectable_key.object"));
+	key->object->children[0]->children[0]->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_wallhook.object"));
+	key->object->children[0]->children[1]->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_keyring.object"));
+	key->object->children[0]->children[2]->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/interactable_key.object"));
 	key->UpdateTransform();
 	return key;
 }
