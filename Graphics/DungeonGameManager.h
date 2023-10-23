@@ -44,8 +44,8 @@ namespace Crawl
 		static void Init();
 		static DungeonGameManager* Get() { return instance; }
 
-		void DrawGUI();
-		void DrawGUIInternal();
+		bool DrawGUI();
+		bool DrawGUIInternal();
 
 		void Update(float delta);
 
@@ -62,6 +62,7 @@ namespace Crawl
 		void ClearLocksObject();
 
 		void ConfigureLobby();
+		void ConfigureLobbyDoor();
 
 		void DoEvent(int eventID);
 
@@ -103,7 +104,20 @@ namespace Crawl
 		// Front Door Locks
 		bool frontDoorUnlocked[4] = { false, false, false, false };
 		Object* frontDoorLocksSceneObject = nullptr;
+		Object* frontDoorLeft = nullptr;
+		Object* frontDoorRight = nullptr;
+		Object* frontDoorLocksLatches[4] = { nullptr, nullptr, nullptr, nullptr };
+		//float frontDoorLockZPositions[4] = {  }
+
 		std::string frontDoorLocksObjectFilePath = "crawler/object/lobbyFrontDoorLocks.object";
+		std::string frontDoorLocksLeftDoor = "crawler/model/door_frontdoor_left.object";
+		std::string frontDoorLocksRightDoor = "crawler/model/door_frontdoor_right.object";
+		std::string frontDoorLocksBracket = "crawler/model/door_bracket.object";
+		std::string frontDoorLocksLatch = "crawler/model/door_latch.object";
+		std::string frontDoorLocksPadEye = "crawler/model/door_pad_eye.object";
+
+		float doorSwingAmount = 0.0f;
+
 
 		// FTUE Configuration Items
 		std::string promptTurn = "crawler/texture/gui/prompt_turn.tga";

@@ -218,6 +218,7 @@ namespace Crawl
 		Object* tile_template;
 		Object* doorsParentObject = nullptr;
 		Object* tilesParentObject = nullptr;
+		Object* decorationsParentObject = nullptr;
 		Object* pillarsParentObject = nullptr;
 
 		// Pillars

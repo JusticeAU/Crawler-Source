@@ -192,6 +192,7 @@ void Object::DrawGUI()
 			ImGui::DragFloat3("Up", &up[0]);
 			ImGui::DragFloat3("Right", &right[0]);
 			ImGui::EndDisabled();
+			ImGui::Unindent();
 		}
 
 		// Draw Components.

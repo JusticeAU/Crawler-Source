@@ -22,16 +22,18 @@ void Crawl::DungeonGameManager::Init()
 	if (instance == nullptr) instance = new DungeonGameManager();
 }
 
-void Crawl::DungeonGameManager::DrawGUI()
+bool Crawl::DungeonGameManager::DrawGUI()
 {
 	ImGui::Begin("Game Manager");
-	DrawGUIInternal(); // Editor can call this only to inject it in to its interface.
+	bool changed = DrawGUIInternal(); // Editor can call this only to inject it in to its interface.
 	ImGui::End();
+	return changed;
 }
 
-void Crawl::DungeonGameManager::DrawGUIInternal()
+bool Crawl::DungeonGameManager::DrawGUIInternal()
 {
-	ImGui::Checkbox("Manage Lobby", &manageLobby);
+	bool changed = false;
+	if (ImGui::Checkbox("Manage Lobby", &manageLobby)) changed = true;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 		ImGui::SetTooltip("Enables whether the GameManager should configure the lobby. If this is disabled then all doors in the lobby will be open.");
 	ImGui::PushID("Doors");
@@ -41,7 +43,10 @@ void Crawl::DungeonGameManager::DrawGUIInternal()
 		ImGui::PushID(i);
 		int current = (int)doorStates[i];
 		if (ImGui::SliderInt(doorNames[i].c_str(), &current, 0, 2, doorStateNames[current].c_str(), ImGuiSliderFlags_AlwaysClamp))
+		{
 			doorStates[i] = (DoorState)current;
+			changed = true;
+		}
 		ImGui::PopID();
 	}
 	ImGui::PopID();
@@ -51,7 +56,7 @@ void Crawl::DungeonGameManager::DrawGUIInternal()
 	for (int i = 0; i < 8; i++)
 	{
 		ImGui::PushID(i);
-		ImGui::Checkbox(doorNames[i].c_str(), &enabledLights[i]);
+		if(ImGui::Checkbox(doorNames[i].c_str(), &enabledLights[i]) ) changed = true;
 		if (i % 2 == 0) ImGui::SameLine();
 		ImGui::PopID();
 	}
@@ -62,11 +67,32 @@ void Crawl::DungeonGameManager::DrawGUIInternal()
 	for (int i = 0; i < 4; i++)
 	{
 		ImGui::PushID(i);
-		ImGui::Checkbox(std::to_string(i+1).c_str(), &frontDoorUnlocked[i]);
+		if(ImGui::Checkbox(std::to_string(i+1).c_str(), &frontDoorUnlocked[i])) changed = true;
 		if (i < 3) ImGui::SameLine();
 		ImGui::PopID();
 	}
 	ImGui::PopID();
+
+	ImGui::PushID("Door Rotations");
+	if (frontDoorLeft) // door is configured
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			ImGui::PushID(i);
+			float latchAxis = frontDoorLocksLatches[i]->localRotation.z;
+			if (ImGui::SliderFloat("Latch Open", &latchAxis, -180, 0)) frontDoorLocksLatches[i]->SetLocalRotation({ 0,0, latchAxis });
+			ImGui::PopID();
+		}
+
+		if (ImGui::SliderFloat("Door Open", &doorSwingAmount, 180, 0))
+		{
+			frontDoorLeft->SetLocalRotation({ 0,0,90 - doorSwingAmount });
+			frontDoorRight->SetLocalRotation({ 0,0,90 + doorSwingAmount });
+
+		}
+	}
+	ImGui::PopID();
+	return changed;
 }
 
 void Crawl::DungeonGameManager::Update(float delta)
@@ -131,6 +157,9 @@ void Crawl::DungeonGameManager::ClearLocksObject()
 		frontDoorLocksSceneObject->markedForDeletion = true;
 
 	frontDoorLocksSceneObject = nullptr;
+	frontDoorLeft = nullptr;
+	frontDoorRight = nullptr;
+	for (int i = 0; i < 4; i++) frontDoorLocksLatches[i] = nullptr;
 }
 
 void Crawl::DungeonGameManager::ConfigureLobby()
@@ -187,13 +216,33 @@ void Crawl::DungeonGameManager::ConfigureLobby()
 		// Configure level 1 doors
 		// Configure level 2 doors
 
-		// configure the main door status (locks etc??)
-		frontDoorLocksSceneObject = Scene::CreateObject();
-		frontDoorLocksSceneObject->LoadFromJSON(ReadJSONFromDisk(frontDoorLocksObjectFilePath));
-		for (int i = 0; i < 4; i++)
-		{
-			//if (frontDoorUnlocked[i]) frontDoorLocksSceneObject->children[i]->children[0]->markedForDeletion = true;
-		}
+		ConfigureLobbyDoor();
+	}
+}
+
+void Crawl::DungeonGameManager::ConfigureLobbyDoor()
+{
+	// configure the main door status (locks etc??)
+	frontDoorLocksSceneObject = Scene::CreateObject();
+	frontDoorLocksSceneObject->LoadFromJSON(ReadJSONFromDisk(frontDoorLocksObjectFilePath));
+	// doors
+	frontDoorLocksSceneObject->children[0]->children[0]->children[0]->LoadFromJSON(ReadJSONFromDisk(frontDoorLocksLeftDoor));
+	frontDoorLeft = frontDoorLocksSceneObject->children[0];
+
+	frontDoorLocksSceneObject->children[1]->children[0]->children[0]->LoadFromJSON(ReadJSONFromDisk(frontDoorLocksRightDoor));
+	frontDoorRight = frontDoorLocksSceneObject->children[1];
+
+	// locks
+	for (int i = 0; i < 4; i++)
+	{
+		frontDoorLocksSceneObject->children[0]->children[0]->children[i + 1]->children[0]->LoadFromJSON(ReadJSONFromDisk(frontDoorLocksLatch));
+		frontDoorLocksLatches[i] = frontDoorLocksSceneObject->children[0]->children[0]->children[i + 1]->children[0];
+		frontDoorLocksSceneObject->children[0]->children[0]->children[i + 1]->children[1]->LoadFromJSON(ReadJSONFromDisk(frontDoorLocksBracket));
+		frontDoorLocksSceneObject->children[1]->children[0]->children[i + 1]->children[0]->LoadFromJSON(ReadJSONFromDisk(frontDoorLocksPadEye));
+
+
+
+		//if (frontDoorUnlocked[i]) frontDoorLocksSceneObject->children[i]->children[0]->markedForDeletion = true;
 	}
 }
 

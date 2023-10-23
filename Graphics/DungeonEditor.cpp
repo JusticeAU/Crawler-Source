@@ -140,6 +140,8 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	}
 
 	ImGui::SameLine();
+	bool canReset = dungeon->dungeonFileName != "" && (dirtyGameplayScene || unsavedChanges);
+	if (!canReset) ImGui::BeginDisabled();
 	if (ImGui::Button("Reset Dungeon"))
 	{
 		TileEditUnselectAll();
@@ -152,6 +154,7 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 		dirtyGameplayScene = false;
 		UnMarkUnsavedChanges();
 	}
+	if (!canReset) ImGui::EndDisabled();
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 		ImGui::SetTooltip("Resets the gameplay changes to the dungeon back to initial dungeon state.");
 
@@ -1978,7 +1981,7 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 
 void Crawl::DungeonEditor::DrawGUIModeGameManager()
 {
-	DungeonGameManager::Get()->DrawGUIInternal();
+	if (DungeonGameManager::Get()->DrawGUIInternal()) unsavedChanges = true;
 }
 
 

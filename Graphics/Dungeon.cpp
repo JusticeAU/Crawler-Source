@@ -48,6 +48,7 @@ Crawl::Dungeon::Dungeon(bool isLobbyLevel2) : isLobbyLevel2(isLobbyLevel2)
 
 	doorsParentObject = Scene::CreateObject("Doors");
 	tilesParentObject = Scene::CreateObject("Tiles");
+	decorationsParentObject = Scene::CreateObject("Decorations");
 
 	InitialiseTileMap();
 }
@@ -1651,7 +1652,7 @@ Crawl::DungeonDecoration* Crawl::Dungeon::CreateDecoration(ivec2 position, FACIN
 	DungeonDecoration* decoration = new DungeonDecoration();
 	decoration->position = position;
 	decoration->facing = facing;
-	decoration->object = Scene::CreateObject();
+	decoration->object = Scene::CreateObject(decorationsParentObject);
 	decoration->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/decoration.object"));
 	decoration->UpdateTransform();
 	decorations.push_back(decoration);
