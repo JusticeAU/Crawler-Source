@@ -732,7 +732,7 @@ void Crawl::DungeonPlayer::UpdateStateRH(float delta)
 
 void Crawl::DungeonPlayer::UpdatePointOfInterestTilt(bool instant)
 {
-	bool isPointOfInterest = dungeon->IsPlayerPointOfInterest(position + directions[facing]);
+	bool isPointOfInterest = dungeon->IsPlayerPointOfInterest(position, facing);
 	if (wasLookingAtPointOfInterest != isPointOfInterest)
 	{
 		wasLookingAtPointOfInterest = isPointOfInterest;

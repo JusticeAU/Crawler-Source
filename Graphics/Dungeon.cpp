@@ -488,11 +488,15 @@ bool Crawl::Dungeon::PlayerCanMove(glm::ivec2 fromPos, int directionIndex)
 	return true;
 }
 
-bool Crawl::Dungeon::IsPlayerPointOfInterest(ivec2 position)
+bool Crawl::Dungeon::IsPlayerPointOfInterest(ivec2 position, FACING_INDEX direction)
 {
-	if (IsEnemyChaserAtPosition(position))return true;
-	if (IsSpikesAtPosition(position)) return true;
-	if (IsPlateAtPosition(position)) return true;
+	if (!CanSee(position, direction)) return false;
+
+	ivec2 positionToCheck = position + directions[direction];
+
+	if (IsEnemyChaserAtPosition(positionToCheck)) return true;
+	if (IsSpikesAtPosition(positionToCheck)) return true;
+	if (IsPlateAtPosition(positionToCheck)) return true;
 	
 	return false;
 }

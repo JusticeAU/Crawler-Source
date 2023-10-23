@@ -78,7 +78,7 @@ namespace Crawl
 		bool CanTraverse(ivec2 fromPos, int directionIndex);
 		bool CanSee(ivec2 fromPos, int directionIndex);
 		bool PlayerCanMove(ivec2 fromPos, int directionIndex);
-		bool IsPlayerPointOfInterest(ivec2 position);
+		bool IsPlayerPointOfInterest(ivec2 position, FACING_INDEX direction);
 		bool IsDoorBlocking(DungeonTile* fromTile, int directionIndex);
 
 		void SetPlayer(DungeonPlayer* player) { this->player = player; }
