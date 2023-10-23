@@ -205,8 +205,8 @@ void Application::DoLoadingScreen()
 	{
 		PreloadAssetsAndRenderProgress();
 		//TextureManager::PreloadAllFilesContaining("prompt"); // preload the prompt textures because they arent referenced by materials atm.
+		RefreshImGui();
 	}
-	RefreshImGui();
 }
 
 void Application::PreloadAssetsAndRenderProgress()
