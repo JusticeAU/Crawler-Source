@@ -245,6 +245,7 @@ void Application::RenderLoadProgress(float percentageLoaded)
 	
 	RenderImGui();
 	SwapBuffers();
+	glfwPollEvents(); // if we dont poll events, windows will think the application is hung.
 }
 
 void Application::InitialiseAdditionalGameAssets()
