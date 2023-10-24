@@ -696,6 +696,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	ImGui::PopID();
 	// Entity List
 	ImGui::PushID("Objects");
+	// Delete All
 	if (ImGui::Button("Delete All"))
 		ImGui::OpenPopup("confirm_delete_all");
 	if (ImGui::BeginPopupModal("confirm_delete_all"))
@@ -712,6 +713,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		ImGui::EndPopup();
 	}
 
+	// Move All
 	ImGui::SameLine();
 	if (ImGui::Button("Move All"))
 		ImGui::OpenPopup("confirm_move_all");
@@ -733,6 +735,31 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		LineRenderer::DrawFlatBox(dungeonPosToObjectScale(selectedTileMoveObjectsTo), 1.0f, { 0,selectedTileMoveFlash*2.0f,0 });
 		if (selectedTileMoveFlash > 0.5f) selectedTileMoveFlash = 0.0f;
 		
+		ImGui::EndPopup();
+	}
+
+	// Copy Decorations
+	ImGui::SameLine();
+	if (ImGui::Button("Copy Decorations"))
+		ImGui::OpenPopup("confirm_copy_all");
+	if (ImGui::BeginPopupModal("confirm_copy_all"))
+	{
+		ImGui::Text("Where do you want to copy all decorations to?");
+		ImGui::InputInt2("Coordinate", &selectedTileMoveObjectsTo.x);
+		if (ImGui::Button("Copy"))
+		{
+			TileEditCopyDecorationsOnTile(selectedTileMoveObjectsTo);
+			MarkUnsavedChanges();
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel"))
+			ImGui::CloseCurrentPopup();
+
+		selectedTileMoveFlash += 0.01f; // This should use deltaTime but delta isn't yet globally accessable and really ought to be at this point.
+		LineRenderer::DrawFlatBox(dungeonPosToObjectScale(selectedTileMoveObjectsTo), 1.0f, { 0,selectedTileMoveFlash * 2.0f,0 });
+		if (selectedTileMoveFlash > 0.5f) selectedTileMoveFlash = 0.0f;
+
 		ImGui::EndPopup();
 	}
 
@@ -2215,7 +2242,7 @@ void Crawl::DungeonEditor::TileEditDeleteAllObjectsOnTile()
 	dungeon->RemoveEventTrigger(selectedEventTrigger);
 	dungeon->RemoveStairs(selectedStairs);
 
-	ivec2 currentTile = selectedTile->position;
+	ivec2 currentTile = selectedTilePosition;
 	TileEditUnselectAll();
 	selectedTile = dungeon->GetTile(currentTile);
 	RefreshSelectedTile();
@@ -2319,6 +2346,20 @@ void Crawl::DungeonEditor::TileEditMoveAllObjectsOnTile(ivec2 position)
 	TileEditUnselectAll();
 	selectedTile = dungeon->GetTile(currentTile);
 	RefreshSelectedTile();
+}
+
+void Crawl::DungeonEditor::TileEditCopyDecorationsOnTile(ivec2 position)
+{
+	for (auto& decoration : selectedTileDecorations)
+	{
+		DungeonDecoration* copy = dungeon->CreateDecoration(position, decoration->facing);
+		copy->castsShadows = decoration->castsShadows;
+		copy->localPosition = decoration->localPosition;
+		copy->localRotation = decoration->localRotation;
+		copy->modelName = decoration->modelName;
+		copy->UpdateShadowCasting();
+		copy->LoadDecoration();
+	}
 }
 
 void Crawl::DungeonEditor::UpdateModeMurderinaBrush()

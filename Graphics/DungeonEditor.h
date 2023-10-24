@@ -65,6 +65,8 @@ namespace Crawl
 
 		void TileEditDeleteAllObjectsOnTile();
 		void TileEditMoveAllObjectsOnTile(ivec2 position);
+		void TileEditCopyDecorationsOnTile(ivec2 position);
+
 
 		void UpdateModeMurderinaBrush();
 		void UpdateModeMurderinaEdit();
