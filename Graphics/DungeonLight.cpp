@@ -33,6 +33,8 @@ void Crawl::DungeonLight::Disable()
 
 void Crawl::DungeonLight::UpdateTransform()
 {
+	if (!object) return;
+
 	glm::vec3 worldPos = dungeonPosToObjectScale(position) + localPosition;
 	object->SetLocalPosition(worldPos);
 }

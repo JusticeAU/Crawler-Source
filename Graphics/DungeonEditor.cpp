@@ -70,6 +70,16 @@ void Crawl::DungeonEditor::SetDungeon(Dungeon* dungeonPtr)
 		int extension = varient.find_last_of('.');
 		wallVarientShortNames.push_back(varient.substr(lastSlash + 1, extension - lastSlash -1));
 	}
+
+	floorVarientShortNames.clear();
+	for (auto varient : dungeon->floorVariantPaths)
+	{
+		int lastSlash = varient.find_last_of('/');
+		int extension = varient.find_last_of('.');
+		floorVarientShortNames.push_back(varient.substr(lastSlash + 1, extension - lastSlash - 1));
+	}
+
+
 }
 
 void Crawl::DungeonEditor::DrawGUI()
@@ -489,6 +499,31 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 				ImGui::SetTooltip("Configure the configurations of the walls for this tile. Note this doesnt affect ability to traverse or see through the tile");
 			ImGui::PopID();
 		}
+
+		// Floor Tile Variants
+		ImGui::Text("Floor Visual");
+		if (ImGui::BeginCombo("Type", selectedTile->floorVariant == -1 ? "None" : floorVarientShortNames[selectedTile->floorVariant].c_str())) // lmao yuck
+		{
+			if (ImGui::Selectable("None", -1 == selectedTile->floorVariant))
+			{
+				selectedTile->floorVariant = -1;
+				dungeon->CreateTileObject(selectedTile);
+				MarkUnsavedChanges();
+			}
+
+			for (int i = 0; i < dungeon->floorVariantPaths.size(); i++)
+			{
+				if (ImGui::Selectable(floorVarientShortNames[i].c_str(), i == selectedTile->floorVariant))
+				{
+					selectedTile->floorVariant = i;
+					dungeon->CreateTileObject(selectedTile);
+					MarkUnsavedChanges();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("Configure the configurations of the walls for this tile. Note this doesnt affect ability to traverse or see through the tile");
 	}
 
 	// Buttons
@@ -664,6 +699,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	ImGui::PopID();
 	// Entity List
 	ImGui::PushID("Objects");
+	// Delete All
 	if (ImGui::Button("Delete All"))
 		ImGui::OpenPopup("confirm_delete_all");
 	if (ImGui::BeginPopupModal("confirm_delete_all"))
@@ -680,6 +716,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		ImGui::EndPopup();
 	}
 
+	// Move All
 	ImGui::SameLine();
 	if (ImGui::Button("Move All"))
 		ImGui::OpenPopup("confirm_move_all");
@@ -701,6 +738,31 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		LineRenderer::DrawFlatBox(dungeonPosToObjectScale(selectedTileMoveObjectsTo), 1.0f, { 0,selectedTileMoveFlash*2.0f,0 });
 		if (selectedTileMoveFlash > 0.5f) selectedTileMoveFlash = 0.0f;
 		
+		ImGui::EndPopup();
+	}
+
+	// Copy Decorations
+	ImGui::SameLine();
+	if (ImGui::Button("Copy Decorations"))
+		ImGui::OpenPopup("confirm_copy_all");
+	if (ImGui::BeginPopupModal("confirm_copy_all"))
+	{
+		ImGui::Text("Where do you want to copy all decorations to?");
+		ImGui::InputInt2("Coordinate", &selectedTileMoveObjectsTo.x);
+		if (ImGui::Button("Copy"))
+		{
+			TileEditCopyDecorationsOnTile(selectedTileMoveObjectsTo);
+			MarkUnsavedChanges();
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel"))
+			ImGui::CloseCurrentPopup();
+
+		selectedTileMoveFlash += 0.01f; // This should use deltaTime but delta isn't yet globally accessable and really ought to be at this point.
+		LineRenderer::DrawFlatBox(dungeonPosToObjectScale(selectedTileMoveObjectsTo), 1.0f, { 0,selectedTileMoveFlash * 2.0f,0 });
+		if (selectedTileMoveFlash > 0.5f) selectedTileMoveFlash = 0.0f;
+
 		ImGui::EndPopup();
 	}
 
@@ -2064,6 +2126,12 @@ void Crawl::DungeonEditor::DrawGUIModeRailLines()
 
 void Crawl::DungeonEditor::Update()
 {
+	// Save hotkey
+	if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_S).Down())
+	{
+		if (!dirtyGameplayScene && dungeonFilePath != "" && unsavedChanges) Save();
+	}
+
 	// Draw Player Position
 	vec3 playerWorldPosition = dungeonPosToObjectScale(dungeon->player->GetPosition());
 	LineRenderer::DrawLine(playerWorldPosition, playerWorldPosition + vec3(0, 0, 2));
@@ -2183,7 +2251,7 @@ void Crawl::DungeonEditor::TileEditDeleteAllObjectsOnTile()
 	dungeon->RemoveEventTrigger(selectedEventTrigger);
 	dungeon->RemoveStairs(selectedStairs);
 
-	ivec2 currentTile = selectedTile->position;
+	ivec2 currentTile = selectedTilePosition;
 	TileEditUnselectAll();
 	selectedTile = dungeon->GetTile(currentTile);
 	RefreshSelectedTile();
@@ -2287,6 +2355,20 @@ void Crawl::DungeonEditor::TileEditMoveAllObjectsOnTile(ivec2 position)
 	TileEditUnselectAll();
 	selectedTile = dungeon->GetTile(currentTile);
 	RefreshSelectedTile();
+}
+
+void Crawl::DungeonEditor::TileEditCopyDecorationsOnTile(ivec2 position)
+{
+	for (auto& decoration : selectedTileDecorations)
+	{
+		DungeonDecoration* copy = dungeon->CreateDecoration(position, decoration->facing);
+		copy->castsShadows = decoration->castsShadows;
+		copy->localPosition = decoration->localPosition;
+		copy->localRotation = decoration->localRotation;
+		copy->modelName = decoration->modelName;
+		copy->UpdateShadowCasting();
+		copy->LoadDecoration();
+	}
 }
 
 void Crawl::DungeonEditor::UpdateModeMurderinaBrush()
@@ -2811,6 +2893,7 @@ void Crawl::DungeonEditor::Save()
 	RefreshDungeonFileNames();
 	dungeonWantLoad = "";
 	UnMarkUnsavedChanges();
+	LogUtils::Log("Saved.");
 }
 
 void Crawl::DungeonEditor::Load(string path)

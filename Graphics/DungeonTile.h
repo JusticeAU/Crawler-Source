@@ -13,6 +13,7 @@ namespace Crawl
 		int maskTraverse = -1;
 		int maskSee = 0;
 		int wallVariants[4] = { -1, -1, -1 ,-1 }; // North, East, South, West. -1 is no wall, any other value is to index in to the dungeon wallVariantPaths array. visual only.
+		int floorVariant = 0;
 
 		// State
 		bool occupied = false;
@@ -34,6 +35,7 @@ namespace Crawl
 	static void to_json(ordered_json& j, const DungeonTile& tile)
 	{
 		j = { {"position", tile.position}, {"mask", tile.maskTraverse}, {"maskSee", tile.maskSee}, {"wallVariants", tile.wallVariants} };
+		if (tile.floorVariant != 0) j["floorVariant"] = tile.floorVariant;
 		if (tile.permanentlyOccupied) j["permanentlyOccupied"] = true;
 	}
 
@@ -58,12 +60,15 @@ namespace Crawl
 
 		if (j.contains("wallVariants"))
 			j.at("wallVariants").get_to(tile.wallVariants);
+		if (j.contains("floorVariant"))
+			j.at("floorVariant").get_to(tile.floorVariant);
 		
 		if (j.contains("permanentlyOccupied"))
 		{
 			j.at("permanentlyOccupied").get_to(tile.permanentlyOccupied);
 			tile.occupied = tile.permanentlyOccupied;
 		}
+
 
 
 	}

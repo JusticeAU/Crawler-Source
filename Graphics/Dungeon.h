@@ -257,6 +257,8 @@ namespace Crawl
 		std::vector<DungeonInteractableLever*> interactables;
 		std::vector<DungeonDoor*> activatable;
 		std::vector<string> wallVariantPaths;
+		std::vector<string> floorVariantPaths;
+
 
 		// Test on movement
 		std::vector<DungeonActivatorPlate*> activatorPlates;
