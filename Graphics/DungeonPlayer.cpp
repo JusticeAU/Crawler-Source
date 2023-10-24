@@ -956,20 +956,17 @@ void Crawl::DungeonPlayer::Orient(FACING_INDEX facing)
 	object->SetLocalRotationZ(orientationEulers[facing]);
 }
 
-void Crawl::DungeonPlayer::RestartGame()
+void Crawl::DungeonPlayer::ResetPlayer()
 {
-	DungeonTransporter* startTransporter = new DungeonTransporter();
-	startTransporter->toDungeon = "crawler/dungeon/start";
-	startTransporter->toTransporter = "TutExit";
+	ClearCheckpoint();
+	ClearRespawn();
 	ftueInitiated = false;
 	ftueEnabled = false;
 	ftueHasInteracted = false;
 	ftueHasLooked = false;
 	ftueHasTurned = false;
 	ftueTurns = 0;
-	//lobbyLight = nullptr;
-	//lobbyLightActivated = false;
-	LoadSelectedTransporter(startTransporter);
+
 }
 
 void Crawl::DungeonPlayer::ReturnToLobby()

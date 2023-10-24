@@ -268,6 +268,7 @@ void Crawl::DungeonMenu::StartNewGame()
 {
 	app->s_mode = Application::Mode::Game;
 	player->currentDungeon->Load("crawler/dungeon/start.dungeon");
+	player->ResetPlayer();
 	player->Respawn();
 	Scene::SetCameraByName("Player Camera");
 	cameraObject->markedForDeletion = true;
@@ -293,6 +294,7 @@ void Crawl::DungeonMenu::ExecuteReturnToLobby()
 {
 	Window::GetWindow()->SetMouseCursorHidden(true);
 	player->SetStateIdle();
+	player->ClearCheckpoint();
 	player->ReturnToLobby();
 }
 
@@ -301,6 +303,7 @@ void Crawl::DungeonMenu::ExecuteReturnToMainMenu()
 	app->dungeon->Load("crawler/dungeon/lobby.dungeon");
 	player->SetStateIdle();
 	player->Teleport({ 11, -2 });
+	player->ClearCheckpoint();
 
 	introStage = IntroStage::Idle;
 	newGameSequenceTime = 0.0f;

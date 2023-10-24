@@ -61,7 +61,7 @@ namespace Crawl
 		void SetShouldActivateTransporter(DungeonTransporter* transporter);
 		void Teleport(ivec2 position);
 		void Orient(FACING_INDEX facing);
-		void RestartGame();
+		void ResetPlayer();
 		void ReturnToLobby();
 		
 		void SetRespawn(ivec2 position, FACING_INDEX orientation, bool isLevel2 = false);
