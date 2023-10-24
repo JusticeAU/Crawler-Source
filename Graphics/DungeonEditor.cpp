@@ -2123,6 +2123,12 @@ void Crawl::DungeonEditor::DrawGUIModeRailLines()
 
 void Crawl::DungeonEditor::Update()
 {
+	// Save hotkey
+	if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_S).Down())
+	{
+		if (!dirtyGameplayScene && dungeonFilePath != "" && unsavedChanges) Save();
+	}
+
 	// Draw Player Position
 	vec3 playerWorldPosition = dungeonPosToObjectScale(dungeon->player->GetPosition());
 	LineRenderer::DrawLine(playerWorldPosition, playerWorldPosition + vec3(0, 0, 2));
@@ -2884,6 +2890,7 @@ void Crawl::DungeonEditor::Save()
 	RefreshDungeonFileNames();
 	dungeonWantLoad = "";
 	UnMarkUnsavedChanges();
+	LogUtils::Log("Saved.");
 }
 
 void Crawl::DungeonEditor::Load(string path)
