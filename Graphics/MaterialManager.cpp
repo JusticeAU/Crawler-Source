@@ -40,12 +40,12 @@ void MaterialManager::DrawGUI()
 	ImGui::SetNextWindowSize({ 400, 900 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Materials", nullptr);
-	/*if (ImGui::Button("Scan For Unreferenced Materials"))
+	if (ImGui::Button("Scan For Unreferenced Materials"))
 	{
 		s_instance->Audit_ScanFolderForMaterialReferences("crawler");
 		s_instance->Audit_ScanFolderForMaterialReferences("engine");
 		s_instance->Audit_ListAllUnreferencedMaterials();
-	}*/
+	}
 	if (ImGui::Button("New"))
 	{
 		// Write a material file to disk and then load it

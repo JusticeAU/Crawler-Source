@@ -2666,6 +2666,20 @@ void Crawl::Dungeon::SortGameObjects()
 			return aDistance < bDistance;
 		}
 	);
+
+	std::sort(
+		decorationsParentObject->children.begin(),
+		decorationsParentObject->children.end(),
+		[](Object* a, Object* b) {
+			glm::vec3 cameraPos = Scene::GetCurrentCamera()->GetWorldSpacePosition();
+			glm::vec3 aPos = a->GetWorldSpacePosition();
+			glm::vec3 bPos = b->GetWorldSpacePosition();
+			float aDistance = glm::distance2(aPos, cameraPos);
+			float bDistance = glm::distance2(bPos, cameraPos);
+
+			return aDistance < bDistance;
+		}
+	);
 }
 
 bool Crawl::Dungeon::ShouldHavePillar(ivec2 coordinate)
