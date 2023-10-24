@@ -70,6 +70,16 @@ void Crawl::DungeonEditor::SetDungeon(Dungeon* dungeonPtr)
 		int extension = varient.find_last_of('.');
 		wallVarientShortNames.push_back(varient.substr(lastSlash + 1, extension - lastSlash -1));
 	}
+
+	floorVarientShortNames.clear();
+	for (auto varient : dungeon->floorVariantPaths)
+	{
+		int lastSlash = varient.find_last_of('/');
+		int extension = varient.find_last_of('.');
+		floorVarientShortNames.push_back(varient.substr(lastSlash + 1, extension - lastSlash - 1));
+	}
+
+
 }
 
 void Crawl::DungeonEditor::DrawGUI()
@@ -486,6 +496,31 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 				ImGui::SetTooltip("Configure the configurations of the walls for this tile. Note this doesnt affect ability to traverse or see through the tile");
 			ImGui::PopID();
 		}
+
+		// Floor Tile Variants
+		ImGui::Text("Floor Visual");
+		if (ImGui::BeginCombo("Type", selectedTile->floorVariant == -1 ? "None" : floorVarientShortNames[selectedTile->floorVariant].c_str())) // lmao yuck
+		{
+			if (ImGui::Selectable("None", -1 == selectedTile->floorVariant))
+			{
+				selectedTile->floorVariant = -1;
+				dungeon->CreateTileObject(selectedTile);
+				MarkUnsavedChanges();
+			}
+
+			for (int i = 0; i < dungeon->floorVariantPaths.size(); i++)
+			{
+				if (ImGui::Selectable(floorVarientShortNames[i].c_str(), i == selectedTile->floorVariant))
+				{
+					selectedTile->floorVariant = i;
+					dungeon->CreateTileObject(selectedTile);
+					MarkUnsavedChanges();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("Configure the configurations of the walls for this tile. Note this doesnt affect ability to traverse or see through the tile");
 	}
 
 	// Buttons

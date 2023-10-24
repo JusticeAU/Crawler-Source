@@ -45,6 +45,13 @@ Crawl::Dungeon::Dungeon(bool isLobbyLevel2) : isLobbyLevel2(isLobbyLevel2)
 	wallVariantPaths.push_back("crawler/model/tile_wall_seethrough.object");
 	wallVariantPaths.push_back("crawler/model/tile_arched_window.object");
 	wallVariantPaths.push_back("crawler/model/tile_window_square.object");
+	wallVariantPaths.push_back("crawler/model/tile_wall_2.object");
+	wallVariantPaths.push_back("crawler/model/tile_window_square_2.object");
+
+
+	floorVariantPaths.push_back("crawler/model/tile_wood.object");
+	floorVariantPaths.push_back("crawler/model/decoration_marblefloor.object");
+
 
 	doorsParentObject = Scene::CreateObject("Doors");
 	tilesParentObject = Scene::CreateObject("Tiles");
@@ -294,6 +301,12 @@ void Crawl::Dungeon::CreateTileObject(DungeonTile* tile)
 	obj->SetLocalPosition({ tile->position.x * DUNGEON_GRID_SCALE, tile->position.y * DUNGEON_GRID_SCALE , 0 });
 
 	tile->object = obj;
+
+	//set up floor variant
+	if (tile->floorVariant != -1)
+	{
+		obj->children[0]->children[0]->LoadFromJSON(ReadJSONFromDisk(floorVariantPaths[tile->floorVariant]));
+	}
 
 	// Set up Pillars
 	if (pillarsParentObject == nullptr) pillarsParentObject = Scene::CreateObject("Pillars");
@@ -2296,11 +2309,10 @@ void Crawl::Dungeon::InitialiseTileMap()
 {
 	// Load the JSON template
 	ordered_json tile_layout = ReadJSONFromDisk("crawler/object/tile_layout.object");
-	ordered_json tile_ground1 = ReadJSONFromDisk("crawler/model/tile_wood.object");
+	//ordered_json tile_ground1 = ReadJSONFromDisk("crawler/model/tile_wood.object");
 
 	tile_template = new Object(0, "Tile Template");
 	tile_template->LoadFromJSON(tile_layout);
-	tile_template->children[0]->children[0]->LoadFromJSON(tile_ground1);
 }
 
 void Crawl::Dungeon::DestroySceneFromDungeonLayout()

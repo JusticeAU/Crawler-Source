@@ -139,6 +139,8 @@ namespace Crawl
 
 		// Tile edit mode
 		std::vector<std::string> wallVarientShortNames;
+		std::vector<std::string> floorVarientShortNames;
+
 		DungeonTile* selectedTile = nullptr;
 		ivec2 selectedTilePosition = { 0,0 };
 		ivec2 selectedTileMoveObjectsTo = { 0,0 };
