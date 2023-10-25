@@ -58,16 +58,20 @@ namespace Crawl
 		void EnableLight(int lightIndex) { enabledLights[lightIndex] = true; }
 		void DisableLight(int lightIndex) { enabledLights[lightIndex] = false; }
 
-		void RemoveFrontDoorLock(int lockID) { frontDoorUnlocked[lockID-1] = true; }
+		void RemoveFrontDoorLock(int lockID) { frontDoorUnlocked[lockID] = true; }
 		void ClearLocksObject();
 
 		void ConfigureLobby();
 		void ConfigureLobbyDoor();
+		void UpdateDoorStateEvent();
 
 		void DoEvent(int eventID);
 
 		void ActivateLobbyLight() { lobbyHasTriggeredLightning = true; lobbyLightningTimeCurrent = 0.0f; }
 		void UpdateLobbyVisuals(float delta);
+		void UpdateLobbyVisualsLightning(float delta);
+		void UpdateLobbyVisualsLocks(float delta);
+
 
 		void DoFTUEEvent(FTUEEvent event);
 
@@ -79,9 +83,9 @@ namespace Crawl
 
 		// Lobby Configuration Items
 		// Status
-		bool manageLobby = false;
-		DoorState doorStates[8] = { DoorState::Open, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed };
-		bool enabledLights[8] = { true, false, false, false, false, false, false, false };
+		bool manageLobby = true;
+		DoorState doorStates[8] = { DoorState::Closed, DoorState::Open, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed };
+		bool enabledLights[8] = { false, true, false, false, false, false, false, false };
 		bool lobbyHasTriggeredLightning = false;
 		
 		// References
@@ -102,12 +106,25 @@ namespace Crawl
 		const float lobbyLightningStrikeTime = 0.5f;
 
 		// Front Door Locks
+		bool frontDoorUpdateTriggered = false;
 		bool frontDoorUnlocked[4] = { false, false, false, false };
+		bool frontDoorUnlockAnimationStarted[4] = { false, false, false, false };
+		float frontDoorUnlockHingeT[4] = { 0,0,0,0 };
+		float frontDoorHingePosStart = 1.5f;
+		float frontDoorHingePosEnd = -178.0f;
+		float frontDoorHingeOpenSpeed = 0.50f;
+		float frontDoorHingeZPositions[4] = { 1.95f, 1.65, 1.35, 1.05 };
+
 		Object* frontDoorLocksSceneObject = nullptr;
 		Object* frontDoorLeft = nullptr;
 		Object* frontDoorRight = nullptr;
 		Object* frontDoorLocksLatches[4] = { nullptr, nullptr, nullptr, nullptr };
-		//float frontDoorLockZPositions[4] = {  }
+
+		bool frontDoorOpenAnimationStarted = false;
+		float frontDoorOpenT = 0.0f;
+		float frontDoorOpenRotationStart = 90;
+		float frontDoorOpenRotationEnd = 130;
+		float frontDoorOpenSpeed = 1.0f;
 
 		std::string frontDoorLocksObjectFilePath = "crawler/object/lobbyFrontDoorLocks.object";
 		std::string frontDoorLocksLeftDoor = "crawler/model/door_frontdoor_left.object";

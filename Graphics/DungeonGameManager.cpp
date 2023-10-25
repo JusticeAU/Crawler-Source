@@ -72,7 +72,8 @@ bool Crawl::DungeonGameManager::DrawGUIInternal()
 		ImGui::PopID();
 	}
 	ImGui::PopID();
-
+	ImGui::Text("Debug stuff");
+	if(ImGui::Button("Trigger animations")) UpdateDoorStateEvent();
 	ImGui::PushID("Door Rotations");
 	if (frontDoorLeft) // door is configured
 	{
@@ -98,7 +99,10 @@ bool Crawl::DungeonGameManager::DrawGUIInternal()
 void Crawl::DungeonGameManager::Update(float delta)
 {
 	if (player->GetDungeonLoaded()->isLobby)
+	{
 		UpdateLobbyVisuals(delta);
+		UpdateDoorStateEvent();
+	}
 }
 
 void Crawl::DungeonGameManager::RunGMEvent(const DungeonGameManagerEvent& gme)
@@ -153,13 +157,21 @@ void Crawl::DungeonGameManager::RunGMEvent(const DungeonGameManagerEvent& gme)
 
 void Crawl::DungeonGameManager::ClearLocksObject()
 {
+	// Clear up scene objects
 	if (frontDoorLocksSceneObject)
 		frontDoorLocksSceneObject->markedForDeletion = true;
 
 	frontDoorLocksSceneObject = nullptr;
 	frontDoorLeft = nullptr;
 	frontDoorRight = nullptr;
-	for (int i = 0; i < 4; i++) frontDoorLocksLatches[i] = nullptr;
+	for (int i = 0; i < 4; i++)
+	{
+		frontDoorLocksLatches[i] = nullptr;
+		if (frontDoorUnlockAnimationStarted[i]) frontDoorUnlockHingeT[i] == 1.0f; // ensure these have finished.
+	}
+
+	// Clear animation flags for next time we approach the door
+	frontDoorUpdateTriggered = false;
 }
 
 void Crawl::DungeonGameManager::ConfigureLobby()
@@ -239,10 +251,36 @@ void Crawl::DungeonGameManager::ConfigureLobbyDoor()
 		frontDoorLocksLatches[i] = frontDoorLocksSceneObject->children[0]->children[0]->children[i + 1]->children[0];
 		frontDoorLocksSceneObject->children[0]->children[0]->children[i + 1]->children[1]->LoadFromJSON(ReadJSONFromDisk(frontDoorLocksBracket));
 		frontDoorLocksSceneObject->children[1]->children[0]->children[i + 1]->children[0]->LoadFromJSON(ReadJSONFromDisk(frontDoorLocksPadEye));
+		if(frontDoorUnlockAnimationStarted[i])
+			frontDoorLocksLatches[i]->SetLocalRotationZ(frontDoorHingePosEnd);
+		else
+		{
+			// load the lock asset
+		}
+	}
+}
+// This is triggered when the player is facing west (toward the main door) and within a particular quadrant
+void Crawl::DungeonGameManager::UpdateDoorStateEvent()
+{
+	// we check this once per step and make sure they are in the right spot.
+	if (frontDoorUpdateTriggered) return;
 
+	if (player->GetOrientation() != WEST_INDEX) return;
+	ivec2 playerPos = player->GetPosition();
+	if (!(
+		playerPos.x >= -1 && playerPos.x <= 1 &&
+		playerPos.y >= -1 && playerPos.x <= 1 )) return;
 
-
-		//if (frontDoorUnlocked[i]) frontDoorLocksSceneObject->children[i]->children[0]->markedForDeletion = true;
+	frontDoorUpdateTriggered = true;
+	for (int i = 0; i < 4; i++)
+	{
+		if (frontDoorUnlocked[i] && !frontDoorUnlockAnimationStarted[i])
+		{
+			// Update look animation state
+			frontDoorUnlockAnimationStarted[i] = true;
+			
+			// Play SFX
+		}
 	}
 }
 
@@ -307,15 +345,21 @@ void Crawl::DungeonGameManager::DoEvent(int eventID)
 
 void Crawl::DungeonGameManager::UpdateLobbyVisuals(float delta)
 {
+	UpdateLobbyVisualsLightning(delta);
+	if(manageLobby) UpdateLobbyVisualsLocks(delta);
+}
+
+void Crawl::DungeonGameManager::UpdateLobbyVisualsLightning(float delta)
+{
 	// lightning strike
-	// This gotta be moved to some game / global event manager
+// This gotta be moved to some game / global event manager
 	if (lobbyHasTriggeredLightning && lobbyLightingLight != nullptr && lobbyLightningTimeCurrent < (lobbyLightningStrikeTime + 0.15f))
 	{
 		float t = glm::bounceEaseIn(glm::clamp(lobbyLightningTimeCurrent / lobbyLightningStrikeTime, 0.0f, 1.0f));
 		t = glm::clamp(t, 0.0f, 1.0f);
 		lobbyLightingLight->intensity = MathUtils::Lerp(0.0f, 1000.0f, t);
 		lobbyLightingLight->UpdateLight();
-		
+
 		if (t > 0.3f && !playedSfx)
 		{
 			AudioManager::PlaySound(lightningSfx);
@@ -333,6 +377,39 @@ void Crawl::DungeonGameManager::UpdateLobbyVisuals(float delta)
 			lobbyLightingLight->intensity = 0.0f;
 			lobbyLightingLight->UpdateLight();
 		}
+	}
+}
+
+void Crawl::DungeonGameManager::UpdateLobbyVisualsLocks(float delta)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		if (frontDoorUnlockHingeT[i] == 1.0f)
+			continue;
+
+		float hingeDelta = (1 / frontDoorHingeOpenSpeed) * delta;
+		if (frontDoorUnlockAnimationStarted[i])
+		{
+			float t = frontDoorUnlockHingeT[i] = min(frontDoorUnlockHingeT[i] + hingeDelta, 1.0f);
+			float tEased = glm::bounceEaseOut(t);
+			frontDoorLocksLatches[i]->SetLocalRotationZ(MathUtils::LerpDegrees(frontDoorHingePosStart, frontDoorHingePosEnd, tEased));
+			if(i == 3)
+			{
+				if (t == 1.0f)
+				{
+					frontDoorOpenAnimationStarted = true;
+				}
+			}
+		}
+	}
+
+	if (frontDoorOpenAnimationStarted)
+	{
+		float doorDelta = (1 / frontDoorOpenSpeed) * delta;
+		float t = frontDoorOpenT = min(frontDoorOpenT + doorDelta, 1.0f);
+		float tEased = glm::bounceEaseOut(t);
+		frontDoorLeft->SetLocalRotationZ(MathUtils::LerpDegrees(frontDoorOpenRotationStart, frontDoorOpenRotationStart-frontDoorOpenRotationEnd, tEased));
+		frontDoorRight->SetLocalRotationZ(MathUtils::LerpDegrees(frontDoorOpenRotationStart, frontDoorOpenRotationStart+frontDoorOpenRotationEnd, tEased));
 	}
 }
 
