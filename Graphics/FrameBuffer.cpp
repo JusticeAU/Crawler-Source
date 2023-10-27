@@ -237,22 +237,35 @@ FrameBuffer::FrameBuffer(Type type)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_gNormal, 0);
-		// color + specular color buffer
-		// We use a simplified gBuffer for SSAO only, don't need this right now.
-		//glGenTextures(1, &m_gAlbedo);
-		//glBindTexture(GL_TEXTURE_2D, m_gAlbedo);
-		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		//glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_gAlbedo, 0);
+		
+		// color + specular color buffer - We use a simplified gBuffer for SSAO & DepthPrePass only, don't need this right now, we are still forwardish rendered.
+		/*
+		glGenTextures(1, &m_gAlbedo);
+		glBindTexture(GL_TEXTURE_2D, m_gAlbedo);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_gAlbedo, 0);
+		*/
+
 		// tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
 		unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 		glDrawBuffers(2, attachments); // Note the 2 here, we're not using the albedo buffer.
-		// create and attach depth buffer (renderbuffer)
-		glGenRenderbuffers(1, &m_rboDepth);
+		
+		// create and attach depth buffer (renderbuffer) - old method from tutorial, using a depth stencil texture for consistency with other buffers.
+		/*glGenRenderbuffers(1, &m_rboDepth);
 		glBindRenderbuffer(GL_RENDERBUFFER, m_rboDepth);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_width, m_height);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rboDepth);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_rboDepth);*/
+
+		// Generate the depth stencil
+		glGenTextures(1, &m_depthID);
+		glBindTexture(GL_TEXTURE_2D, m_depthID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL, res.x, res.y, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthID, 0);
+
 		// finally check if framebuffer is complete
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 			LogUtils::Log("Framebuffer not complete!");

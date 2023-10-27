@@ -29,7 +29,7 @@
 #include "ComponentRenderer.h"
 #include "Model.h"
 
-bool SceneRenderer::msaaEnabled = true;
+bool SceneRenderer::msaaEnabled = false; // leave false whilst refactoring depth prepass and AA.
 bool SceneRenderer::ssaoEnabled = true;
 ComponentCamera* SceneRenderer::frustumCullingCamera = nullptr;
 float SceneRenderer::frustumCullingForgiveness = 5.0f;
@@ -48,7 +48,7 @@ SceneRenderer::SceneRenderer()
 	// Initialise the Render Buffers
 #pragma region Render Buffer creation
 	// 1 to render the scene to, a second to blit to if we are multisampling, and then a 3rd for the final post processing effects to land to.
-	frameBufferRaw = new FrameBuffer(FrameBuffer::Type::CameraTargetMultiSample);
+	frameBufferRaw = new FrameBuffer(FrameBuffer::Type::CameraTargetSingleSample);
 	frameBufferRaw->MakePrimaryTarget();
 	string FbName = "Scene Renderer_FrameBuffer";
 	TextureManager::s_instance->AddFrameBuffer(FbName.c_str(), frameBufferRaw); // add the texture to the manager so we can bind it to meshes and stuff.
@@ -381,9 +381,9 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	else cullingFrustum = nullptr;
 	vec3 cameraPosition = c->GetWorldSpacePosition();
 	
-	// Render Scene SSAO Pre-Pass
+	// Render Scene SSAO & Depth Pre-Pass
 	FrameBuffer* blurBufferUsed = nullptr; // store this outside so we can assign it based on whether we blurred, and which blur buffer we used.
-	if (ssaoEnabled)
+	if (true)
 	{
 		// Build G Buffer for SSAO with a Geomerty Pass.
 		ssaoGBuffer->BindTarget();
@@ -398,77 +398,87 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 			o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::SSAOgBuffer);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		// Do the SSAO pass
-		ssaoFBO->BindTarget();
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		ShaderProgram* ssaoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOTermPass");
-		ssaoShader->Bind();
-		ssaoShader->SetFloatUniform("radius", ssaoRadius);
-		ssaoShader->SetFloatUniform("bias", ssaoBias);
-		glm::vec2 screenSize = Window::GetViewPortSize();
-		ssaoShader->SetVector2Uniform("screenSize", screenSize);
-		ssaoShader->SetIntUniform("kernelTaps", ssaoKernelTaps);
-
-		ssaoShader->SetIntUniform("gPosition", 0);
-		ssaoShader->SetIntUniform("gNormal", 1);
-		ssaoShader->SetIntUniform("texNoise", 2);
-		ssaoShader->SetMatrixUniform("projection", c->GetProjectionMatrix());
-		ssaoGBuffer->BindGPosition(0);
-		ssaoGBuffer->BindGNormal(1);
-		ssaoNoiseTexture->Bind(2);
-		PostProcess::PassThrough(true);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		FrameBuffer::UnBindTexture(0);
-		FrameBuffer::UnBindTexture(1);
-		FrameBuffer::UnBindTexture(2);
-
-		// Do the SSAO Blur Pass
-		if (ssaoBlur)
+		if (ssaoEnabled)
 		{
-			ssaoBlurFBO->BindTarget();
-			if (ssaoGaussianBlur)
+			// Do the SSAO pass
+			ssaoFBO->BindTarget();
+			glClear(GL_COLOR_BUFFER_BIT);
+
+			ShaderProgram* ssaoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOTermPass");
+			ssaoShader->Bind();
+			ssaoShader->SetFloatUniform("radius", ssaoRadius);
+			ssaoShader->SetFloatUniform("bias", ssaoBias);
+			glm::vec2 screenSize = Window::GetViewPortSize();
+			ssaoShader->SetVector2Uniform("screenSize", screenSize);
+			ssaoShader->SetIntUniform("kernelTaps", ssaoKernelTaps);
+
+			ssaoShader->SetIntUniform("gPosition", 0);
+			ssaoShader->SetIntUniform("gNormal", 1);
+			ssaoShader->SetIntUniform("texNoise", 2);
+			ssaoShader->SetMatrixUniform("projection", c->GetProjectionMatrix());
+			ssaoGBuffer->BindGPosition(0);
+			ssaoGBuffer->BindGNormal(1);
+			ssaoNoiseTexture->Bind(2);
+			PostProcess::PassThrough(true);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+			FrameBuffer::UnBindTexture(0);
+			FrameBuffer::UnBindTexture(1);
+			FrameBuffer::UnBindTexture(2);
+
+			// Do the SSAO Blur Pass
+			if (ssaoBlur)
 			{
-				ShaderProgram* ssaoBlur = ShaderManager::GetShaderProgram("engine/shader/SSAOGaussianBlurPass");
-				ssaoBlur->Bind();
-				ssaoBlur->SetIntUniform("image", 0);
-				ssaoBlur->SetIntUniform("horizontal", true);
-				ssaoFBO->BindTexture(0);
-				PostProcess::PassThrough(true);
-				FrameBuffer::UnBindTexture(0);
+				ssaoBlurFBO->BindTarget();
+				if (ssaoGaussianBlur)
+				{
+					ShaderProgram* ssaoBlur = ShaderManager::GetShaderProgram("engine/shader/SSAOGaussianBlurPass");
+					ssaoBlur->Bind();
+					ssaoBlur->SetIntUniform("image", 0);
+					ssaoBlur->SetIntUniform("horizontal", true);
+					ssaoFBO->BindTexture(0);
+					PostProcess::PassThrough(true);
+					FrameBuffer::UnBindTexture(0);
 
-				ssaoBlurFBO->BindTexture(0);
-				ssaoBlurFBO2->BindTarget();
-				ssaoBlur->SetIntUniform("horizontal", false);
-				PostProcess::PassThrough(true);
-				FrameBuffer::UnBindTexture(0);
+					ssaoBlurFBO->BindTexture(0);
+					ssaoBlurFBO2->BindTarget();
+					ssaoBlur->SetIntUniform("horizontal", false);
+					PostProcess::PassThrough(true);
+					FrameBuffer::UnBindTexture(0);
 
-				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-				blurBufferUsed = ssaoBlurFBO2;
+					glBindFramebuffer(GL_FRAMEBUFFER, 0);
+					blurBufferUsed = ssaoBlurFBO2;
+				}
+				else
+				{
+					ShaderProgram* ssaoBlur = ShaderManager::GetShaderProgram("engine/shader/SSAOBlurPass");
+					ssaoBlur->Bind();
+					ssaoBlur->SetIntUniform("ssaoInput", 0);
+					ssaoFBO->BindTexture(0);
+					PostProcess::PassThrough(true);
+					FrameBuffer::UnBindTexture(0);
+
+					glBindFramebuffer(GL_FRAMEBUFFER, 0);
+					blurBufferUsed = ssaoBlurFBO;
+				}
 			}
-			else
-			{
-				ShaderProgram* ssaoBlur = ShaderManager::GetShaderProgram("engine/shader/SSAOBlurPass");
-				ssaoBlur->Bind();
-				ssaoBlur->SetIntUniform("ssaoInput", 0);
-				ssaoFBO->BindTexture(0);
-				PostProcess::PassThrough(true);
-				FrameBuffer::UnBindTexture(0);
-
-				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-				blurBufferUsed = ssaoBlurFBO;
-			}
+			else blurBufferUsed = ssaoFBO;
 		}
-		else blurBufferUsed = ssaoFBO;
 	}
 
 	// Render Scene Opaque Pass
 	frameBufferRaw->BindTarget();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	ssaoGBuffer->BindAsDepthAttachment();
+	glDepthFunc(GL_EQUAL);
+	glDepthMask(GL_FALSE);
+
 	for (auto& o : scene->objects)
 		o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::Standard);
+
+	glDepthFunc(GL_LESS);
+	glDepthMask(GL_TRUE);
 
 	// If MSAA is enabled then we need to blit to a Single Sample surface before doing PostProcess.
 	if (msaaEnabled)
@@ -616,7 +626,7 @@ void SceneRenderer::RenderTransparent(Scene* scene, ComponentCamera* camera)
 		frameBufferCurrent->BindTarget();
 		
 		if(msaaEnabled) frameBufferBlit->BindAsDepthAttachment();
-		else frameBufferRaw->BindAsDepthAttachment();
+		else ssaoGBuffer->BindAsDepthAttachment();
 		// draw all components w/ transparent mode
 		glm::mat4 pv = camera->GetViewProjectionMatrix();
 		glm::vec3 pos = camera->GetWorldSpacePosition();

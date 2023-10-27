@@ -207,7 +207,12 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				if (materialArray[0]->blendMode == Material::BlendMode::Transparent) return;
 
 				ShaderProgram* ssaoGeoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOGeometryPass");
+				// Positions and Rotations
+				glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
 				ssaoGeoShader->SetMatrixUniform("model", componentParent->transform * model->modelTransform);
+				ssaoGeoShader->SetMatrixUniform("pvmMatrix", pvm);
+				ssaoGeoShader->SetMatrixUniform("mMatrix", componentParent->transform* model->modelTransform);
+
 				if (isAnimated)
 					BindBoneTransform();
 
