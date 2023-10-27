@@ -22,6 +22,14 @@ namespace Crawl
 	class DungeonMenu
 	{
 	public:
+		enum class Menu
+		{
+			None,
+			Main,
+			Pause,
+			Thanks,
+			Credits
+		};
 		enum class IntroStage
 		{
 			Idle,
@@ -30,9 +38,14 @@ namespace Crawl
 			Text
 		};
 		DungeonMenu();
+
+		void OpenMenu(Menu menu);
+
 		void Update(float delta);
 		void DrawMainMenu(float delta);
 		void DrawPauseMenu(float delta);
+		void DrawCredits(float delta);
+		void DrawThanks(float delta);
 
 		void DrawBlackScreen(float alpha, bool onTop = false);
 		void DrawImage(Texture* tex, float alpha);
@@ -80,6 +93,10 @@ namespace Crawl
 		DungeonMenuButton* pauseButtonReturnToMenu;
 		DungeonMenuButton* pauseButtonQuit;
 
+		// Thanks
+		string menuThanksCardTexPath = "crawler/texture/gui/prompt_thankyou.tga";
+		Texture* menuThanksCardTex = nullptr;
+
 
 		// Main Menu camera
 		Object* cameraObject = nullptr;
@@ -98,6 +115,9 @@ namespace Crawl
 
 
 	private:
+		Menu currentMenu = Menu::None;
+
+		glm::vec2 screenSize = { 0,0 };
 		glm::ivec2 titleMenuSize = { 600, 300 };
 		glm::ivec2 pauseMenuSize = { 600, 600 };
 

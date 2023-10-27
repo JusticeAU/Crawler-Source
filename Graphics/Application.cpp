@@ -260,6 +260,8 @@ void Application::InitialiseAdditionalGameAssets()
 	dungeonPlayer->SetMenu(menu);
 	Crawl::DungeonGameManager::Init();
 	Crawl::DungeonGameManager::Get()->SetPlayer(dungeonPlayer);
+	Crawl::DungeonGameManager::Get()->SetMenu(menu);
+	if(developerMode) Crawl::DungeonGameManager::Get()->manageLobby = false;
 }
 
 void Application::InitialiseMenu()
@@ -322,7 +324,7 @@ void Application::Update(float delta)
 {
 	switch (s_mode)
 	{
-	case Mode::MainMenu:
+	case Mode::Menu:
 	{
 		menu->Update(delta);
 		break;

@@ -1,6 +1,7 @@
 #include "DungeonMenu.h"
 #include "DungeonMenuButton.h"
 #include "DungeonPlayer.h"
+#include "DungeonGameManager.h"
 #include "graphics.h"
 #include "Application.h"
 #include "Input.h"
@@ -33,12 +34,48 @@ Crawl::DungeonMenu::DungeonMenu()
 	intro04 = TextureManager::GetTexture("crawler/texture/gui/intro/04.tga");
 	intro05 = TextureManager::GetTexture("crawler/texture/gui/intro/05.tga");
 	introPressSpace = TextureManager::GetTexture("crawler/texture/gui/intro/begin.tga");
+
+	// Thanks screen
+
+	menuThanksCardTex = TextureManager::GetTexture(menuThanksCardTexPath);
+}
+
+void Crawl::DungeonMenu::OpenMenu(Menu menu)
+{
+	currentMenu = menu;
+	app->s_mode = Application::Mode::Menu;
+	Window::GetWindow()->SetMouseCursorHidden(false);
 }
 
 void Crawl::DungeonMenu::Update(float delta)
 {
-	DrawMainMenu(delta);
-	UpdateMainMenuCamera(delta);
+	UpdatePositions();
+
+	switch (currentMenu)
+	{
+	case Menu::Main:
+	{
+		DrawMainMenu(delta);
+		UpdateMainMenuCamera(delta);
+		break;
+	}
+	case Menu::Pause:
+	{
+		DrawPauseMenu(delta);
+		break;
+	}
+	case Menu::Credits:
+	{
+		DrawCredits(delta);
+		break;
+	}
+	case Menu::Thanks:
+	{
+		DrawThanks(delta);
+		break;
+	}
+	}
+
 }
 
 void Crawl::DungeonMenu::DrawMainMenu(float delta)
@@ -118,6 +155,32 @@ void Crawl::DungeonMenu::DrawPauseMenu(float delta)
 	ImGui::End();
 }
 
+void Crawl::DungeonMenu::DrawCredits(float delta)
+{
+}
+
+void Crawl::DungeonMenu::DrawThanks(float delta)
+{
+	DrawBlackScreen(1.0f);
+
+	// Thanks
+	ImGui::SetNextWindowSize({ 850, 650 });
+	ImGui::SetNextWindowPos({ screenSize.x/2, 0 }, 0, { 0.5f, 0.0f });
+	ImGui::Begin("Thanks", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+	DrawImage(menuThanksCardTex, 1.0f);
+	ImGui::End();
+
+	// Buttons
+	ImGui::SetNextWindowSize({ (float)titleMenuSize.x, (float)titleMenuSize.y });
+	ImGui::SetNextWindowPos({ (float)mainMenuXOffset, (float)mainMenuYOffset }, 0, { 0.0f, 1.0f });
+	ImGui::Begin("Buttons", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+	if (pauseButtonReturnToMenu->Update(delta))
+		ExecuteReturnToMainMenu();
+	if (pauseButtonQuit->Update(delta))
+		ExecuteQuitGame();
+	ImGui::End();
+}
+
 void Crawl::DungeonMenu::DrawBlackScreen(float alpha, bool onTop)
 {
 	glm::vec2 size = Window::GetViewPortSize();
@@ -147,9 +210,9 @@ void Crawl::DungeonMenu::DrawImage(Texture* tex, float alpha)
 void Crawl::DungeonMenu::UpdatePositions()
 {
 	window = Window::Get();
-	glm::ivec2 size = window->GetViewPortSize();
-	mainMenuXOffset = size.x / 10;
-	mainMenuYOffset = (size.y / 10) * 9;
+	screenSize = window->GetViewPortSize();
+	mainMenuXOffset = screenSize.x / 10;
+	mainMenuYOffset = (screenSize.y / 10) * 9;
 }
 
 void Crawl::DungeonMenu::UpdateMainMenuCamera(float delta)
@@ -281,6 +344,8 @@ void Crawl::DungeonMenu::ExecuteQuitGame()
 
 void Crawl::DungeonMenu::ExecuteResumeGame()
 {
+	currentMenu = Menu::None;
+	app->s_mode = Application::Mode::Game;
 	Window::GetWindow()->SetMouseCursorHidden(true);
 	player->SetStateIdle();;
 }
@@ -292,6 +357,8 @@ void Crawl::DungeonMenu::ExecuteToggleFullScreen()
 
 void Crawl::DungeonMenu::ExecuteReturnToLobby()
 {
+	currentMenu = Menu::None;
+	app->s_mode = Application::Mode::Game;
 	Window::GetWindow()->SetMouseCursorHidden(true);
 	player->SetStateIdle();
 	player->ClearCheckpoint();
@@ -300,6 +367,7 @@ void Crawl::DungeonMenu::ExecuteReturnToLobby()
 
 void Crawl::DungeonMenu::ExecuteReturnToMainMenu()
 {
+	DungeonGameManager::Get()->ResetGameState();
 	app->dungeon->Load("crawler/dungeon/lobby.dungeon");
 	player->SetStateIdle();
 	player->Teleport({ 11, -2 });
@@ -312,7 +380,8 @@ void Crawl::DungeonMenu::ExecuteReturnToMainMenu()
 	lobbyReturnEnabled = false;
 	newGameSequenceStarted = false;
 	newGameSequenceTime = 0.0f;
-	app->s_mode = Application::Mode::MainMenu;
+	app->s_mode = Application::Mode::Menu;
+	currentMenu = Menu::Main;
 
 	buttonNewGame->SetActive();
 	buttonSettings->SetActive();

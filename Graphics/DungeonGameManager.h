@@ -10,6 +10,7 @@ namespace Crawl
 	class DungeonDoor;
 	class DungeonLight;
 	class DungeonGameManagerEvent;
+	class DungeonMenu;
 
 	class DungeonGameManager
 	{
@@ -50,6 +51,12 @@ namespace Crawl
 		void Update(float delta);
 
 		void SetPlayer(DungeonPlayer* player) { instance->player = player; }
+		void SetMenu(DungeonMenu* menu) { instance->menu = menu; }
+
+		void PauseGame();
+		void UnpauseGame();
+
+		void ResetGameState();
 		
 		void RunGMEvent(const DungeonGameManagerEvent& gme);
 		void OpenDoor(int doorIndex) { doorStates[doorIndex] = DoorState::Open; }
@@ -64,6 +71,7 @@ namespace Crawl
 		void ConfigureLobby();
 		void ConfigureLobbyDoor();
 		void UpdateDoorStateEvent();
+		void MakeLobbyExitTraversable();
 
 		void DoEvent(int eventID);
 
@@ -74,16 +82,17 @@ namespace Crawl
 
 
 		void DoFTUEEvent(FTUEEvent event);
+		bool manageLobby = true;
 
 	private:
 		DungeonGameManager();
 		static DungeonGameManager* instance;
 		
 		DungeonPlayer* player;
+		DungeonMenu* menu;
 
 		// Lobby Configuration Items
 		// Status
-		bool manageLobby = true;
 		DoorState doorStates[8] = { DoorState::Closed, DoorState::Open, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed };
 		bool enabledLights[8] = { false, true, false, false, false, false, false, false };
 		bool lobbyHasTriggeredLightning = false;
@@ -105,14 +114,14 @@ namespace Crawl
 		float lobbyLightningTimeCurrent = 0.0f;
 		const float lobbyLightningStrikeTime = 0.5f;
 
-		// Front Door Locks
+		// Front Door lock hinges
 		bool frontDoorUpdateTriggered = false;
 		bool frontDoorUnlocked[4] = { false, false, false, false };
 		bool frontDoorUnlockAnimationStarted[4] = { false, false, false, false };
 		float frontDoorUnlockHingeT[4] = { 0,0,0,0 };
 		float frontDoorHingePosStart = 1.5f;
 		float frontDoorHingePosEnd = -178.0f;
-		float frontDoorHingeOpenSpeed = 0.50f;
+		float frontDoorHingeOpenSpeed = 0.70f;
 		float frontDoorHingeZPositions[4] = { 1.95f, 1.65, 1.35, 1.05 };
 
 		Object* frontDoorLocksSceneObject = nullptr;
@@ -120,11 +129,29 @@ namespace Crawl
 		Object* frontDoorRight = nullptr;
 		Object* frontDoorLocksLatches[4] = { nullptr, nullptr, nullptr, nullptr };
 
+		// Front Door Lock PadLocks
+		string frontDoorPadLockObjectPath = "crawler/object/lobbyFrontDoorPadLock.object";
+		string frontDoorPadLockShacklePath = "crawler/model/door_frontdoor_padlock_shackle.object";
+		string frontDoorPadLockPadlockPath = "crawler/model/door_frontdoor_padlock_lock.object";
+		float frontDoorPadLockOpenAngle = -52.0f;
+		float frontDoorPadLockOpenSpeed = 0.4f;
+		float frontDoorPadLockFallSpeed = 0.3f;
+
+		float frontDoorUnlockShackleT[4] = { 0,0,0,0 };
+		float frontDoorUnlockPadlockT[4] = { 0,0,0,0 };
+		float frontDoorPadlockZPositions[4] = { 0, 0, 0, 0 }; // generated in constructor based on hinge positions
+		float frontDoorPadlockZOffset = -0.24;
+		Object* frontDoorPadLockObjects[4] = { nullptr, nullptr, nullptr, nullptr };
+		Object* frontDoorPadLockShackleObjects[4] = { nullptr, nullptr, nullptr, nullptr };
+		//Object* frontDoorPadLockLockObjects[4] = { nullptr, nullptr, nullptr, nullptr };
+
+		// Front Door
 		bool frontDoorOpenAnimationStarted = false;
 		float frontDoorOpenT = 0.0f;
 		float frontDoorOpenRotationStart = 90;
 		float frontDoorOpenRotationEnd = 130;
 		float frontDoorOpenSpeed = 1.0f;
+		glm::ivec2 positionToMakeTraversable = { -2, 0 };
 
 		std::string frontDoorLocksObjectFilePath = "crawler/object/lobbyFrontDoorLocks.object";
 		std::string frontDoorLocksLeftDoor = "crawler/model/door_frontdoor_left.object";
@@ -133,8 +160,7 @@ namespace Crawl
 		std::string frontDoorLocksLatch = "crawler/model/door_latch.object";
 		std::string frontDoorLocksPadEye = "crawler/model/door_pad_eye.object";
 
-		float doorSwingAmount = 0.0f;
-
+		float doorSwingAmount = 0.0f; // this is debug for imgui
 
 		// FTUE Configuration Items
 		std::string promptTurn = "crawler/texture/gui/prompt_turn.tga";

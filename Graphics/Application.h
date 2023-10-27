@@ -20,7 +20,7 @@ class Application
 public:
 	enum class Mode
 	{
-		MainMenu,
+		Menu,
 		Game,
 		Design,
 		Art,

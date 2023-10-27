@@ -9,12 +9,15 @@
 
 #include "LogUtils.h"
 #include "AudioManager.h"
+#include "DungeonMenu.h"
 
 Crawl::DungeonGameManager* Crawl::DungeonGameManager::instance = nullptr;
 
 Crawl::DungeonGameManager::DungeonGameManager()
 {
 	instance = this;
+	// Generate the padlock Z positions based on the hinges.
+	for (int i = 0; i < 4; i++) frontDoorPadlockZPositions[i] = frontDoorHingeZPositions[i] + frontDoorPadlockZOffset;
 }
 
 void Crawl::DungeonGameManager::Init()
@@ -105,6 +108,40 @@ void Crawl::DungeonGameManager::Update(float delta)
 	}
 }
 
+void Crawl::DungeonGameManager::PauseGame()
+{
+	menu->OpenMenu(DungeonMenu::Menu::Pause);
+}
+
+void Crawl::DungeonGameManager::UnpauseGame()
+{
+	player->SetStateIdle();
+}
+
+void Crawl::DungeonGameManager::ResetGameState()
+{
+	// this is gross!
+	for (int i = 0; i < 8; i++) doorStates[i] = DoorState::Closed;
+	doorStates[1] = DoorState::Open;
+	
+	for (int i = 0; i < 8; i++) enabledLights[i] = false;
+	enabledLights[1] = true;
+
+	lobbyHasTriggeredLightning = false;
+	frontDoorUpdateTriggered = false;
+	for (int i = 0; i < 4; i++)
+	{
+		frontDoorUnlocked[i] = false;
+		frontDoorUnlockAnimationStarted[i] = false;
+		frontDoorUnlockHingeT[i] = 0;
+		frontDoorUnlockShackleT[i] = 0;
+		frontDoorUnlockPadlockT[i] = 0;
+	}
+
+	frontDoorOpenAnimationStarted = false;
+	frontDoorOpenT = 0.0f;
+}
+
 void Crawl::DungeonGameManager::RunGMEvent(const DungeonGameManagerEvent& gme)
 {
 	switch (gme.type)
@@ -164,10 +201,17 @@ void Crawl::DungeonGameManager::ClearLocksObject()
 	frontDoorLocksSceneObject = nullptr;
 	frontDoorLeft = nullptr;
 	frontDoorRight = nullptr;
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++) // All purpose loop for doing things 4 times!
 	{
 		frontDoorLocksLatches[i] = nullptr;
 		if (frontDoorUnlockAnimationStarted[i]) frontDoorUnlockHingeT[i] == 1.0f; // ensure these have finished.
+		
+		if (frontDoorPadLockObjects[i])
+		{
+			frontDoorPadLockObjects[i]->markedForDeletion = true;
+			frontDoorPadLockObjects[i] = nullptr;
+		}
+	
 	}
 
 	// Clear animation flags for next time we approach the door
@@ -251,11 +295,24 @@ void Crawl::DungeonGameManager::ConfigureLobbyDoor()
 		frontDoorLocksLatches[i] = frontDoorLocksSceneObject->children[0]->children[0]->children[i + 1]->children[0];
 		frontDoorLocksSceneObject->children[0]->children[0]->children[i + 1]->children[1]->LoadFromJSON(ReadJSONFromDisk(frontDoorLocksBracket));
 		frontDoorLocksSceneObject->children[1]->children[0]->children[i + 1]->children[0]->LoadFromJSON(ReadJSONFromDisk(frontDoorLocksPadEye));
-		if(frontDoorUnlockAnimationStarted[i])
+		
+		if(frontDoorUnlockAnimationStarted[i]) // Catch all for locks that have unlocked
 			frontDoorLocksLatches[i]->SetLocalRotationZ(frontDoorHingePosEnd);
 		else
 		{
 			// load the lock asset
+			frontDoorPadLockObjects[i] = Scene::CreateObject();
+			frontDoorPadLockObjects[i]->LoadFromJSON(ReadJSONFromDisk(frontDoorPadLockObjectPath));
+			vec3 pos = frontDoorPadLockObjects[i]->localPosition;
+			pos.z = frontDoorHingeZPositions[i] - 0.24f;
+			frontDoorPadLockObjects[i]->SetLocalPosition(pos);
+
+			frontDoorPadLockShackleObjects[i] = frontDoorPadLockObjects[i]->children[0];
+			Object* shackleModel = Scene::CreateObject(frontDoorPadLockShackleObjects[i]->children[0]);
+			shackleModel->LoadFromJSON(ReadJSONFromDisk(frontDoorPadLockShacklePath));
+
+			Object* padlockModel = Scene::CreateObject(frontDoorPadLockObjects[i]->children[1]->children[0]);
+			padlockModel->LoadFromJSON(ReadJSONFromDisk(frontDoorPadLockPadlockPath));
 		}
 	}
 }
@@ -281,6 +338,16 @@ void Crawl::DungeonGameManager::UpdateDoorStateEvent()
 			
 			// Play SFX
 		}
+	}
+}
+
+void Crawl::DungeonGameManager::MakeLobbyExitTraversable()
+{
+	DungeonTile* tile = player->currentDungeon->GetTile(positionToMakeTraversable);
+	if (tile)
+	{
+		if((tile->maskTraverse & WEST_MASK) != WEST_MASK)
+			tile->maskTraverse += WEST_MASK;
 	}
 }
 
@@ -334,7 +401,11 @@ void Crawl::DungeonGameManager::DoEvent(int eventID)
 		player->SetFTUEPrompt(promptReset);
 		return;
 	}
-
+	case 50: // end game credit trigger
+	{
+		menu->OpenMenu(DungeonMenu::Menu::Thanks);
+		return;
+	}
 	default:
 	{
 		LogUtils::Log("Attempted to trigger event that doesnt exist (" + std::to_string(eventID) + ")");
@@ -384,32 +455,59 @@ void Crawl::DungeonGameManager::UpdateLobbyVisualsLocks(float delta)
 {
 	for (int i = 0; i < 4; i++)
 	{
-		if (frontDoorUnlockHingeT[i] == 1.0f)
-			continue;
+		if (!frontDoorUnlockAnimationStarted[i]) continue;
+		if (frontDoorUnlockHingeT[i] == 1.0f) continue;
 
-		float hingeDelta = (1 / frontDoorHingeOpenSpeed) * delta;
-		if (frontDoorUnlockAnimationStarted[i])
+		// Do Padlock open
+		if (frontDoorUnlockShackleT[i] != 1.0f)
 		{
+			float lockDelta = (1 / frontDoorPadLockOpenSpeed) * delta;
+			float t = frontDoorUnlockShackleT[i] = min(frontDoorUnlockShackleT[i] + lockDelta, 1.0f);
+			if (t > 0.85f) frontDoorUnlockShackleT[i] = t = 1.0f;
+			float easedT = glm::bounceEaseOut(t);
+			frontDoorPadLockShackleObjects[i]->localRotation.y = MathUtils::LerpDegrees(0.0f, frontDoorPadLockOpenAngle, easedT);
+			frontDoorPadLockShackleObjects[i]->SetDirtyTransform();
+			if (t < 0.5) break;
+		}
+		
+
+		// Do Padlock fall
+		if (frontDoorUnlockPadlockT[i] != 1.0f)
+		{
+			float fallDelta = (1 / frontDoorPadLockFallSpeed) * delta;
+			float t = frontDoorUnlockPadlockT[i] = min(frontDoorUnlockPadlockT[i] + fallDelta, 1.0f);
+			float easedT = glm::sineEaseIn(t);
+			frontDoorPadLockObjects[i]->localPosition.z = MathUtils::Lerp(frontDoorPadlockZPositions[i], 0, easedT);
+			frontDoorPadLockObjects[i]->SetDirtyTransform();
+			if(t < 0.2)	break;
+		}
+
+
+		// Do Hinge
+		if (frontDoorUnlockHingeT[i] != 1.0f)
+		{
+			float hingeDelta = (1 / frontDoorHingeOpenSpeed) * delta;
 			float t = frontDoorUnlockHingeT[i] = min(frontDoorUnlockHingeT[i] + hingeDelta, 1.0f);
+			if (t > 0.85f) frontDoorUnlockHingeT[i] = t = 1.0f;
 			float tEased = glm::bounceEaseOut(t);
 			frontDoorLocksLatches[i]->SetLocalRotationZ(MathUtils::LerpDegrees(frontDoorHingePosStart, frontDoorHingePosEnd, tEased));
-			if(i == 3)
-			{
-				if (t == 1.0f)
-				{
-					frontDoorOpenAnimationStarted = true;
-				}
-			}
+
+			// Check door should unlock.
+			if (i == 3 && t == 1.0f) frontDoorOpenAnimationStarted = true;
+			break;
 		}
 	}
 
-	if (frontDoorOpenAnimationStarted)
+	// Do front Door
+	if (frontDoorOpenAnimationStarted && frontDoorOpenT != 1.0f)
 	{
 		float doorDelta = (1 / frontDoorOpenSpeed) * delta;
 		float t = frontDoorOpenT = min(frontDoorOpenT + doorDelta, 1.0f);
 		float tEased = glm::bounceEaseOut(t);
 		frontDoorLeft->SetLocalRotationZ(MathUtils::LerpDegrees(frontDoorOpenRotationStart, frontDoorOpenRotationStart-frontDoorOpenRotationEnd, tEased));
 		frontDoorRight->SetLocalRotationZ(MathUtils::LerpDegrees(frontDoorOpenRotationStart, frontDoorOpenRotationStart+frontDoorOpenRotationEnd, tEased));
+		
+		if (t == 1.0f) MakeLobbyExitTraversable();
 	}
 }
 

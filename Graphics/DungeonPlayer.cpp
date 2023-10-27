@@ -45,10 +45,6 @@ void Crawl::DungeonPlayer::SetDungeon(Dungeon* dungeonPtr)
 // Returns true if the player made a game-state changing action
 bool Crawl::DungeonPlayer::Update(float deltaTime)
 {
-	//animator->DrawGUI();
-
-	if(state != MENU)	HandleFreeLook(deltaTime);
-
 	if(enableDebugUI) DrawDebugUI();
 
 	if (ftueEnabled)
@@ -58,12 +54,8 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	}
 
 	UpdateStateRH(deltaTime);
-
-	if (state == MENU)
-	{
-		gameMenu->DrawPauseMenu(deltaTime);
-	}
-	else if (state == WAIT)
+	HandleFreeLook(deltaTime);
+	if (state == WAIT)
 	{
 		moveCurrent += deltaTime;
 		if (moveCurrent >= moveSpeed)
@@ -160,7 +152,8 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 
 	if (Input::Keyboard(GLFW_KEY_ESCAPE).Down() && gameMenu) // only perform this action if the gameMenu is initialised. This wont be the case in designer mode.
 	{
-		Window::GetWindow()->SetMouseCursorHidden(false);
+
+		DungeonGameManager::Get()->PauseGame();
 		state = MENU;
 		return false;
 	}
