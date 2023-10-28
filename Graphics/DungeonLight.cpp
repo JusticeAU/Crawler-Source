@@ -65,7 +65,6 @@ void Crawl::DungeonLight::ResetRandomFlickerTime()
 {
 	float percent = (float)(rand() % 100) * 0.01f;
 	flickerCurrent = -(MathUtils::Lerp(flickerRepeatMin, flickerRepeatMax, percent));
-	std::cout << flickerCurrent << std::endl;
 }
 
 void Crawl::DungeonLight::UpdateVisual(float delta)
