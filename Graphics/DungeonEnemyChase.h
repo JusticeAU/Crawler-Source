@@ -17,11 +17,8 @@ namespace Crawl
 			INACTIVE,
 			IDLE,
 			MOVING,
-			TURNING,
-			BOUNCING,
 			STUN,
-			KICKED,
-			DYING
+			KILLING
 		};
 		enum class State
 		{
@@ -39,7 +36,8 @@ namespace Crawl
 			Turning,
 			Bonked,
 			Stunned,
-			Dying
+			Dying,
+			Killing
 		};
 
 		const bool sightReflectsOffMirrors = true;

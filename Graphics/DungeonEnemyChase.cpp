@@ -74,9 +74,12 @@ void Crawl::DungeonEnemyChase::Update()
 	}
 	else // Activated.
 	{
+		// We're performing a game update so we need to skip them to their actual live position if they havent finished updating yet.
 		state = IDLE;
 		object->SetLocalPosition(dungeonPosToObjectScale(position));
 		object->SetLocalRotationZ(orientationEulers[facing]);
+		if (animationState != AnimationState::Idle)
+			NewAnimationState(AnimationState::Idle);
 
 		// calculate path to player
 		bool canPath = dungeon->FindPath(position, dungeon->player->GetPosition(), facing);
@@ -102,7 +105,13 @@ void Crawl::DungeonEnemyChase::Update()
 				positionWant = position;
 				return;
 			}
-			state = MOVING;
+			if (positionWant == dungeon->player->GetPosition()) // kill player
+			{
+				dungeon->DamageAtPosition(positionWant, this, false, Dungeon::DamageType::Chaser);
+				NewAnimationState(AnimationState::Killing);
+				state = KILLING;
+			}
+			else state = MOVING;
 		}
 		else // Yoo we gotta turn.
 		{
@@ -422,11 +431,17 @@ void Crawl::DungeonEnemyChase::NewAnimationState(AnimationState newState, bool b
 	}
 	case AnimationState::Dying:
 	{
-		if(blend) animator->BlendToAnimation(deathAnimationToUse, 0.1f);
+		if (blend) animator->BlendToAnimation(deathAnimationToUse, 0.1f);
 		else animator->StartAnimation(deathAnimationToUse);
 		animationState = AnimationState::Dying;
 		break;
 	}
-
+	case AnimationState::Killing:
+	{
+		if (blend) animator->BlendToAnimation(animationPlayerKill, 0.1f);
+		else animator->StartAnimation(animationPlayerKill);
+		animationState = AnimationState::Killing;
+		break;
+	}
 	}
 }
