@@ -187,7 +187,7 @@ void Crawl::DungeonMenu::DrawBlackScreen(float alpha, bool onTop)
 	ImGui::SetNextWindowPos({ 0.0f - 100.0f, 0.0f - 100.0f });
 	ImGui::SetNextWindowSize({ size.x + 200.0f, size.y + 200.0f });
 	if(onTop) ImGui::SetNextWindowFocus();
-	ImGui::Begin("Black Fade", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize);
+	ImGui::Begin("Black Fade", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
 	ImGui::Image(
 		(ImTextureID)blackTex->texID,
 		{ size.x + 200.0f, size.y + 200.0f },
