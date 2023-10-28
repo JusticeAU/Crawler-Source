@@ -19,11 +19,12 @@ namespace Crawl
 
 		void UpdateVisuals(float delta);
 
-		float buttonMaxPress = 0.06f;
+		const float buttonIdlePos = -0.04f;
+		const float buttonMaxPress = 0.06f;
 
-		float buttonInTime = 0.1f;
-		float buttonHoldTime = 0.5f;
-		float buttonOutTime = 0.3f;
+		const float buttonInTime = 0.1f;
+		const float buttonHoldTime = 0.5f;
+		const float buttonOutTime = 0.3f;
 		enum class State
 		{
 			Idle,

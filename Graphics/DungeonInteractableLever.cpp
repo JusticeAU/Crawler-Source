@@ -33,7 +33,7 @@ void Crawl::DungeonInteractableLever::UpdateTransform()
 
 void Crawl::DungeonInteractableLever::UpdateVisuals(float delta)
 {
-	float depression = 0.0f;
+	float depression = buttonIdlePos;
 
 	if(state != State::Idle)
 		buttonTime += delta;
@@ -49,7 +49,7 @@ void Crawl::DungeonInteractableLever::UpdateVisuals(float delta)
 		if (buttonTime < buttonInTime)
 		{
 			float t = buttonTime / buttonInTime;
-			depression = MathUtils::Lerp(0.0f, buttonMaxPress, t);
+			depression += MathUtils::Lerp(0.0f, buttonMaxPress, t);
 		}
 		else
 		{
@@ -61,7 +61,7 @@ void Crawl::DungeonInteractableLever::UpdateVisuals(float delta)
 	}
 	case State::Hold:
 	{
-		depression = buttonMaxPress;
+		depression += buttonMaxPress;
 		if (buttonTime >= buttonHoldTime)
 		{
 			state = State::Out;
@@ -75,11 +75,11 @@ void Crawl::DungeonInteractableLever::UpdateVisuals(float delta)
 		if (buttonTime < buttonOutTime)
 		{
 			float t = buttonTime / buttonOutTime;
-			depression = MathUtils::Lerp(buttonMaxPress, 0, t);
+			depression += MathUtils::Lerp(buttonMaxPress, 0, t);
 		}
 		else
 		{
-			depression = 0;
+			depression = buttonIdlePos;
 			state = State::Idle;
 			buttonTime = 0.0f;
 		}

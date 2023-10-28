@@ -41,8 +41,11 @@ void Crawl::DungeonLight::UpdateTransform()
 
 void Crawl::DungeonLight::UpdateLight()
 {
-	light->colour = colour;
-	light->intensity = intensity;
+	if (light)
+	{
+		light->colour = colour;
+		light->intensity = intensity;
+	}
 }
 
 void Crawl::DungeonLight::Flicker()
@@ -62,6 +65,7 @@ void Crawl::DungeonLight::ResetRandomFlickerTime()
 {
 	float percent = (float)(rand() % 100) * 0.01f;
 	flickerCurrent = -(MathUtils::Lerp(flickerRepeatMin, flickerRepeatMax, percent));
+	std::cout << flickerCurrent << std::endl;
 }
 
 void Crawl::DungeonLight::UpdateVisual(float delta)

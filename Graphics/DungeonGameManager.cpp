@@ -263,7 +263,13 @@ void Crawl::DungeonGameManager::ConfigureLobby()
 			}
 
 			if (enabledLights[i] && doorLights[i])
+			{
 				doorLights[i]->Enable();
+				doorLights[i]->Flicker();
+				doorLights[i]->flickerRepeat = true;
+				doorLights[i]->flickerRepeatMin = 0;
+				doorLights[i]->flickerRepeatMax = 4;
+			}
 			else if (!enabledLights[i] && doorLights[i])
 			{
 				doorLights[i]->Disable();
