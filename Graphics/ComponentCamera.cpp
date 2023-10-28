@@ -11,6 +11,9 @@
 #include "ComponentRenderer.h"
 #include "PostProcess.h"
 #include "Model.h"
+#include "SceneRenderer.h"
+
+#include "LogUtils.h"
 
 ComponentCamera::ComponentCamera(Object* parent, bool noGizmo) : Component("Camera", Component_Camera, parent)
 {
@@ -19,6 +22,9 @@ ComponentCamera::ComponentCamera(Object* parent, bool noGizmo) : Component("Came
 	view = componentParent->transform;
 	projection = glm::perspective(glm::radians(fieldOfView), aspect, nearClip, farClip);
 	matrix = projection * view;
+
+	// check if FXAA is enabled globally
+	if (SceneRenderer::fxaaEnabled) AddPostProcess("engine/shader/postProcess/FXAA");
 
 	// In Scene Editor Camera Gizmo - It'd be nice to move some of this info out of here. Perhaps a Gizmo factory or something.
 	if (!noGizmo)
@@ -135,11 +141,7 @@ void ComponentCamera::DrawGUI()
 			string ppName = ShaderManager::GetPostProcessShaderName(i);
 			if (ImGui::Selectable(ppName.c_str()))
 			{
-				PostProcess* pp = new PostProcess(componentParent->objectName+"_PP_"+ppName);
-				pp->SetShader(ShaderManager::GetShaderProgram(ppName));
-				pp->SetShaderName(ppName);
-
-				m_postProcessStack.push_back(pp);
+				AddPostProcess(ppName);
 			}
 		}
 		ImGui::EndPopup();
@@ -197,6 +199,42 @@ const vec3 ComponentCamera::GetRayFromNDC(glm::vec2 NDC)
 void ComponentCamera::SetAspect(float aspect)
 {
 	this->aspect = aspect;
+}
+
+void ComponentCamera::AddPostProcess(string shaderName)
+{
+	ShaderProgram* shader = ShaderManager::GetShaderProgram(shaderName);
+	if (!shader)
+	{
+		LogUtils::Log("Unable to find shader: " + shaderName);
+		return;
+	}
+
+	PostProcess* pp = new PostProcess(componentParent->objectName + "_PP_" + shaderName);
+	pp->SetShader(shader);
+	pp->SetShaderName(shaderName);
+	m_postProcessStack.push_back(pp);
+}
+
+void ComponentCamera::RemovePostProcess(string name)
+{
+	for (int i = 0; i < m_postProcessStack.size(); i++)
+	{
+		if (m_postProcessStack[i]->GetShaderName() == name)
+		{
+			RemovePostProcess(i);
+			return;
+		}
+	}
+}
+
+void ComponentCamera::RemovePostProcess(int index)
+{
+	if (index > m_postProcessStack.size() - 1) return;
+
+	delete m_postProcessStack[index];
+	m_postProcessStack.erase(m_postProcessStack.begin() + index);
+	return;
 }
 
 // If there are any post process effects applied, they are processed here. Regardless of if there are effects or not, the frame buffer is transfered from Raw to Processed.

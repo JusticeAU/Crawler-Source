@@ -48,7 +48,7 @@ public:
 	void SetStaticShadowMapsDirty() { pointLightShadowMapsStaticDirty = true; };
 	
 	// General Config
-	static bool msaaEnabled;
+	static bool fxaaEnabled;
 	static bool ssaoEnabled;
 	static ComponentCamera* frustumCullingCamera;
 	static CameraFrustum* cullingFrustum;
@@ -59,9 +59,9 @@ public:
 protected:
 	// Render Buffers
 	FrameBuffer* frameBufferRaw;
-	FrameBuffer* frameBufferBlit;
 	FrameBuffer* frameBufferProcessed;
 	FrameBuffer* frameBufferCurrent = nullptr;
+	FrameBuffer* gBuffer;
 
 	// VSync
 	bool vsyncEnabled = true;
@@ -70,15 +70,10 @@ protected:
 	bool frustumCullingEnabled = true;
 	int frustumCullingCameraIndex = -1;
 
-
-	// MSAA
-	int msaaSamples = 4;
-
 	// SSAO
 	float ssaoRadius = 0.25f;
 	float ssaoBias = 0.025f;
 	int ssaoKernelTaps = 16;
-	FrameBuffer* ssaoGBuffer;
 	FrameBuffer* ssaoFBO;
 	FrameBuffer* ssaoBlurFBO;
 	FrameBuffer* ssaoBlurFBO2;
@@ -118,7 +113,6 @@ protected:
 	float renderLastFrameTime = 0.0f;
 	float renderTotalSamples[100];
 	int sampleIndex = 0;
-
 
 	// Point Light Shadow Map Dev
 public:

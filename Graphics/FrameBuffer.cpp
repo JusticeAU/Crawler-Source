@@ -91,8 +91,8 @@ FrameBuffer::FrameBuffer(Type type)
 		m_isScreenBuffer = true;
 
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, res.x, res.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 		// Link
 		glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
@@ -376,9 +376,6 @@ void FrameBuffer::UnBindTexture(int texture)
 
 void FrameBuffer::Resize()
 {
-	if (m_primaryTarget)
-		m_type = SceneRenderer::msaaEnabled ? Type::CameraTargetMultiSample : Type::CameraTargetSingleSample;
-
 	FrameBuffer* newFB = new FrameBuffer(m_type);
 	glDeleteFramebuffers(1, &m_fbID);
 	glDeleteTextures(1, &m_texID);

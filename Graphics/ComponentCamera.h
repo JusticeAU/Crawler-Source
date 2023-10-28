@@ -41,6 +41,10 @@ public:
 	AudioListener* GetAudioListener() { return &m_audioListener; }
 
 	// Runs the post processing stack. This is also required to run to transfer the frame from the Raw to Processed Framebuffer, regardless of if there is a stack or not.
+	void AddPostProcess(string name);
+	void RemovePostProcess(string name);
+	void RemovePostProcess(int index);
+
 	void RunPostProcess(FrameBuffer* outBuffer);
 
 	float nearClip = 0.1f;

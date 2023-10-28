@@ -33,7 +33,13 @@ void PostProcess::Process(ComponentCamera* camera)
 	glDisable(GL_DEPTH_TEST); // May not need to do this?
 
 	m_shader->Bind();
+	// standard post process uniforms
 	m_shader->SetIntUniform("frame", m_textureBindPoint); // previous post process step would have bound the texture.
+	vec2 screenSize = { m_frameBuffer->GetWidth(), m_frameBuffer->GetHeight() };
+	vec2 inverseScreenSize = { 1.0 / screenSize.x, 1.0 / screenSize.y };
+	m_shader->SetVector2Uniform("screenSize", screenSize);
+	m_shader->SetVector2Uniform("inverseScreenSize", inverseScreenSize);
+
 	// TODO Abstract these in to post process meta data stuff. Don't particularly want to hard-code different post process types. WIll need to ponder.
 	
 	// Fade Colour shader
