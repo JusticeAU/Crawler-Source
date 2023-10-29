@@ -122,7 +122,7 @@ namespace Crawl
 		void SetFTUEPrompt(string prompt);
 		void ClearFTUEPrompt(bool instant = false);
 	private:
-		void DrawDebugUI();
+		void DrawDevelopmentBuildUI();
 
 		void SoundPlayFootstep();
 

@@ -45,7 +45,9 @@ void Crawl::DungeonPlayer::SetDungeon(Dungeon* dungeonPtr)
 // Returns true if the player made a game-state changing action
 bool Crawl::DungeonPlayer::Update(float deltaTime)
 {
-	if(enableDebugUI) DrawDebugUI();
+#ifndef RELEASE
+	DrawDevelopmentBuildUI();
+#endif // !RELEASE
 
 	if (ftueEnabled)
 	{
@@ -902,13 +904,13 @@ void Crawl::DungeonPlayer::ClearFTUEPrompt(bool instant)
 	}
 }
 
-void Crawl::DungeonPlayer::DrawDebugUI()
+void Crawl::DungeonPlayer::DrawDevelopmentBuildUI()
 {
 	ImGui::SetNextWindowPos({ 0,0 });
 	ImGui::SetNextWindowSize({ 400, 30 });
 	ImGui::Begin("Debug Information", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground);
 	ImGui::BeginDisabled();
-	ImGui::Text("Debug Build: ");
+	ImGui::Text("Development Build: ");
 	ImGui::SameLine();
 	ImGui::PushItemWidth(100);
 	ImGui::Text(currentDungeon->dungeonFileName.c_str());
