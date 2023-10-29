@@ -13,6 +13,7 @@ Window::Window(const char* title)
 	glfwWindowHint(GLFW_GREEN_BITS, vid->greenBits);
 	glfwWindowHint(GLFW_BLUE_BITS, vid->blueBits);
 	glfwWindowHint(GLFW_REFRESH_RATE, vid->refreshRate);
+	glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE); // This lets you alt/tab but keep the game visible.
 	m_window = glfwCreateWindow(vid->width, vid->height, title, monitor, nullptr);
 	glfwSetWindowSizeCallback(m_window, WindowResizeCallback);
 	m_fullScreenSize = { vid->width, vid->width };
@@ -26,6 +27,7 @@ Window::Window(int width, int height, const char* title)
 {
 	// Set resolution and window name.
 	LogUtils::Log("Creating GLFW Window.");
+	glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE); // This lets you alt/tab but keep the game visible.
 	m_window = glfwCreateWindow(width, height, title, nullptr, nullptr);
 	glfwSetWindowSizeCallback(m_window, WindowResizeCallback);
 	m_windowSize = { width, height };
