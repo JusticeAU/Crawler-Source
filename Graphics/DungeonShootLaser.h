@@ -30,12 +30,17 @@ namespace Crawl
 
 		Object* object;
 		Dungeon* dungeon = nullptr;
+		ivec2 targetPosition = { 0,0 };
+		void* thingAtTargetPosition = nullptr;
 		bool primed = false;
 		unsigned int turnPrimed = 0;
 		void Update(); // check if something is in line of sight or fire if primed
 		void Activate();
 		void Prime();
 		void Fire();
+
+		void* AcquireTarget(ivec2& positionOut);
+		void SetInitialTarget();
 	};
 
 	static void to_json(ordered_json& j, const DungeonShootLaser& object)

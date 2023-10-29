@@ -25,53 +25,32 @@ void Crawl::DungeonShootLaser::Update()
 	LogUtils::Log("Shooter Updated");
 	if (!primed && detectsLineOfSight)
 	{
-		// Check line of sight
-		bool haveTileToCheck = true;
-		ivec2 currentPosition = position;
-		while (haveTileToCheck)
+		ivec2 atPosition;
+		void* thingAtCurrentPosition = AcquireTarget(atPosition);
+
+		if (thingAtTargetPosition == thingAtCurrentPosition && atPosition == targetPosition)
 		{
-			DungeonTile* tile = dungeon->GetTile(currentPosition);
-			if (!tile)
-			{
-				haveTileToCheck = false;
-				break;
-			}
-
-			if (tile->occupied)
-			{
-				if(dungeon->GetMirrorAt(tile->position))
-					return;
-
-				LogUtils::Log("Detected object in line of sight.");
-				if (firesImmediately)
-				{
-					LogUtils::Log("Fires Immediately");
-					Fire();
-				}
-				else
-					Prime();
-				break;
-			}
-
-			if (dungeon->GetMurderinaAtPosition(currentPosition))
-			{
-				Prime();
-				break;
-			}
-
-			if (dungeon->CanSee(currentPosition, facing))
-				currentPosition += directions[facing];
-			else
-				haveTileToCheck = false;
+			LogUtils::Log("Same object in line of sight.");
+			return;
 		}
 
-		if(!haveTileToCheck)
-			LogUtils::Log("Nothing in line of sight.");
+		LogUtils::Log("Detected new in line of sight.");
+		if (firesImmediately)
+		{
+			LogUtils::Log("Fires Immediately");
+			Fire();
+		}
+		else
+		{
+			thingAtTargetPosition = thingAtCurrentPosition;
+			targetPosition = atPosition;
+			Prime();
+		}
 	}
 	else if (primed)
 	{
 		if(turnPrimed == dungeon->turn)
-			LogUtils::Log("Shooter already primed this turn.");
+			LogUtils::Log("Shooter already primed this turn."); // from when pressure plates could activate them
 		else
 			Fire();
 	}
@@ -109,6 +88,7 @@ void Crawl::DungeonShootLaser::Fire()
 		bool shouldContinue = true;
 		FACING_INDEX direction = facing;
 		ivec2 currentPosition = position;
+		bool killedSomething = false;
 		while (shouldContinue)
 		{
 			DungeonTile* tile = dungeon->GetTile(currentPosition);
@@ -129,6 +109,9 @@ void Crawl::DungeonShootLaser::Fire()
 				bool wasOccupied = tile->occupied || (dungeon->GetMurderinaAtPosition(currentPosition) != nullptr);
 
 				dungeon->DamageAtPosition(currentPosition, this, false, Dungeon::DamageType::Shooter);
+
+				// reset our current target
+				thingAtTargetPosition = AcquireTarget(targetPosition);
 
 				if (wasOccupied)
 					break;
@@ -153,4 +136,43 @@ void Crawl::DungeonShootLaser::Fire()
 	LogUtils::Log("Shooter is no longer primed");
 	((ComponentRenderer*)object->children[0]->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
 	primed = false;
+}
+
+void* Crawl::DungeonShootLaser::AcquireTarget(ivec2& positionOut)
+{
+	// Check line of sight
+	bool haveTileToCheck = true;
+	ivec2 currentPosition = position;
+	while (haveTileToCheck)
+	{
+		DungeonTile* tile = dungeon->GetTile(currentPosition);
+		if (!tile)
+		{
+			haveTileToCheck = false;
+			break;
+		}
+
+		void* thingAtCurrentPosition = dungeon->GetOccupyingObjectAtPosition(currentPosition);
+		if (thingAtCurrentPosition)
+		{
+			positionOut = currentPosition;
+			return thingAtCurrentPosition;
+		}
+
+		if (dungeon->CanSee(currentPosition, facing))
+			currentPosition += directions[facing];
+		else
+			haveTileToCheck = false;
+	}
+
+	if (!haveTileToCheck)
+		LogUtils::Log("Nothing in line of sight.");
+
+	positionOut = currentPosition;
+	return nullptr;
+}
+
+void Crawl::DungeonShootLaser::SetInitialTarget()
+{
+	thingAtTargetPosition = AcquireTarget(targetPosition);
 }

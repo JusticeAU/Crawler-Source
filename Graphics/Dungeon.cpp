@@ -950,6 +950,36 @@ bool Crawl::Dungeon::DoKick(ivec2 fromPosition, FACING_INDEX direction)
 	return false;
 }
 
+void* Crawl::Dungeon::GetOccupyingObjectAtPosition(ivec2 position)
+{
+	void* thing = nullptr;
+
+	// player
+	if (player->GetPosition() == position) return player;
+
+	// chaser
+	thing = GetEnemyChaseAtPosition(position);
+	if (thing) return thing;
+
+	// blocker
+	thing = GetEnemyBlockerAtPosition(position);
+	if (thing) return thing;
+
+	// murderrina
+	thing = GetMurderinaAtPosition(position);
+	if (thing) return thing;
+
+	// box
+	thing = GetPushableBlockAtPosition(position, false);
+	if (thing) return thing;
+
+	// mirror (shouldnt' be in game any more)
+	thing = GetMirrorAt(position);
+	if (thing) return thing;
+	
+	return thing; // nullptr at this stage
+}
+
 Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int directionIndex, unsigned int id, bool open)
 {
 	DungeonDoor* door = new DungeonDoor();
@@ -1210,7 +1240,6 @@ Crawl::DungeonShootLaser* Crawl::Dungeon::CreateShootLaser(ivec2 position, FACIN
 	shootLaser->object = Scene::CreateObject();
 	shootLaser->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/monster_shootlaser.object"));
 	shootLaser->UpdateTransform();
-
 	Object* gargoyle = Scene::CreateObject(shootLaser->object->children[0]);
 	gargoyle->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_gargoyle.object"));
 
@@ -2304,6 +2333,12 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	
 	if (!isLobbyLevel2)
 		Scene::s_instance->SetStaticObjectsDirty();
+
+	// Configure all shoot laser targets
+	for (auto& laser : shootLasers)
+	{
+		laser->SetInitialTarget();
+	}
 }
 
 void Crawl::Dungeon::InitialiseTileMap()

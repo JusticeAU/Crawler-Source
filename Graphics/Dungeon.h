@@ -95,6 +95,8 @@ namespace Crawl
 		bool DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer = false, DamageType damageType = DamageType::Generic);
 		bool DoKick(ivec2 position, FACING_INDEX facing);
 		
+		void* GetOccupyingObjectAtPosition(ivec2 position);
+
 		DungeonInteractableLever* CreateLever(ivec2 position, unsigned int directionMask, unsigned int id, unsigned int doorID, bool startStatus);
 		void RemoveLever(DungeonInteractableLever* lever);
 
