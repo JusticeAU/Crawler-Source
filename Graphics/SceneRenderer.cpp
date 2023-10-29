@@ -31,6 +31,7 @@
 
 bool SceneRenderer::fxaaEnabled = true; // leave false whilst refactoring depth prepass and AA.
 bool SceneRenderer::ssaoEnabled = true;
+bool SceneRenderer::bloomEnabled = true;
 ComponentCamera* SceneRenderer::frustumCullingCamera = nullptr;
 float SceneRenderer::frustumCullingForgiveness = 5.0f;
 vector<FrameBuffer*> SceneRenderer::pointLightCubeMapStatic;
@@ -47,6 +48,9 @@ SceneRenderer::SceneRenderer()
 {
 	// Initialise the Render Buffers
 #pragma region Render Buffer creation
+	gBuffer = new FrameBuffer(FrameBuffer::Type::gBuffer);
+	TextureManager::s_instance->AddFrameBuffer("gBuffer", gBuffer);
+
 	// 1 to render the scene to, a second for the final post processing effects to land to.
 	frameBufferRaw = new FrameBuffer(FrameBuffer::Type::CameraTargetSingleSample);
 	frameBufferRaw->MakePrimaryTarget();
@@ -61,16 +65,14 @@ SceneRenderer::SceneRenderer()
 
 	// Intialise SSAO Configuration
 #pragma region SSAO Configuration
-	gBuffer = new FrameBuffer(FrameBuffer::Type::SSAOgBuffer);
-	TextureManager::s_instance->AddFrameBuffer("gBuffer", gBuffer);
 	ssaoFBO = new FrameBuffer(FrameBuffer::Type::SSAOColourBuffer);
 	TextureManager::s_instance->AddFrameBuffer("SSAO", ssaoFBO);
-	ssaoBlurFBO = new FrameBuffer(FrameBuffer::Type::SSAOColourBuffer);
-	TextureManager::s_instance->AddFrameBuffer("SSAOBlur", ssaoBlurFBO);
-	ssaoBlurFBO2 = new FrameBuffer(FrameBuffer::Type::SSAOColourBuffer);
-	TextureManager::s_instance->AddFrameBuffer("SSAOBlur2", ssaoBlurFBO2);
+	ssaoPingFBO = new FrameBuffer(FrameBuffer::Type::SSAOColourBuffer);
+	TextureManager::s_instance->AddFrameBuffer("SSAOPing", ssaoPingFBO);
+	ssaoPongFBO = new FrameBuffer(FrameBuffer::Type::SSAOColourBuffer);
+	TextureManager::s_instance->AddFrameBuffer("SSAOPong", ssaoPongFBO);
 	ssaoPostProcess = new FrameBuffer(FrameBuffer::Type::PostProcess);
-	TextureManager::s_instance->AddFrameBuffer("ssaoPostProcess", ssaoPostProcess);
+	TextureManager::s_instance->AddFrameBuffer("SSAOPostProcess", ssaoPostProcess);
 
 	// Generate the kernel - https://learnopengl.com/Advanced-Lighting/SSAO
 	// Both from <random>
@@ -78,6 +80,12 @@ SceneRenderer::SceneRenderer()
 	ssaoGenerateNoise();
 
 #pragma endregion
+
+	// Initialise Bloom
+	bloomPingFBO = new FrameBuffer(FrameBuffer::Type::PostProcess, 0.25f); // quarter rez FBO for bloom, we get more blur for free.
+	TextureManager::s_instance->AddFrameBuffer("BloomBlur", bloomPingFBO);
+	bloomPongFBO = new FrameBuffer(FrameBuffer::Type::PostProcess, 0.25f);
+	TextureManager::s_instance->AddFrameBuffer("BloomBlur2", bloomPongFBO);
 
 	// Initialise Shadow Mapping
 #pragma region Shadow Mapping
@@ -171,7 +179,8 @@ void SceneRenderer::DrawGUI()
 		}
 	}
 
-
+	ImGui::Checkbox("Bloom", &bloomEnabled);
+	ImGui::DragInt("Bloom Taps", &bloomBlurTaps, 1, 1, 20, "%d", ImGuiSliderFlags_AlwaysClamp);
 	if (ImGui::Checkbox("SSAO", &ssaoEnabled))
 	{
 		
@@ -419,7 +428,7 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		// Do the SSAO Blur Pass
 		if (ssaoBlur)
 		{
-			ssaoBlurFBO->BindTarget();
+			ssaoPingFBO->BindTarget();
 			if (ssaoGaussianBlur)
 			{
 				ShaderProgram* ssaoBlur = ShaderManager::GetShaderProgram("engine/shader/SSAOGaussianBlurPass");
@@ -430,14 +439,14 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 				PostProcess::PassThrough(true);
 				FrameBuffer::UnBindTexture(0);
 
-				ssaoBlurFBO->BindTexture(0);
-				ssaoBlurFBO2->BindTarget();
+				ssaoPingFBO->BindTexture(0);
+				ssaoPongFBO->BindTarget();
 				ssaoBlur->SetIntUniform("horizontal", false);
 				PostProcess::PassThrough(true);
 				FrameBuffer::UnBindTexture(0);
 
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-				blurBufferUsed = ssaoBlurFBO2;
+				blurBufferUsed = ssaoPongFBO;
 			}
 			else
 			{
@@ -449,7 +458,7 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 				FrameBuffer::UnBindTexture(0);
 
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-				blurBufferUsed = ssaoBlurFBO;
+				blurBufferUsed = ssaoPingFBO;
 			}
 		}
 		else blurBufferUsed = ssaoFBO;
@@ -458,6 +467,8 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	// Render Scene Opaque Pass
 	frameBufferRaw->BindTarget();
 	glClear(GL_COLOR_BUFFER_BIT);
+	static const vec3 nothing = { 0, 0, 0 };
+	glClearTexImage(frameBufferRaw->m_emissiveTexID, 0, GL_RGB, GL_FLOAT, &nothing);
 
 	gBuffer->BindAsDepthAttachment();
 	glDepthFunc(GL_EQUAL);
@@ -498,8 +509,48 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		frameBufferCurrent = ssaoPostProcess;
 		frameBufferCurrent->BindTarget();
 		PostProcess::PassThrough(true);
-		ssaoPostProcess->BindTexture(20);
+		frameBufferCurrent->BindTexture(20);
 	}
+
+	if (bloomEnabled)
+
+	{	// Blur the emission texture to create a bloom texture
+		ShaderProgram* blurShader = ShaderManager::GetShaderProgram("engine/shader/GaussianBlurPass");
+		blurShader->Bind();
+		frameBufferRaw->BindEmission(0);
+		FrameBuffer* blur = frameBufferRaw;
+		for (int i = 0; i < bloomBlurTaps; i++)
+		{
+			blurShader->SetIntUniform("image", 0);
+			blurShader->SetIntUniform("horizontal", true);
+			vec2 outputSize = { bloomPingFBO->GetWidth(), bloomPingFBO->GetHeight() };
+			blurShader->SetVector2Uniform("outputSize", outputSize);
+			bloomPingFBO->BindTarget();
+			PostProcess::PassThrough(true);
+			FrameBuffer::UnBindTexture(0);
+
+			bloomPingFBO->BindTexture(0);
+			bloomPongFBO->BindTarget();
+			blurShader->SetIntUniform("horizontal", false);
+			PostProcess::PassThrough(true);
+			
+			// ready for next loop.
+			if(i != bloomBlurTaps -1) bloomPongFBO->BindTexture(0);
+		}
+		FrameBuffer::UnBindTexture(0);
+
+		// Bloom application
+		ShaderProgram* BloomShader = ShaderManager::GetShaderProgram("engine/shader/postProcess/Bloom");
+		BloomShader->Bind();
+		BloomShader->SetIntUniform("frame", 20);
+		BloomShader->SetIntUniform("Bloom", 21);
+		bloomPongFBO->BindTexture(21);
+		frameBufferCurrent->BindTarget();
+		PostProcess::PassThrough(true);
+		frameBufferCurrent->BindTexture(20);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// Render Transparent Pass
 	RenderTransparent(scene, c);

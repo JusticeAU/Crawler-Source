@@ -50,6 +50,7 @@ public:
 	// General Config
 	static bool fxaaEnabled;
 	static bool ssaoEnabled;
+	static bool bloomEnabled;
 	static ComponentCamera* frustumCullingCamera;
 	static CameraFrustum* cullingFrustum;
 	static float frustumCullingForgiveness;
@@ -75,8 +76,8 @@ protected:
 	float ssaoBias = 0.025f;
 	int ssaoKernelTaps = 16;
 	FrameBuffer* ssaoFBO;
-	FrameBuffer* ssaoBlurFBO;
-	FrameBuffer* ssaoBlurFBO2;
+	FrameBuffer* ssaoPingFBO;
+	FrameBuffer* ssaoPongFBO;
 	FrameBuffer* ssaoPostProcess;
 	bool ssaoGaussianBlur = true;
 	bool ssaoBlur = true;
@@ -85,6 +86,11 @@ protected:
 	vector<glm::vec3> ssaoNoise;
 	void ssaoGenerateKernel(int size);
 	void ssaoGenerateNoise();
+
+	// Bloom
+	FrameBuffer* bloomPingFBO;
+	FrameBuffer* bloomPongFBO;
+	int bloomBlurTaps = 2;
 
 	// Shadow Mapping
 	// Directional light shadow map

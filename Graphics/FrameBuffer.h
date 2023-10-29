@@ -15,13 +15,13 @@ public:
 		ObjectPicker,	// rgb32f, has depth buffer, viewport resolution.
 		ShadowMap,
 		ShadowCubeMap,
-		SSAOgBuffer,
+		gBuffer,
 		SSAOColourBuffer
 	};
 
 
 public:
-	FrameBuffer(Type type);
+	FrameBuffer(Type type, float scale = 1.0f);
 
 	~FrameBuffer();
 
@@ -33,6 +33,7 @@ public:
 	static void UnBindTarget() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 
 	void BindTexture(int texture);
+	void BindEmission(int texture);
 	void BindDepth(int texture);
 	void BindAsDepthAttachment();
 	void BindGPosition(int texture);
@@ -63,9 +64,14 @@ public:
 public:
 	bool m_primaryTarget = false; // if true MSAA being true or false will decide what FBO type this target gets and how it behaves in render passes.
 	Type m_type;
+	float m_scale;
 	GLuint m_fbID;
 	GLuint m_texID;
 	GLuint m_depthID;
+	
+	// PBR MRT
+	GLuint m_emissiveTexID;
+
 	// SSAO bBuffer stuff
 	GLuint m_gPosition;
 	GLuint m_gNormal;

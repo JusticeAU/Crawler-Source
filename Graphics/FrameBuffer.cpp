@@ -7,9 +7,10 @@
 
 using std::vector;
 
-FrameBuffer::FrameBuffer(Type type)
+FrameBuffer::FrameBuffer(Type type, float scale)
 {
 	m_type = type;
+	m_scale = scale;
 	m_texture = new Texture();
 	m_texture->loaded = true;
 	// generate frame buffer, texture buffer and depth buffer.
@@ -24,6 +25,8 @@ FrameBuffer::FrameBuffer(Type type)
 		glGenTextures(1, &m_depthID);
 		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_texID);
 		glm::ivec2 res = Window::GetViewPortSize();
+		res.x *= scale;
+		res.y *= scale;
 		m_width = res.x;
 		m_height = res.y;
 		m_isScreenBuffer = true;
@@ -51,27 +54,41 @@ FrameBuffer::FrameBuffer(Type type)
 	case Type::CameraTargetSingleSample:
 	{
 		glGenFramebuffers(1, &m_fbID);
+		glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
 		glGenTextures(1, &m_texID);
+		glGenTextures(1, &m_emissiveTexID);
 		glGenTextures(1, &m_depthID);
-		glBindTexture(GL_TEXTURE_2D, m_texID);
 		glm::ivec2 res = Window::GetViewPortSize();
+		res.x *= scale;
+		res.y *= scale;
 		m_width = res.x;
 		m_height = res.y;
 		m_isScreenBuffer = true;
 
+		glBindTexture(GL_TEXTURE_2D, m_texID);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, res.x, res.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texID, 0);
+
+		// Generate the PBR Emissive Map for bloom
+		glBindTexture(GL_TEXTURE_2D, m_emissiveTexID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, res.x, res.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_emissiveTexID, 0);
+
+		// Configure the MRTs
+		unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+		glDrawBuffers(2, attachments);
 
 		// Generate the depth stencil
 		glBindTexture(GL_TEXTURE_2D, m_depthID);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL, res.x, res.y, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-		// Link
-		glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_texID, 0);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthID, 0);
 
 		// unbind.
@@ -86,6 +103,8 @@ FrameBuffer::FrameBuffer(Type type)
 		glGenTextures(1, &m_depthID);
 		glBindTexture(GL_TEXTURE_2D, m_texID);
 		glm::ivec2 res = Window::GetViewPortSize();
+		res.x *= scale;
+		res.y *= scale;
 		m_width = res.x;
 		m_height = res.y;
 		m_isScreenBuffer = true;
@@ -93,6 +112,8 @@ FrameBuffer::FrameBuffer(Type type)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, res.x, res.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
 		// Link
 		glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
@@ -110,6 +131,8 @@ FrameBuffer::FrameBuffer(Type type)
 		glGenTextures(1, &m_depthID);
 		glBindTexture(GL_TEXTURE_2D, m_texID);
 		glm::ivec2 res = Window::GetViewPortSize();
+		res.x *= scale;
+		res.y *= scale;
 		m_width = res.x;
 		m_height = res.y;
 		m_isScreenBuffer = true;
@@ -212,7 +235,7 @@ FrameBuffer::FrameBuffer(Type type)
 
 		break;
 	}
-	case Type::SSAOgBuffer:
+	case Type::gBuffer:
 	{
 		glm::ivec2 res = Window::GetViewPortSize();
 		m_width = res.x;
@@ -333,6 +356,12 @@ void FrameBuffer::BindTexture(int texture)
 		glBindTexture(GL_TEXTURE_2D, m_texID);
 }
 
+void FrameBuffer::BindEmission(int texture)
+{
+	glActiveTexture(GL_TEXTURE0 + texture);
+	glBindTexture(GL_TEXTURE_2D, m_emissiveTexID);
+}
+
 void FrameBuffer::BindDepth(int texture)
 {
 	glActiveTexture(GL_TEXTURE0 + texture);
@@ -376,15 +405,17 @@ void FrameBuffer::UnBindTexture(int texture)
 
 void FrameBuffer::Resize()
 {
-	FrameBuffer* newFB = new FrameBuffer(m_type);
+	FrameBuffer* newFB = new FrameBuffer(m_type, m_scale);
 	glDeleteFramebuffers(1, &m_fbID);
 	glDeleteTextures(1, &m_texID);
+	glDeleteTextures(1, &m_emissiveTexID);
 	glDeleteTextures(1, &m_depthID);
 	glDeleteTextures(1, &m_gPosition);
 	glDeleteTextures(1, &m_gAlbedo);
 	glDeleteTextures(1, &m_gNormal);
 	m_fbID = newFB->m_fbID;
 	m_texID = newFB->m_texID;
+	m_emissiveTexID = newFB->m_emissiveTexID;
 	m_depthID = newFB->m_depthID;
 	m_gPosition = newFB->m_gPosition;
 	m_gAlbedo = newFB->m_gAlbedo;
