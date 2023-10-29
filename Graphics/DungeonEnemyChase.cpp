@@ -320,6 +320,12 @@ void Crawl::DungeonEnemyChase::UpdateVisuals(float delta)
 		}
 		break;
 	}
+	case AnimationState::Activating:
+	{
+		if (animator->current->IsFinished())
+			NewAnimationState(AnimationState::Idle);
+		break;
+	}
 	case AnimationState::Idle:
 		if (animator->current->IsFinished()) animator->StartAnimation(animationIdle, true);
 		break;
@@ -392,7 +398,8 @@ void Crawl::DungeonEnemyChase::NewAnimationState(AnimationState newState, bool b
 	}
 	case AnimationState::Activating:
 	{
-		if (animator) animator->StartAnimation(animationActivate);
+		animator->StartAnimation(animationActivate);
+		animationState = AnimationState::Activating;
 		break;
 	}
 
