@@ -9,24 +9,24 @@ Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
+		Development|x64 = Development|x64
+		Development|x86 = Development|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-		Release-NoConsole|x64 = Release-NoConsole|x64
-		Release-NoConsole|x86 = Release-NoConsole|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{FACAA418-060F-4C0D-BCD7-F53256D37F88}.Debug|x64.ActiveCfg = Debug|x64
 		{FACAA418-060F-4C0D-BCD7-F53256D37F88}.Debug|x64.Build.0 = Debug|x64
 		{FACAA418-060F-4C0D-BCD7-F53256D37F88}.Debug|x86.ActiveCfg = Debug|Win32
 		{FACAA418-060F-4C0D-BCD7-F53256D37F88}.Debug|x86.Build.0 = Debug|Win32
+		{FACAA418-060F-4C0D-BCD7-F53256D37F88}.Development|x64.ActiveCfg = Development|x64
+		{FACAA418-060F-4C0D-BCD7-F53256D37F88}.Development|x64.Build.0 = Development|x64
+		{FACAA418-060F-4C0D-BCD7-F53256D37F88}.Development|x86.ActiveCfg = Development|Win32
+		{FACAA418-060F-4C0D-BCD7-F53256D37F88}.Development|x86.Build.0 = Development|Win32
 		{FACAA418-060F-4C0D-BCD7-F53256D37F88}.Release|x64.ActiveCfg = Release|x64
 		{FACAA418-060F-4C0D-BCD7-F53256D37F88}.Release|x64.Build.0 = Release|x64
 		{FACAA418-060F-4C0D-BCD7-F53256D37F88}.Release|x86.ActiveCfg = Release|Win32
 		{FACAA418-060F-4C0D-BCD7-F53256D37F88}.Release|x86.Build.0 = Release|Win32
-		{FACAA418-060F-4C0D-BCD7-F53256D37F88}.Release-NoConsole|x64.ActiveCfg = Release-NoConsole|x64
-		{FACAA418-060F-4C0D-BCD7-F53256D37F88}.Release-NoConsole|x64.Build.0 = Release-NoConsole|x64
-		{FACAA418-060F-4C0D-BCD7-F53256D37F88}.Release-NoConsole|x86.ActiveCfg = Release-NoConsole|Win32
-		{FACAA418-060F-4C0D-BCD7-F53256D37F88}.Release-NoConsole|x86.Build.0 = Release-NoConsole|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
