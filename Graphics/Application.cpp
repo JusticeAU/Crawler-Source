@@ -43,7 +43,7 @@ Application::~Application()
 	glfwTerminate();
 }
 
-void Application::LaunchArgumentPreLoad(char* arg)
+void Application::LaunchArgumentPreLoad(const char* arg)
 {
 	std::string argument = arg;
 	if (argument == "design") developerMode = true;
@@ -56,7 +56,7 @@ void Application::LaunchArgumentPreLoad(char* arg)
 	else if (argument == "dev") developerMode = true;
 }
 
-void Application::LaunchArgumentPostLoad(char* arg)
+void Application::LaunchArgumentPostLoad(const char* arg)
 {
 	std::string argument = arg;
 		

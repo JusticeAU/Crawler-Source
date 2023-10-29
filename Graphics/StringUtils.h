@@ -15,7 +15,7 @@ public:
 		return output;
 	}
 
-	static std::string* Split(std::string str, string delim)
+	static std::string* Split(std::string str, std::string delim)
 	{
 		int offset = 0;
 		std::vector<std::string> splits;
@@ -39,5 +39,11 @@ public:
 			stringArray[i] = splits[i];
 
 		return stringArray;
+	}
+
+	static int CountChar(const std::string str, const char c)
+	{
+		auto n = std::count(str.begin(), str.end(), c);
+		return (int)n;
 	}
 };

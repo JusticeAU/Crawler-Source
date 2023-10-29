@@ -10,6 +10,11 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommandArguments>design</LocalDebuggerCommandArguments>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-NoConsole|x64'">
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)..\Crawler\Crawler</LocalDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments>design</LocalDebuggerCommandArguments>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - No Console|x64'">
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\Crawler\Crawler</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
@@ -21,6 +26,11 @@
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\Crawler\Crawler</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LocalDebuggerCommandArguments>design</LocalDebuggerCommandArguments>
+    <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)..\Crawler\Crawler</LocalDebuggerWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-NoConsole|Win32'">
     <LocalDebuggerCommandArguments>design</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\Crawler\Crawler</LocalDebuggerWorkingDirectory>

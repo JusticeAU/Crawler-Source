@@ -4,6 +4,16 @@
 class LogUtils
 {
 public:
-	static void Log(const char* msg) { std::cout << msg << std::endl; }
-	static void Log(const std::string msg) { std::cout << msg << std::endl; }
+	static void Log(const char* msg)
+	{
+#ifndef RELEASE
+		std::cout << msg << std::endl;
+#endif // !RELEASE
+	}
+	static void Log(const std::string msg)
+	{
+#ifndef RELEASE
+		std::cout << msg << std::endl;
+#endif // !RELEASE
+	}
 };

@@ -30,8 +30,8 @@ public:
 
 	Application();
 	~Application();
-	void LaunchArgumentPreLoad(char* arg);
-	void LaunchArgumentPostLoad(char* arg);
+	void LaunchArgumentPreLoad(const char* arg);
+	void LaunchArgumentPostLoad(const char* arg);
 	void ConstructWindow();
 	void LoadResourceManagers();
 	void DoLoadingScreen();
