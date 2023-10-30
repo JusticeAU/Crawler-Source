@@ -25,7 +25,10 @@ Texture* TextureManager::GetTexture(string name)
 {
 	auto texIt = s_instance->textures.find(StringUtils::ToLower(name));
 	if (texIt == s_instance->textures.end())
+	{
+		LogUtils::Log("Missing Texture: " + name);
 		return nullptr;
+	}
 	else
 	{
 		if (texIt->second != nullptr && !texIt->second->loaded)

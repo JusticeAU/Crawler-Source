@@ -369,9 +369,9 @@ void Crawl::DungeonMenu::ExecuteReturnToMainMenu()
 {
 	DungeonGameManager::Get()->ResetGameState();
 	app->dungeon->Load("crawler/dungeon/lobby.dungeon");
-	player->SetStateIdle();
+	player->ResetPlayer();
+	player->SetLevel2(false);
 	player->Teleport({ 11, -2 });
-	player->ClearCheckpoint();
 
 	introStage = IntroStage::Idle;
 	newGameSequenceTime = 0.0f;

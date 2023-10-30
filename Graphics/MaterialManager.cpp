@@ -25,7 +25,11 @@ void MaterialManager::Init()
 Material* MaterialManager::GetMaterial(string name)
 {
 	auto matIt = s_instance->materials.find(name);
-	if (matIt == s_instance->materials.end()) return nullptr;
+	if (matIt == s_instance->materials.end())
+	{
+		LogUtils::Log("Missing Material: " + name);
+		return nullptr;
+	}
 	else
 	{
 		if (!matIt->second->loaded) matIt->second->LoadTextures();

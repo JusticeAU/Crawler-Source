@@ -15,7 +15,7 @@ Crawl::DungeonActivatorPlate::~DungeonActivatorPlate()
 		object->markedForDeletion = true;
 }
 
-bool Crawl::DungeonActivatorPlate::TestPosition()
+bool Crawl::DungeonActivatorPlate::TestPosition(bool initialConfig)
 {
 	DungeonTile* tile = dungeon->GetTile(position);
 	if (tile)
@@ -23,12 +23,12 @@ bool Crawl::DungeonActivatorPlate::TestPosition()
 		if (tile->occupied && !down)
 		{
 			down = true;
-			dungeon->DoActivate(activateID, true);
+			if(!initialConfig) dungeon->DoActivate(activateID, true);
 		}
 		else if (!tile->occupied && down)
 		{
 			down = false;
-			dungeon->DoActivate(activateID);
+			if (!initialConfig) dungeon->DoActivate(activateID);
 		}
 		UpdateTransforms();
 	}
