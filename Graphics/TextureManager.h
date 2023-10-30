@@ -34,7 +34,8 @@ public:
 	static bool IsPreloadComplete() { return s_instance->m_preloadComplete; };
 	static float GetPreloadPercentage();
 	static void PreloadAllFilesContaining(string contains);
-	void CreateTextureFromFile(const char* filename);
+	void CreateTextureFromFile(const char* filename, bool inferChannelsFromName = false);
+	int InferChannelsFromName(string name);
 	
 	void AddFrameBuffer(const char* name, FrameBuffer* fb);
 	void RemoveFrameBuffer(const char* name);

@@ -107,10 +107,26 @@ void TextureManager::SetPreviewTexture(string textureName)
 	}
 }
 
-void TextureManager::CreateTextureFromFile(const char* filename)
+void TextureManager::CreateTextureFromFile(const char* filename, bool inferChannelsFromName)
 {
 	Texture* texture = new Texture(filename);
 	textures.emplace(StringUtils::ToLower(filename), texture);
+	if (inferChannelsFromName) texture->channels = InferChannelsFromName(filename);
+	else texture->channels = -1;
+}
+
+int TextureManager::InferChannelsFromName(string name)
+{
+	string mapNames[] = { "_albedo", "_normal", "_metallic", "_roughness", "_ao", "_emissive", };
+	int mapChannels[] = { 4, 3, 1, 1, 1, 4 };
+	int mapQuantity = 6;
+	for (int i = 0; i < mapQuantity; i++)
+	{
+		size_t index = name.find(mapNames[i]);
+		if (index != string::npos) return mapChannels[i];
+	}
+
+	return -1; // unable to detect
 }
 
 void TextureManager::PreloadAllFiles()
@@ -255,7 +271,7 @@ void TextureManager::FindAllFiles(string folder)
 	{
 		if (d.path().extension() == ".tga" || d.path().extension() == ".png" || d.path().extension() == ".jpg" || d.path().extension() == ".jpeg" || d.path().extension() == ".bmp")
 		{
-			s_instance->CreateTextureFromFile(d.path().generic_string().c_str());
+			s_instance->CreateTextureFromFile(d.path().generic_string().c_str(), true);
 		}
 
 	}

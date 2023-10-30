@@ -35,12 +35,31 @@ void Texture::Load()
 
 	// Load with stb_image
 	stbi_set_flip_vertically_on_load(true); // OpenGL expect y=0 to be the bottom of the texture.
-	unsigned char* data = stbi_load(name.c_str(), &width, &height, &channels, 4);
+	int requestedChannels = channels != -1 ? channels : 4;
+	unsigned char* data = stbi_load(name.c_str(), &width, &height, &channels, requestedChannels);
+	// Modifcations have been made to stbi__convert_format in order to have it load images to a single channel the way I want.
+	// Out of the box is takes the RGB values and calculate luminosity and returns that, but I just want the red channel only.
+	GLint internalType;
+	switch (requestedChannels)
+	{
+	case 1:
+		internalType = GL_RED;
+		break;
+	case 2:
+		internalType = GL_RG;
+		break;
+	case 3:
+		internalType = GL_RGB;
+		break;
+	default:
+		internalType = GL_RGBA;
+		break;
+	}
 
 	// transfer to VRAM
 	glGenTextures(1, &texID);
 	glBindTexture(GL_TEXTURE_2D, texID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, internalType, width, height, 0, internalType, GL_UNSIGNED_BYTE, data);
 
 	// Configure this particular texture filtering
 	glGenerateMipmap(GL_TEXTURE_2D);
