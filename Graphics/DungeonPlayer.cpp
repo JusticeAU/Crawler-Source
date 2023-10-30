@@ -497,10 +497,6 @@ bool Crawl::DungeonPlayer::UpdateStateTurning(float delta)
 		state = IDLE;
 		turnDeltaPrevious = targetTurn - turnPrevious;
 		object->SetLocalRotationZ(targetTurn);
-		if (wasLookingAtPointOfInterest)
-			SetStateRH(RHState::MoveDown);
-		else
-			SetStateRH(RHState::Idle);
 	}
 	else
 	{
