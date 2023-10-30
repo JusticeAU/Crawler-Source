@@ -2135,6 +2135,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	{
 		DungeonCheckpoint checkpoint = it.value().get<Crawl::DungeonCheckpoint>();
 		DungeonCheckpoint* newCheckpoint = CreateCheckpoint(checkpoint.position, checkpoint.facing);
+		newCheckpoint->activated = checkpoint.activated;
 	}
 
 	auto& shootLasers_json = serialised["shootLasers"];
@@ -2339,6 +2340,10 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	{
 		laser->SetInitialTarget();
 	}
+
+	// prime all pressure plates
+	for (auto& tileTest : activatorPlates)
+		tileTest->TestPosition(true);
 }
 
 void Crawl::Dungeon::InitialiseTileMap()

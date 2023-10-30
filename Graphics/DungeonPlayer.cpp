@@ -188,6 +188,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	{
 		if (isOnLobbyLevel2) lobbyLevel2Dungeon->GetTile(position)->occupied = false; // because this level doesnt reset, we need to keep it tidy!!
 		Respawn();
+		return false;
 	}
 
 	if (currentDungeon->GetCheckpointAt(position))

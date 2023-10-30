@@ -14,7 +14,7 @@ namespace Crawl
 		DungeonActivatorPlate();
 		~DungeonActivatorPlate();
 
-		bool TestPosition();
+		bool TestPosition(bool initialConfig = false);
 		void UpdateTransforms();
 
 		glm::ivec2 position;
