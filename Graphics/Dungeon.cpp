@@ -1297,7 +1297,7 @@ Crawl::DungeonEnemyBlocker* Crawl::Dungeon::CreateEnemyBlocker(ivec2 position, F
 	blocker->object = Scene::CreateObject();
 	blocker->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/monster_blocker.object"));
 	blocker->UpdateTransform();
-	blocker->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_blocker_prototype.object"));
+	blocker->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_blocker.object"));
 	blocker->animator = (ComponentAnimator*)blocker->object->children[0]->GetComponent(Component_Animator);
 	blockers.emplace_back(blocker);
 

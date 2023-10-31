@@ -34,9 +34,10 @@ namespace Crawl
 		Object* object = nullptr;
 		ComponentAnimator* animator = nullptr;
 
-		string animationUpSwing = "crawler/model/monster_blocker_prototype.fbxidletorise";
-		string animationDownSwing = "crawler/model/monster_blocker_prototype.fbxrisetoswing";
-		string animationIdle = "crawler/model/monster_blocker_prototype.fbxswingtoidle";
+		string animationBaseName = "crawler/model/monster_blocker.fbx";
+		string animationUpSwing = animationBaseName + "armature|ready.pose";
+		string animationDownSwing = animationBaseName + "armature|attack.pose";
+		string animationIdle = animationBaseName + "armature|idle.pose";
 
 
 		void Update();
