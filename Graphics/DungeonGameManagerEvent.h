@@ -14,7 +14,7 @@ namespace Crawl
 		};
 
 		std::string typeString[3] = { "Door", "Light", "Lock" };
-		std::string doorNames[8] = { "G  North 1","G  South 1","L2 North 1", "L2 North 2", "L2 North 3","L2 South 1", "L2 South 2", "L2 South 3" };
+		std::string doorNames[8] = { "G  South 1","G  North 1","L2 North 1", "L2 North 2", "L2 North 3","L2 South 1", "L2 South 2", "L2 South 3" };
 		std::string doorStateString[3] = { "Open", "Closed", "Barricaded" };
 		bool DrawGUIInternal();
 

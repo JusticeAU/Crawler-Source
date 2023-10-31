@@ -93,12 +93,12 @@ namespace Crawl
 
 		// Lobby Configuration Items
 		// Status
-		DoorState doorStates[8] = { DoorState::Closed, DoorState::Open, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed };
-		bool enabledLights[8] = { false, true, false, false, false, false, false, false };
+		DoorState doorStates[8] = { DoorState::Open, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed };
+		bool enabledLights[8] = { true, false, false, false, false, false, false, false };
 		bool lobbyHasTriggeredLightning = false;
 		
 		// References
-		std::string doorNames[8] = { "G  North 1","G  South 1","L2 North 1", "L2 North 2", "L2 North 3","L2 South 1", "L2 South 2", "L2 South 3" };
+		std::string doorNames[8] = { "G  South 1", "G  North 1", "L2 North 1", "L2 North 2", "L2 North 3","L2 South 1", "L2 South 2", "L2 South 3" };
 		std::string doorStateNames[3] = { "Open", "Closed", "Barricaded" };
 		DungeonDoor* doors[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 		DungeonLight* doorLights[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };

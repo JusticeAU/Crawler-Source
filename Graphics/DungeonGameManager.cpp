@@ -122,10 +122,10 @@ void Crawl::DungeonGameManager::ResetGameState()
 {
 	// this is gross!
 	for (int i = 0; i < 8; i++) doorStates[i] = DoorState::Closed;
-	doorStates[1] = DoorState::Open;
+	doorStates[0] = DoorState::Open;
 	
 	for (int i = 0; i < 8; i++) enabledLights[i] = false;
-	enabledLights[1] = true;
+	enabledLights[0] = true;
 
 	lobbyHasTriggeredLightning = false;
 	frontDoorUpdateTriggered = false;
@@ -232,8 +232,8 @@ void Crawl::DungeonGameManager::ConfigureLobby()
 	}
 
 	// Get Door references
-	doors[0] = lobby1->GetDoorWithID(3);
-	doors[1] = lobby1->GetDoorWithID(2);
+	doors[0] = lobby1->GetDoorWithID(2);
+	doors[1] = lobby1->GetDoorWithID(3);
 	doors[2] = lobby2->GetDoorWithID(1);
 	doors[3] = lobby2->GetDoorWithID(2);
 	doors[4] = lobby2->GetDoorWithID(3);
