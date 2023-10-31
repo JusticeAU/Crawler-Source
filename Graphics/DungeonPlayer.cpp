@@ -152,6 +152,18 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		dungeon->PostUpdate();
 	}
 
+	// Has point of interest changed? 
+	if (rhIsDown != rhShouldBeDown)
+	{
+		// Should we move the hand up or down?
+		if (rhShouldBeDown)
+			SetStateRH(RHState::MoveDown);
+		else
+			SetStateRH(RHState::MoveUp);
+
+		rhIsDown = rhShouldBeDown;
+	}
+
 	if (Input::Keyboard(GLFW_KEY_ESCAPE).Down() && gameMenu) // only perform this action if the gameMenu is initialised. This wont be the case in designer mode.
 	{
 
@@ -650,7 +662,7 @@ void Crawl::DungeonPlayer::SetStateRH(RHState newState)
 	}
 	case RHState::MoveUp:
 	{
-		animator->BlendToAnimation(animationRHIdle, 0.1f);
+		animator->BlendToAnimation(animationRHUp, 0.1f);
 		break;
 	}
 	case RHState::DownWalk:
@@ -692,8 +704,8 @@ void Crawl::DungeonPlayer::UpdateStateRH(float delta)
 	{
 		if (animator->IsFinished())
 		{
-			if (wasLookingAtPointOfInterest)
-				SetStateRH(RHState::MoveDown);
+			if (rhIsDown)
+				SetStateRH(RHState::DownIdle);
 			else
 				SetStateRH(RHState::Idle);
 		}
@@ -724,20 +736,14 @@ void Crawl::DungeonPlayer::UpdateStateRH(float delta)
 
 void Crawl::DungeonPlayer::UpdatePointOfInterestTilt(bool instant)
 {
-	bool isPointOfInterest = dungeon->IsPlayerPointOfInterest(position, facing);
-	if (wasLookingAtPointOfInterest != isPointOfInterest)
+	rhShouldBeDown = dungeon->IsPlayerPointOfInterest(position, facing);
+
+	if (wasLookingAtPointOfInterest != rhShouldBeDown)
 	{
-		wasLookingAtPointOfInterest = isPointOfInterest;
-		if (isPointOfInterest)
-		{
-			lookRestX = lookRestXInterest;
-		}
-		else
-		{
-			lookRestX = lookRestXDefault;
-		}
+		wasLookingAtPointOfInterest = rhShouldBeDown;
+		lookRestX = rhShouldBeDown ? lookRestXInterest : lookRestXDefault;
 		lookReturnFrom = objectView->localRotation;
-		if(!instant)lookReturnTimeCurrent = 0.0f;
+		if(!instant) lookReturnTimeCurrent = 0.0f;
 	}
 }
 

@@ -245,6 +245,8 @@ namespace Crawl
 
 		// viewmodel stuff
 		// Right hand
+		bool rhShouldBeDown = false;
+		bool rhIsDown = false;
 		RHState stateRH = RHState::Idle;
 		string animationRHBaseName = "crawler/model/viewmodel.fbxviewmodel_rig|";
 
