@@ -52,7 +52,11 @@ void Crawl::DungeonLight::Disable()
 {
 	isEnabled = false;
 	if (light)
+	{
 		light->markedForDeletion = true;
+		light = nullptr;
+	}
+
 }
 
 void Crawl::DungeonLight::LoadDecoration()
