@@ -128,6 +128,7 @@ void SceneRenderer::DrawGUI()
 	ImGui::SetNextWindowSize({ 315, 450 }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowPos({ 1200, 300 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Graphics");
+	ImGui::DragFloat("Ambient", &ambient, 0.02, 0, 1);
 
 	ImGui::BeginDisabled();
 	
@@ -337,15 +338,24 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 
 	// Set up buffers for da shaders - move this in to material batching.
 	ShaderProgram* shader = ShaderManager::GetShaderProgram("engine/shader/PBR");
+	shader->Bind();
 	shader->SetUniformBlockIndex("pointLightPositionBuffer", 1);
 	shader->SetUniformBlockIndex("pointLightColourBuffer", 2);
+	shader->SetFloatUniform("ambient", ambient);
+
+
 	shader = ShaderManager::GetShaderProgram("engine/shader/PBRSkinned");
+	shader->Bind();
 	shader->SetUniformBlockIndex("pointLightPositionBuffer", 1);
 	shader->SetUniformBlockIndex("pointLightColourBuffer", 2);
+
 	shader = ShaderManager::GetShaderProgram("engine/shader/Lambert");
+	shader->Bind();
 	shader->SetUniformBlockIndex("pointLightPositionBuffer", 1);
 	shader->SetUniformBlockIndex("pointLightColourBuffer", 2);
+
 	shader = ShaderManager::GetShaderProgram("engine/shader/LambertSkinned");
+	shader->Bind();
 	shader->SetUniformBlockIndex("pointLightPositionBuffer", 1);
 	shader->SetUniformBlockIndex("pointLightColourBuffer", 2);
 	pointLightPositionBuffer->SendData(Scene::GetPointLightPositions());

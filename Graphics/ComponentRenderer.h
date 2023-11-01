@@ -57,6 +57,7 @@ public:
 	bool receivesShadows = true;
 	float shadowBias = 0.005f;
 	bool dontFrustumCull = false;
+	float emissiveScale = 1.0f;
 
 	bool modifiedMaterials = false; // This is used for Editor APIs to see if it needs consider reserialising the model configuration.
 

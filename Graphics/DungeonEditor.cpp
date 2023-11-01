@@ -671,7 +671,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 			int newID = GetNextAvailableLightID();
 			selectedLight = dungeon->CreateLight(selectedTilePosition);
 			selectedLight->id = newID;
-			selectedLight->Enable();
+			selectedLight->Init();
 			selectedLightWindowOpen = true;
 		}
 		if (cantMakeLight) ImGui::EndDisabled();
@@ -1722,9 +1722,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditStairs()
 void Crawl::DungeonEditor::DrawGUIModeTileEditLight()
 {
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
-	if(selectedLight->flickerRepeat)
-		ImGui::SetNextWindowSize({ 300, 250 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 450, 350 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Edit Point Light", &selectedLightWindowOpen);
 	if (ImGui::ColorEdit3("Colour", &selectedLight->colour.x))
 	{
@@ -1737,13 +1735,60 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLight()
 		MarkUnsavedChanges();
 		selectedLight->UpdateTransform();
 	}
+
+	// Decoration stuff
+	string decorationName = "None";
+	if (selectedLight->lightDecorationID != -1) decorationName = DungeonLight::lightDecorations[selectedLight->lightDecorationID];
+
+	if (ImGui::BeginCombo("Decoration", decorationName.c_str()))
+	{
+		bool selectedOne = false;
+		if (ImGui::Selectable("None", false))
+		{
+			selectedOne = true;
+			selectedLight->lightDecorationID = -1;
+		}
+
+		for (int i = 0; i < DungeonLight::lightDecorationsQuantity; i++)
+		{
+			if (ImGui::Selectable(DungeonLight::lightDecorations[i].c_str(), false))
+			{
+				selectedOne = true;
+				selectedLight->lightDecorationID = i;
+			}
+		}
+		if (selectedOne) selectedLight->LoadDecoration();
+
+		ImGui::EndCombo();
+	}
+	if (selectedLight->lightDecorationID != -1)
+	{
+		decorationName = DungeonLight::lightDecorations[selectedLight->lightDecorationID];
+		if (ImGui::BeginCombo("Forward", orientationNames[selectedLight->lightDecorationDirection].c_str()))
+		{
+			int oldOrientation = selectedLight->lightDecorationDirection;
+			for (int i = 0; i < 4; i++)
+				if (ImGui::Selectable(orientationNames[i].c_str()))
+				{
+					selectedLight->lightDecorationDirection = (FACING_INDEX)i;
+					if (selectedLight->lightDecorationDirection != oldOrientation)
+					{
+						MarkUnsavedChanges();
+						selectedLight->object->SetLocalRotationZ(orientationEulersReversed[i]);
+					}
+				}
+			ImGui::EndCombo();
+		}
+
+	}
+
 	if (ImGui::InputInt("ID", &selectedLight->id)) MarkUnsavedChanges();
 	if (ImGui::Checkbox("Ignore Global Flicker", &selectedLight->flickerIgnoreGlobal))	MarkUnsavedChanges();
 	if (ImGui::Checkbox("Starts Disabled", &selectedLight->startDisabled)) MarkUnsavedChanges();
 	if (ImGui::Checkbox("Flickers Randomly", &selectedLight->flickerRepeat))
 	{
 		MarkUnsavedChanges();
-		selectedLight->flickerEnabled = true;
+		selectedLight->flickerEnabled = selectedLight->flickerRepeat;
 	}
 	if (selectedLight->flickerRepeat)
 	{
@@ -1760,11 +1805,11 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLight()
 	glm::vec3 offset(0, 0, 0.1f);
 	LineRenderer::DrawLine(worldPos, worldPos + offset, selectedLight->colour);
 
-	if (ImGui::Button("Enable")) selectedLight->Enable();
+	/*if (ImGui::Button("Enable")) selectedLight->Enable();
 	ImGui::SameLine();
 	if (ImGui::Button("Disable")) selectedLight->Disable();
 	ImGui::SameLine();
-	ImGui::Text("For testing purposes");
+	ImGui::Text("For testing purposes");*/
 
 	if (ImGui::Button("Delete"))
 		ImGui::OpenPopup("delete_light_confirm");

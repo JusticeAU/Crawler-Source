@@ -385,6 +385,7 @@ void ComponentRenderer::ApplyMaterials()
 		// Check for alpha cutoff and configured if required.
 		if (material->blendMode == Material::BlendMode::AlphaCutoff) shader->SetBoolUniform("useAlphaCutoff", true);
 		else shader->SetBoolUniform("useAlphaCutoff", false);
+		shader->SetFloatUniform("emissiveScale", emissiveScale);
 
 
 		shader->SetVector3Uniform("Ka", material->Ka);

@@ -2190,6 +2190,27 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		CreateSpikes(spikes.position);
 	}
 
+	auto& pointLights_json = serialised["pointLights"];
+	for (auto it = pointLights_json.begin(); it != pointLights_json.end(); it++)
+	{
+		DungeonLight pointLight = it.value().get<Crawl::DungeonLight>();
+		DungeonLight* newPointLight = CreateLight(pointLight.position);
+		newPointLight->position = pointLight.position;
+		newPointLight->localPosition = pointLight.localPosition;
+		newPointLight->colour = pointLight.colour;
+		newPointLight->intensity = pointLight.intensity;
+		newPointLight->id = pointLight.id;
+		newPointLight->isLobbyLight = pointLight.isLobbyLight;
+		newPointLight->flickerRepeat = pointLight.flickerRepeat;
+		newPointLight->flickerRepeatMin = pointLight.flickerRepeatMin;
+		newPointLight->flickerRepeatMax = pointLight.flickerRepeatMax;
+		newPointLight->flickerEnabled = pointLight.flickerEnabled;
+		newPointLight->startDisabled = pointLight.startDisabled;
+		newPointLight->lightDecorationID = pointLight.lightDecorationID;
+		newPointLight->lightDecorationDirection = pointLight.lightDecorationDirection;
+		newPointLight->Init();
+	}
+
 	if (!isLobbyLevel2) Scene::s_instance->SetAllObjectsStatic(); // None of this stuff moves, so can be marked as static.
 
 	// Dynamic Objects
@@ -2273,26 +2294,6 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	}
 
 	// Invisible objects
-	auto& pointLights_json = serialised["pointLights"];
-	for (auto it = pointLights_json.begin(); it != pointLights_json.end(); it++)
-	{
-		DungeonLight pointLight = it.value().get<Crawl::DungeonLight>();
-		DungeonLight* newPointLight = CreateLight(pointLight.position);
-		newPointLight->position = pointLight.position;
-		newPointLight->localPosition = pointLight.localPosition;
-		newPointLight->colour = pointLight.colour;
-		newPointLight->intensity = pointLight.intensity;
-		newPointLight->id = pointLight.id;
-		newPointLight->isLobbyLight = pointLight.isLobbyLight;
-		newPointLight->flickerRepeat = pointLight.flickerRepeat;
-		newPointLight->flickerRepeatMin = pointLight.flickerRepeatMin;
-		newPointLight->flickerRepeatMax = pointLight.flickerRepeatMax;
-		newPointLight->flickerEnabled = pointLight.flickerEnabled;
-		newPointLight->startDisabled = pointLight.startDisabled;
-		newPointLight->ConfigureFlickerState();
-		
-		if (!newPointLight->startDisabled) newPointLight->Enable();
-	}
 
 	auto& events_json = serialised["events"];
 	for (auto it = events_json.begin(); it != events_json.end(); it++)

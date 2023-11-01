@@ -2,8 +2,10 @@
 #include <glm.hpp>
 #include "serialisation.h"
 #include "ComponentFactory.h"
+#include "DungeonHelpers.h"
 
 class Object;
+class ComponentRenderer;
 
 namespace Crawl
 {
@@ -24,8 +26,22 @@ namespace Crawl
 		Object* object = nullptr;
 		ComponentLightPoint* light = nullptr;
 
+		int lightDecorationID = -1;
+		FACING_INDEX lightDecorationDirection = NORTH_INDEX;
+
+		static int			lightDecorationsQuantity;
+		static string		lightDecorations[];
+		static glm::vec3	lightDecorationsOffsets[];
+
+		Object* lightDecoration = nullptr;
+		ComponentRenderer* lightDecorationRenderer = nullptr;
+
+		void Init();
+
 		void Enable();
 		void Disable();
+
+		void LoadDecoration();
 
 		void UpdateTransform();
 		void UpdateLight();
@@ -40,9 +56,9 @@ namespace Crawl
 		bool flickerIgnoreGlobal = false;
 
 		float flickerBaseIntensity = 0.0f;
-		float flickerOffset = 1.0f;
 		float flickerCurrent = 0.0f;;
 		float flickerTime = 1.0f;
+		float intensityScale = 0.0f;
 
 		bool flickerEnabled = false;
 		bool flickerRepeat = false;
@@ -53,6 +69,7 @@ namespace Crawl
 	static void to_json(ordered_json& j, const DungeonLight& object)
 	{
 		j = { {"position", object.position}, {"localPosition", object.localPosition}, {"colour", object.colour}, {"intensity", object.intensity}, {"id", object.id} };
+
 		if (object.isLobbyLight) j["isLobbyLight"] = true;
 		if (object.flickerIgnoreGlobal) j["flickerIgnoreGlobal"] = true;
 		if (object.flickerRepeat)
@@ -62,6 +79,11 @@ namespace Crawl
 			j["flickerRepeatMax"] = object.flickerRepeatMax;
 		}
 		if (object.startDisabled) j["startDisabled"] = true;
+		if (object.lightDecorationID != -1)
+		{
+			j["lightDecorationID"] = object.lightDecorationID;
+			j["lightDecorationDirection"] = object.lightDecorationDirection;
+		}
 	}
 
 	static void from_json(const ordered_json& j, DungeonLight& object)
@@ -80,5 +102,11 @@ namespace Crawl
 			j.at("flickerRepeatMax").get_to(object.flickerRepeatMax);
 		}
 		if (j.contains("startDisabled")) object.startDisabled = true;
+		if (j.contains("lightDecorationID"))
+		{
+			j.at("lightDecorationID").get_to(object.lightDecorationID);
+			j.at("lightDecorationDirection").get_to(object.lightDecorationDirection);
+		}
+
 	}
 }

@@ -57,6 +57,8 @@ public:
 	static bool currentPassIsStatic;
 	static bool currentPassIsSplit;
 
+	float ambient = 0.03f;
+
 protected:
 	// Render Buffers
 	FrameBuffer* frameBufferRaw;
