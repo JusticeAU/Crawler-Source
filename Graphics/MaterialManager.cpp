@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include "serialisation.h"
+#include "StringUtils.h"
 
 using std::vector;
 namespace fs = std::filesystem;
@@ -24,10 +25,11 @@ void MaterialManager::Init()
 
 Material* MaterialManager::GetMaterial(string name)
 {
-	auto matIt = s_instance->materials.find(name);
+	string nameLower = StringUtils::ToLower(name);
+	auto matIt = s_instance->materials.find(nameLower);
 	if (matIt == s_instance->materials.end())
 	{
-		LogUtils::Log("Missing Material: " + name);
+		LogUtils::Log("Missing Material: " + nameLower);
 		return nullptr;
 	}
 	else
@@ -125,8 +127,9 @@ void MaterialManager::Audit_ScanFolderForMaterialReferences(string folder)
 
 void MaterialManager::Audit_ReferenceMaterial(string name)
 {
-	auto matIt = s_instance->materials.find(name);
-	if (matIt == s_instance->materials.end()) s_instance->Audit_missingMaterials.push_back(name);
+	string nameLower = StringUtils::ToLower(name);
+	auto matIt = s_instance->materials.find(nameLower);
+	if (matIt == s_instance->materials.end()) s_instance->Audit_missingMaterials.push_back(nameLower);
 	else if (matIt->second) matIt->second->Audit_referenced = true;
 	return;
 }
@@ -160,7 +163,7 @@ void MaterialManager::LoadFromFile(const char* filename)
 	
 	auto input = ReadJSONFromDisk(filename);
 	input.get_to<Material>(*material);
-	materials.emplace(filename, material);
+	materials.emplace(StringUtils::ToLower(filename), material);
 }
 void MaterialManager::FindAllFiles(string folder)
 {

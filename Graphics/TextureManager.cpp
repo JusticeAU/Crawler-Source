@@ -234,8 +234,9 @@ void TextureManager::Audit_ScanFolderForTextureReferences(string folder)
 void TextureManager::Audit_ReferenceTexture(string name)
 {
 	if (name == "") return;
-	auto texIt = s_instance->textures.find(name);
-	if (texIt == s_instance->textures.end()) s_instance->Audit_missingTextures.push_back(name);
+	string nameLower = StringUtils::ToLower(name);
+	auto texIt = s_instance->textures.find(nameLower);
+	if (texIt == s_instance->textures.end()) s_instance->Audit_missingTextures.push_back(nameLower);
 	else if (texIt->second) texIt->second->Audit_referenced = true;
 	return;
 }
