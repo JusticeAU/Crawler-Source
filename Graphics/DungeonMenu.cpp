@@ -286,28 +286,28 @@ void Crawl::DungeonMenu::UpdateMainMenuCamera(float delta)
 	case IntroStage::Text:
 	{
 		DrawBlackScreen(1.0f);
-		if (newGameSequenceTime > 3.0f)
+		if (newGameSequenceTime > 2.0f)
 		{
 			ImGui::SetNextWindowPos({ 50, 50 });
 			ImGui::SetNextWindowSize({ 1920,1080 });
 			ImGui::Begin("Intro Text", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize);
-			float workingNum = newGameSequenceTime - 3;
+			float workingNum = newGameSequenceTime - 2;
 			DrawImage(intro01, glm::clamp(workingNum, 0.0f, 1.0f));
-			workingNum = newGameSequenceTime - 5;
+			workingNum = newGameSequenceTime - 4;
 			DrawImage(intro02, glm::clamp(workingNum, 0.0f, 1.0f));
-			workingNum = newGameSequenceTime - 7;
+			workingNum = newGameSequenceTime - 6;
 			DrawImage(intro03, glm::clamp(workingNum, 0.0f, 1.0f));
-			workingNum = newGameSequenceTime - 9;
+			workingNum = newGameSequenceTime - 8;
 			DrawImage(intro04, glm::clamp(workingNum, 0.0f, 1.0f));
-			workingNum = newGameSequenceTime - 11;
+			workingNum = newGameSequenceTime - 10;
 			DrawImage(intro05, glm::clamp(workingNum, 0.0f, 1.0f));
 			ImGui::End();
 			
 			glm::vec2 screenSize = Window::GetViewPortSize();
-			ImGui::SetNextWindowPos({ screenSize.x/2.0f, screenSize.y - 100 }, 0, {0.5,1.0f});
-			ImGui::SetNextWindowSize({ (float)introPressSpace->width, (float)introPressSpace->height });
+			ImGui::SetNextWindowPos({ screenSize.x/2.0f, screenSize.y - 50 }, 0, {0.5,1.0f});
+			ImGui::SetNextWindowSize({ (float)introPressSpace->width+15, (float)introPressSpace->height });
 			ImGui::Begin("Press Space Text", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize);
-			workingNum = newGameSequenceTime - 13.5;
+			workingNum = newGameSequenceTime - 12;
 			DrawImage(introPressSpace, glm::clamp(workingNum, 0.0f, 1.0f));
 			ImGui::End();
 		}
