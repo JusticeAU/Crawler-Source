@@ -262,17 +262,20 @@ void Crawl::DungeonGameManager::ConfigureLobby()
 				}
 			}
 
-			if (enabledLights[i] && doorLights[i])
+			if (enabledLights[i])
 			{
-				doorLights[i]->Enable();
-				doorLights[i]->Flicker();
-				doorLights[i]->flickerRepeat = true;
-				doorLights[i]->flickerRepeatMin = 0;
-				doorLights[i]->flickerRepeatMax = 4;
+				lobby1->EnableLights(i + 1);
+				lobby1->FlickerLights(i + 1);
+				lobby1->SetLightFlickerLoop(i + 1, 0, 4);
+				//doorLights[i]->Enable();
+				//doorLights[i]->Flicker();
+				//doorLights[i]->flickerRepeat = true;
+				//doorLights[i]->flickerRepeatMin = 0;
+				//doorLights[i]->flickerRepeatMax = 4;
 			}
-			else if (!enabledLights[i] && doorLights[i])
+			else if (!enabledLights[i])
 			{
-				doorLights[i]->Disable();
+				lobby1->DisableLights(i + 1);
 			}
 		}
 		// Configure level 1 doors

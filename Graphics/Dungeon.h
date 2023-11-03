@@ -171,7 +171,11 @@ namespace Crawl
 		DungeonLight* CreateLight(ivec2 position);
 		DungeonLight* GetLightWithID(int id);
 		void RemoveLight(DungeonLight* light);
+		
 		void FlickerLights(int id = 0);
+		void EnableLights(int id);
+		void DisableLights(int id);
+		void SetLightFlickerLoop(int id, float minTime, float maxTime);
 
 		DungeonEventTrigger* CreateEventTrigger(ivec2 position);
 		void RemoveEventTrigger(DungeonEventTrigger* trigger);

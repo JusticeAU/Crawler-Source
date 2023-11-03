@@ -1777,6 +1777,36 @@ void Crawl::Dungeon::FlickerLights(int id)
 	}
 }
 
+void Crawl::Dungeon::EnableLights(int id)
+{
+	for (auto light : pointLights)
+	{
+		if(light->id == id) light->Enable();
+	}
+}
+
+void Crawl::Dungeon::DisableLights(int id)
+{
+	for (auto light : pointLights)
+	{
+		if (light->id == id) light->Disable();
+	}
+}
+
+void Crawl::Dungeon::SetLightFlickerLoop(int id, float minTime, float maxTime)
+{
+	for (auto light : pointLights)
+	{
+		if (light->id == id)
+		{
+			light->flickerRepeat = true;
+			light->flickerRepeatMin = minTime;
+			light->flickerRepeatMax = maxTime;
+
+		}
+	}
+}
+
 Crawl::DungeonEventTrigger* Crawl::Dungeon::CreateEventTrigger(ivec2 position)
 {
 	DungeonEventTrigger* event = new DungeonEventTrigger();
