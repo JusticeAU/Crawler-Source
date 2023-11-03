@@ -47,10 +47,13 @@ Crawl::Dungeon::Dungeon(bool isLobbyLevel2) : isLobbyLevel2(isLobbyLevel2)
 	wallVariantPaths.push_back("crawler/model/tile_window_square.object");
 	wallVariantPaths.push_back("crawler/model/tile_wall_2.object");
 	wallVariantPaths.push_back("crawler/model/tile_window_square_2.object");
+	wallVariantPaths.push_back("crawler/model/tile_wall_2_half.object");
+	wallVariantPaths.push_back("crawler/model/tile_wall_3.object");
 
 
 	floorVariantPaths.push_back("crawler/model/tile_wood.object");
-	floorVariantPaths.push_back("crawler/model/decoration_marblefloor.object");
+	floorVariantPaths.push_back("crawler/model/tile_marblefloor.object");
+	floorVariantPaths.push_back("crawler/model/tile_marble_floor.object");
 
 
 	doorsParentObject = Scene::CreateObject("Doors");

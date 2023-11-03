@@ -200,6 +200,7 @@ namespace Crawl
 		DungeonDecoration* selectedTileDecoration = nullptr;
 		bool selectedDecorationWindowOpen = false;
 		std::vector<string> decorations;
+		bool decorationsShowAllModels = false;
 
 		DungeonStairs* selectedStairs = nullptr;
 		bool selectedStairsWindowOpen = false;

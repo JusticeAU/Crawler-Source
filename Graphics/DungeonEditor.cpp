@@ -1563,10 +1563,10 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDecoration()
 	}
 
 	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize({ 450, 170 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 600, 170 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Edit Decoration", &selectedDecorationWindowOpen, ImGuiWindowFlags_NoResize);
 
-	if (ImGui::BeginCombo("Select Decoration", selectedTileDecoration->modelName.c_str(), ImGuiComboFlags_HeightLargest))
+	if (ImGui::BeginCombo("Decoration", selectedTileDecoration->modelName.c_str(), ImGuiComboFlags_HeightLargest))
 	{
 		for (auto& path : decorations)
 		{
@@ -1580,6 +1580,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDecoration()
 		}
 		ImGui::EndCombo();
 	}
+	ImGui::SameLine();
+	if (ImGui::Checkbox("Show All ", &decorationsShowAllModels)) RefreshAvailableDecorations();
 
 	if (ImGui::BeginCombo("Forward", orientationNames[selectedTileDecoration->facing].c_str()))
 	{
@@ -1596,6 +1598,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDecoration()
 			}
 		ImGui::EndCombo();
 	}
+	
 	if (ImGui::DragFloat3("Position", &selectedTileDecoration->localPosition.x, 0.1f, -5, 5, "%.3f", ImGuiSliderFlags_AlwaysClamp))
 	{
 		MarkUnsavedChanges();
@@ -2683,7 +2686,8 @@ void Crawl::DungeonEditor::RefreshAvailableDecorations()
 	{
 		if (d.path().extension() == ".object")
 		{
-			if(d.path().string().find("decoration") != string::npos) decorations.push_back(d.path().generic_string());
+			if(decorationsShowAllModels) decorations.push_back(d.path().generic_string());
+			else if(d.path().string().find("decoration") != string::npos) decorations.push_back(d.path().generic_string());
 		}
 	}
 }
