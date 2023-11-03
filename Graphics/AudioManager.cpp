@@ -189,6 +189,11 @@ void AudioManager::Set3dSourcePosition(SoLoud::handle handle, vec3 position)
 	s_instance->gSoloud.set3dSourcePosition(handle, position.x, position.y, position.z);
 }
 
+void AudioManager::Set3dSourceMinMaxDistance(SoLoud::handle handle, float min, float max)
+{
+	s_instance->gSoloud.set3dSourceMinMaxDistance(handle, min, max);
+}
+
 void AudioManager::LoadFromFile(const char* filename)
 {
 	Wav* sound = new Wav();

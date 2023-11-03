@@ -83,6 +83,14 @@ void ComponentAudioSource::Play()
 	}
 }
 
+void ComponentAudioSource::Play(string audioFile, bool stream)
+{
+	m_audioSourceName = audioFile;
+	m_isStream = stream;
+
+	Play();
+}
+
 void ComponentAudioSource::Stop()
 {
 	AudioManager::Stop(m_handle);

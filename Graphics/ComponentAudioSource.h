@@ -26,8 +26,13 @@ protected:
 
 	SoLoud::handle m_handle;
 	float m_timeSincePlayed = 0.0f;
-
+public:
+	SoLoud::handle GetHandle() { return m_handle; }
 	void Play();
+	void Play(string audioFile, bool stream = false);
+
 	void Stop();
+
+	void SetLooping(bool looping = true) { m_isLooping = looping; }
 };
 

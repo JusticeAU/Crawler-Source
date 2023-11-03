@@ -50,6 +50,7 @@ public:
 	static void Stop(SoLoud::handle handle);
 	static void SetAudioListener(AudioListener* listener);
 	static void Set3dSourcePosition(SoLoud::handle handle, vec3 position);
+	static void Set3dSourceMinMaxDistance(SoLoud::handle handle, float min, float max);
 protected:
 	AudioManager();
 
