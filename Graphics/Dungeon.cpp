@@ -2010,7 +2010,9 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 
 	ordered_json chasers_json;
 	for (auto& chaser : chasers)
-		chasers_json.push_back(*chaser);
+	{
+		if(!chaser->isDead)	chasers_json.push_back(*chaser);
+	}
 	dungeon_serialised["chasers"] = chasers_json;
 
 	ordered_json slugs_json;

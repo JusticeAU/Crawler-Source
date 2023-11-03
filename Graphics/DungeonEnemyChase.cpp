@@ -327,6 +327,11 @@ void Crawl::DungeonEnemyChase::UpdateVisuals(float delta)
 		break;
 	}
 	case AnimationState::Idle:
+		if (isDead)
+		{
+			NewAnimationState(AnimationState::Dying);
+			break;
+		}
 		if (animator->current->IsFinished()) animator->StartAnimation(animationIdle, true);
 		break;
 	case AnimationState::Turning:
