@@ -44,6 +44,9 @@ bool SceneRenderer::currentPassIsSplit = false;
 // Transparent rendering
 vector<std::pair<ComponentRenderer*, int>> SceneRenderer::transparentCalls;
 
+RenderBatch SceneRenderer::renderBatch;
+SceneRenderer::Statistics SceneRenderer::statistic;
+
 SceneRenderer::SceneRenderer()
 {
 	// Initialise the Render Buffers
@@ -125,23 +128,32 @@ SceneRenderer::SceneRenderer()
 void SceneRenderer::DrawGUI()
 {
 	// Graphics Options - Abstract this as these options develop.
-	ImGui::SetNextWindowSize({ 315, 450 }, ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowPos({ 1200, 300 }, ImGuiCond_FirstUseEver);
+	int itemWidth = 150;
+	float windowWidth = 315;
+	float windowHeight = 620;
+	float advancedStatisticsHeight = 90;
+	ImGui::SetNextWindowSize({ windowWidth, windowHeight }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos({ 1200, 200 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Graphics");
-	ImGui::DragFloat("Ambient", &ambient, 0.02, 0, 1);
 
-	ImGui::BeginDisabled();
-	
 	float averageTotalRenderTime = 0.0f;
 	for (int i = 0; i < 100; i++)
 		averageTotalRenderTime += renderTotalSamples[i];
-	averageTotalRenderTime /= 100;
-	averageTotalRenderTime *= 1000;
-	ImGui::InputFloat("MS Average", &averageTotalRenderTime, 0, 0, "%0.6f");
-	ImGui::PlotLines("", renderTotalSamples, 100, 0, "0 to 0.1s", 0, 0.1, { 300,100 });
-
+	averageTotalRenderTime /= 100.0f;
+	ImGui::BeginDisabled();
+		ImGui::InputFloat("MS Average", &averageTotalRenderTime, 0, 0, "%0.6f", ImGuiInputTextFlags_ReadOnly);
+		ImGui::PlotLines("", renderTotalSamples, 100, 0, "0 to 16.6ms", 0, 16.666, { 300,100 });
 	ImGui::EndDisabled();
-
+	if (ImGui::Checkbox("Advanced Statistics", &showAdvancedStats))
+	{
+		if (showAdvancedStats)
+			ImGui::SetWindowSize({ windowWidth,windowHeight + advancedStatisticsHeight });
+	}
+	if (showAdvancedStats) DrawStatistics();
+	ImGui::Text("Configuration");
+	ImGui::PushItemWidth(itemWidth);
+		ImGui::DragFloat("PBR Ambient", &ambient, 0.02, 0, 1);
+	ImGui::PopItemWidth();
 	if (ImGui::Checkbox("VSync", &vsyncEnabled))
 	{
 		if (vsyncEnabled) glfwSwapInterval(1);
@@ -157,10 +169,10 @@ void SceneRenderer::DrawGUI()
 	if (frustumCullingEnabled)
 	{
 		ImGui::Indent();
-		if (ImGui::InputInt("Camera", &frustumCullingCameraIndex, 1))
-			SetCullingCamera(frustumCullingCameraIndex);
-
-		if (ImGui::DragFloat("Forgiveness", &frustumCullingForgiveness, 0.1f, -10, 10, "%0.1f"));
+		ImGui::PushItemWidth(itemWidth);
+			if (ImGui::InputInt("Camera", &frustumCullingCameraIndex, 1))
+				SetCullingCamera(frustumCullingCameraIndex);
+			if (ImGui::DragFloat("Forgiveness", &frustumCullingForgiveness, 0.1f, -10, 10, "%0.1f"));
 		ImGui::Unindent();
 	}
 
@@ -181,55 +193,12 @@ void SceneRenderer::DrawGUI()
 	}
 
 	ImGui::Checkbox("Bloom", &bloomEnabled);
-	ImGui::DragInt("Bloom Taps", &bloomBlurTaps, 1, 1, 20, "%d", ImGuiSliderFlags_AlwaysClamp);
-	if (ImGui::Checkbox("SSAO", &ssaoEnabled))
-	{
-		
-		//if (!ssaoEnabled)
-		//{
-		//	for (int i = 0; i < Scene::s_editorCamera->camera->m_postProcessStack.size(); i++)
-		//	{
-		//		if (Scene::s_editorCamera->camera->m_postProcessStack[i]->GetShaderName() == "engine/shader/postProcess/SSAO")
-		//		{
-		//			delete Scene::s_editorCamera->camera->m_postProcessStack[i];
-		//			Scene::s_editorCamera->camera->m_postProcessStack.erase(Scene::s_editorCamera->camera->m_postProcessStack.begin() + i);
-		//			break;
-		//		}
-		//	}
-
-		//	for (auto& c : Scene::s_instance->componentCameras)
-		//	{
-		//		for (int i = 0; i < c->m_postProcessStack.size(); i++)
-		//		{
-		//			if (c->m_postProcessStack[i]->GetShaderName() == "engine/shader/postProcess/SSAO")
-		//			{
-		//				delete c->m_postProcessStack[i];
-		//				c->m_postProcessStack.erase(c->m_postProcessStack.begin() + i);
-		//				break;
-		//			}
-		//		}
-		//	}
-		//}
-		//else
-		//{
-		//	// Add to Scene Camera
-		//	string ppName = "engine/shader/postProcess/SSAO";
-		//	PostProcess* pp = new PostProcess(Scene::s_editorCamera->camera->GetComponentParentObject()->objectName + "_PP_" + ppName);
-		//	pp->SetShader(ShaderManager::GetShaderProgram(ppName));
-		//	pp->SetShaderName(ppName);
-		//	Scene::s_editorCamera->camera->m_postProcessStack.push_back(pp);
-
-		//	// Add to component Camaras in scene
-		//	for (auto& c : Scene::s_instance->componentCameras)
-		//	{
-		//		ppName = "engine/shader/postProcess/SSAO";
-		//		pp = new PostProcess(c->GetComponentParentObject()->objectName + "_PP_" + ppName);
-		//		pp->SetShader(ShaderManager::GetShaderProgram(ppName));
-		//		pp->SetShaderName(ppName);
-		//		c->m_postProcessStack.push_back(pp);
-		//	}
-		//}
-	}
+	ImGui::Indent();
+	ImGui::PushItemWidth(itemWidth);
+		ImGui::DragInt("Bloom Taps", &bloomBlurTaps, 1, 1, 20, "%d", ImGuiSliderFlags_AlwaysClamp);
+	ImGui::PopItemWidth();
+	ImGui::Unindent();
+	ImGui::Checkbox("SSAO", &ssaoEnabled);
 	if (ssaoEnabled)
 	{
 		ImGui::Indent();
@@ -266,7 +235,7 @@ void SceneRenderer::DrawGUI()
 		ImGui::Text("");
 		ImGui::Unindent();
 	}
-
+	ImGui::PopItemWidth();
 	if (ImGui::Button("Reload Shaders"))
 	{
 		ShaderManager::RecompileAllShaderPrograms();
@@ -278,6 +247,20 @@ void SceneRenderer::DrawGUI()
 	}
 
 	ImGui::End();
+}
+
+void SceneRenderer::DrawStatistics()
+{
+	ImGui::BeginDisabled();
+	ImGui::Indent();
+	ImGui::PushItemWidth(100);
+		ImGui::InputInt("Shader Batches", &statistic.shaderBatches,0,0,ImGuiInputTextFlags_ReadOnly);
+		ImGui::InputInt("Material Batches", &statistic.materialBatches, 0, 0, ImGuiInputTextFlags_ReadOnly);
+		ImGui::InputInt("Draw Calls", &statistic.drawCalls, 0, 0, ImGuiInputTextFlags_ReadOnly);
+		ImGui::InputInt("Tris", &statistic.tris, 0, 0, ImGuiInputTextFlags_ReadOnly);
+	ImGui::PopItemWidth();
+	ImGui::Unindent();
+	ImGui::EndDisabled();
 }
 
 void SceneRenderer::DrawShadowCubeMappingGUI()
@@ -484,8 +467,15 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	glDepthFunc(GL_EQUAL);
 	glDepthMask(GL_FALSE);
 
+	// Build render batches
 	for (auto& o : scene->objects)
-		o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::Standard);
+		o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::BatchedOpaque);
+
+	// Draw render batches
+	renderBatch.SetMatricies(c->GetViewProjectionMatrix(), cameraPosition);
+	renderBatch.DrawBatches();
+	renderBatch.ClearBatches();
+
 
 	glDepthFunc(GL_LESS);
 	glDepthMask(GL_TRUE);
@@ -571,7 +561,7 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	CleanUp(scene);
 
 	// Stats
-	renderTotalSamples[sampleIndex] = glfwGetTime() - renderLastFrameTime;
+	renderTotalSamples[sampleIndex] = (glfwGetTime() - renderLastFrameTime) * 1000.0f; // convert from seconds to milliseconds.
 	renderLastFrameTime = glfwGetTime();
 	
 	sampleIndex++;

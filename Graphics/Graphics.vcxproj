@@ -332,6 +332,7 @@
     <ClCompile Include="Primitives.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneEditorCamera.cpp" />
+    <ClCompile Include="SceneRendererBatched.cpp" />
     <ClCompile Include="SceneRenderer.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
@@ -412,6 +413,7 @@
     <ClInclude Include="Primitives.h" />
     <ClInclude Include="SceneEditorCamera.h" />
     <ClInclude Include="SceneRenderer.h" />
+    <ClInclude Include="SceneRendererBatched.h" />
     <ClInclude Include="serialisation.h" />
     <ClInclude Include="stb_image_write.h" />
     <ClInclude Include="StringUtils.h" />

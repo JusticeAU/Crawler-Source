@@ -99,6 +99,30 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 
 		switch (mode)
 		{
+		case DrawMode::BatchedOpaque:
+		{
+			for (int i = 0; i < materialArray.size(); i++)
+			{
+				if (materialArray[i] != nullptr)
+					material = materialArray[i];
+				else
+					continue;
+
+				if (material->shader == nullptr)
+					continue;
+
+				// basic transparensy pass testing
+				if (materialArray[i]->blendMode == Material::BlendMode::Transparent)
+				{
+					SceneRenderer::transparentCalls.push_back(std::pair(this, i));
+					continue;
+				}
+
+				SceneRenderer::renderBatch.AddDraw(this, i);
+			}
+
+			break;
+		}
 			case DrawMode::Standard:
 			{
 				for (int i = 0; i < materialArray.size(); i++)
@@ -208,10 +232,11 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 
 				ShaderProgram* ssaoGeoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOGeometryPass");
 				// Positions and Rotations
-				glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
-				ssaoGeoShader->SetMatrixUniform("model", componentParent->transform * model->modelTransform);
+				glm::mat4 modelMat = componentParent->transform * model->modelTransform;
+				glm::mat4 pvm = pv * modelMat;
 				ssaoGeoShader->SetMatrixUniform("pvmMatrix", pvm);
-				ssaoGeoShader->SetMatrixUniform("mMatrix", componentParent->transform* model->modelTransform);
+				ssaoGeoShader->SetMatrixUniform("model", modelMat);
+				ssaoGeoShader->SetMatrixUniform("mMatrix", modelMat);
 
 				if (isAnimated)
 					BindBoneTransform();
@@ -341,12 +366,13 @@ void ComponentRenderer::BindShader()
 void ComponentRenderer::BindMatricies(mat4 pv, vec3 position)
 {
 	// Combine the matricies
-	glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
+	glm::mat4 modelMat = componentParent->transform * model->modelTransform;
+	glm::mat4 pvm = pv * modelMat;
 
 	// Positions and Rotations
 	ShaderProgram* shader = isAnimated ? material->shaderSkinned : material->shader;
 	shader->SetMatrixUniform("pvmMatrix", pvm);
-	shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
+	shader->SetMatrixUniform("mMatrix", modelMat);
 	shader->SetVector3Uniform("cameraPosition", position);
 	shader->SetMatrixUniform("lightSpaceMatrix", Scene::GetLightSpaceMatrix());
 }

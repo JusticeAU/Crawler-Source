@@ -347,6 +347,9 @@
     <ClCompile Include="DungeonCollectableKey.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
+    <ClCompile Include="SceneRendererBatched.cpp">
+      <Filter>Source Files\Application\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -633,6 +636,9 @@
     </ClInclude>
     <ClInclude Include="DungeonCollectableKey.h">
       <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneRendererBatched.h">
+      <Filter>Source Files\Application\Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

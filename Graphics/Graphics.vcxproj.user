@@ -26,7 +26,8 @@
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\Crawler\Crawler</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Development|Win32'">
-    <LocalDebuggerCommandArguments>design</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>
+    </LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(SolutionDir)..\Crawler\Crawler</LocalDebuggerWorkingDirectory>
   </PropertyGroup>

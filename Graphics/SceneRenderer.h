@@ -1,6 +1,9 @@
 #pragma once
 #include "Graphics.h"
+#include "SceneRendererBatched.h"
+
 #include <vector>
+
 
 class Scene;
 class ComponentCamera;
@@ -23,6 +26,7 @@ public:
 	SceneRenderer();
 
 	void DrawGUI();
+	void DrawStatistics();
 	void DrawShadowCubeMappingGUI();
 	void DrawShadowMappingGUI(); // not used right now.
 
@@ -58,6 +62,9 @@ public:
 	static bool currentPassIsSplit;
 
 	float ambient = 0.03f;
+
+	// This stores the batches for the Opaque pass. May get scoped out to other passes.
+	static RenderBatch renderBatch;
 
 protected:
 	// Render Buffers
@@ -118,9 +125,19 @@ protected:
 	Object* lightGizmo = nullptr; // reusable object to place the light bulb model and render it.
 
 	// Stats
+	bool showAdvancedStats = false;
 	float renderLastFrameTime = 0.0f;
 	float renderTotalSamples[100];
 	int sampleIndex = 0;
+public:
+	struct Statistics
+	{
+		int tris = 0;
+		int drawCalls = 0;
+		int materialBatches = 0;
+		int shaderBatches = 0;
+	};
+	static Statistics statistic;
 
 	// Point Light Shadow Map Dev
 public:

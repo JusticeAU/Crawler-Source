@@ -27,6 +27,7 @@ class Component
 public:
 	enum class DrawMode
 	{
+		BatchedOpaque,
 		Standard,
 		ObjectPicking,
 		ShadowMapping,

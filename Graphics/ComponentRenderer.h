@@ -61,7 +61,6 @@ public:
 
 	bool modifiedMaterials = false; // This is used for Editor APIs to see if it needs consider reserialising the model configuration.
 
-protected:
 	ComponentAnimator* animator = nullptr;
 	ComponentAnimationBlender* animationBlender = nullptr;
 
