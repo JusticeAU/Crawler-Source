@@ -41,6 +41,8 @@ namespace Crawl
 
 		void UpdateVisuals(float delta);
 
+		void PlayMoveSFX();
+
 		// visuals
 		float moveSpeed = 0.75f;
 		float moveCurrent = 0.0f;
@@ -52,6 +54,17 @@ namespace Crawl
 		float targetTurn;
 		float bounceSpeed = 0.5;
 		float bounceCurrent = 0.0f;
+
+		// audio
+		string audioMove[6] =
+		{
+			"crawler/sound/load/murderina/move_6.wav",
+			"crawler/sound/load/murderina/move_6.wav",
+			"crawler/sound/load/murderina/move_6.wav",
+			"crawler/sound/load/murderina/move_6.wav",
+			"crawler/sound/load/murderina/move_6.wav",
+			"crawler/sound/load/murderina/move_6.wav"
+		};
 
 	};
 

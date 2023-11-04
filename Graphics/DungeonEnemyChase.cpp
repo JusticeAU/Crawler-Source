@@ -8,6 +8,7 @@
 #include "LogUtils.h"	
 #include "ComponentAnimator.h"
 #include "Animation.h"
+#include "AudioManager.h"
 
 Crawl::DungeonEnemyChase::~DungeonEnemyChase()
 {
@@ -45,6 +46,8 @@ void Crawl::DungeonEnemyChase::Update()
 				LogUtils::Log("Chaser saw player - activating.");
 				state = IDLE;
 				NewAnimationState(AnimationState::Activating);
+				// Play audio
+				PlaySFXActivate();
 				return;
 			}
 
@@ -456,4 +459,10 @@ void Crawl::DungeonEnemyChase::NewAnimationState(AnimationState newState, bool b
 		break;
 	}
 	}
+}
+
+void Crawl::DungeonEnemyChase::PlaySFXActivate()
+{
+	int randomIndex = rand() % 13;
+	AudioManager::PlaySound(audioActivateSFX[randomIndex], object->GetWorldSpacePosition());
 }

@@ -22,6 +22,7 @@ namespace Crawl
 		void MakeBarricaded();
 		void RemoveBarricaded();
 
+		void PlaySFX(string sfx);
 
 		unsigned int id = 0;
 		glm::ivec2 position = { 0, 0 };
@@ -35,17 +36,22 @@ namespace Crawl
 		const float swingTime = 0.5f;
 		float swingTimeCurrent = 0.0f;
 		bool shouldSwing = false;
+		string openSound = "crawler/sound/load/door/open_1.wav";
+		string closeSound = "crawler/sound/load/door/close_1.wav";
+
 
 		// Wobble Interaction
 		bool shouldWobble = false;
 		const float wobbleTime = 0.4f;
 		float wobbleTimeCurrent = 0.0f;
-		string wobbleSound = "crawler/sound/load/door_rattle.wav";
+		string wobbleSound = "crawler/sound/load/door/rattle_1.wav";
 		
 		// Barricade info
 		bool isBarricaded = false;
 		Object* objectBarricade = nullptr;
 		string objectBarricadeJSON = "crawler/model/door_barricade.object";
+
+
 	};
 
 	static void to_json(ordered_json& j, const DungeonDoor& door)

@@ -100,6 +100,7 @@ namespace Crawl
 		void UpdateVisuals(float delta);
 		void NewAnimationState(AnimationState state, bool blend = false);
 
+		void PlaySFXActivate();
 
 		// dependencies
 		Dungeon* dungeon = nullptr;
@@ -109,6 +110,24 @@ namespace Crawl
 		// visuals
 		float bounceSpeed = 0.5;
 		float bounceCurrent = 0.0f;
+
+		// Audio
+		int audioActivateQuantity = 13;
+		string audioActivateSFX[13] = {
+			"crawler/sound/load/chaser/activate_1.wav",
+			"crawler/sound/load/chaser/activate_2.wav",
+			"crawler/sound/load/chaser/activate_3.wav",
+			"crawler/sound/load/chaser/activate_4.wav",
+			"crawler/sound/load/chaser/activate_5.wav",
+			"crawler/sound/load/chaser/activate_6.wav",
+			"crawler/sound/load/chaser/activate_7.wav",
+			"crawler/sound/load/chaser/activate_8.wav",
+			"crawler/sound/load/chaser/activate_9.wav",
+			"crawler/sound/load/chaser/activate_10.wav",
+			"crawler/sound/load/chaser/activate_11.wav",
+			"crawler/sound/load/chaser/activate_12.wav",
+			"crawler/sound/load/chaser/activate_13.wav"
+		};
 	};
 
 	static void to_json(ordered_json& j, const DungeonEnemyChase& object)

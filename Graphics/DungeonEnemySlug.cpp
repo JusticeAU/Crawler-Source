@@ -9,6 +9,8 @@
 #include "DungeonPlayer.h"
 #include "DungeonEnemyChase.h"
 
+#include "AudioManager.h"
+
 Crawl::DungeonEnemySlug::~DungeonEnemySlug()
 {
 	if (object)
@@ -49,10 +51,9 @@ void Crawl::DungeonEnemySlug::Update()
 		if (validPath)
 		{
 			toTile = dungeon->GetTile(position + directions[facing]);
-			//fromTile->occupied = false;
-			//toTile->occupied = true;
 			positionPrevious = position;
 			position += directions[facing];
+			//PlayMoveSFX();
 		}
 		else toTile = fromTile;
 
@@ -86,7 +87,7 @@ void Crawl::DungeonEnemySlug::UpdateVisuals(float delta)
 	case MOVING:
 	{
 		moveCurrent += delta;
-		float t = MathUtils::InverseLerp(0, moveSpeed, glm::max(0.0f, moveCurrent));
+		float t = MathUtils::InverseLerp(0, moveSpeed, max(0.0f, moveCurrent));
 		if (moveCurrent > moveSpeed)
 		{
 			object->SetLocalPosition(targetPosition);
@@ -104,4 +105,10 @@ void Crawl::DungeonEnemySlug::UpdateVisuals(float delta)
 		break;
 	}
 	}
+}
+
+void Crawl::DungeonEnemySlug::PlayMoveSFX()
+{
+	int sfxIndex = rand() % 6;
+	AudioManager::PlaySound(audioMove[sfxIndex], object->GetWorldSpacePosition());
 }

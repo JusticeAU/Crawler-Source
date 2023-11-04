@@ -17,19 +17,22 @@ Crawl::DungeonDoor::~DungeonDoor()
 void Crawl::DungeonDoor::Toggle()
 {
 	open = !open;
+	if(open) PlaySFX(openSound);
+	else PlaySFX(closeSound);
 	UpdateTransforms();
 }
 
 void Crawl::DungeonDoor::Open(bool instant)
 {
 	open = true;
+	if(!instant) PlaySFX(openSound);
 	UpdateTransforms(instant);
 }
 
 void Crawl::DungeonDoor::Close(bool instant)
 {
 	open = false;
-	UpdateTransforms(instant);
+	if (!instant) PlaySFX(closeSound);
 }
 
 void Crawl::DungeonDoor::UpdateVisuals(float delta)
@@ -102,7 +105,7 @@ void Crawl::DungeonDoor::Interact()
 {
 	if (!isBarricaded)
 	{
-		AudioManager::PlaySound(wobbleSound, dungeonPosToObjectScale(object->GetWorldSpacePosition()));
+		PlaySFX(wobbleSound);
 		shouldWobble = true;
 		wobbleTimeCurrent = 0.0f;
 	}
@@ -116,7 +119,7 @@ void Crawl::DungeonDoor::MakeBarricaded()
 		objectBarricade = Scene::CreateObject(object->children[0]);
 		objectBarricade->LoadFromJSON(ReadJSONFromDisk(objectBarricadeJSON));
 		objectBarricade->SetLocalPosition({ 0.0f, -0.05f ,0.0f });
-		Close();
+		Close(true);
 		UpdateTransforms(true);
 	}
 }
@@ -131,4 +134,9 @@ void Crawl::DungeonDoor::RemoveBarricaded()
 			objectBarricade->markedForDeletion = true;
 		}
 	}
+}
+
+void Crawl::DungeonDoor::PlaySFX(string sfx)
+{
+	AudioManager::PlaySound(sfx, object->GetWorldSpacePosition());
 }

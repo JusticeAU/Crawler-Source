@@ -39,9 +39,17 @@ namespace Crawl
 		string animationDownSwing = animationBaseName + "armature|attack.pose";
 		string animationIdle = animationBaseName + "armature|idle.pose";
 
+		// Audio
+		string audioRaise = "crawler/sound/load/blocker/raise_1.wav";
+		string audioReturn = "crawler/sound/load/blocker/return_1.wav";
+		string audioSwing = "crawler/sound/load/blocker/swing_1.wav";
+		string audioHit = "crawler/sound/load/blocker/hit_1.wav";
+
 
 		void Update();
 		void CheckShouldPrime();
+
+		void PlaySFX(string sfx);
 	};
 
 	static void to_json(ordered_json& j, const DungeonEnemyBlocker& object)
