@@ -14,7 +14,19 @@ namespace Crawl
 	class DungeonPlayer
 	{
 	public:
-
+		enum class PlayerCommand
+		{
+			None,
+			Forward,
+			Back,
+			Left,
+			Right,
+			TurnLeft,
+			TurnRight,
+			Interact,
+			Wait,
+			Reset
+		};
 		enum STATE {
 			MENU,
 			IDLE,
@@ -84,6 +96,8 @@ namespace Crawl
 		void DoEvent(int eventID);
 		bool PostUpdateComplete = false;
 		
+		PlayerCommand inputBuffer = PlayerCommand::None;
+
 		bool didJustRespawn = false;
 
 		bool enableDebugUI = true;
@@ -93,6 +107,8 @@ namespace Crawl
 		bool alwaysFreeLook = false;
 		bool invertYAxis = false;
 	private:
+		void UpdateInputBuffer();
+
 		bool HandleFreeLook(float delta);
 		void HandleLookTilt(float delta);
 
@@ -102,8 +118,8 @@ namespace Crawl
 		
 		int GetMoveDirection();
 		int GetMoveIndex();
-		void TurnLeft(bool updateFreeLook = false);
-		void TurnRight(bool updateFreeLook = false);
+		void TurnLeft(bool autoReorient = false);
+		void TurnRight(bool autoReorient = false);
 
 		bool UpdateStateMoving(float delta);
 		bool UpdateStateTurning(float delta);
@@ -150,9 +166,10 @@ namespace Crawl
 		float moveDelay = 0.0f;
 		float moveDelayCurrent = 0.0f;
 
-		float turnSpeed = 0.25f;
+		bool turnCurrentIsManual = true;
+		float turnSpeedManual = 0.25f;
+		float turnSpeedReOrient = 0.35;
 		float turnCurrent = 0.0f;
-		bool turnShouldApplyDeltaToFreeLook = false;
 		float turnDeltaPrevious = 0.0f;
 		float oldTurn;
 		float targetTurn;

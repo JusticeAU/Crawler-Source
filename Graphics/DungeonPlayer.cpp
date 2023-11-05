@@ -57,8 +57,10 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 
 	UpdateStateRH(deltaTime);
 	HandleFreeLook(deltaTime);
+
 	if (state == WAIT)
 	{
+		UpdateInputBuffer();
 		moveCurrent += deltaTime;
 		if (moveCurrent >= moveSpeed)
 		{
@@ -68,15 +70,18 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	}
 	else if (state == IDLE)
 	{
+		UpdateInputBuffer();
 		if (UpdateStateIdle(deltaTime))
 			return true;
 	}
 	else if (state == MOVING)
 	{
+		UpdateInputBuffer();
 		UpdateStateMoving(deltaTime);
 	}
 	else if (state == TURNING)
 	{
+		UpdateInputBuffer();
 		UpdateStateTurning(deltaTime);
 	}
 	else if (state == STAIRBEARS)
@@ -96,6 +101,45 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	return false;
 }
 
+void Crawl::DungeonPlayer::UpdateInputBuffer()
+{
+	if (Input::Keyboard(GLFW_KEY_W).Down()) inputBuffer = PlayerCommand::Forward;
+	if (Input::Keyboard(GLFW_KEY_S).Down()) inputBuffer = PlayerCommand::Back;
+	if (Input::Keyboard(GLFW_KEY_A).Down()) inputBuffer = PlayerCommand::Left;
+	if (Input::Keyboard(GLFW_KEY_D).Down()) inputBuffer = PlayerCommand::Right;
+	
+	if (Input::Keyboard(GLFW_KEY_Q).Down()) inputBuffer = PlayerCommand::TurnLeft;
+	if (Input::Keyboard(GLFW_KEY_E).Down()) inputBuffer = PlayerCommand::TurnRight;
+
+	if (Input::Keyboard(GLFW_KEY_SPACE).Down()) inputBuffer = PlayerCommand::Interact;
+
+	if (Input::Keyboard(GLFW_KEY_LEFT_ALT).Down() || Input::Keyboard(GLFW_KEY_LEFT_SHIFT).Down()) inputBuffer = PlayerCommand::Wait;
+
+	if (Input::Keyboard(GLFW_KEY_R).Down()) inputBuffer = PlayerCommand::Reset;
+
+	if (Input::IsGamepadConnected())
+	{
+		if (Input::Gamepad().AxesDown(GLFW_GAMEPAD_AXIS_LEFT_Y, true)) inputBuffer = PlayerCommand::Forward;
+		if (Input::Gamepad().AxesDown(GLFW_GAMEPAD_AXIS_LEFT_Y)) inputBuffer = PlayerCommand::Back;
+		if (Input::Gamepad().AxesDown(GLFW_GAMEPAD_AXIS_LEFT_X)) inputBuffer = PlayerCommand::Right;
+		if (Input::Gamepad().AxesDown(GLFW_GAMEPAD_AXIS_LEFT_X, true)) inputBuffer = PlayerCommand::Left;
+
+		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_LEFT_BUMPER)) inputBuffer = PlayerCommand::TurnLeft;
+		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER)) inputBuffer = PlayerCommand::TurnRight;
+
+		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_DPAD_UP)) inputBuffer = PlayerCommand::Forward;
+		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_DPAD_DOWN)) inputBuffer = PlayerCommand::Back;
+		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_DPAD_LEFT)) inputBuffer = PlayerCommand::Left;
+		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_DPAD_RIGHT)) inputBuffer = PlayerCommand::Right;
+
+		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_A)) inputBuffer = PlayerCommand::Interact;
+		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_B)) inputBuffer = PlayerCommand::Wait;
+		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_Y)) inputBuffer = PlayerCommand::Reset;
+
+
+	}
+}
+
 bool Crawl::DungeonPlayer::HandleFreeLook(float delta)
 {
 	if (Input::Mouse(1).Pressed() || alwaysFreeLook)
@@ -113,12 +157,12 @@ bool Crawl::DungeonPlayer::HandleFreeLook(float delta)
 
 		if (!autoReOrientDuringFreeLook && !alwaysFreeLook) return false;
 
-		if (objectView->localRotation.z > 60 && state == IDLE)
+		if (objectView->localRotation.z > 50 && state == IDLE)
 		{
 			TurnLeft(true);
 			return false;
 		}
-		else if (objectView->localRotation.z < -60 && state == IDLE)
+		else if (objectView->localRotation.z < -50 && state == IDLE)
 		{
 			TurnRight(true);
 			return false;
@@ -130,6 +174,50 @@ bool Crawl::DungeonPlayer::HandleFreeLook(float delta)
 	{
 		lookReturnFrom = objectView->localRotation;
 		lookReturnTimeCurrent = 0.0f;
+	}
+
+
+	if (Input::IsGamepadConnected())
+	{
+		bool invertLook = false;
+
+		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_RIGHT_THUMB))
+		{
+			lookReturnFrom = objectView->localRotation;
+			lookReturnTimeCurrent = 0.0f;
+			alwaysFreeLook = false;
+			return false;
+		}
+
+		vec2 rightJoystick;
+		rightJoystick.x = -Input::Gamepad().Axes(GLFW_GAMEPAD_AXIS_RIGHT_X);
+		rightJoystick.y = -Input::Gamepad().Axes(GLFW_GAMEPAD_AXIS_RIGHT_Y);
+		if (invertLook) rightJoystick.y = -rightJoystick.y;
+
+		// deadzone
+		if (abs(rightJoystick.y) < 0.2f) rightJoystick.y = 0.0;
+		if (abs(rightJoystick.x) < 0.2f) rightJoystick.x = 0.0;
+
+		if (rightJoystick.x == 0.0f && rightJoystick.y == 0.0f) // No gamepad input.
+			return false;
+		else	// there is gamepad look input and we should enable always freelook
+			alwaysFreeLook = true;
+
+
+		float lookSpeed = 200.0f;
+		vec3 lookDelta = { rightJoystick.y * lookSpeed * delta, 0, rightJoystick.x * lookSpeed * delta };
+		objectView->AddLocalRotation(lookDelta);
+
+		if (objectView->localRotation.z > 50 && state == IDLE)
+		{
+			TurnLeft(true);
+			return false;
+		}
+		else if (objectView->localRotation.z < -50 && state == IDLE)
+		{
+			TurnRight(true);
+			return false;
+		}
 	}
 
 	return false;
@@ -187,17 +275,19 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 
 	HandleLookTilt(delta);
 
-	if (Input::Keyboard(GLFW_KEY_SPACE).Down() && currentDungeon->playerCanKickBox)
+	if (inputBuffer == PlayerCommand::Interact && currentDungeon->playerCanKickBox)
 	{
 		if (currentDungeon->DoKick(position, facing))
 		{
+			inputBuffer = PlayerCommand::None;
 			//animator->BlendToAnimation(animationNamePush, 0.1f);
 			return true;
 		}
 	}
 
-	if (Input::Keyboard(GLFW_KEY_R).Down())
+	if (inputBuffer == PlayerCommand::Reset)
 	{
+		inputBuffer == PlayerCommand::None;
 		if (isOnLobbyLevel2) lobbyLevel2Dungeon->GetTile(position)->occupied = false; // because this level doesnt reset, we need to keep it tidy!!
 		Respawn();
 		return false;
@@ -224,8 +314,9 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	glm::ivec2 coordinate = { 0, 0 };
 	glm::ivec2 coordinateUnchanged = { 0, 0 }; // TO DO this sucks
 
-	if (Input::Keyboard(GLFW_KEY_LEFT_ALT).Down())
+	if (inputBuffer == PlayerCommand::Wait)
 	{
+		inputBuffer = PlayerCommand::None;
 		state = WAIT;
 		moveCurrent = 0.0f;
 		return true;
@@ -242,26 +333,10 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		}
 	}*/
 
-	// Activating Objects
-	// Via Mouse
-	if (Input::Mouse(0).Down())
-		Scene::RequestObjectSelection();
-
-	if (Scene::s_instance->objectPickedID != 0)
+	// Check for Interact
+	if (inputBuffer == PlayerCommand::Interact)
 	{
-		unsigned int picked = Scene::s_instance->objectPickedID;
-		Scene::s_instance->objectPickedID = 0;
-		if (currentDungeon->DoInteractable(picked))
-		{
-			animator->BlendToAnimation(animationNamePush, 0.1f);
-			if (!currentDungeon->playerInteractIsFree)
-				return true;
-		}
-	}
-	
-	// Via Interact Key
-	if (Input::Keyboard(GLFW_KEY_SPACE).Down())
-	{
+		inputBuffer = PlayerCommand::None;
 		if (currentDungeon->DoInteractable(position, facing))
 		{
 			if (!ftueHasInteracted)
@@ -280,7 +355,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	if (IsMoveDown() || IsMovePressedLongEnough(delta))
 	{
 		int index = GetMoveIndex();
-
+		inputBuffer = PlayerCommand::None;
 		if (index != -1)
 		{
 			// Check stairs in this direction
@@ -363,13 +438,15 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	}
 
 	// Turning
-	if (Input::Keyboard(GLFW_KEY_E).Down())
+	if (inputBuffer == PlayerCommand::TurnRight)
 	{
+		inputBuffer = PlayerCommand::None;
 		TurnRight();
 		return false;
 	}
-	if (Input::Keyboard(GLFW_KEY_Q).Down())
+	if (inputBuffer == PlayerCommand::TurnLeft)
 	{
+		inputBuffer = PlayerCommand::None;
 		TurnLeft();
 		return false;
 	}
@@ -400,10 +477,10 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 bool Crawl::DungeonPlayer::IsMoveDown()
 {
 	return
-		Input::Keyboard(GLFW_KEY_W).Down() ||
-		Input::Keyboard(GLFW_KEY_S).Down() ||
-		Input::Keyboard(GLFW_KEY_A).Down() ||
-		Input::Keyboard(GLFW_KEY_D).Down();
+		inputBuffer == PlayerCommand::Forward ||
+		inputBuffer == PlayerCommand::Back ||
+		inputBuffer == PlayerCommand::Left ||
+		inputBuffer == PlayerCommand::Right;
 }
 
 bool Crawl::DungeonPlayer::IsMovePressedLongEnough(float delta)
@@ -411,12 +488,24 @@ bool Crawl::DungeonPlayer::IsMovePressedLongEnough(float delta)
 	if (Input::Keyboard(GLFW_KEY_W).Pressed() ||
 		Input::Keyboard(GLFW_KEY_S).Pressed() ||
 		Input::Keyboard(GLFW_KEY_A).Pressed() ||
-		Input::Keyboard(GLFW_KEY_D).Pressed())
+		Input::Keyboard(GLFW_KEY_D).Pressed() ||
+		Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_Y, true) ||
+		Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_Y)		 ||
+		Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_X)		 ||
+		Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_X, true))
 	{
 		moveDelayCurrent += delta;
 		if (moveDelayCurrent > moveDelay)
 		{
 			moveDelayCurrent = 0.0f;
+			if (Input::Keyboard(GLFW_KEY_W).Pressed()) inputBuffer = PlayerCommand::Forward;
+			if (Input::Keyboard(GLFW_KEY_S).Pressed()) inputBuffer = PlayerCommand::Back;
+			if (Input::Keyboard(GLFW_KEY_A).Pressed()) inputBuffer = PlayerCommand::Left;
+			if (Input::Keyboard(GLFW_KEY_D).Pressed()) inputBuffer = PlayerCommand::Right;
+			if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_Y, true)) inputBuffer = PlayerCommand::Forward;
+			if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_Y)) inputBuffer = PlayerCommand::Back;
+			if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_X, true)) inputBuffer = PlayerCommand::Left;
+			if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_X)) inputBuffer = PlayerCommand::Right;
 			return true;
 		}
 	}
@@ -427,10 +516,14 @@ bool Crawl::DungeonPlayer::IsMovePressedLongEnough(float delta)
 
 int Crawl::DungeonPlayer::GetMoveDirection()
 {
-	if (Input::Keyboard(GLFW_KEY_W).Pressed()) return FORWARD_INDEX;
-	if (Input::Keyboard(GLFW_KEY_S).Pressed()) return BACK_INDEX;
-	if (Input::Keyboard(GLFW_KEY_A).Pressed()) return LEFT_INDEX;
-	if (Input::Keyboard(GLFW_KEY_D).Pressed()) return RIGHT_INDEX;
+	if (inputBuffer == PlayerCommand::Forward) return FORWARD_INDEX;
+	if (inputBuffer == PlayerCommand::Back) return BACK_INDEX;
+	if (inputBuffer == PlayerCommand::Left) return LEFT_INDEX;
+	if (inputBuffer == PlayerCommand::Right) return RIGHT_INDEX;
+	if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_Y, true)) return FORWARD_INDEX;
+	if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_Y)) return BACK_INDEX;
+	if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_X, true)) return LEFT_INDEX;
+	if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_X)) return RIGHT_INDEX;
 
 	return -1;
 }
@@ -440,9 +533,9 @@ int Crawl::DungeonPlayer::GetMoveIndex()
 	return GetMoveCardinalIndex((DIRECTION_INDEX)GetMoveDirection());
 }
 
-void Crawl::DungeonPlayer::TurnLeft(bool updateFreeLook)
+void Crawl::DungeonPlayer::TurnLeft(bool autoReorient)
 {
-	turnShouldApplyDeltaToFreeLook = updateFreeLook;
+	turnCurrentIsManual = !autoReorient;
 	AudioManager::PlaySound("crawler/sound/load/turn.wav");
 	int faceInt = (int)facing;
 	faceInt--;
@@ -459,9 +552,9 @@ void Crawl::DungeonPlayer::TurnLeft(bool updateFreeLook)
 	dungeon->DoEventTriggerFacing(position, facing);
 }
 
-void Crawl::DungeonPlayer::TurnRight(bool updateFreeLook)
+void Crawl::DungeonPlayer::TurnRight(bool autoReorient)
 {
-	turnShouldApplyDeltaToFreeLook = updateFreeLook;
+	turnCurrentIsManual = !autoReorient;
 	AudioManager::PlaySound("crawler/sound/load/turn.wav");
 	int faceInt = (int)facing;
 	faceInt++;
@@ -502,6 +595,7 @@ bool Crawl::DungeonPlayer::UpdateStateTurning(float delta)
 {
 	HandleLookTilt(delta);
 
+	float turnSpeed = turnCurrentIsManual ? turnSpeedManual : turnSpeedReOrient;
 	float t = MathUtils::InverseLerp(0, turnSpeed, turnCurrent);
 	float turnPrevious = object->localRotation.z;
 	if (turnCurrent > turnSpeed)
@@ -512,13 +606,16 @@ bool Crawl::DungeonPlayer::UpdateStateTurning(float delta)
 	}
 	else
 	{
-		float newTurnAngle = MathUtils::Lerp(oldTurn, targetTurn, MathUtils::EaseOutBounceSubtle(t));
+		float easedT;
+		if (turnCurrentIsManual) easedT = MathUtils::EaseOutBounceSubtle(t);
+		else easedT = glm::sineEaseInOut(t);
+		float newTurnAngle = MathUtils::Lerp(oldTurn, targetTurn, easedT);
 		turnDeltaPrevious = newTurnAngle - turnPrevious;
 		object->SetLocalRotationZ(newTurnAngle);
 	}
 
 	turnCurrent += delta;
-	if(turnShouldApplyDeltaToFreeLook) objectView->localRotation.z -= turnDeltaPrevious;
+	if(!turnCurrentIsManual) objectView->localRotation.z -= turnDeltaPrevious;
 	return false;
 }
 
@@ -529,8 +626,8 @@ bool Crawl::DungeonPlayer::UpdateStateStairs(float delta)
 	{
 		// We need to turn towards the enter direction
 		turnCurrent += delta;
-		float t = MathUtils::InverseLerp(0, turnSpeed * 2, turnCurrent);
-		if (turnCurrent > turnSpeed * 2)
+		float t = MathUtils::InverseLerp(0, turnSpeedManual * 2, turnCurrent);
+		if (turnCurrent > turnSpeedManual * 2)
 		{
 			object->SetLocalRotationZ(targetTurn);
 			facingTarget = true;
@@ -576,7 +673,7 @@ bool Crawl::DungeonPlayer::UpdateStateDying(float delta)
 	else
 	{
 		
-		if (Input::Keyboard(GLFW_KEY_SPACE).Down() || Input::Keyboard(GLFW_KEY_R).Down()) // respawn
+		if (Input::Keyboard(GLFW_KEY_SPACE).Down() || Input::Keyboard(GLFW_KEY_R).Down() || (Input::IsGamepadConnected() && Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_Y))) // respawn
 		{
 			ClearFTUEPrompt(true);
 			dungeon->RebuildDungeonFromSerialised(dungeon->serialised);
@@ -592,8 +689,8 @@ void Crawl::DungeonPlayer::UpdateStateTransporter(float delta)
 	{
 		// We need to turn towards the enter direction
 		turnCurrent += delta;
-		float t = MathUtils::InverseLerp(0, turnSpeed * 2, turnCurrent);
-		if (turnCurrent > turnSpeed * 2)
+		float t = MathUtils::InverseLerp(0, turnSpeedManual * 2, turnCurrent);
+		if (turnCurrent > turnSpeedManual * 2)
 		{
 			object->SetLocalRotationZ(targetTurn);
 			facingTarget = true;
@@ -1025,6 +1122,7 @@ void Crawl::DungeonPlayer::Respawn()
 	hp = maxHp;
 	shouldSwitchWith = nullptr;
 	UpdatePointOfInterestTilt(true);
+	inputBuffer = PlayerCommand::None;
 }
 
 void Crawl::DungeonPlayer::MakeCheckpoint(FACING_INDEX direction)
