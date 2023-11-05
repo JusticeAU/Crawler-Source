@@ -10,7 +10,7 @@ UniformBuffer::UniformBuffer(unsigned int size) : m_size(size)
 
 UniformBuffer::~UniformBuffer()
 {
-	glDeleteBuffers(0, &m_uboID);
+	glDeleteBuffers(1, &m_uboID);
 }
 
 // binds this particular buffer to the designated UNIFORM_BUFFER index.
