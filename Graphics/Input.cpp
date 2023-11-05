@@ -1,6 +1,8 @@
 #include "Input.h"
 #include "Window.h"
 
+#include "LogUtils.h"
+
 Input::Input(GLFWwindow* window)
 {
 	m_window = window;
@@ -12,7 +14,13 @@ Input::Input(GLFWwindow* window)
 
 void Input::Init(GLFWwindow* window)
 {
-	if (!s_instance) s_instance = new Input(window);
+	if (!s_instance)
+	{
+		s_instance = new Input(window);
+		glfwSetJoystickCallback(GLFWJoystickConnectedCallback);
+		if(glfwJoystickIsGamepad(0))
+			SetGamepadStatus(0, true);
+	}
 }
 
 void Input::Update()
@@ -29,6 +37,13 @@ void Input::Update()
 	{
 		for (auto& b : s_instance->mouseButtons)
 			b.second.Update(s_instance->m_window, b.first);
+	}
+
+	// Gamepad
+	if (s_instance->isGamepadConnected)
+	{
+		s_instance->gamepad.statePrevious = s_instance->gamepad.stateCurrent;
+		glfwGetGamepadState(GLFW_JOYSTICK_1, &s_instance->gamepad.stateCurrent);
 	}
 
 	
@@ -75,3 +90,28 @@ void Input::MouseButton::Update(GLFWwindow* window, int number)
 	last = down;
 	down = glfwGetMouseButton(window, number);
 }
+
+
+void Input::SetGamepadStatus(int joystickID, bool connected)
+{
+	if (joystickID == 0)
+	{
+		if (connected) LogUtils::Log("Joystick Connected");
+		else LogUtils::Log("Joystick disconnected");
+		s_instance->isGamepadConnected = connected;
+	}
+}
+
+void GLFWJoystickConnectedCallback(int joystickID, int eventID)
+{
+	if (eventID == GLFW_CONNECTED)
+	{
+		LogUtils::Log(glfwGetJoystickName(joystickID));	
+		Input::SetGamepadStatus(joystickID, true);
+	}
+	else if (eventID == GLFW_DISCONNECTED)
+	{
+		Input::SetGamepadStatus(joystickID, false);
+	}
+}
+

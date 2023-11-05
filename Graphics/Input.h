@@ -31,7 +31,34 @@ public:
 	public:
 		virtual void Update(GLFWwindow* window, int index) override;
 	};
+	class GamepadState
+	{
+	public:
+		const float axesTriggerThreshold = 0.75f;
+		
+		bool Down(int GLFW_GAMEPAD) { return stateCurrent.buttons[GLFW_GAMEPAD] && !statePrevious.buttons[GLFW_GAMEPAD]; };
+		bool Pressed(int GLFW_GAMEPAD) { return stateCurrent.buttons[GLFW_GAMEPAD]; };
+		bool Up(int GLFW_GAMEPAD) { return !stateCurrent.buttons[GLFW_GAMEPAD] && statePrevious.buttons[GLFW_GAMEPAD]; };
+		float Axes(int GLFW_GAMEPAD) { return stateCurrent.axes[GLFW_GAMEPAD]; };
+		bool AxesDown(int GLFW_GAMEPAD, bool downIsNegativeValue = false)
+		{
+			if (!downIsNegativeValue) return stateCurrent.axes[GLFW_GAMEPAD] > axesTriggerThreshold && statePrevious.axes[GLFW_GAMEPAD] < axesTriggerThreshold;
+			else return stateCurrent.axes[GLFW_GAMEPAD] < -axesTriggerThreshold && statePrevious.axes[GLFW_GAMEPAD] > -axesTriggerThreshold;
+		};
+		bool AxesPressed(int GLFW_GAMEPAD, bool downIsNegativeValue = false)
+		{
+			if (!downIsNegativeValue) return stateCurrent.axes[GLFW_GAMEPAD] > axesTriggerThreshold;
+			else return stateCurrent.axes[GLFW_GAMEPAD] < -axesTriggerThreshold;
+		};
+		bool AxesUp(int GLFW_GAMEPAD, bool downIsNegativeValue = false)
+		{
+			if (!downIsNegativeValue) return stateCurrent.axes[GLFW_GAMEPAD] < axesTriggerThreshold && statePrevious.axes[GLFW_GAMEPAD] > axesTriggerThreshold;
+			else return stateCurrent.axes[GLFW_GAMEPAD] > -axesTriggerThreshold && statePrevious.axes[GLFW_GAMEPAD] < -axesTriggerThreshold;
+		};
 
+		GLFWgamepadstate stateCurrent;
+		GLFWgamepadstate statePrevious;
+	};
 public:
 	static void Init(GLFWwindow* window);
 	static void Update();
@@ -40,6 +67,10 @@ public:
 	static vec2 GetMouseDelta() { return s_instance->m_mousePosition - s_instance->m_lastMousePosition; };
 	static KeyButton& Keyboard(int GLFW_KEY) { return s_instance->keyButtons[GLFW_KEY]; };
 	static MouseButton& Mouse(int number) { return s_instance->mouseButtons[number]; };
+	static GamepadState& Gamepad() { return s_instance->gamepad; };
+
+	static void SetGamepadStatus(int joystickID, bool connected);
+	static bool IsGamepadConnected() { return s_instance->isGamepadConnected; }
 
 protected:
 	Input(GLFWwindow* window);
@@ -52,5 +83,9 @@ protected:
 	std::map<int, KeyButton> keyButtons;
 	std::map<int, MouseButton> mouseButtons;
 
-
+	// Gamepad
+	bool isGamepadConnected = false;
+	GamepadState gamepad;
 };
+
+void GLFWJoystickConnectedCallback(int joystickID, int eventID);
