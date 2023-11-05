@@ -224,7 +224,6 @@ void Crawl::DungeonGameManager::ConfigureLobby()
 	Dungeon* lobby2 = player->GetDungeonLobbyLevel2();
 	
 	// Get Light References
-	lobbyHintLight = lobby1->GetLightWithID(lobbyHintLightID);
 	lobbyLightingLight = lobby1->GetLightWithID(lobbyLightningLightID);
 	for (int i = 0; i < 8; i++)
 	{

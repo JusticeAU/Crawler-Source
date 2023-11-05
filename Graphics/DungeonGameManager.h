@@ -103,10 +103,6 @@ namespace Crawl
 		DungeonDoor* doors[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 		DungeonLight* doorLights[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 
-
-		int lobbyHintLightID = 420;
-		DungeonLight* lobbyHintLight = nullptr;
-
 		int lobbyLightningLightID = 6969;
 		DungeonLight* lobbyLightingLight = nullptr;
 		string lightningSfx = "crawler/sound/load/lightning_strike.wav";
