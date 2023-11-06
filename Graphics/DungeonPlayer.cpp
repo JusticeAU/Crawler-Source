@@ -378,6 +378,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 					currentDungeon = dungeon;
 					playerZPosition = 0.0f;
 				}
+				inputBuffer = PlayerCommand::None;
 				return false;
 			}
 			else if (currentDungeon->PlayerCanMove(position, index))
@@ -394,6 +395,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 					}
 					else facingTarget = true;
 					currentDungeon->GetTile(oldPlayerCoordinate)->occupied = false;
+					inputBuffer = PlayerCommand::None;
 					return false;
 				}
 				if (!wasLookingAtPointOfInterest)
