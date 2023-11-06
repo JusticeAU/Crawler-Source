@@ -355,7 +355,6 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	if (IsMoveDown() || IsMovePressedLongEnough(delta))
 	{
 		int index = GetMoveIndex();
-		inputBuffer = PlayerCommand::None;
 		if (index != -1)
 		{
 			// Check stairs in this direction
@@ -422,8 +421,8 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 				didMove = true;
 			}
 		}
+		inputBuffer = PlayerCommand::None;
 	}
-
 	if (didMove)
 	{
 		currentDungeon->GetTile(oldPlayerCoordinate)->occupied = false;
