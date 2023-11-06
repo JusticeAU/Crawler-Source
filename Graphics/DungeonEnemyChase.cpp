@@ -358,6 +358,11 @@ void Crawl::DungeonEnemyChase::UpdateVisuals(float delta)
 			if (!isDead) NewAnimationState(AnimationState::Idle);
 			else NewAnimationState(AnimationState::Dying);
 		}
+		if (isDead && !isDeadAnimationIncreased)
+		{
+			isDeadAnimationIncreased = true;
+			animator->current->animationSpeedScale = 2.0f;
+		}
 		break;
 	}
 	case AnimationState::Stunned:

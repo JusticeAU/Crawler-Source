@@ -51,6 +51,7 @@ namespace Crawl
 		bool canRemove = false;
 
 		bool isDead = false;
+		bool isDeadAnimationIncreased = false;
 		Dungeon::DamageType diedTo = Dungeon::DamageType::Chaser;
 		string deathAnimationToUse = "";
 		
