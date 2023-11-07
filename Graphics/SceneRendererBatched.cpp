@@ -45,6 +45,7 @@ void RenderBatch::DrawBatches()
 		shader->Bind();
 		shader->SetVector3Uniform("cameraPosition", cameraPosition);
 		shader->SetMatrixUniform("lightSpaceMatrix", Scene::GetLightSpaceMatrix());
+		shader->SetFloatUniform("ambient", SceneRenderer::ambient);
 
 		int numPointLights = Scene::GetNumPointLights();
 		if (numPointLights > 0)

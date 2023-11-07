@@ -32,6 +32,7 @@
 bool SceneRenderer::fxaaEnabled = true; // leave false whilst refactoring depth prepass and AA.
 bool SceneRenderer::ssaoEnabled = true;
 bool SceneRenderer::bloomEnabled = true;
+float SceneRenderer::ambient = 0.03f;
 ComponentCamera* SceneRenderer::frustumCullingCamera = nullptr;
 float SceneRenderer::frustumCullingForgiveness = 5.0f;
 vector<FrameBuffer*> SceneRenderer::pointLightCubeMapStatic;
@@ -321,24 +322,22 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 
 	// Set up buffers for da shaders - move this in to material batching.
 	ShaderProgram* shader = ShaderManager::GetShaderProgram("engine/shader/PBR");
-	shader->Bind();
+	//shader->Bind();
 	shader->SetUniformBlockIndex("pointLightPositionBuffer", 1);
 	shader->SetUniformBlockIndex("pointLightColourBuffer", 2);
-	shader->SetFloatUniform("ambient", ambient);
-
 
 	shader = ShaderManager::GetShaderProgram("engine/shader/PBRSkinned");
-	shader->Bind();
+	//shader->Bind();
 	shader->SetUniformBlockIndex("pointLightPositionBuffer", 1);
 	shader->SetUniformBlockIndex("pointLightColourBuffer", 2);
 
 	shader = ShaderManager::GetShaderProgram("engine/shader/Lambert");
-	shader->Bind();
+	//shader->Bind();
 	shader->SetUniformBlockIndex("pointLightPositionBuffer", 1);
 	shader->SetUniformBlockIndex("pointLightColourBuffer", 2);
 
 	shader = ShaderManager::GetShaderProgram("engine/shader/LambertSkinned");
-	shader->Bind();
+	//shader->Bind();
 	shader->SetUniformBlockIndex("pointLightPositionBuffer", 1);
 	shader->SetUniformBlockIndex("pointLightColourBuffer", 2);
 	pointLightPositionBuffer->SendData(Scene::GetPointLightPositions());

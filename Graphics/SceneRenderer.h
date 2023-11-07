@@ -61,7 +61,7 @@ public:
 	static bool currentPassIsStatic;
 	static bool currentPassIsSplit;
 
-	float ambient = 0.03f;
+	static float ambient;
 
 	// This stores the batches for the Opaque pass. May get scoped out to other passes.
 	static RenderBatch renderBatch;
