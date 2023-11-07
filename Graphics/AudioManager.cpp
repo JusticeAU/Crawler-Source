@@ -29,7 +29,7 @@ void AudioManager::Init()
 	else LogUtils::Log("Tried to Init AudioManager when it was already initialised");
 }
 
-void AudioManager::Update()
+void AudioManager::Update(float delta)
 {
 	if (m_audioListener != nullptr)
 	{
@@ -61,6 +61,8 @@ void AudioManager::Update()
 		globalVolumeOld = globalVolume;
 		gSoloud.setGlobalVolume(globalVolume);
 	}
+
+	ProcessQueue(delta);
 }
 
 void AudioManager::DrawGUI()
@@ -194,6 +196,22 @@ void AudioManager::Set3dSourceMinMaxDistance(SoLoud::handle handle, float min, f
 	s_instance->gSoloud.set3dSourceMinMaxDistance(handle, min, max);
 }
 
+void AudioManager::PushSound(string soundname, float time, glm::vec3 position3D)
+{
+	AudioStep step;
+	step.load = soundname;
+	step.time = time;
+	step.position = position3D;
+	s_instance->m_stepQueue.push(step);
+	if(s_instance->m_stepQueue.size() == 1) s_instance->PlayFirstInQueue();
+}
+
+void AudioManager::EmptyQueue()
+{
+	while (!s_instance->m_stepQueue.empty())
+		s_instance->m_stepQueue.pop();
+}
+
 void AudioManager::LoadFromFile(const char* filename)
 {
 	Wav* sound = new Wav();
@@ -206,6 +224,25 @@ void AudioManager::StreamFromFile(const char* filename)
 	WavStream* sound = new WavStream();
 	sound->load(filename);
 	m_stream.emplace(filename, sound);
+}
+
+void AudioManager::PlayFirstInQueue()
+{
+	AudioStep& step = s_instance->m_stepQueue.front();
+	PlaySound(step.load, step.position);
+}
+
+void AudioManager::ProcessQueue(float delta)
+{
+	if (s_instance->m_stepQueue.size() > 0)
+	{
+		s_instance->m_stepQueue.front().time -= delta;
+		if (s_instance->m_stepQueue.front().time <= 0)
+		{
+			s_instance->m_stepQueue.pop();
+			if (s_instance->m_stepQueue.size() > 0) PlayFirstInQueue();
+		}
+	}
 }
 
 void AudioManager::LoadAllFiles(string folder)

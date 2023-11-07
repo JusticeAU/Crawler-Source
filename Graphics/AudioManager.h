@@ -1,7 +1,9 @@
 #pragma once
 #include "AudioListener.h"
+#include "AudioStep.h"
 #include <string>
 #include <unordered_map>
+#include <queue>
 
 #include "soloud.h"
 #include "soloud_wav.h"
@@ -9,6 +11,7 @@
 #include "soloud_audiosource.h"
 
 #include "glm.hpp"
+
 
 using std::string;
 using std::unordered_map;
@@ -27,7 +30,7 @@ public:
 	static void Init();
 	static void LoadAllFiles(string folder);
 
-	void Update();
+	void Update(float delta);
 
 	static void DrawGUI();
 	static AudioManager* s_instance;
@@ -51,6 +54,9 @@ public:
 	static void SetAudioListener(AudioListener* listener);
 	static void Set3dSourcePosition(SoLoud::handle handle, vec3 position);
 	static void Set3dSourceMinMaxDistance(SoLoud::handle handle, float min, float max);
+	static void PushSound(string soundname, float time, glm::vec3 position3D);
+	static void EmptyQueue();
+
 protected:
 	AudioManager();
 
@@ -70,5 +76,9 @@ protected:
 	float globalVolume = 1.0f;
 	// For seperate volume sliders such as ambience, sfx, music etc. We would use SoLoud mixing buses.
 	float globalVolumeOld = 1.0f;
+
+	std::queue<AudioStep> m_stepQueue;
+	void ProcessQueue(float delta);
+	void PlayFirstInQueue();
 };
 

@@ -414,7 +414,7 @@ void Application::Update(float delta)
 	}
 
 
-	AudioManager::s_instance->Update();
+	AudioManager::s_instance->Update(delta);
 
 	Scene::s_instance->Update(delta);
 	Scene::s_instance->CleanUp();
