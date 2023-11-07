@@ -18,6 +18,11 @@ void Input::Init(GLFWwindow* window)
 	{
 		s_instance = new Input(window);
 		glfwSetJoystickCallback(GLFWJoystickConnectedCallback);
+		
+		// Add support for OSTENT USB Dance Mat
+		glfwUpdateGamepadMappings("03000000790000001100000000000000,OSTENT Dance Mat,a:b5,b:b4,back:b8,start:b9,leftshoulder:b6,rightshoulder:b7,dpup:b2,dpleft:b0,dpdown:b1,dpright:b3,platform:Windows,");
+
+
 		if(glfwJoystickIsGamepad(0))
 			SetGamepadStatus(0, true);
 	}
@@ -96,8 +101,12 @@ void Input::SetGamepadStatus(int joystickID, bool connected)
 {
 	if (joystickID == 0)
 	{
-		if (connected) LogUtils::Log("Joystick Connected");
-		else LogUtils::Log("Joystick disconnected");
+		if (connected)
+		{
+			LogUtils::Log("Gamepad Connected");
+			LogUtils::Log(glfwGetGamepadName(joystickID));
+		}
+		else LogUtils::Log("Gamepad Disconnected");
 		s_instance->isGamepadConnected = connected;
 	}
 }
@@ -106,7 +115,6 @@ void GLFWJoystickConnectedCallback(int joystickID, int eventID)
 {
 	if (eventID == GLFW_CONNECTED)
 	{
-		LogUtils::Log(glfwGetJoystickName(joystickID));	
 		Input::SetGamepadStatus(joystickID, true);
 	}
 	else if (eventID == GLFW_DISCONNECTED)
