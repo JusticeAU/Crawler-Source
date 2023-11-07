@@ -146,7 +146,10 @@ namespace Crawl
 		float frontDoorOpenT = 0.0f;
 		float frontDoorOpenRotationStart = 90;
 		float frontDoorOpenRotationEnd = 130;
-		float frontDoorOpenSpeed = 1.0f;
+		float frontDoorOpenSpeed = 10.0f;
+		glm::ivec2 frontDoorUnlockPositionMin = { -2, 0 };
+		glm::ivec2 frontDoorUnlockPositionMax = { -1, 0 };
+
 		glm::ivec2 positionToMakeTraversable = { -2, 0 };
 
 		std::string frontDoorLocksObjectFilePath = "crawler/object/lobbyFrontDoorLocks.object";

@@ -333,8 +333,8 @@ void Crawl::DungeonGameManager::UpdateDoorStateEvent()
 	if (player->GetOrientation() != WEST_INDEX) return;
 	ivec2 playerPos = player->GetPosition();
 	if (!(
-		playerPos.x >= -1 && playerPos.x <= 1 &&
-		playerPos.y >= -1 && playerPos.x <= 1 )) return;
+		playerPos.x >= frontDoorUnlockPositionMin.x && playerPos.x <= frontDoorUnlockPositionMax.x &&
+		playerPos.y >= frontDoorUnlockPositionMin.y && playerPos.y <= frontDoorUnlockPositionMax.y)) return;
 
 	frontDoorUpdateTriggered = true;
 	for (int i = 0; i < 4; i++)
@@ -467,6 +467,10 @@ void Crawl::DungeonGameManager::UpdateLobbyVisualsLocks(float delta)
 		if (frontDoorUnlockHingeT[i] == 1.0f) continue;
 
 		// Do Padlock open
+		if(frontDoorUnlockShackleT[i] == 0.0f)
+		{
+			AudioManager::PlaySound("crawler/sound/load/lobby/maindoor_latchopen.wav", frontDoorLocksSceneObject->GetWorldSpacePosition());
+		}
 		if (frontDoorUnlockShackleT[i] != 1.0f)
 		{
 			float lockDelta = (1 / frontDoorPadLockOpenSpeed) * delta;
@@ -480,6 +484,10 @@ void Crawl::DungeonGameManager::UpdateLobbyVisualsLocks(float delta)
 		
 
 		// Do Padlock fall
+		if (frontDoorUnlockPadlockT[i] == 0.0f)
+		{
+			AudioManager::PlaySound("crawler/sound/load/lobby/maindoor_lockfallthud.wav", frontDoorLocksSceneObject->GetWorldSpacePosition());
+		}
 		if (frontDoorUnlockPadlockT[i] != 1.0f)
 		{
 			float fallDelta = (1 / frontDoorPadLockFallSpeed) * delta;
@@ -501,7 +509,11 @@ void Crawl::DungeonGameManager::UpdateLobbyVisualsLocks(float delta)
 			frontDoorLocksLatches[i]->SetLocalRotationZ(MathUtils::LerpDegrees(frontDoorHingePosStart, frontDoorHingePosEnd, tEased));
 
 			// Check door should unlock.
-			if (i == 3 && t == 1.0f) frontDoorOpenAnimationStarted = true;
+			if (i == 3 && t == 1.0f)
+			{
+				frontDoorOpenAnimationStarted = true;
+				AudioManager::PlaySound("crawler/sound/load/lobby/maindoor_open2.wav", frontDoorLocksSceneObject->GetWorldSpacePosition());
+			}
 			break;
 		}
 	}
