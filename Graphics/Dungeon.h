@@ -207,6 +207,8 @@ namespace Crawl
 		void PostUpdate();
 		void UpdateVisuals(float delta);
 
+		bool ShouldHavePillar(ivec2 coordinate);
+		void UpdatePillarsForTileCoordinate(ivec2 coordinate);
 	protected:
 		void InitialiseTileMap();
 
@@ -218,6 +220,8 @@ namespace Crawl
 		const int version = 3; // increment this when the .dungeon file schema changes and ensure backwards compatibility.
 
 		void SortGameObjects();
+
+
 	public:
 		std::map<int, Column> tiles;
 	protected:
@@ -237,8 +241,6 @@ namespace Crawl
 		};
 		std::map<ivec2, Object*, ivec2Compare> pillars;
 
-		bool ShouldHavePillar(ivec2 coordinate);
-		void UpdatePillarsForTileCoordinate(ivec2 coordinate);
 	public:
 		ordered_json serialised;
 		string dungeonFileExtension = ".dungeon";

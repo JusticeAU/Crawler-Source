@@ -402,16 +402,16 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		ImGui::Text("Selected Tile");
 		ImGui::BeginDisabled();
 		ImGui::DragInt2("Location", &selectedTile->position.x);
-		ImGui::Checkbox("Occupied", &selectedTile->occupied);
 		ImGui::EndDisabled();
-		if (ImGui::Checkbox("Permanently Occupied", &selectedTile->permanentlyOccupied))
-			MarkUnsavedChanges();
-		if(ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-			ImGui::SetTooltip("Marks the tile as completely untraversable. Takes precedence over any other settings.");
 
 		// Cardinal traversable/see yes/no
 		ImGui::Spacing();
 		ImGui::Text("Pathing");
+		ImGui::SameLine();
+		if (ImGui::Checkbox("Untraversable", &selectedTile->permanentlyOccupied))
+			MarkUnsavedChanges();
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("Marks the tile as completely untraversable. Takes precedence over any other settings. Previous called \"Permanently Occupied\"");
 		unsigned int oldMaskTraverse = selectedTile->maskTraverse;
 		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
 		if (ImGui::BeginCombo("Walk", maskToString[oldMaskTraverse].c_str()))
@@ -433,7 +433,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		}
 		ImGui::PopStyleColor();
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-			ImGui::SetTooltip("Configure in what direction things can walk off this tile");
+			ImGui::SetTooltip("Configure in what direction things can walk off (or onto) this tile");
 
 		if (oldMaskTraverse != selectedTile->maskTraverse)
 		{
@@ -462,7 +462,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		}
 		ImGui::PopStyleColor();
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-			ImGui::SetTooltip("Configure in what direction things can see out of this tile");
+			ImGui::SetTooltip("Configure in what direction things can see out (or into) this tile");
 		if (oldMaskSee != selectedTile->maskSee)
 		{
 			RefreshSelectedTile();
@@ -472,6 +472,15 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		// Wall Variants
 		ImGui::Spacing();
 		ImGui::Text("Wall Visuals");
+		ImGui::SameLine();
+		if (ImGui::Checkbox("No Pillars", &selectedTile->dontGeneratePillars))
+		{
+			MarkUnsavedChanges();
+			dungeon->UpdatePillarsForTileCoordinate(selectedTile->position);
+		}
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("Stops automatic pillar generation on the corners of this tile.");
+
 		for (int cardinal = 0; cardinal < 4; cardinal++)
 		{
 			ImGui::PushID(cardinal);

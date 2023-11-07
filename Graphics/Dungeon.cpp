@@ -2762,29 +2762,31 @@ bool Crawl::Dungeon::ShouldHavePillar(ivec2 coordinate)
 {
 	// check North East Tile
 	DungeonTile* tileCheck = GetTile(coordinate + pillarToTileCoordinates[NORTHEAST_INDEX]);
-	if (tileCheck && (tileCheck->wallVariants[WEST_INDEX] >= 0 || tileCheck->wallVariants[SOUTH_INDEX] >= 0)) return true;
+	if (tileCheck && !tileCheck->dontGeneratePillars && (tileCheck->wallVariants[WEST_INDEX] >= 0 || tileCheck->wallVariants[SOUTH_INDEX] >= 0)) return true;
 
 	// check South East Tile
 	tileCheck = GetTile(coordinate + pillarToTileCoordinates[SOUTHEAST_INDEX]);
-	if (tileCheck && (tileCheck->wallVariants[NORTH_INDEX] >= 0 || tileCheck->wallVariants[WEST_INDEX] >= 0)) return true;
+	if (tileCheck && !tileCheck->dontGeneratePillars && (tileCheck->wallVariants[NORTH_INDEX] >= 0 || tileCheck->wallVariants[WEST_INDEX] >= 0)) return true;
 
 	// check South West Tile
 	tileCheck = GetTile(coordinate + pillarToTileCoordinates[SOUTHWEST_INDEX]);
-	if (tileCheck && (tileCheck->wallVariants[EAST_INDEX] >= 0 || tileCheck->wallVariants[NORTH_INDEX] >= 0)) return true;
+	if (tileCheck && !tileCheck->dontGeneratePillars && (tileCheck->wallVariants[EAST_INDEX] >= 0 || tileCheck->wallVariants[NORTH_INDEX] >= 0)) return true;
 
 	// check North West Tile
 	tileCheck = GetTile(coordinate + pillarToTileCoordinates[NORTHWEST_INDEX]);
-	if (tileCheck && (tileCheck->wallVariants[SOUTH_INDEX] >= 0 || tileCheck->wallVariants[EAST_INDEX] >= 0)) return true;
+	if (tileCheck && !tileCheck->dontGeneratePillars && (tileCheck->wallVariants[SOUTH_INDEX] >= 0 || tileCheck->wallVariants[EAST_INDEX] >= 0)) return true;
 
 	return false;	
 }
 
 void Crawl::Dungeon::UpdatePillarsForTileCoordinate(ivec2 coordinate)
 {
+	// get the current tile to check for 'dont generate pillars' flag
+	DungeonTile* tile = GetTile(coordinate);
 	for (int i = 0; i < 4; i++)
 	{
 		ivec2 pillarCoordinate = coordinate + tileToPillarCoordinates[i];
-		if (ShouldHavePillar(pillarCoordinate))
+		if (ShouldHavePillar(pillarCoordinate) && !tile->dontGeneratePillars)
 		{
 			// check if there is a pillar in the pillars list
 			auto pillar = pillars.find(pillarCoordinate);

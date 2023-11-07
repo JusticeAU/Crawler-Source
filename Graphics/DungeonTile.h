@@ -18,6 +18,7 @@ namespace Crawl
 		// State
 		bool occupied = false;
 		bool permanentlyOccupied = false;
+		bool dontGeneratePillars = false;
 
 		// Dependencies
 		Object* object = nullptr;
@@ -37,6 +38,8 @@ namespace Crawl
 		j = { {"position", tile.position}, {"mask", tile.maskTraverse}, {"maskSee", tile.maskSee}, {"wallVariants", tile.wallVariants} };
 		if (tile.floorVariant != 0) j["floorVariant"] = tile.floorVariant;
 		if (tile.permanentlyOccupied) j["permanentlyOccupied"] = true;
+		if (tile.dontGeneratePillars) j["dontGeneratePillars"] = true;
+
 	}
 
 	static void from_json(const ordered_json& j, DungeonTile& tile)
@@ -69,7 +72,10 @@ namespace Crawl
 			tile.occupied = tile.permanentlyOccupied;
 		}
 
-
+		if (j.contains("dontGeneratePillars"))
+		{
+			j.at("dontGeneratePillars").get_to(tile.dontGeneratePillars);
+		}
 
 	}
 }
