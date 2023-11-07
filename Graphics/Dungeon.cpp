@@ -280,7 +280,7 @@ bool Crawl::Dungeon::DeleteTile(ivec2 position)
 	tile->second.object->markedForDeletion = true;
 	col->second.row.erase(tile);
 	UpdateTileNeighbors(position);
-	UpdatePillarsForTileCoordinate(position);
+	UpdatePillarsForTile(&tile->second);
 
 	return true;
 }
@@ -314,7 +314,7 @@ void Crawl::Dungeon::CreateTileObject(DungeonTile* tile)
 
 	// Set up Pillars
 	if (pillarsParentObject == nullptr) pillarsParentObject = Scene::CreateObject("Pillars");
-	UpdatePillarsForTileCoordinate(tile->position);
+	UpdatePillarsForTile(tile);
 
 	// ceiling
 	if (!noRoof)
@@ -2760,32 +2760,30 @@ void Crawl::Dungeon::SortGameObjects()
 
 bool Crawl::Dungeon::ShouldHavePillar(ivec2 coordinate)
 {
-	// check North East Tile
-	DungeonTile* tileCheck = GetTile(coordinate + pillarToTileCoordinates[NORTHEAST_INDEX]);
-	if (tileCheck && !tileCheck->dontGeneratePillars && (tileCheck->wallVariants[WEST_INDEX] >= 0 || tileCheck->wallVariants[SOUTH_INDEX] >= 0)) return true;
+	// check surrounding tiles for 'no pillar' flags first.
+	DungeonTile* northEast = GetTile(coordinate + pillarToTileCoordinates[NORTHEAST_INDEX]);
+	if (northEast && northEast->dontGeneratePillars) return false;
+	DungeonTile* southEast = GetTile(coordinate + pillarToTileCoordinates[SOUTHEAST_INDEX]);
+	if (southEast && southEast->dontGeneratePillars) return false;
+	DungeonTile* southWest = GetTile(coordinate + pillarToTileCoordinates[SOUTHWEST_INDEX]);
+	if (southWest && southWest->dontGeneratePillars) return false;
+	DungeonTile* northWest = GetTile(coordinate + pillarToTileCoordinates[NORTHWEST_INDEX]);
+	if (northWest && northWest->dontGeneratePillars) return false;
 
-	// check South East Tile
-	tileCheck = GetTile(coordinate + pillarToTileCoordinates[SOUTHEAST_INDEX]);
-	if (tileCheck && !tileCheck->dontGeneratePillars && (tileCheck->wallVariants[NORTH_INDEX] >= 0 || tileCheck->wallVariants[WEST_INDEX] >= 0)) return true;
-
-	// check South West Tile
-	tileCheck = GetTile(coordinate + pillarToTileCoordinates[SOUTHWEST_INDEX]);
-	if (tileCheck && !tileCheck->dontGeneratePillars && (tileCheck->wallVariants[EAST_INDEX] >= 0 || tileCheck->wallVariants[NORTH_INDEX] >= 0)) return true;
-
-	// check North West Tile
-	tileCheck = GetTile(coordinate + pillarToTileCoordinates[NORTHWEST_INDEX]);
-	if (tileCheck && !tileCheck->dontGeneratePillars && (tileCheck->wallVariants[SOUTH_INDEX] >= 0 || tileCheck->wallVariants[EAST_INDEX] >= 0)) return true;
+	// No flags, now check the walls at each tile for intersections.
+	if (northEast && (northEast->wallVariants[WEST_INDEX] >= 0 || northEast->wallVariants[SOUTH_INDEX] >= 0)) return true;
+	if (southEast && (southEast->wallVariants[NORTH_INDEX] >= 0 || southEast->wallVariants[WEST_INDEX] >= 0)) return true;
+	if (southWest && (southWest->wallVariants[EAST_INDEX] >= 0 || southWest->wallVariants[NORTH_INDEX] >= 0)) return true;
+	if (northWest && (northWest->wallVariants[SOUTH_INDEX] >= 0 || northWest->wallVariants[EAST_INDEX] >= 0)) return true;
 
 	return false;	
 }
 
-void Crawl::Dungeon::UpdatePillarsForTileCoordinate(ivec2 coordinate)
+void Crawl::Dungeon::UpdatePillarsForTile(DungeonTile* tile)
 {
-	// get the current tile to check for 'dont generate pillars' flag
-	DungeonTile* tile = GetTile(coordinate);
 	for (int i = 0; i < 4; i++)
 	{
-		ivec2 pillarCoordinate = coordinate + tileToPillarCoordinates[i];
+		ivec2 pillarCoordinate = tile->position + tileToPillarCoordinates[i];
 		if (ShouldHavePillar(pillarCoordinate) && !tile->dontGeneratePillars)
 		{
 			// check if there is a pillar in the pillars list
@@ -2795,7 +2793,7 @@ void Crawl::Dungeon::UpdatePillarsForTileCoordinate(ivec2 coordinate)
 			{
 				Object* pillarObj = Scene::CreateObject(pillarsParentObject);
 				pillarObj->LoadFromJSON(ReadJSONFromDisk("crawler/model/tile_pillar.object"));
-				pillarObj->SetLocalPosition(dungeonPosToObjectScale(coordinate));
+				pillarObj->SetLocalPosition(dungeonPosToObjectScale(tile->position));
 				pillarObj->AddLocalPosition({ directionsDiagonal[i].x, directionsDiagonal[i].y, 0 });
 				pillars.emplace(pillarCoordinate, pillarObj);
 			}

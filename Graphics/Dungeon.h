@@ -208,7 +208,7 @@ namespace Crawl
 		void UpdateVisuals(float delta);
 
 		bool ShouldHavePillar(ivec2 coordinate);
-		void UpdatePillarsForTileCoordinate(ivec2 coordinate);
+		void UpdatePillarsForTile(DungeonTile* tile);
 	protected:
 		void InitialiseTileMap();
 

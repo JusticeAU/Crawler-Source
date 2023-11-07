@@ -476,7 +476,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Checkbox("No Pillars", &selectedTile->dontGeneratePillars))
 		{
 			MarkUnsavedChanges();
-			dungeon->UpdatePillarsForTileCoordinate(selectedTile->position);
+			dungeon->UpdatePillarsForTile(selectedTile);
 		}
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 			ImGui::SetTooltip("Stops automatic pillar generation on the corners of this tile.");
