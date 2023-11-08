@@ -166,9 +166,6 @@ void Application::ConstructWindow()
 
 void Application::LoadResourceManagers()
 {
-	// Create input system.
-	Input::Init(window->GetGLFWwindow());
-
 	// Load Assets
 	string engineFolder = "engine";
 	string gameFolder = "crawler";
@@ -267,6 +264,56 @@ void Application::InitialiseAdditionalGameAssets()
 void Application::InitialiseMenu()
 {
 	menu->ExecuteReturnToMainMenu();
+}
+
+void Application::InitialiseInput()
+{
+	// Create input system.
+	Input::Init(window->GetGLFWwindow());
+
+	// Add support for OSTENT USB Dance Mat
+	glfwUpdateGamepadMappings("03000000790000001100000000000000,OSTENT Dance Mat,a:b5,b:b4,back:b8,start:b9,leftshoulder:b6,rightshoulder:b7,dpup:b2,dpleft:b0,dpdown:b1,dpright:b3,platform:Windows,");
+
+
+	// Add Aliases
+	Input::Alias("Forward").RegisterKeyButton(GLFW_KEY_W);
+	Input::Alias("Forward").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_DPAD_UP);
+	Input::Alias("Forward").RegisterGamepadAxes(GLFW_GAMEPAD_AXIS_LEFT_Y, true);
+
+	Input::Alias("Backward").RegisterKeyButton(GLFW_KEY_S);
+	Input::Alias("Backward").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_DPAD_DOWN);
+	Input::Alias("Backward").RegisterGamepadAxes(GLFW_GAMEPAD_AXIS_LEFT_Y, false);
+
+	Input::Alias("Left").RegisterKeyButton(GLFW_KEY_A);
+	Input::Alias("Left").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_DPAD_LEFT);
+	Input::Alias("Left").RegisterGamepadAxes(GLFW_GAMEPAD_AXIS_LEFT_X, true);
+
+	Input::Alias("Right").RegisterKeyButton(GLFW_KEY_D);
+	Input::Alias("Right").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_DPAD_RIGHT);
+	Input::Alias("Right").RegisterGamepadAxes(GLFW_GAMEPAD_AXIS_LEFT_X, false);
+
+	Input::Alias("TurnLeft").RegisterKeyButton(GLFW_KEY_Q);
+	Input::Alias("TurnLeft").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_LEFT_BUMPER);
+
+	Input::Alias("TurnRight").RegisterKeyButton(GLFW_KEY_E);
+	Input::Alias("TurnRight").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER);
+
+	Input::Alias("Interact").RegisterKeyButton(GLFW_KEY_SPACE);
+	Input::Alias("Interact").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_A);
+
+	Input::Alias("Wait").RegisterKeyButton(GLFW_KEY_LEFT_ALT);
+	Input::Alias("Wait").RegisterKeyButton(GLFW_KEY_LEFT_SHIFT);
+	Input::Alias("Wait").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_B);
+
+	Input::Alias("Reset").RegisterKeyButton(GLFW_KEY_R);
+	Input::Alias("Reset").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_Y);
+
+	Input::Alias("ResetView").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_RIGHT_THUMB);
+
+	Input::Alias("Start").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_START);
+	Input::Alias("Start").RegisterKeyButton(GLFW_KEY_ENTER);
+
+	Input::Alias("Escape").RegisterKeyButton(GLFW_KEY_ESCAPE);
 }
 
 void Application::Run()

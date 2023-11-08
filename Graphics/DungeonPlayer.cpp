@@ -103,41 +103,19 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 
 void Crawl::DungeonPlayer::UpdateInputBuffer()
 {
-	if (Input::Keyboard(GLFW_KEY_W).Down()) inputBuffer = PlayerCommand::Forward;
-	if (Input::Keyboard(GLFW_KEY_S).Down()) inputBuffer = PlayerCommand::Back;
-	if (Input::Keyboard(GLFW_KEY_A).Down()) inputBuffer = PlayerCommand::Left;
-	if (Input::Keyboard(GLFW_KEY_D).Down()) inputBuffer = PlayerCommand::Right;
+	if (Input::Alias("Forward").Down()) inputBuffer = PlayerCommand::Forward;
+	if (Input::Alias("Backward").Down()) inputBuffer = PlayerCommand::Back;
+	if (Input::Alias("Left").Down()) inputBuffer = PlayerCommand::Left;
+	if (Input::Alias("Right").Down()) inputBuffer = PlayerCommand::Right;
 	
-	if (Input::Keyboard(GLFW_KEY_Q).Down()) inputBuffer = PlayerCommand::TurnLeft;
-	if (Input::Keyboard(GLFW_KEY_E).Down()) inputBuffer = PlayerCommand::TurnRight;
+	if (Input::Alias("TurnLeft").Down()) inputBuffer = PlayerCommand::TurnLeft;
+	if (Input::Alias("TurnRight").Down()) inputBuffer = PlayerCommand::TurnRight;
 
-	if (Input::Keyboard(GLFW_KEY_SPACE).Down()) inputBuffer = PlayerCommand::Interact;
+	if (Input::Alias("Interact").Down()) inputBuffer = PlayerCommand::Interact;
 
-	if (Input::Keyboard(GLFW_KEY_LEFT_ALT).Down() || Input::Keyboard(GLFW_KEY_LEFT_SHIFT).Down()) inputBuffer = PlayerCommand::Wait;
+	if (Input::Alias("Wait").Down()) inputBuffer = PlayerCommand::Wait;
 
-	if (Input::Keyboard(GLFW_KEY_R).Down()) inputBuffer = PlayerCommand::Reset;
-
-	if (Input::IsGamepadConnected())
-	{
-		if (Input::Gamepad().AxesDown(GLFW_GAMEPAD_AXIS_LEFT_Y, true)) inputBuffer = PlayerCommand::Forward;
-		if (Input::Gamepad().AxesDown(GLFW_GAMEPAD_AXIS_LEFT_Y)) inputBuffer = PlayerCommand::Back;
-		if (Input::Gamepad().AxesDown(GLFW_GAMEPAD_AXIS_LEFT_X)) inputBuffer = PlayerCommand::Right;
-		if (Input::Gamepad().AxesDown(GLFW_GAMEPAD_AXIS_LEFT_X, true)) inputBuffer = PlayerCommand::Left;
-
-		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_LEFT_BUMPER)) inputBuffer = PlayerCommand::TurnLeft;
-		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER)) inputBuffer = PlayerCommand::TurnRight;
-
-		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_DPAD_UP)) inputBuffer = PlayerCommand::Forward;
-		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_DPAD_DOWN)) inputBuffer = PlayerCommand::Back;
-		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_DPAD_LEFT)) inputBuffer = PlayerCommand::Left;
-		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_DPAD_RIGHT)) inputBuffer = PlayerCommand::Right;
-
-		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_A)) inputBuffer = PlayerCommand::Interact;
-		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_B)) inputBuffer = PlayerCommand::Wait;
-		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_Y)) inputBuffer = PlayerCommand::Reset;
-
-
-	}
+	if (Input::Alias("Reset").Down()) inputBuffer = PlayerCommand::Reset;
 }
 
 bool Crawl::DungeonPlayer::HandleFreeLook(float delta)
@@ -181,7 +159,7 @@ bool Crawl::DungeonPlayer::HandleFreeLook(float delta)
 	{
 		bool invertLook = false;
 
-		if (Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_RIGHT_THUMB))
+		if (Input::Alias("ResetView").Down())
 		{
 			lookReturnFrom = objectView->localRotation;
 			lookReturnTimeCurrent = 0.0f;
@@ -486,27 +464,19 @@ bool Crawl::DungeonPlayer::IsMoveDown()
 
 bool Crawl::DungeonPlayer::IsMovePressedLongEnough(float delta)
 {
-	if (Input::Keyboard(GLFW_KEY_W).Pressed() ||
-		Input::Keyboard(GLFW_KEY_S).Pressed() ||
-		Input::Keyboard(GLFW_KEY_A).Pressed() ||
-		Input::Keyboard(GLFW_KEY_D).Pressed() ||
-		Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_Y, true) ||
-		Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_Y)		 ||
-		Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_X)		 ||
-		Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_X, true))
+	if (Input::Alias("Forward").Pressed() ||
+		Input::Alias("Backward").Pressed() ||
+		Input::Alias("Left").Pressed() ||
+		Input::Alias("Right").Pressed())
 	{
 		moveDelayCurrent += delta;
 		if (moveDelayCurrent > moveDelay)
 		{
 			moveDelayCurrent = 0.0f;
-			if (Input::Keyboard(GLFW_KEY_W).Pressed()) inputBuffer = PlayerCommand::Forward;
-			if (Input::Keyboard(GLFW_KEY_S).Pressed()) inputBuffer = PlayerCommand::Back;
-			if (Input::Keyboard(GLFW_KEY_A).Pressed()) inputBuffer = PlayerCommand::Left;
-			if (Input::Keyboard(GLFW_KEY_D).Pressed()) inputBuffer = PlayerCommand::Right;
-			if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_Y, true)) inputBuffer = PlayerCommand::Forward;
-			if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_Y)) inputBuffer = PlayerCommand::Back;
-			if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_X, true)) inputBuffer = PlayerCommand::Left;
-			if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_X)) inputBuffer = PlayerCommand::Right;
+			if (Input::Alias("Forward").Pressed()) inputBuffer = PlayerCommand::Forward;
+			if (Input::Alias("Backward").Pressed()) inputBuffer = PlayerCommand::Back;
+			if (Input::Alias("Left").Pressed()) inputBuffer = PlayerCommand::Left;
+			if (Input::Alias("Right").Pressed()) inputBuffer = PlayerCommand::Right;
 			return true;
 		}
 	}
@@ -521,11 +491,6 @@ int Crawl::DungeonPlayer::GetMoveDirection()
 	if (inputBuffer == PlayerCommand::Back) return BACK_INDEX;
 	if (inputBuffer == PlayerCommand::Left) return LEFT_INDEX;
 	if (inputBuffer == PlayerCommand::Right) return RIGHT_INDEX;
-	if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_Y, true)) return FORWARD_INDEX;
-	if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_Y)) return BACK_INDEX;
-	if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_X, true)) return LEFT_INDEX;
-	if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_X)) return RIGHT_INDEX;
-
 	return -1;
 }
 
@@ -674,7 +639,7 @@ bool Crawl::DungeonPlayer::UpdateStateDying(float delta)
 	else
 	{
 		
-		if (Input::Keyboard(GLFW_KEY_SPACE).Down() || Input::Keyboard(GLFW_KEY_R).Down() || (Input::IsGamepadConnected() && Input::Gamepad().Down(GLFW_GAMEPAD_BUTTON_Y))) // respawn
+		if (Input::Alias("Interact").Down() || Input::Alias("Reset").Down() || Input::Alias("Start").Down()) // respawn
 		{
 			ClearFTUEPrompt(true);
 			dungeon->RebuildDungeonFromSerialised(dungeon->serialised);

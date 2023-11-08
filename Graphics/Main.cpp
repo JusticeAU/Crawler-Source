@@ -26,6 +26,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 #endif // !RELEASE
 	app->ConstructWindow();
 	app->LoadResourceManagers();
+	app->InitialiseInput();
 	app->DoLoadingScreen();
 
 	if (app->s_mode != Application::Mode::Art)

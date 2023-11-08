@@ -142,8 +142,8 @@ namespace Crawl
 
 		void SoundPlayFootstep();
 
-		glm::ivec2 position;
-		glm::ivec2 positionPrevious;
+		glm::ivec2 position = {0,0};
+		glm::ivec2 positionPrevious = { 0,0 };
 		FACING_INDEX facing = EAST_INDEX;
 		
 		STATE state = IDLE;
@@ -153,15 +153,15 @@ namespace Crawl
 		const float lookRestXDefault = -7.0f;
 		const float lookRestXInterest = -17.0f;
 		float lookRestX = lookRestXDefault;
-		glm::vec3 lookReturnFrom;
+		glm::vec3 lookReturnFrom = { 0,0,0 };
 		bool wasLookingAtPointOfInterest = false;
 		float lookReturnTimeTotal = 0.25f;
 		float lookReturnTimeCurrent = 1.0f;
 
 		float moveSpeed = 0.25f;
 		float moveCurrent = 0.0f;
-		glm::vec3 oldPosition;
-		glm::vec3 targetPosition;
+		glm::vec3 oldPosition = { 0,0,0 };
+		glm::vec3 targetPosition = { 0,0,0 };
 
 		float moveDelay = 0.0f;
 		float moveDelayCurrent = 0.0f;
@@ -171,15 +171,15 @@ namespace Crawl
 		float turnSpeedReOrient = 0.35;
 		float turnCurrent = 0.0f;
 		float turnDeltaPrevious = 0.0f;
-		float oldTurn;
-		float targetTurn;
+		float oldTurn = 0.0f;
+		float targetTurn = 0.0f;
 		
-		Dungeon* dungeon;	// This is a pointer to the currently loaded dungeon.
+		Dungeon* dungeon = nullptr;	// This is a pointer to the currently loaded dungeon.
 							// The player stores the level level 2 in memory, and currentDungeon will either be this pointer, or lobbyLevel2.
-		Object* object;
-		Object* objectView;
-		ComponentAnimator* animator;
-		ComponentCamera* camera;
+		Object* object = nullptr;
+		Object* objectView = nullptr;
+		ComponentAnimator* animator = nullptr;
+		ComponentCamera* camera = nullptr;
 
 		bool didMove = false;
 

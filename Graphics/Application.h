@@ -39,6 +39,7 @@ public:
 	void RenderLoadProgress(float percentageLoaded);
 	void InitialiseAdditionalGameAssets();
 	void InitialiseMenu();
+	void InitialiseInput();
 	void Run();
 
 	void RefreshImGui();

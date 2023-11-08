@@ -121,8 +121,8 @@ namespace Crawl
 		glm::ivec2 titleMenuSize = { 600, 300 };
 		glm::ivec2 pauseMenuSize = { 600, 600 };
 
-		int mainMenuXOffset;
-		int mainMenuYOffset;
+		int mainMenuXOffset = 0.0f;
+		int mainMenuYOffset = 0.0f;
 		Window* window = nullptr;
 		Application* app = nullptr;
 		DungeonPlayer* player = nullptr;

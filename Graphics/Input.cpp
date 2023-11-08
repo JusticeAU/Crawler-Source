@@ -18,11 +18,7 @@ void Input::Init(GLFWwindow* window)
 	{
 		s_instance = new Input(window);
 		glfwSetJoystickCallback(GLFWJoystickConnectedCallback);
-		
-		// Add support for OSTENT USB Dance Mat
-		glfwUpdateGamepadMappings("03000000790000001100000000000000,OSTENT Dance Mat,a:b5,b:b4,back:b8,start:b9,leftshoulder:b6,rightshoulder:b7,dpup:b2,dpleft:b0,dpdown:b1,dpright:b3,platform:Windows,");
-
-
+	
 		if(glfwJoystickIsGamepad(0))
 			SetGamepadStatus(0, true);
 	}
@@ -123,3 +119,76 @@ void GLFWJoystickConnectedCallback(int joystickID, int eventID)
 	}
 }
 
+bool Input::InputAlias::Down()
+{
+	for (auto& key : keys) if (Input::Keyboard(key).Down()) return true;
+	for (auto& click : clicks)  if (Input::Mouse(click).Down()) return true;
+
+	if (!Input::IsGamepadConnected()) return false;
+	for (auto& button : gamepadButtons) if (Input::Gamepad().Down(button)) return true;
+	for (auto& axis : gamepadNegativeAxes) if (Input::Gamepad().AxesDown(axis, true)) return true;
+	for (auto& axis : gamepadPostiveAxes)  if (Input::Gamepad().AxesDown(axis, false)) return true;
+	return false;
+}
+
+bool Input::InputAlias::Pressed()
+{
+	for (auto& key : keys) if (Input::Keyboard(key).Pressed()) return true;
+	for (auto& click : clicks)  if (Input::Mouse(click).Pressed()) return true;
+
+	if (!Input::IsGamepadConnected()) return false;
+	for (auto& button : gamepadButtons) if (Input::Gamepad().Pressed(button)) return true;
+	for (auto& axis : gamepadNegativeAxes) if (Input::Gamepad().AxesPressed(axis, true)) return true;
+	for (auto& axis : gamepadPostiveAxes)  if (Input::Gamepad().AxesPressed(axis, false)) return true;
+	
+	return false;
+}
+
+bool Input::InputAlias::Up()
+{
+	for (auto& key : keys) if (Input::Keyboard(key).Up()) return true;
+	for (auto& click : clicks)  if (Input::Mouse(click).Up()) return true;
+
+	if (!Input::IsGamepadConnected()) return false;
+	for (auto& button : gamepadButtons) if (Input::Gamepad().Up(button)) return true;
+	for (auto& axis : gamepadNegativeAxes) if (Input::Gamepad().AxesUp(axis, true)) return true;
+	for (auto& axis : gamepadPostiveAxes)  if (Input::Gamepad().AxesUp(axis, false)) return true;
+	
+	return false;
+}
+
+void Input::InputAlias::RegisterKeyButton(int GLFW_KEY)
+{
+	// Check its not already there, otherwise add it.
+	for(auto& key : keys) if (key == GLFW_KEY) return;
+	keys.emplace_back(GLFW_KEY);
+}
+
+void Input::InputAlias::RegisterMouseButton(int GLFW_MOUSE_BUTTON)
+{
+	// Check its not already there, otherwise add it.
+	for (auto& click : clicks) if (click == GLFW_MOUSE_BUTTON) return;
+	clicks.emplace_back(GLFW_MOUSE_BUTTON);
+}
+
+void Input::InputAlias::RegisterGamepadButton(int GLFW_GAMEPAD_BUTTON)
+{
+	// Check its not already there, otherwise add it.
+	for (auto& button : gamepadButtons) if (button == GLFW_GAMEPAD_BUTTON) return;
+	gamepadButtons.emplace_back(GLFW_GAMEPAD_BUTTON);
+}
+
+void Input::InputAlias::RegisterGamepadAxes(int GLFW_GAMEPAD_AXES, bool downIsNegativeValue)
+{
+	// Check its not already there, otherwise add it.
+	if (downIsNegativeValue)
+	{
+		for (auto& axis : gamepadNegativeAxes) if (axis == GLFW_GAMEPAD_AXES) return;
+		gamepadNegativeAxes.emplace_back(GLFW_GAMEPAD_AXES);
+	}
+	else
+	{
+		for (auto& axis : gamepadPostiveAxes) if (axis == GLFW_GAMEPAD_AXES) return;
+		gamepadPostiveAxes.emplace_back(GLFW_GAMEPAD_AXES);
+	}
+}

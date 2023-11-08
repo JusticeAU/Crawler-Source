@@ -311,7 +311,7 @@ void Crawl::DungeonMenu::UpdateMainMenuCamera(float delta)
 			DrawImage(introPressSpace, glm::clamp(workingNum, 0.0f, 1.0f));
 			ImGui::End();
 		}
-		if(Input::Keyboard(GLFW_KEY_SPACE).Down()) StartNewGame();
+		if(Input::Alias("Interact").Down()) StartNewGame();
 		break;
 	}
 	}

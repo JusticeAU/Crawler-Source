@@ -3,6 +3,9 @@
 #include "glfw3.h"
 #include "glad.h"
 #include "glm.hpp"
+
+#include <string>
+#include <vector>
 #include <map>
 
 using glm::vec2;
@@ -59,6 +62,24 @@ public:
 		GLFWgamepadstate stateCurrent;
 		GLFWgamepadstate statePrevious;
 	};
+	class InputAlias
+	{
+	public:
+		bool Down();
+		bool Pressed();
+		bool Up();
+
+		void RegisterKeyButton(int GLFW_KEY);
+		void RegisterMouseButton(int GLFW_MOUSE_BUTTON);
+		void RegisterGamepadButton(int GLFW_GAMEPAD_BUTTON);
+		void RegisterGamepadAxes(int GLFW_GAMEPAD_AXES, bool downIsNegativeValue = false);
+
+		std::vector<int> keys;
+		std::vector<int> clicks;
+		std::vector<int> gamepadButtons;
+		std::vector<int> gamepadPostiveAxes;
+		std::vector<int> gamepadNegativeAxes;
+	};
 public:
 	static void Init(GLFWwindow* window);
 	static void Update();
@@ -68,6 +89,7 @@ public:
 	static KeyButton& Keyboard(int GLFW_KEY) { return s_instance->keyButtons[GLFW_KEY]; };
 	static MouseButton& Mouse(int number) { return s_instance->mouseButtons[number]; };
 	static GamepadState& Gamepad() { return s_instance->gamepad; };
+	static InputAlias& Alias(std::string alias) { return s_instance->aliases[alias]; };
 
 	static void SetGamepadStatus(int joystickID, bool connected);
 	static bool IsGamepadConnected() { return s_instance->isGamepadConnected; }
@@ -86,6 +108,9 @@ protected:
 	// Gamepad
 	bool isGamepadConnected = false;
 	GamepadState gamepad;
+
+	// Aliasing
+	std::map<std::string, InputAlias> aliases;
 };
 
 void GLFWJoystickConnectedCallback(int joystickID, int eventID);
