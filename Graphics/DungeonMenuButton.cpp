@@ -12,7 +12,12 @@ Crawl::DungeonMenuButton::DungeonMenuButton(string name, string texturePath)
 	hoverTexture = TextureManager::GetTexture(hoverTexturePath);
 }
 
-bool Crawl::DungeonMenuButton::Update(float delta)
+void Crawl::DungeonMenuButton::Hover()
+{
+	isHovered = true;
+}
+
+void Crawl::DungeonMenuButton::Update(float delta)
 {
 	bool spacerClicked = false;
 	bool spacerHovered = false;
@@ -56,17 +61,18 @@ bool Crawl::DungeonMenuButton::Update(float delta)
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenOverlapped)) buttonHovered = true;
 
 	// Update dynamic indentation
-	if(!isFadingOut) isHovered = spacerHovered || buttonHovered;
+	isMouseOver = spacerHovered || buttonHovered;
 	if (isHovered) offsetTimeCurrent = glm::min(offsetTimeCurrent + delta, offsetTimeTotal);
 	else offsetTimeCurrent = glm::max(offsetTimeCurrent - delta, 0.0f);
 
 	t = offsetTimeCurrent / offsetTimeTotal;
 	offsetPositionCurrent = glm::max(offsetPositionMax * t, 1.0f);
-	return (spacerClicked || buttonClicked) && !isFadingOut;
+	isHovered = false;
+	return;
 }
 
-void Crawl::DungeonMenuButton::SetActive(bool active)
+void Crawl::DungeonMenuButton::SetEnabled(bool enabled)
 {
-	isFadingOut = !active;
+	isFadingOut = !enabled;
 	if(isFadingOut) fadeAlphaStart = alphaCurrent;
 }

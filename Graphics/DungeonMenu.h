@@ -1,6 +1,9 @@
 #pragma once
-#include <string>
 #include "Window.h"
+
+#include <vector>
+#include <string>
+
 
 using std::string;
 
@@ -38,10 +41,15 @@ namespace Crawl
 			Text
 		};
 		DungeonMenu();
+		int selectedMenuOption = 0;
+		std::vector<DungeonMenuButton*> menuButtonsMain;
+		std::vector<DungeonMenuButton*> menuButtonsPause;
+		std::vector<DungeonMenuButton*> menuButtonsThanks;
 
 		void OpenMenu(Menu menu);
 
 		void Update(float delta);
+		void UpdateInput(std::vector<DungeonMenuButton*>* menuButtons);
 		void DrawMainMenu(float delta);
 		void DrawPauseMenu(float delta);
 		void DrawCredits(float delta);
@@ -81,17 +89,6 @@ namespace Crawl
 		string menuReturnToLobbyPath = "crawler/texture/gui/menu/returnToLobby.tga";
 		string menuReturnToMenuTexPath = "crawler/texture/gui/menu/returnToMenu.tga";
 
-
-		// Main
-		DungeonMenuButton* buttonNewGame;
-		DungeonMenuButton* buttonSettings;
-		DungeonMenuButton* buttonQuit;
-
-		// Pause
-		DungeonMenuButton* pauseButtonResumeGame;
-		DungeonMenuButton* pauseButtonReturnLobby;
-		DungeonMenuButton* pauseButtonReturnToMenu;
-		DungeonMenuButton* pauseButtonQuit;
 
 		// Thanks
 		string menuThanksCardTexPath = "crawler/texture/gui/prompt_thankyou.tga";

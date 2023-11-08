@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <functional>
 
 class Texture;
 
@@ -7,15 +8,25 @@ using std::string;
 
 namespace Crawl
 {
+	class DungeonMenu;
 	class DungeonMenuButton
 	{
 	public:
 		DungeonMenuButton(string name, string texturePath);
-		bool Update(float delta);
-		void SetActive(bool active = true);
+		void BindMenuFunction(void (DungeonMenu::*&& _Func)(), DungeonMenu*&& _Args) { menuFunction = std::bind(_Func, _Args); };
+		void Activate() { menuFunction(); };
+
+		void Hover();
+		
+		void Update(float delta);
+		
+		bool IsMouseOver() { return isMouseOver; };
+		void SetEnabled(bool enabled = true);
 		string name = "";
 		Texture* tex = nullptr;
+		std::function<void()> menuFunction;
 		
+		bool isMouseOver = false;
 		bool isHovered = false;
 
 		float offsetPositionMax = 30.0f;

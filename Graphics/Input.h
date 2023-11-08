@@ -16,6 +16,12 @@ using glm::vec2;
 class Input
 {
 public:
+	enum class InputType
+	{
+		Keyboard,
+		Mouse,
+		Gamepad
+	};
 	class KeyButton
 	{
 	protected:
@@ -94,15 +100,25 @@ public:
 	static void SetGamepadStatus(int joystickID, bool connected);
 	static bool IsGamepadConnected() { return s_instance->isGamepadConnected; }
 
-	static bool LastInputWasFromGamepad() { return s_instance->lastInputWasGamepad; };
+	static InputType GetLastInputType() { return s_instance->m_lastInputType; };
+
+	//static bool LastInputWasFromGamepad() { return s_instance->lastInputWasGamepad; };
+	//static bool LastInputWasFromKeyboard() { return s_instance->lastInputWasKeyboard; };
+	//static bool LastInputWasFromMoused() { return s_instance->lastInputWasMouse; };
+
 
 protected:
 	Input(GLFWwindow* window);
 	static Input* s_instance;
 	GLFWwindow* m_window;
 
+	InputType m_lastInputType = InputType::Mouse;
+
+	bool lastInputWasKeyboard = false;
+
 	vec2 m_mousePosition;
 	vec2 m_lastMousePosition;
+	bool lastInputWasMouse = true;
 
 	std::map<int, KeyButton> keyButtons;
 	std::map<int, MouseButton> mouseButtons;
@@ -116,6 +132,7 @@ protected:
 	std::map<std::string, InputAlias> aliases;
 
 	bool IsAnyKeyboardInput();
+	bool IsAnyMouseInput();
 	bool IsAnyGamepadInput();
 };
 
