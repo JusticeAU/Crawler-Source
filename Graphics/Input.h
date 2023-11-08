@@ -94,6 +94,8 @@ public:
 	static void SetGamepadStatus(int joystickID, bool connected);
 	static bool IsGamepadConnected() { return s_instance->isGamepadConnected; }
 
+	static bool LastInputWasFromGamepad() { return s_instance->lastInputWasGamepad; };
+
 protected:
 	Input(GLFWwindow* window);
 	static Input* s_instance;
@@ -107,10 +109,14 @@ protected:
 
 	// Gamepad
 	bool isGamepadConnected = false;
+	bool lastInputWasGamepad = false;
 	GamepadState gamepad;
 
 	// Aliasing
 	std::map<std::string, InputAlias> aliases;
+
+	bool IsAnyKeyboardInput();
+	bool IsAnyGamepadInput();
 };
 
 void GLFWJoystickConnectedCallback(int joystickID, int eventID);

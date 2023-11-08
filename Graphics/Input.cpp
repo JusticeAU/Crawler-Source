@@ -12,6 +12,28 @@ Input::Input(GLFWwindow* window)
 	m_lastMousePosition = { 0,0 };
 }
 
+bool Input::IsAnyKeyboardInput()
+{
+	for (int i = 0; i <= GLFW_KEY_LAST; i++) if (glfwGetKey(m_window, i) == GLFW_PRESS) return true;
+	return false;
+}
+
+bool Input::IsAnyGamepadInput()
+{
+	// Buttons
+	for (int i = 0; i <= GLFW_GAMEPAD_BUTTON_LAST; i++) if (Input::Gamepad().Pressed(i)) return true;
+	// Joysticks
+	for (int i = 0; i <= GLFW_GAMEPAD_AXIS_RIGHT_Y; i++)
+	{
+		if (Input::Gamepad().AxesPressed(i)) return true;
+		if (Input::Gamepad().AxesPressed(i,true)) return true;
+	}
+	// Triggers
+	if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_LEFT_TRIGGER)) return true;
+	if (Input::Gamepad().AxesPressed(GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER)) return true;
+	return false;
+}
+
 void Input::Init(GLFWwindow* window)
 {
 	if (!s_instance)
@@ -33,6 +55,7 @@ void Input::Update()
 		for (auto& b : s_instance->keyButtons)
 			b.second.Update(s_instance->m_window, b.first);
 	}
+	if (s_instance->IsAnyKeyboardInput()) s_instance->lastInputWasGamepad = false;
 
 	if (!io.WantCaptureMouse)
 	{
@@ -40,14 +63,7 @@ void Input::Update()
 			b.second.Update(s_instance->m_window, b.first);
 	}
 
-	// Gamepad
-	if (s_instance->isGamepadConnected)
-	{
-		s_instance->gamepad.statePrevious = s_instance->gamepad.stateCurrent;
-		glfwGetGamepadState(GLFW_JOYSTICK_1, &s_instance->gamepad.stateCurrent);
-	}
-
-	
+	// Mouse
 	s_instance->m_lastMousePosition = s_instance->m_mousePosition;
 	double mouseX, mouseY;
 	glfwGetCursorPos(s_instance->m_window, &mouseX, &mouseY);
@@ -58,6 +74,15 @@ void Input::Update()
 
 	if (Input::Keyboard(GLFW_KEY_F9).Down())
 		Window::Get()->ToggleMouseCursor();
+
+	// Gamepad
+	if (s_instance->isGamepadConnected)
+	{
+		s_instance->gamepad.statePrevious = s_instance->gamepad.stateCurrent;
+		glfwGetGamepadState(GLFW_JOYSTICK_1, &s_instance->gamepad.stateCurrent);
+
+		if (s_instance->IsAnyGamepadInput()) s_instance->lastInputWasGamepad = true;
+	}
 }
 
 vec2 Input::GetMousePosPixel()
