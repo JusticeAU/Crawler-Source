@@ -203,7 +203,7 @@ void Input::InputAlias::RegisterGamepadButton(int GLFW_GAMEPAD_BUTTON)
 	gamepadButtons.emplace_back(GLFW_GAMEPAD_BUTTON);
 }
 
-void Input::InputAlias::RegisterGamepadAxes(int GLFW_GAMEPAD_AXES, bool downIsNegativeValue)
+void Input::InputAlias::RegisterGamepadAxis(int GLFW_GAMEPAD_AXES, bool downIsNegativeValue)
 {
 	// Check its not already there, otherwise add it.
 	if (downIsNegativeValue)

@@ -72,7 +72,7 @@ public:
 		void RegisterKeyButton(int GLFW_KEY);
 		void RegisterMouseButton(int GLFW_MOUSE_BUTTON);
 		void RegisterGamepadButton(int GLFW_GAMEPAD_BUTTON);
-		void RegisterGamepadAxes(int GLFW_GAMEPAD_AXES, bool downIsNegativeValue = false);
+		void RegisterGamepadAxis(int GLFW_GAMEPAD_AXES, bool downIsNegativeValue = false);
 
 		std::vector<int> keys;
 		std::vector<int> clicks;

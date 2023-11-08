@@ -230,7 +230,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		rhIsDown = rhShouldBeDown;
 	}
 
-	if (Input::Keyboard(GLFW_KEY_ESCAPE).Down() && gameMenu) // only perform this action if the gameMenu is initialised. This wont be the case in designer mode.
+	if (Input::Alias("Pause").Down() && gameMenu) // only perform this action if the gameMenu is initialised. This wont be the case in designer mode.
 	{
 
 		DungeonGameManager::Get()->PauseGame();

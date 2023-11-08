@@ -278,25 +278,28 @@ void Application::InitialiseInput()
 	// Add Aliases
 	Input::Alias("Forward").RegisterKeyButton(GLFW_KEY_W);
 	Input::Alias("Forward").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_DPAD_UP);
-	Input::Alias("Forward").RegisterGamepadAxes(GLFW_GAMEPAD_AXIS_LEFT_Y, true);
+	Input::Alias("Forward").RegisterGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_Y, true);
 
 	Input::Alias("Backward").RegisterKeyButton(GLFW_KEY_S);
 	Input::Alias("Backward").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_DPAD_DOWN);
-	Input::Alias("Backward").RegisterGamepadAxes(GLFW_GAMEPAD_AXIS_LEFT_Y, false);
+	Input::Alias("Backward").RegisterGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_Y, false);
 
 	Input::Alias("Left").RegisterKeyButton(GLFW_KEY_A);
 	Input::Alias("Left").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_DPAD_LEFT);
-	Input::Alias("Left").RegisterGamepadAxes(GLFW_GAMEPAD_AXIS_LEFT_X, true);
+	Input::Alias("Left").RegisterGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_X, true);
 
 	Input::Alias("Right").RegisterKeyButton(GLFW_KEY_D);
 	Input::Alias("Right").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_DPAD_RIGHT);
-	Input::Alias("Right").RegisterGamepadAxes(GLFW_GAMEPAD_AXIS_LEFT_X, false);
+	Input::Alias("Right").RegisterGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_X, false);
 
 	Input::Alias("TurnLeft").RegisterKeyButton(GLFW_KEY_Q);
 	Input::Alias("TurnLeft").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_LEFT_BUMPER);
+	Input::Alias("TurnLeft").RegisterGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_TRIGGER);
+
 
 	Input::Alias("TurnRight").RegisterKeyButton(GLFW_KEY_E);
 	Input::Alias("TurnRight").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER);
+	Input::Alias("TurnRight").RegisterGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER);
 
 	Input::Alias("Interact").RegisterKeyButton(GLFW_KEY_SPACE);
 	Input::Alias("Interact").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_A);
@@ -310,10 +313,8 @@ void Application::InitialiseInput()
 
 	Input::Alias("ResetView").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_RIGHT_THUMB);
 
-	Input::Alias("Start").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_START);
-	Input::Alias("Start").RegisterKeyButton(GLFW_KEY_ENTER);
-
-	Input::Alias("Escape").RegisterKeyButton(GLFW_KEY_ESCAPE);
+	Input::Alias("Pause").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_START);
+	Input::Alias("Pause").RegisterKeyButton(GLFW_KEY_ESCAPE);
 }
 
 void Application::Run()
