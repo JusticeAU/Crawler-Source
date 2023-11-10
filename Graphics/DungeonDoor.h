@@ -49,7 +49,7 @@ namespace Crawl
 		// Barricade info
 		bool isBarricaded = false;
 		Object* objectBarricade = nullptr;
-		string objectBarricadeJSON = "crawler/model/door_barricade.object";
+		string objectBarricadeJSON = "crawler/model/decoration_barricade.object";
 
 
 	};
