@@ -474,9 +474,9 @@ void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)
 				animator->OnParentChange();
 				renderer->model = model->model;
 				renderer->OnParentChange();
-				for (int i = 0; i < renderer->materialArray.size(); i++)
+				for (int i = 0; i < renderer->submeshMaterials.size(); i++)
 				{
-					renderer->materialArray[i] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
+					renderer->submeshMaterials[i] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
 				}
 			}
 			else
@@ -497,8 +497,8 @@ void Crawl::ArtTester::ModelDropCallBack(int count, const char** paths)
 				renderer->model = model->model;
 				renderer->OnParentChange();
 
-				for (int i = 0; i < renderer->materialArray.size(); i++)
-					renderer->materialArray[i] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
+				for (int i = 0; i < renderer->submeshMaterials.size(); i++)
+					renderer->submeshMaterials[i] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
 			}
 
 			Refresh();

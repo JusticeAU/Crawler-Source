@@ -369,7 +369,6 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 	int numFaces = mesh->mNumFaces;
 	vector<unsigned int> indices;
 
-
 	for (int i = 0; i < numFaces; i++)
 	{
 		indices.push_back(mesh->mFaces[i].mIndices[0]);
@@ -537,6 +536,18 @@ Mesh* MeshManager::LoadFromAiMesh(const aiMesh* mesh, Model::BoneStructure* bone
 	loadedMesh->Initialise(numV, vertices, (int)indices.size(), indices.data());
 	delete[] vertices;
 	
+	// Import calculated bounding boxes for mesh
+	vec3 aabbMin = vec3_cast(mesh->mAABB.mMin);
+	vec3 aabbMax = vec3_cast(mesh->mAABB.mMax);
+	loadedMesh->aabb.lowerA = vec3(aabbMin.x, aabbMin.y, aabbMin.z);
+	loadedMesh->aabb.lowerB = vec3(aabbMin.x, aabbMin.y, aabbMax.z);
+	loadedMesh->aabb.lowerC = vec3(aabbMax.x, aabbMin.y, aabbMax.z);
+	loadedMesh->aabb.lowerD = vec3(aabbMax.x, aabbMin.y, aabbMin.z);
+	loadedMesh->aabb.upperA = vec3(aabbMin.x, aabbMax.y, aabbMin.z);
+	loadedMesh->aabb.upperB = vec3(aabbMin.x, aabbMax.y, aabbMax.z);
+	loadedMesh->aabb.upperC = vec3(aabbMax.x, aabbMax.y, aabbMax.z);
+	loadedMesh->aabb.upperD = vec3(aabbMax.x, aabbMax.y, aabbMin.z);
+
 	// Set up meta data and add to list.
 	loadedMesh->name = mesh->mName.C_Str();
 	s_instance->meshes.emplace(name, loadedMesh);

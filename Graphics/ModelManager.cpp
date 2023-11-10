@@ -103,7 +103,8 @@ void ModelManager::LoadFromFile(const char* filename, mat4 transformOverride)
 		aiProcess_CalcTangentSpace |
 		aiProcess_FlipWindingOrder |
 		aiProcess_LimitBoneWeights |
-		aiProcess_Triangulate);
+		aiProcess_Triangulate		|
+		aiProcess_GenBoundingBoxes);
 
 	// Create a new model to start pushing our data in to.
 	Model* model = new Model();

@@ -1,7 +1,7 @@
 #pragma once
 #include "Graphics.h"
 #include "SceneRendererBatched.h"
-
+#include "Mesh.h"
 #include <vector>
 
 
@@ -46,7 +46,7 @@ public:
 
 	static bool compareIndexDistancePair(std::pair<int, float> a, std::pair<int, float> b);
 
-	static bool ShouldCull(vec3 position);
+	static bool ShouldCull(const glm::vec3* points);
 	void SetCullingCamera(int sceneCameraIndex);
 
 	void SetStaticShadowMapsDirty() { pointLightShadowMapsStaticDirty = true; };
@@ -57,11 +57,13 @@ public:
 	static bool bloomEnabled;
 	static ComponentCamera* frustumCullingCamera;
 	static CameraFrustum* cullingFrustum;
-	static float frustumCullingForgiveness;
+	static bool frustumCullingShowBounds;
+	
 	static bool currentPassIsStatic;
 	static bool currentPassIsSplit;
 
 	static float ambient;
+
 
 	// This stores the batches for the Opaque pass. May get scoped out to other passes.
 	static RenderBatch renderBatch;
@@ -166,7 +168,7 @@ public:
 
 	float FOV = 90.0f;
 	float aspect = 1.0f;
-	float nearNum = 0.000f;
+	float nearNum = 0.1f;
 	float farNum = 15.0f;
 
 	// Transparent Rendering Dev - This will get factored in to the material batcher system.

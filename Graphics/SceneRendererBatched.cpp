@@ -24,10 +24,10 @@ void RenderBatch::AddDraw(ComponentRenderer* renderer, int meshIndex)
 	bool isSkinned = renderer->isAnimated;
 	
 	ShaderProgram* shader = nullptr;
-	if (isSkinned) shader = renderer->materialArray[meshIndex]->shaderSkinned;
-	else shader = renderer->materialArray[meshIndex]->shader;
+	if (isSkinned) shader = renderer->submeshMaterials[meshIndex]->shaderSkinned;
+	else shader = renderer->submeshMaterials[meshIndex]->shader;
 
-	Material* material = renderer->materialArray[meshIndex];
+	Material* material = renderer->submeshMaterials[meshIndex];
 	Model* model = renderer->model;
 
 	renderBatch.shaderBatches[shader].materialBatches[material].modelBatches[model].meshBatches[meshIndex].push_back(renderer);

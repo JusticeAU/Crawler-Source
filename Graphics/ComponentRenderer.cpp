@@ -20,6 +20,8 @@
 #include "LogUtils.h"
 using std::string;
 
+#include "LineRenderer.h"
+
 ComponentRenderer::ComponentRenderer(Object* parent) : Component("Renderer", Component_Renderer, parent)
 {
 	closestPointLightUBO = new UniformBuffer(sizeof(int) * 8);
@@ -32,11 +34,12 @@ ComponentRenderer::ComponentRenderer(Object* parent, nlohmann::ordered_json j) :
 	if (j.at("materials").is_null() != true)
 	{
 		for (auto it = matsJSON.begin(); it != matsJSON.end(); it++)
-			materialArray.push_back(MaterialManager::GetMaterial(it.value()));
+		{
+			submeshMaterials.push_back(MaterialManager::GetMaterial(it.value()));
+		}
+		submeshBounds.resize(submeshMaterials.size());
 	}
 	
-	j.at("frameBuffer").get_to(frameBufferName);
-	frameBuffer = TextureManager::GetFrameBuffer(frameBufferName);
 	j.at("receivesShadows").get_to(receivesShadows);
 	j.at("castsShadows").get_to(castsShadows);
 	if (j.contains("dontFrustumCull")) dontFrustumCull = true;
@@ -51,7 +54,22 @@ ComponentRenderer::~ComponentRenderer()
 
 void ComponentRenderer::Update(float delta)
 {
-	
+	if (componentParent->wasDirtyTransform) // check if we should update our bounding boxes
+	{
+		for (int i = 0; i < model->meshes.size(); i++)
+		{
+			mat4 rotation = componentParent->transform * model->modelTransform;
+			Mesh::AABB& aabb = model->meshes[i]->aabb;
+			submeshBounds[i].points[0] = vec3(rotation * vec4(aabb.lowerA, 1));
+			submeshBounds[i].points[1] = vec3(rotation * vec4(aabb.lowerB, 1));
+			submeshBounds[i].points[2] = vec3(rotation * vec4(aabb.lowerC, 1));
+			submeshBounds[i].points[3] = vec3(rotation * vec4(aabb.lowerD, 1));
+			submeshBounds[i].points[4] = vec3(rotation * vec4(aabb.upperA, 1));
+			submeshBounds[i].points[5] = vec3(rotation * vec4(aabb.upperB, 1));
+			submeshBounds[i].points[6] = vec3(rotation * vec4(aabb.upperC, 1));
+			submeshBounds[i].points[7] = vec3(rotation * vec4(aabb.upperD, 1));
+		}
+	}
 }
 
 void ComponentRenderer::UpdateClosestLights()
@@ -82,197 +100,168 @@ void ComponentRenderer::UpdateClosestLights()
 void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 {
 	// check if this thing should draw in this pass or not
-	if (SceneRenderer::currentPassIsSplit)
-	{
-		if (componentParent->isStatic != SceneRenderer::currentPassIsStatic) return;
-	}
+	if (SceneRenderer::currentPassIsSplit && componentParent->isStatic != SceneRenderer::currentPassIsStatic) return;
 
-	// The culling Frustum should be set before any draw pass. If there is one set, then it is tested against.
-	if (SceneRenderer::cullingFrustum && !dontFrustumCull)
-	{
-		vec3 modelPos = componentParent->GetWorldSpacePosition();
-		if(SceneRenderer::ShouldCull(modelPos)) return;
-	}
+	if (model == nullptr) return;
 
-	if (model != nullptr && materialArray[0] != nullptr) // At minimum we need a model and a shader to draw something.
+	for (int i = 0; i < model->meshes.size(); i++)
 	{
+		// Confirm a material is assigned
+		if (submeshMaterials[i] == nullptr) return;
 
+		// Frustum Cull
+		if (SceneRenderer::cullingFrustum && !isAnimated && SceneRenderer::ShouldCull(submeshBounds[i].points))
+		{
+			if(mode == DrawMode::BatchedOpaque && SceneRenderer::frustumCullingShowBounds) DebugDrawBoundingBox(i, { 0.4, 0.0, 0 });
+			continue;
+		}
+
+
+		// Prepare
+		material = submeshMaterials[i];
 		switch (mode)
 		{
 		case DrawMode::BatchedOpaque:
 		{
-			for (int i = 0; i < materialArray.size(); i++)
+			// basic transparensy pass testing
+			if (material->blendMode == Material::BlendMode::Transparent)
 			{
-				if (materialArray[i] != nullptr)
-					material = materialArray[i];
-				else
-					continue;
-
-				if (material->shader == nullptr)
-					continue;
-
-				// basic transparensy pass testing
-				if (materialArray[i]->blendMode == Material::BlendMode::Transparent)
-				{
-					SceneRenderer::transparentCalls.push_back(std::pair(this, i));
-					continue;
-				}
-
-				SceneRenderer::renderBatch.AddDraw(this, i);
+				SceneRenderer::transparentCalls.push_back(std::pair(this, i));
+				continue;
 			}
+
+			SceneRenderer::renderBatch.AddDraw(this, i);
+			if(SceneRenderer::frustumCullingShowBounds) DebugDrawBoundingBox(i, { 0, 0.4, 0 });
+			break;
+		}
+		case DrawMode::Standard:
+		{
+			// basic transparensy pass testing
+			if (material->blendMode == Material::BlendMode::Transparent)
+			{
+				SceneRenderer::transparentCalls.push_back(std::pair(this, i));
+				continue;
+			}
+
+			BindShader();
+			ApplyMaterials();
+			BindMatricies(pv, position);
+			SetUniforms();
+			if (isAnimated)
+				BindBoneTransform();
+			model->DrawSubMesh(i);
 
 			break;
 		}
-			case DrawMode::Standard:
-			{
-				for (int i = 0; i < materialArray.size(); i++)
-				{
-					if (materialArray[i] != nullptr)
-						material = materialArray[i];
-					else
-						continue;
-					
-					if (material->shader == nullptr)
-						continue;
-
-					// basic transparensy pass testing
-					if (materialArray[i]->blendMode == Material::BlendMode::Transparent)
-					{
-						SceneRenderer::transparentCalls.push_back(std::pair(this, i));
-						continue;
-					}
-
-					BindShader();
-					ApplyMaterials();
-					BindMatricies(pv, position);
-					SetUniforms();
-					if(isAnimated)
-						BindBoneTransform();
-					model->DrawSubMesh(i);
-				}
-
+		case DrawMode::ObjectPicking:
+		{
+			if (componentParent->id == 0) // Don't waste ur time buddy.
 				break;
-			}
-			case DrawMode::ObjectPicking:
-			{
-				if (componentParent->id == 0) // Don't waste ur time buddy.
-					break;
 
-				// basic transparent stuff doesnt draw here
-				if (materialArray[0]->blendMode == Material::BlendMode::Transparent) return;
+			// basic transparent stuff doesnt draw here
+			if (material->blendMode == Material::BlendMode::Transparent) return;
 
-				ShaderProgram* shader = isAnimated ? ShaderManager::GetShaderProgram("engine/shader/skinnedPicking") : ShaderManager::GetShaderProgram("engine/shader/picking");
-				shader->Bind();
-				shader->SetUIntUniform("objectID", componentParent->id);
-				glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
+			ShaderProgram* shader = isAnimated ? ShaderManager::GetShaderProgram("engine/shader/skinnedPicking") : ShaderManager::GetShaderProgram("engine/shader/picking");
+			shader->Bind();
+			shader->SetUIntUniform("objectID", componentParent->id);
+			glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
 
-				// Positions and Rotations
-				shader->SetMatrixUniform("pvmMatrix", pvm);
-				shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
-				shader->SetVector3Uniform("cameraPosition", position);
-				
-				shader->SetIntUniform("objectID", componentParent->id);
-				if (isAnimated)
-					BindBoneTransform();
-				DrawModel();
-				break;
-			}
-			case DrawMode::ShadowMapping:
-			{
-				if (!castsShadows) return;
-				if (materialArray[0]->blendMode == Material::BlendMode::Transparent) return;
+			// Positions and Rotations
+			shader->SetMatrixUniform("pvmMatrix", pvm);
+			shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
+			shader->SetVector3Uniform("cameraPosition", position);
 
-				ShaderProgram* shader = isAnimated ? ShaderManager::GetShaderProgram("engine/shader/simpleDepthShaderSkinned") : ShaderManager::GetShaderProgram("engine/shader/simpleDepthShader");
-				shader->Bind();
-				glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
-
-				// Positions and Rotations
-				shader->SetMatrixUniform("pvmMatrix", pvm);
-				shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
-				shader->SetVector3Uniform("cameraPosition", position);
-				if (isAnimated)
-					BindBoneTransform();
-				DrawModel();
-				break;
-			}
-			case DrawMode::ShadowCubeMapping:
-			{
-				if (!castsShadows) return;
-				if (materialArray[0]->blendMode == Material::BlendMode::Transparent) return;
-
-				ShaderProgram* shader = isAnimated ? ShaderManager::GetShaderProgram("engine/shader/lightPointShadowMapSkinned") : ShaderManager::GetShaderProgram("engine/shader/lightPointShadowMap");
-				shader->Bind();
-				glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
-
-				// Positions and Rotations
-				shader->SetMatrixUniform("pvmMatrix", pvm);
-				shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
-				shader->SetVector3Uniform("cameraPosition", position);
-				if (isAnimated)
-					BindBoneTransform();
-
-				for (int i = 0; i < materialArray.size(); i++)
-				{
-					// Check for alpha cutoff and configured if required.
-					if (materialArray[i] != nullptr && materialArray[i]->blendMode == Material::BlendMode::AlphaCutoff)
-					{
-						shader->SetBoolUniform("useAlphaCutoff", true);
-						materialArray[i]->albedoMap->Bind(4);
-						shader->SetIntUniform("albedoMap", 4);
-					}
-					else shader->SetBoolUniform("useAlphaCutoff", false);
-					
-					model->DrawSubMesh(i);
-				}
-				break;
-			}
-			case DrawMode::SSAOgBuffer:
-			{
-				if (materialArray[0]->blendMode == Material::BlendMode::Transparent) return;
-
-				ShaderProgram* ssaoGeoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOGeometryPass");
-				// Positions and Rotations
-				glm::mat4 modelMat = componentParent->transform * model->modelTransform;
-				glm::mat4 pvm = pv * modelMat;
-				ssaoGeoShader->SetMatrixUniform("pvmMatrix", pvm);
-				ssaoGeoShader->SetMatrixUniform("model", modelMat);
-				ssaoGeoShader->SetMatrixUniform("mMatrix", modelMat);
-
-				if (isAnimated)
-					BindBoneTransform();
-
-				for (int i = 0; i < materialArray.size(); i++)
-				{
-					// Check for alpha cutoff and configured if required.
-					if (materialArray[i] != nullptr && materialArray[i]->blendMode == Material::BlendMode::AlphaCutoff)
-					{
-						ssaoGeoShader->SetBoolUniform("useAlphaCutoff", true);
-						materialArray[i]->albedoMap->Bind(4);
-						ssaoGeoShader->SetIntUniform("albedoMap", 4);
-					}
-					else ssaoGeoShader->SetBoolUniform("useAlphaCutoff", false);
-					
-					model->DrawSubMesh(i);
-				}
-				break;
-			}
-			case DrawMode::Blended:
-			{
-				LogUtils::Log("Shouldn't get here now??");
-
-				if (materialArray[0] != nullptr)
-					material = materialArray[0];
-				else
-					return;
-
-				BindShader();
-				ApplyMaterials();
-				BindMatricies(pv, position);
-				DrawModel();
-				break;
-			}
+			shader->SetIntUniform("objectID", componentParent->id);
+			if (isAnimated)
+				BindBoneTransform();
+			DrawModel();
+			break;
 		}
+		case DrawMode::ShadowMapping:
+		{
+			if (!castsShadows) return;
+			if (material->blendMode == Material::BlendMode::Transparent) return;
 
+			ShaderProgram* shader = isAnimated ? ShaderManager::GetShaderProgram("engine/shader/simpleDepthShaderSkinned") : ShaderManager::GetShaderProgram("engine/shader/simpleDepthShader");
+			shader->Bind();
+			glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
+
+			// Positions and Rotations
+			shader->SetMatrixUniform("pvmMatrix", pvm);
+			shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
+			shader->SetVector3Uniform("cameraPosition", position);
+			if (isAnimated)
+				BindBoneTransform();
+			DrawModel();
+			break;
+		}
+		case DrawMode::ShadowCubeMapping:
+		{
+			if (!castsShadows) return;
+			if (material->blendMode == Material::BlendMode::Transparent) return;
+
+			ShaderProgram* shader = isAnimated ? ShaderManager::GetShaderProgram("engine/shader/lightPointShadowMapSkinned") : ShaderManager::GetShaderProgram("engine/shader/lightPointShadowMap");
+			shader->Bind();
+			glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
+
+			// Positions and Rotations
+			shader->SetMatrixUniform("pvmMatrix", pvm);
+			shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
+			shader->SetVector3Uniform("cameraPosition", position);
+			if (isAnimated)
+				BindBoneTransform();
+
+			// Check for alpha cutoff and configured if required.
+			if (material != nullptr && material->blendMode == Material::BlendMode::AlphaCutoff)
+			{
+				shader->SetBoolUniform("useAlphaCutoff", true);
+				material->albedoMap->Bind(4);
+				shader->SetIntUniform("albedoMap", 4);
+			}
+			else shader->SetBoolUniform("useAlphaCutoff", false);
+
+			model->DrawSubMesh(i);
+			break;
+		}
+		case DrawMode::SSAOgBuffer:
+		{
+			if (material->blendMode == Material::BlendMode::Transparent) return;
+
+			ShaderProgram* ssaoGeoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOGeometryPass");
+			// Positions and Rotations
+			glm::mat4 modelMat = componentParent->transform * model->modelTransform;
+			glm::mat4 pvm = pv * modelMat;
+			ssaoGeoShader->SetMatrixUniform("pvmMatrix", pvm);
+			ssaoGeoShader->SetMatrixUniform("model", modelMat);
+			ssaoGeoShader->SetMatrixUniform("mMatrix", modelMat);
+
+			if (isAnimated)
+				BindBoneTransform();
+
+			// Check for alpha cutoff and configured if required.
+			if (material != nullptr && submeshMaterials[i]->blendMode == Material::BlendMode::AlphaCutoff)
+			{
+				ssaoGeoShader->SetBoolUniform("useAlphaCutoff", true);
+				material->albedoMap->Bind(4);
+				ssaoGeoShader->SetIntUniform("albedoMap", 4);
+			}
+			else ssaoGeoShader->SetBoolUniform("useAlphaCutoff", false);
+
+			model->DrawSubMesh(i);
+
+			break;
+		}
+		case DrawMode::Blended:
+		{
+			LogUtils::Log("Shouldn't get here now??");
+
+			BindShader();
+			ApplyMaterials();
+			BindMatricies(pv, position);
+			DrawModel();
+			break;
+		}
+		}
 	}
 }
 
@@ -281,7 +270,7 @@ void ComponentRenderer::DrawGUI()
 	ImGui::Checkbox("Do Not Frustum Cull", &dontFrustumCull);
 
 	// material settings per submesh
-	for (int i = 0; i < materialArray.size(); i++)
+	for (int i = 0; i < submeshMaterials.size(); i++)
 	{
 		ImGui::PushID(i);
 		// Mesh Name
@@ -289,14 +278,14 @@ void ComponentRenderer::DrawGUI()
 
 		// Material
 		string materialStr = "Mesh Material";
-		if (ImGui::BeginCombo(materialStr.c_str(), materialArray[i] != nullptr ? materialArray[i]->name.c_str() : "NULL", ImGuiComboFlags_HeightLargest))
+		if (ImGui::BeginCombo(materialStr.c_str(), submeshMaterials[i] != nullptr ? submeshMaterials[i]->name.c_str() : "NULL", ImGuiComboFlags_HeightLargest))
 		{
 			for (auto m : *MaterialManager::Materials())
 			{
-				const bool is_selected = (m.second == materialArray[i]);
+				const bool is_selected = (m.second == submeshMaterials[i]);
 				if (ImGui::Selectable(m.first.c_str(), is_selected))
 				{
-					materialArray[i] = MaterialManager::GetMaterial(m.first);
+					submeshMaterials[i] = MaterialManager::GetMaterial(m.first);
 					modifiedMaterials = true;
 				}
 
@@ -334,15 +323,14 @@ void ComponentRenderer::DrawGUI()
 
 void ComponentRenderer::OnParentChange()
 {
-;
-
 	Component* component = componentParent->GetComponent(Component_Model);
 	if (component)
 	{
 		model = static_cast<ComponentModel*>(component)->model;
 		if (model != nullptr)
 		{
-			materialArray.resize(model->GetMeshCount());
+			submeshMaterials.resize(model->GetMeshCount());
+			submeshMaterials.resize(model->GetMeshCount());
 			isAnimated = (model->animations.size() > 0);
 		}
 	}
@@ -547,8 +535,6 @@ void ComponentRenderer::BindBoneTransform()
 	if (material == nullptr || material->shaderSkinned == nullptr)
 		return;
 
-	// skinned mesh rendering
-	//shader->SetIntUniform("selectedBone", animator->selectedBone); // dev testing really, used by boneWeights shader
 	if (animator != nullptr && animator->boneTransfomBuffer != nullptr)
 	{
 		// get the shader uniform block index and set binding point - we'll just hardcode 0 for this.
@@ -575,10 +561,29 @@ Component* ComponentRenderer::Clone(Object* parent)
 	copy->receivesShadows = receivesShadows;
 	copy->shadowBias = shadowBias;
 
-	copy->materialArray.resize(materialArray.size());
-	for (int i = 0; i < materialArray.size(); i++)
+	copy->submeshMaterials.resize(submeshMaterials.size());
+	for (int i = 0; i < submeshMaterials.size(); i++)
 	{
-		copy->materialArray[i] = materialArray[i];
+		copy->submeshMaterials[i] = submeshMaterials[i];
 	}
 	return copy;
+}
+// Used by the SceneRenderer if frustumCullingShowBounds is enabled.
+void ComponentRenderer::DebugDrawBoundingBox(int meshIndex, vec3 colour)
+{
+	Bounds& b = submeshBounds[meshIndex];
+	LineRenderer::DrawLine(b.points[0], b.points[1], colour);
+	LineRenderer::DrawLine(b.points[1], b.points[2], colour);
+	LineRenderer::DrawLine(b.points[2], b.points[3], colour);
+	LineRenderer::DrawLine(b.points[3], b.points[0], colour);
+	
+	LineRenderer::DrawLine(b.points[4], b.points[5], colour);
+	LineRenderer::DrawLine(b.points[5], b.points[6], colour);
+	LineRenderer::DrawLine(b.points[6], b.points[7], colour);
+	LineRenderer::DrawLine(b.points[7], b.points[4], colour);
+	
+	LineRenderer::DrawLine(b.points[0], b.points[4], colour);
+	LineRenderer::DrawLine(b.points[1], b.points[5], colour);
+	LineRenderer::DrawLine(b.points[2], b.points[6], colour);
+	LineRenderer::DrawLine(b.points[3], b.points[7], colour);
 }

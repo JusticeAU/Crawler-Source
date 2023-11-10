@@ -542,15 +542,14 @@ void to_json(nlohmann::ordered_json& j, const Object& object)
 			c["type"] = "Renderer";
 			ComponentRenderer* cr = (ComponentRenderer*)object.components[i];
 			ordered_json matsJSON;
-			for (int m = 0; m < cr->materialArray.size(); m++)
+			for (int m = 0; m < cr->submeshMaterials.size(); m++)
 			{
-				if (cr->materialArray[m])
-					matsJSON.push_back(cr->materialArray[m]->name);
+				if (cr->submeshMaterials[m])
+					matsJSON.push_back(cr->submeshMaterials[m]->name);
 				else
 					matsJSON.push_back("NULL");
 			}
 			c["materials"] = matsJSON;
-			c["frameBuffer"] = cr->frameBufferName;
 			c["receivesShadows"] = cr->receivesShadows;
 			c["castsShadows"] = cr->castsShadows;
 			if (cr->dontFrustumCull) c["dontFrustumCull"] = true;

@@ -29,6 +29,19 @@ public:
 		float boneWeight[4] = { 0.0f,0.0f,0.0f,0.0f };
 	};
 
+	struct AABB
+	{
+		vec3 lowerA = { 0,0,0 };
+		vec3 lowerB = { 0,0,0 };
+		vec3 lowerC = { 0,0,0 };
+		vec3 lowerD = { 0,0,0 };
+
+		vec3 upperA = { 0,0,0 };
+		vec3 upperB = { 0,0,0 };
+		vec3 upperC = { 0,0,0 };
+		vec3 upperD = { 0,0,0 };
+	};
+
 	void Initialise(unsigned int vertCount, const Vertex* vertices, unsigned int indexCount = 0, unsigned int* indices = nullptr);
 	static void CalculateTangents(Vertex* vertices, unsigned int vertexCount, const std::vector<unsigned int>& indices);
 public:
@@ -36,4 +49,7 @@ public:
 	unsigned int tris;
 	unsigned int vao, vbo, ibo;
 	bool initialised = false;
+	AABB aabb;
+	vec3 aabbMin = { 0,0,0 };
+	vec3 aabbMax = { 0,0,0 };
 };

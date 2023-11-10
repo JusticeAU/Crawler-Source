@@ -9,15 +9,21 @@ struct Plane
 class CameraFrustum
 {
 public:
-	Plane topFace;
-	Plane bottomFace;
+	enum Faces
+	{
+		Top,
+		Bottom,
+		Right,
+		Left,
+		Near,
+		Far
+	};
 
-	Plane rightFace;
-	Plane leftFace;
+	Plane faces[6];
 
-	Plane farFace;
-	Plane nearFace;
-
+	static bool IsPointInPlane(glm::vec3 point, Plane plane);
 	static bool IsPointInFrustum(glm::vec3 point, CameraFrustum frustum, float forgiveness = 0.0f);
+	static bool IsLineInFrustum(glm::vec3 p0, glm::vec3 p1, CameraFrustum frustum);
+	static bool IsLineIntersectingPlane(glm::vec3 p0, glm::vec3 p1, Plane plane);
 	static CameraFrustum GetFrustumFromVPMatrix(glm::mat4 matrix);
 };

@@ -34,8 +34,8 @@ void Crawl::DungeonEnemyBlocker::Update()
 		PlaySFX(audioSwing);
 		bool didDamge = dungeon->DamageAtPosition(position + directions[facing], this, false, Dungeon::DamageType::Blocker);
 		if (didDamge) PlaySFX(audioHit);
-		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/LambertRed.material");
-		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[1] = MaterialManager::GetMaterial("engine/model/materials/LambertRed.material");
+		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->submeshMaterials[0] = MaterialManager::GetMaterial("engine/model/materials/LambertRed.material");
+		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->submeshMaterials[1] = MaterialManager::GetMaterial("engine/model/materials/LambertRed.material");
 		state = State::DownSwing;
 		animator->BlendToAnimation(animationDownSwing, 0.0f);
 		animator->next->animationSpeedScale = 4.0f;
@@ -53,8 +53,8 @@ void Crawl::DungeonEnemyBlocker::Update()
 			LogUtils::Log("No Rapid Attack - Moving to Idle");
 			state = State::Idle;
 			PlaySFX(audioReturn);
-			((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
-			((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[1] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
+			((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->submeshMaterials[0] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
+			((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->submeshMaterials[1] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
 			animator->BlendToAnimation(animationIdle, 0.0f);
 			animator->next->animationSpeedScale = 4.0f;
 		}
@@ -78,8 +78,8 @@ void Crawl::DungeonEnemyBlocker::CheckShouldPrime()
 	if (tile->occupied || dungeon->GetMurderinaAtPosition(tile->position))
 	{
 		LogUtils::Log("Object infront - Transition to Upswing");
-		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/LambertAmber.material");
-		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[1] = MaterialManager::GetMaterial("engine/model/materials/LambertAmber.material");
+		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->submeshMaterials[0] = MaterialManager::GetMaterial("engine/model/materials/LambertAmber.material");
+		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->submeshMaterials[1] = MaterialManager::GetMaterial("engine/model/materials/LambertAmber.material");
 
 		state = State::UpSwing;
 		PlaySFX(audioRaise);
@@ -89,8 +89,8 @@ void Crawl::DungeonEnemyBlocker::CheckShouldPrime()
 	else
 	{
 		LogUtils::Log("Nothing infront");
-		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
-		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->materialArray[1] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
+		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->submeshMaterials[0] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
+		((ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer))->submeshMaterials[1] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
 		state = State::Idle;
 	}
 }

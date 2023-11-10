@@ -34,7 +34,7 @@ bool SceneRenderer::ssaoEnabled = true;
 bool SceneRenderer::bloomEnabled = true;
 float SceneRenderer::ambient = 0.03f;
 ComponentCamera* SceneRenderer::frustumCullingCamera = nullptr;
-float SceneRenderer::frustumCullingForgiveness = 5.0f;
+bool SceneRenderer::frustumCullingShowBounds = false;
 vector<FrameBuffer*> SceneRenderer::pointLightCubeMapStatic;
 vector<FrameBuffer*> SceneRenderer::pointLightCubeMapDynamic;
 
@@ -113,8 +113,8 @@ SceneRenderer::SceneRenderer()
 	ComponentRenderer* lightGizmoRenderer = new ComponentRenderer(lightGizmo);
 	gizmoShader = ShaderManager::GetShaderProgram("engine/shader/gizmoShader");
 	lightGizmoRenderer->model = lightGizmoModelComponent->model;
-	lightGizmoRenderer->materialArray.resize(1);
-	lightGizmoRenderer->materialArray[0] = MaterialManager::GetMaterial("engine/model/materials/Gizmos.material");
+	lightGizmoRenderer->submeshMaterials.resize(1);
+	lightGizmoRenderer->submeshMaterials[0] = MaterialManager::GetMaterial("engine/model/materials/Gizmos.material");
 	lightGizmoRenderer->receivesShadows = false;
 	lightGizmo->components.push_back(lightGizmoRenderer);
 
@@ -167,13 +167,14 @@ void SceneRenderer::DrawGUI()
 		else frustumCullingCamera = Scene::GetCameraByIndex(frustumCullingCameraIndex);
 	}
 
+
 	if (frustumCullingEnabled)
 	{
 		ImGui::Indent();
 		ImGui::PushItemWidth(itemWidth);
 			if (ImGui::InputInt("Camera", &frustumCullingCameraIndex, 1))
 				SetCullingCamera(frustumCullingCameraIndex);
-			if (ImGui::DragFloat("Forgiveness", &frustumCullingForgiveness, 0.1f, -10, 10, "%0.1f"));
+			ImGui::Checkbox("Show Bounding Boxes", &frustumCullingShowBounds);
 		ImGui::Unindent();
 	}
 
@@ -676,7 +677,7 @@ void SceneRenderer::RenderTransparent(Scene* scene, ComponentCamera* camera)
 		{
 			ComponentRenderer* renderer = c.first;
 			int subMeshIndex = c.second;
-			renderer->material = renderer->materialArray[subMeshIndex];
+			renderer->material = renderer->submeshMaterials[subMeshIndex];
 			renderer->BindShader();
 			renderer->ApplyMaterials();
 			renderer->BindMatricies(pv, pos);
@@ -761,9 +762,22 @@ bool SceneRenderer::compareIndexDistancePair(std::pair<int, float> a, std::pair<
 		return a.second < b.second;
 }
 
-bool SceneRenderer::ShouldCull(vec3 position)
+bool SceneRenderer::ShouldCull(const glm::vec3* points)
 {
-	return !CameraFrustum::IsPointInFrustum(position, *cullingFrustum, frustumCullingForgiveness);
+	for (int face = 0; face < 5; face++) // dont do far plane
+	{
+		bool pointInPlane = false;
+		for (int i = 0; i < 8; i++)
+		{
+			if (CameraFrustum::IsPointInPlane(points[i], cullingFrustum->faces[face]))
+			{
+				pointInPlane = true;
+				break;
+			}
+		}
+		if (!pointInPlane) return true;
+	}
+	return false;
 }
 
 void SceneRenderer::SetCullingCamera(int index)

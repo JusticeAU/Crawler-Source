@@ -43,15 +43,22 @@ public:
 	void BindBoneTransform();
 
 	Component* Clone(Object* parent);
+
+	void DebugDrawBoundingBox(int meshIndex, vec3 colour = { 1.0, 1.0, 1.0 });
 public:
 	Model* model = nullptr;
-	
-	vector<Material*> materialArray;
-	Material* material = nullptr;
 	bool isAnimated = false;
+	
+	vector<Material*> submeshMaterials;
+	Material* material = nullptr;
 
-	FrameBuffer* frameBuffer = nullptr;
-	string frameBufferName = "";
+	// Every mesh has an AABB, but mostly meshes will be involved in a scene hierarchy, so we should take the AABB and combine it with our model matrix to go get an OBB.
+	// We cache it here for each instance of a submesh.
+	struct Bounds
+	{
+		glm::vec3 points[8];
+	};
+	vector<Bounds> submeshBounds;
 
 	bool castsShadows = true;
 	bool receivesShadows = true;

@@ -86,9 +86,6 @@ void SceneEditorCamera::DrawGUI()
 		ImGui::SliderFloat("Near Clip", &camera->nearClip, 0.001f, 5.0f);
 		ImGui::SliderFloat("Far Clip", &camera->farClip, 5.0f, 10000.0f);
 
-		ImGui::InputFloat3("Near Plane", &camera->frustum.nearFace.normal.x);
-		ImGui::DragFloat("Near Distance", &camera->frustum.nearFace.distance);
-
 		ImGui::Text("Controls:");
 		ImGui::Text("Right Click +");
 		ImGui::Text("Mouse to Look");
