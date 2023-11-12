@@ -92,6 +92,8 @@ public:
 	static vec2 GetMousePosPixel();
 	static vec2 GetMousePosNDC();
 	static vec2 GetMouseDelta() { return s_instance->m_mousePosition - s_instance->m_lastMousePosition; };
+	static bool IsAnyMousePointerInput();
+	static bool IsAnyMouseButtonInput();
 	static KeyButton& Keyboard(int GLFW_KEY) { return s_instance->keyButtons[GLFW_KEY]; };
 	static MouseButton& Mouse(int number) { return s_instance->mouseButtons[number]; };
 	static GamepadState& Gamepad() { return s_instance->gamepad; };
@@ -102,17 +104,15 @@ public:
 
 	static InputType GetLastInputType() { return s_instance->m_lastInputType; };
 
-	//static bool LastInputWasFromGamepad() { return s_instance->lastInputWasGamepad; };
-	//static bool LastInputWasFromKeyboard() { return s_instance->lastInputWasKeyboard; };
-	//static bool LastInputWasFromMoused() { return s_instance->lastInputWasMouse; };
-
-
 protected:
 	Input(GLFWwindow* window);
 	static Input* s_instance;
 	GLFWwindow* m_window;
 
 	InputType m_lastInputType = InputType::Mouse;
+	bool m_isMousePointerInput = false;
+	bool m_isMouseButtonInput = false;
+
 
 	bool lastInputWasKeyboard = false;
 

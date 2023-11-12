@@ -20,14 +20,8 @@ bool Input::IsAnyKeyboardInput()
 
 bool Input::IsAnyMouseInput()
 {
-	// check for pointer delta
-	if (m_mousePosition != m_lastMousePosition) return true;
-
-	// check all mouse buttons
-	for (int i = 0; i < GLFW_MOUSE_BUTTON_LAST; i++)
-	{
-		if (glfwGetMouseButton(m_window, i)) return true;
-	}
+	if (m_isMouseButtonInput) return true;
+	if (m_isMousePointerInput) return true;
 
 	return false;
 }
@@ -82,6 +76,20 @@ void Input::Update()
 	double mouseX, mouseY;
 	glfwGetCursorPos(s_instance->m_window, &mouseX, &mouseY);
 	s_instance->m_mousePosition = { mouseX, mouseY };
+	
+	// check for pointer delta
+	s_instance->m_isMousePointerInput = (s_instance->m_mousePosition != s_instance->m_lastMousePosition);
+
+	// check all mouse buttons
+	for (int i = 0; i < GLFW_MOUSE_BUTTON_LAST; i++)
+	{
+		if (glfwGetMouseButton(s_instance->m_window, i))
+		{
+			s_instance->m_isMouseButtonInput;
+			break;
+		}
+	}
+
 	if (s_instance->IsAnyMouseInput()) s_instance->s_instance->m_lastInputType = InputType::Mouse;
 
 	// Gamepad
@@ -116,6 +124,16 @@ vec2 Input::GetMousePosNDC()
 	float ndcY = ((2 * mousePosPixel.y) / windowSizePixels.y) - 1;
 
 	return { ndcX, -ndcY };
+}
+
+bool Input::IsAnyMousePointerInput()
+{
+	return s_instance->m_isMousePointerInput;
+}
+
+bool Input::IsAnyMouseButtonInput()
+{
+	return s_instance->m_isMouseButtonInput;
 }
 
 Input* Input::s_instance = nullptr;

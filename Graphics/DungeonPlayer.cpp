@@ -56,11 +56,14 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	}
 
 	UpdateStateRH(deltaTime);
-	HandleFreeLook(deltaTime);
 
 	if (state == WAIT)
 	{
-		UpdateInputBuffer();
+		UpdateInputs();
+
+		if (isFreeLooking) UpdateFreeLook(deltaTime);
+		else ContinueResettingTilt(deltaTime);
+
 		moveCurrent += deltaTime;
 		if (moveCurrent >= moveSpeed)
 		{
@@ -70,44 +73,68 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	}
 	else if (state == IDLE)
 	{
-		UpdateInputBuffer();
-		if (UpdateStateIdle(deltaTime))
+		UpdateInputs();
+
+		if (isFreeLooking) UpdateFreeLook(deltaTime);
+		else ContinueResettingTilt(deltaTime);
+
+		if (state == IDLE && UpdateStateIdle(deltaTime)) // Check state is still IDLE, freelook auto rotate might have changed it and we shouldnt consume commands if so.
 			return true;
 	}
 	else if (state == MOVING)
 	{
-		UpdateInputBuffer();
+		UpdateInputs();
+
+		if (isFreeLooking) UpdateFreeLook(deltaTime);
+		else ContinueResettingTilt(deltaTime);
+
 		UpdateStateMoving(deltaTime);
 	}
 	else if (state == TURNING)
 	{
-		UpdateInputBuffer();
+		UpdateInputs();
+
+		if (isFreeLooking) UpdateFreeLook(deltaTime);
+		else ContinueResettingTilt(deltaTime);
+
 		UpdateStateTurning(deltaTime);
 	}
 	else if (state == STAIRBEARS)
 	{
+		UpdateInputsLooking();
+
+		if (isFreeLooking) UpdateFreeLook(deltaTime);
+		else ContinueResettingTilt(deltaTime);
+
 		UpdateStateStairs(deltaTime);
 	}
 	else if (state == DYING)
 	{
-		UpdateStateDying(deltaTime);
 		ContinueResettingTilt(deltaTime);
+		UpdateStateDying(deltaTime);
 	}
 	else if (state == TRANSPORTER)
 	{
-		UpdateStateTransporter(deltaTime);
 		ContinueResettingTilt(deltaTime);
+		UpdateStateTransporter(deltaTime);
 	}
+
 	return false;
 }
 
-void Crawl::DungeonPlayer::UpdateInputBuffer()
+void Crawl::DungeonPlayer::UpdateInputs()
+{
+	UpdateInputsMovement();
+	UpdateInputsLooking();
+}
+
+void Crawl::DungeonPlayer::UpdateInputsMovement()
 {
 	if (Input::Alias("Forward").Down()) inputBuffer = PlayerCommand::Forward;
 	if (Input::Alias("Backward").Down()) inputBuffer = PlayerCommand::Back;
 	if (Input::Alias("Left").Down()) inputBuffer = PlayerCommand::Left;
 	if (Input::Alias("Right").Down()) inputBuffer = PlayerCommand::Right;
-	
+
 	if (Input::Alias("TurnLeft").Down()) inputBuffer = PlayerCommand::TurnLeft;
 	if (Input::Alias("TurnRight").Down()) inputBuffer = PlayerCommand::TurnRight;
 
@@ -118,54 +145,37 @@ void Crawl::DungeonPlayer::UpdateInputBuffer()
 	if (Input::Alias("Reset").Down()) inputBuffer = PlayerCommand::Reset;
 }
 
-bool Crawl::DungeonPlayer::HandleFreeLook(float delta)
+void Crawl::DungeonPlayer::UpdateInputsLooking()
 {
-	if (Input::Mouse(1).Pressed() || alwaysFreeLook)
+	// The below handles swapping between gamepad and mouselook logic.
+	// If input came in from the gamepad, we basicly enable 'always free look'.
+	// But, if this gets enabled, then we want to check if the player started using the keyboard or mouse and disable it.
+	// We only check for digital inputs (not mouse movement) because we dont want this to trigger if the player bumps the desk and gave their mouse a bit of juice.
+	if (!hasLookedWithGamepad) hasLookedWithGamepad = IsLookingWithGamepad();
+	else if (Input::IsAnyMouseButtonInput() || Input::GetLastInputType() == Input::InputType::Keyboard) SetFreeLookReset();
+
+	if (Input::Alias("ResetView").Down()) SetFreeLookReset();
+	if (Input::Mouse(GLFW_MOUSE_BUTTON_RIGHT).Up()) SetFreeLookReset();
+
+	isFreeLooking = alwaysFreeLook || Input::Mouse(GLFW_MOUSE_BUTTON_RIGHT).Pressed() || hasLookedWithGamepad;
+}
+
+bool Crawl::DungeonPlayer::UpdateFreeLook(float delta, bool dontAutoReorient)
+{
+	// Mouse
+	if (!hasLookedWithGamepad || alwaysFreeLook)
 	{
-		/*if (!ftueHasLooked && promptCurrent == promptLook);
-		{
-			ftueHasLooked = true;
-			ClearFTUEPrompt();
-		}*/
 		vec2 mouseDelta = -Input::GetMouseDelta() * lookSpeed;
 		if (invertYAxis) mouseDelta.y = -mouseDelta.y;
 		objectView->AddLocalRotation({ mouseDelta.y, 0, mouseDelta.x });
 		objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -lookMaxX, lookMaxX);
 		objectView->localRotation.z = glm::clamp(objectView->localRotation.z, -lookMaxZ, lookMaxZ);
-
-		if (!autoReOrientDuringFreeLook && !alwaysFreeLook) return false;
-
-		if (objectView->localRotation.z > 50 && state == IDLE)
-		{
-			TurnLeft(true);
-			return false;
-		}
-		else if (objectView->localRotation.z < -50 && state == IDLE)
-		{
-			TurnRight(true);
-			return false;
-		}
-
 	}
 
-	if (Input::Mouse(1).Up())
+	if (hasLookedWithGamepad)
 	{
-		lookReturnFrom = objectView->localRotation;
-		lookReturnTimeCurrent = 0.0f;
-	}
-
-
-	if (Input::IsGamepadConnected())
-	{
+		// Gamepad
 		bool invertLook = false;
-
-		if (Input::Alias("ResetView").Down())
-		{
-			lookReturnFrom = objectView->localRotation;
-			lookReturnTimeCurrent = 0.0f;
-			alwaysFreeLook = false;
-			return false;
-		}
 
 		vec2 rightJoystick;
 		rightJoystick.x = -Input::Gamepad().Axes(GLFW_GAMEPAD_AXIS_RIGHT_X);
@@ -176,22 +186,22 @@ bool Crawl::DungeonPlayer::HandleFreeLook(float delta)
 		if (abs(rightJoystick.y) < 0.2f) rightJoystick.y = 0.0;
 		if (abs(rightJoystick.x) < 0.2f) rightJoystick.x = 0.0;
 
-		if (rightJoystick.x == 0.0f && rightJoystick.y == 0.0f) // No gamepad input.
-			return false;
-		else	// there is gamepad look input and we should enable always freelook
-			alwaysFreeLook = true;
+		if (rightJoystick.x != 0.0f || rightJoystick.y != 0.0f)
+		{
+			float lookSpeed = 200.0f;
+			vec3 lookDelta = { rightJoystick.y * lookSpeed * delta, 0, rightJoystick.x * lookSpeed * delta };
+			objectView->AddLocalRotation(lookDelta);
+		}
+	}
 
-
-		float lookSpeed = 200.0f;
-		vec3 lookDelta = { rightJoystick.y * lookSpeed * delta, 0, rightJoystick.x * lookSpeed * delta };
-		objectView->AddLocalRotation(lookDelta);
-
-		if (objectView->localRotation.z > 50 && state == IDLE)
+	if (autoReOrientDuringFreeLook && state == IDLE)
+	{
+		if (objectView->localRotation.z > 50)
 		{
 			TurnLeft(true);
 			return false;
 		}
-		else if (objectView->localRotation.z < -50 && state == IDLE)
+		else if (objectView->localRotation.z < -50)
 		{
 			TurnRight(true);
 			return false;
@@ -201,13 +211,37 @@ bool Crawl::DungeonPlayer::HandleFreeLook(float delta)
 	return false;
 }
 
+void Crawl::DungeonPlayer::SetFreeLookReset()
+{
+	isFreeLooking = false;
+	hasLookedWithGamepad = false;
+
+	lookReturnFrom = objectView->localRotation;
+	lookReturnTimeCurrent = 0.0f;
+}
+
 void Crawl::DungeonPlayer::HandleLookTilt(float delta)
 {
-	if (alwaysFreeLook) return; // This doesnt run if we're we have freelook always on
-	if(Input::Mouse(1).Pressed()) return; // or if we're currently freelookin.
 	if (lookReturnTimeCurrent >= lookReturnTimeTotal) return; // We're done resetting
 
 	ContinueResettingTilt(delta);
+}
+
+bool Crawl::DungeonPlayer::IsLookingWithGamepad()
+{
+	if (!Input::IsGamepadConnected()) return false;
+
+	vec2 rightJoystick;
+	rightJoystick.x = -Input::Gamepad().Axes(GLFW_GAMEPAD_AXIS_RIGHT_X);
+	rightJoystick.y = -Input::Gamepad().Axes(GLFW_GAMEPAD_AXIS_RIGHT_Y);
+
+	// deadzone
+	if (abs(rightJoystick.y) < 0.2f) rightJoystick.y = 0.0;
+	if (abs(rightJoystick.x) < 0.2f) rightJoystick.x = 0.0;
+
+	if (rightJoystick.x == 0.0f && rightJoystick.y == 0.0f) return false; // No Gamepad input.
+
+	return true;
 }
 
 bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
@@ -250,8 +284,6 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		DungeonGameManager::Get()->DoFTUEEvent(DungeonGameManager::FTUEEvent::Reset);
 		return false;
 	}
-
-	HandleLookTilt(delta);
 
 	if (inputBuffer == PlayerCommand::Interact && currentDungeon->playerCanKickBox)
 	{
@@ -374,6 +406,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 					else facingTarget = true;
 					currentDungeon->GetTile(oldPlayerCoordinate)->occupied = false;
 					inputBuffer = PlayerCommand::None;
+					SetFreeLookReset();
 					return false;
 				}
 				if (!wasLookingAtPointOfInterest)
@@ -503,6 +536,7 @@ void Crawl::DungeonPlayer::TurnLeft(bool autoReorient)
 {
 	turnCurrentIsManual = !autoReorient;
 	AudioManager::PlaySound("crawler/sound/load/turn.wav");
+	oldTurn = orientationEulers[facing];
 	int faceInt = (int)facing;
 	faceInt--;
 	if (faceInt == -1)
@@ -539,8 +573,6 @@ void Crawl::DungeonPlayer::TurnRight(bool autoReorient)
 
 bool Crawl::DungeonPlayer::UpdateStateMoving(float delta)
 {
-	HandleLookTilt(delta);
-
 	moveCurrent += delta;
 	float t = MathUtils::InverseLerp(0, moveSpeed, moveCurrent);
 	if (moveCurrent > moveSpeed)
@@ -559,15 +591,14 @@ bool Crawl::DungeonPlayer::UpdateStateMoving(float delta)
 
 bool Crawl::DungeonPlayer::UpdateStateTurning(float delta)
 {
-	HandleLookTilt(delta);
-
 	float turnSpeed = turnCurrentIsManual ? turnSpeedManual : turnSpeedReOrient;
-	float t = MathUtils::InverseLerp(0, turnSpeed, turnCurrent);
+	float t = turnCurrent / turnSpeed;
 	float turnPrevious = object->localRotation.z;
 	if (turnCurrent > turnSpeed)
 	{
 		state = IDLE;
-		turnDeltaPrevious = targetTurn - turnPrevious;
+		turnDeltaPrevious = 0.0f;
+		targetTurn = orientationEulers[facing];
 		object->SetLocalRotationZ(targetTurn);
 	}
 	else
@@ -812,6 +843,8 @@ void Crawl::DungeonPlayer::UpdatePointOfInterestTilt(bool instant)
 
 void Crawl::DungeonPlayer::ContinueResettingTilt(float delta)
 {
+	if (isFreeLooking) SetFreeLookReset();
+
 	float t = glm::clamp(lookReturnTimeCurrent / lookReturnTimeTotal, 0.0f, 1.0f);
 
 	vec3 newRotation(0, 0, 0);

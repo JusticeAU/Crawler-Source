@@ -107,10 +107,14 @@ namespace Crawl
 		bool alwaysFreeLook = false;
 		bool invertYAxis = false;
 	private:
-		void UpdateInputBuffer();
+		void UpdateInputs();
+		void UpdateInputsMovement();
+		void UpdateInputsLooking();
 
-		bool HandleFreeLook(float delta);
+		bool UpdateFreeLook(float delta, bool dontAutoReorient = false);
+		void SetFreeLookReset();
 		void HandleLookTilt(float delta);
+		bool IsLookingWithGamepad();
 
 		bool UpdateStateIdle(float delta);
 		bool IsMoveDown();
@@ -153,6 +157,9 @@ namespace Crawl
 		const float lookRestXDefault = -7.0f;
 		const float lookRestXInterest = -17.0f;
 		float lookRestX = lookRestXDefault;
+		bool isFreeLooking = false;
+		bool wasFreeLooking = false;
+		bool hasLookedWithGamepad = false;
 		glm::vec3 lookReturnFrom = { 0,0,0 };
 		bool wasLookingAtPointOfInterest = false;
 		float lookReturnTimeTotal = 0.25f;
