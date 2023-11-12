@@ -1895,6 +1895,7 @@ void Crawl::Dungeon::ClearDungeon()
 	defaultPlayerStartPosition = { 0,0 };
 	defaultPlayerStartOrientation = EAST_INDEX;
 	isLobby = false;
+	isVoid = false;
 	//isLobbyLevel2 = false;
 	noRoof = false;
 	
@@ -1948,6 +1949,7 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 	dungeon_serialised["defaultOrientation"] = defaultPlayerStartOrientation;
 	if (noRoof) dungeon_serialised["noRoof"] = true;
 	if (isLobby) dungeon_serialised["isLobby"] = true;
+	if (isVoid) dungeon_serialised["isVoid"] = true;
 
 	// These settings are now just stored on the player and locked in.
 	/*dungeon_serialised["playerTurnIsFree"] = playerTurnIsFree;
@@ -2096,6 +2098,9 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 
 	if (serialised.contains("isLobby")) isLobby = true;
 	else isLobby = false;
+
+	if (serialised.contains("isVoid")) isVoid = true;
+	else isVoid = false;
 
 	// Player settings are no longer stored in dungeon files.
 	/*if (serialised.contains("playerTurnIsFree"))
@@ -2293,6 +2298,10 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		DungeonEnemyChase chaser = it.value().get<Crawl::DungeonEnemyChase>();
 		DungeonEnemyChase* newChaser = CreateEnemyChase(chaser.position, chaser.facing);
 		newChaser->state = chaser.state;
+		if (newChaser->state == DungeonEnemyChase::STATE::IDLE)
+		{
+			newChaser->NewAnimationState(DungeonEnemyChase::AnimationState::Idle);
+		}
 		newChaser->object->SetStatic(false);
 	}
 

@@ -306,6 +306,7 @@ namespace Crawl
 		bool noRoof = false;
 		bool isLobby = false;
 		bool isLobbyLevel2 = false;
+		bool isVoid = false;
 	};
 }
 

@@ -83,6 +83,8 @@ namespace Crawl
 		void UpdateLobbyVisualsLightning(float delta);
 		void UpdateLobbyVisualsLocks(float delta);
 
+		void UpdateVoidVisuals(float delta);
+
 		void QueueFTUEPrompt(DungeonGameFTUE::FTUEType type);
 		bool IsFTUECompleted(DungeonGameFTUE::FTUEType type);
 		void UpdateFTUE(float delta);

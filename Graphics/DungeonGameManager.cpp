@@ -112,6 +112,11 @@ void Crawl::DungeonGameManager::Update(float delta)
 		UpdateLobbyVisuals(delta);
 		UpdateDoorStateEvent();
 	}
+
+	if (player->GetDungeonLoaded()->isVoid)
+	{
+		UpdateVoidVisuals(delta);
+	}
 }
 
 void Crawl::DungeonGameManager::PauseGame()
@@ -534,6 +539,15 @@ void Crawl::DungeonGameManager::UpdateLobbyVisualsLocks(float delta)
 		frontDoorRight->SetLocalRotationZ(MathUtils::LerpDegrees(frontDoorOpenRotationStart, frontDoorOpenRotationStart+frontDoorOpenRotationEnd, tEased));
 		
 		if (t > 0.5f) MakeLobbyExitTraversable();
+	}
+}
+
+void Crawl::DungeonGameManager::UpdateVoidVisuals(float delta)
+{
+	if (Input::Keyboard(GLFW_KEY_T).Down())
+	{
+		player->currentDungeon->DisableLights(1);
+
 	}
 }
 
