@@ -18,7 +18,7 @@ namespace Crawl
 		glm::ivec2 position = {0,0};
 		FACING_INDEX facing = NORTH_INDEX;
 
-		string collectSfx = "crawler/sound/load/TBA.wav";
+		string collectSfx = "crawler/sound/load/collect_key.wav";
 
 		Object* object = nullptr;
 		Dungeon* dungeon = nullptr;

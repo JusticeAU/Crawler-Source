@@ -34,7 +34,7 @@ void Crawl::DungeonCollectableKey::Interact()
 	// checkpoint??
 
 	// SFX
-	//AudioManager::PlaySound(collectSfx);
+	AudioManager::PlaySound(collectSfx);
 }
 
 void Crawl::DungeonCollectableKey::UpdateTransform()
