@@ -1,5 +1,8 @@
 #pragma once
 #include "serialisation.h"
+#include "DungeonGameFTUE.h"
+
+#include <queue>
 #include <string>
 
 class Object;
@@ -80,6 +83,10 @@ namespace Crawl
 		void UpdateLobbyVisualsLightning(float delta);
 		void UpdateLobbyVisualsLocks(float delta);
 
+		void QueueFTUEPrompt(DungeonGameFTUE::FTUEType type);
+		bool IsFTUECompleted(DungeonGameFTUE::FTUEType type);
+		void UpdateFTUE(float delta);
+		void ClearAllFTUE();
 
 		void DoFTUEEvent(FTUEEvent event);
 		bool manageLobby = true;
@@ -162,12 +169,26 @@ namespace Crawl
 		float doorSwingAmount = 0.0f; // this is debug for imgui
 
 		// FTUE Configuration Items
-		std::string promptTurn = "crawler/texture/gui/prompt_turn.tga";
-		std::string promptMove = "crawler/texture/gui/prompt_move.tga";
-		std::string promptLook = "crawler/texture/gui/prompt_look.tga";
-		std::string promptInteract = "crawler/texture/gui/prompt_interact.tga";
-		std::string promptReset = "crawler/texture/gui/prompt_reset.tga";
-		std::string promptWait = "crawler/texture/gui/prompt_wait.tga";
+		std::queue<DungeonGameFTUE> ftueQueue;
+		std::vector<DungeonGameFTUE::FTUEType> ftueCompleted;
+		bool ftueIsCompleting = false;
+		float ftueFadeTimeCurrent = 0.0f;
+		const float ftueFadeTime = 0.75;
+
+		std::string ftueTurn = "crawler/texture/gui/ftue/turn.tga";
+		std::string ftueTurnPad = "crawler/texture/gui/ftue/turnPad.tga";
+		std::string ftueMove = "crawler/texture/gui/ftue/move.tga";
+		std::string ftueMovePad = "crawler/texture/gui/ftue/movePad.tga";
+		std::string ftueLook = "crawler/texture/gui/ftue/look.tga";
+		std::string ftueLookPad = "crawler/texture/gui/ftue/lookPad.tga";
+		std::string ftueInteract = "crawler/texture/gui/ftue/interact.tga";
+		std::string ftueInteractPad = "crawler/texture/gui/ftue/interactPad.tga";
+		std::string ftueReset = "crawler/texture/gui/ftue/reset.tga";
+		std::string ftueResetPad = "crawler/texture/gui/ftue/resetPad.tga";
+		std::string ftueWait = "crawler/texture/gui/ftue/wait.tga";
+		std::string ftueWaitPad = "crawler/texture/gui/ftue/waitPad.tga";
+		std::string ftuePush = "crawler/texture/gui/ftue/push.tga";
+		std::string ftuePushPad = "crawler/texture/gui/ftue/pushPad.tga";
 	};
 }
 

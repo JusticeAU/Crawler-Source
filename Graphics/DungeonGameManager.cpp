@@ -11,6 +11,10 @@
 #include "AudioManager.h"
 #include "DungeonMenu.h"
 
+#include "TextureManager.h"
+
+#include "Input.h"
+
 Crawl::DungeonGameManager* Crawl::DungeonGameManager::instance = nullptr;
 
 Crawl::DungeonGameManager::DungeonGameManager()
@@ -101,6 +105,8 @@ bool Crawl::DungeonGameManager::DrawGUIInternal()
 
 void Crawl::DungeonGameManager::Update(float delta)
 {
+	UpdateFTUE(delta);
+	
 	if (player->GetDungeonLoaded()->isLobby)
 	{
 		UpdateLobbyVisuals(delta);
@@ -380,33 +386,33 @@ void Crawl::DungeonGameManager::DoEvent(int eventID)
 	}
 	case 2: // clear FTUE Event
 	{
-		player->ClearFTUEPrompt();
+		//player->ClearFTUEPrompt();
 		return;
 	}
 	case 3: // trigger Move FTUE
 	{
-		player->SetFTUEPrompt(promptMove);
+		//player->SetFTUEPrompt(promptMove);
 		return;
 	}
 
 	case 4: // trigger look prompt
 	{
-		if (!player->ftueHasLooked) player->SetFTUEPrompt(promptLook);
+		//if (!player->ftueHasLooked) player->SetFTUEPrompt(promptLook);
 		return;
 	}
 	case 5: // trigger Interact Prompt
 	{
-		player->SetFTUEPrompt(promptInteract);
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Interact);
 		return;
 	}
 	case 6: // Trigger Wait prompt
 	{
-		player->SetFTUEPrompt(promptWait);
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Wait);
 		return;
 	}
 	case 7: // Trigger Reset prompt
 	{
-		player->SetFTUEPrompt(promptReset);
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Reset);
 		return;
 	}
 	case 50: // end game credit trigger
@@ -527,8 +533,161 @@ void Crawl::DungeonGameManager::UpdateLobbyVisualsLocks(float delta)
 		frontDoorLeft->SetLocalRotationZ(MathUtils::LerpDegrees(frontDoorOpenRotationStart, frontDoorOpenRotationStart-frontDoorOpenRotationEnd, tEased));
 		frontDoorRight->SetLocalRotationZ(MathUtils::LerpDegrees(frontDoorOpenRotationStart, frontDoorOpenRotationStart+frontDoorOpenRotationEnd, tEased));
 		
-		if (t == 1.0f) MakeLobbyExitTraversable();
+		if (t > 0.5f) MakeLobbyExitTraversable();
 	}
+}
+
+void Crawl::DungeonGameManager::QueueFTUEPrompt(DungeonGameFTUE::FTUEType type)
+{
+	bool useGamepadPrompt = (Input::GetLastInputType() == Input::InputType::Gamepad);
+	Texture* tex = nullptr;
+	switch (type)
+	{
+	case DungeonGameFTUE::FTUEType::Turn:
+	{
+		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueTurnPad);
+		else tex = TextureManager::GetTexture(ftueTurn);
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::Move:
+	{
+		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueMovePad);
+		else tex = TextureManager::GetTexture(ftueMove);
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::Interact:
+	{
+		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueInteractPad);
+		else tex = TextureManager::GetTexture(ftueInteract);
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::Look:
+	{
+		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueLookPad);
+		else tex = TextureManager::GetTexture(ftueLook);
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::Wait:
+	{
+		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueWaitPad);
+		else tex = TextureManager::GetTexture(ftueWait);
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::Reset:
+	{
+		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueResetPad);
+		else tex = TextureManager::GetTexture(ftueReset);
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::Push:
+	{
+		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftuePushPad);
+		else tex = TextureManager::GetTexture(ftuePush);
+		break;
+	}
+	}
+
+	if (tex != nullptr)
+		ftueQueue.emplace(DungeonGameFTUE(tex, type));
+	else
+		LogUtils::Log("Unable to locate FTUE Prompt.");
+}
+
+bool Crawl::DungeonGameManager::IsFTUECompleted(DungeonGameFTUE::FTUEType type)
+{
+	switch (type)
+	{
+	case DungeonGameFTUE::FTUEType::Turn:
+	{
+		if (player->GetState() == DungeonPlayer::STATE::TURNING) return true;
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::Move:
+	{
+		if (player->GetState() == DungeonPlayer::STATE::MOVING) return true;
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::Interact:
+	{
+		if (player->ftueHasInteracted) return true;
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::Look:
+	{
+		if (player->ftueHasLooked) return true;
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::Wait:
+	{
+		if (player->GetState() == DungeonPlayer::STATE::WAIT) return true;
+		break;
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::Reset:
+	{
+		// not ever required
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::Push:
+	{
+		if (player->ftueHasPushed) return true;
+		break;
+	}
+	default:
+		return false;
+	}
+
+	return false;
+}
+
+void Crawl::DungeonGameManager::UpdateFTUE(float delta)
+{
+	if (ftueQueue.size() > 0)
+	{
+
+		if (!ftueIsCompleting && IsFTUECompleted(ftueQueue.front().type)) ftueIsCompleting = true;
+		// Process queue!
+		if (ftueIsCompleting)
+		{
+			ftueFadeTimeCurrent = max(ftueFadeTimeCurrent - delta, 0.0f);
+			if (ftueFadeTimeCurrent == 0.0f)
+			{
+				ftueIsCompleting = false;
+				ftueQueue.pop();
+			}
+		}
+		else
+		{
+			ftueFadeTimeCurrent = min(ftueFadeTimeCurrent + delta, ftueFadeTime);
+
+		}
+
+		float alpha = ftueFadeTimeCurrent / ftueFadeTime;
+		Texture* texture = ftueQueue.front().texture;
+
+		glm::vec2 size = Window::GetViewPortSize();
+		glm::vec2 pos = { size.x / 2, size.y * 0.9f };
+		glm::vec2 texSize = { texture->width, texture->height };
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0,0 });
+		ImGui::SetNextWindowPos({ pos.x, pos.y }, ImGuiCond_Always, { 0.5,0.5f });
+		ImGui::SetNextWindowSize({ texSize.x, texSize.y });
+		ImGui::Begin("FTUE", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBringToFrontOnFocus);
+		ImGui::Image(
+			(ImTextureID)texture->texID,
+			{ texSize.x, texSize.y },
+			{ 0,1 },
+			{ 1,0 },
+			{ 1,1,1, alpha });
+		ImGui::PopStyleVar();
+		ImGui::End();
+	}
+}
+
+void Crawl::DungeonGameManager::ClearAllFTUE()
+{
+	while (!ftueQueue.empty()) ftueQueue.pop();
+	ftueFadeTimeCurrent = 0.0f;
+	ftueIsCompleting = false;
 }
 
 void Crawl::DungeonGameManager::DoFTUEEvent(FTUEEvent event)
@@ -537,27 +696,27 @@ void Crawl::DungeonGameManager::DoFTUEEvent(FTUEEvent event)
 	{
 	case FTUEEvent::Turn:
 	{
-		player->SetFTUEPrompt(promptTurn);
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Turn);
 		break;
 	}
 	case FTUEEvent::Move:
 	{
-		player->SetFTUEPrompt(promptMove);
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Move);
 		break;
 	}
 	case FTUEEvent::Look:
 	{
-		player->SetFTUEPrompt(promptLook);
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Look);
 		break;
 	}
 	case FTUEEvent::Reset:
 	{
-		player->SetFTUEPrompt(promptReset);
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Reset);
 		break;
 	}
 	case FTUEEvent::Wait:
 	{
-		player->SetFTUEPrompt(promptWait);
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Wait);
 		break;
 	}
 

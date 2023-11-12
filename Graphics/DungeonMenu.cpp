@@ -61,6 +61,8 @@ Crawl::DungeonMenu::DungeonMenu()
 	intro04 = TextureManager::GetTexture("crawler/texture/gui/intro/04.tga");
 	intro05 = TextureManager::GetTexture("crawler/texture/gui/intro/05.tga");
 	introPressSpace = TextureManager::GetTexture("crawler/texture/gui/intro/begin.tga");
+	introPressSpacePad = TextureManager::GetTexture("crawler/texture/gui/intro/beginPad.tga");
+
 }
 
 void Crawl::DungeonMenu::OpenMenu(Menu menu)
@@ -279,6 +281,8 @@ void Crawl::DungeonMenu::UpdateMainMenuCamera(float delta)
 	if (!newGameSequenceStarted)
 		return;
 
+	if (Input::Alias("Interact").Down() && newGameSequenceTime > 1.0f) StartNewGame();
+
 	newGameSequenceTime += delta;
 	switch (introStage)
 	{
@@ -295,7 +299,7 @@ void Crawl::DungeonMenu::UpdateMainMenuCamera(float delta)
 	{
 		float t = newGameSequenceTime / 7.0f;
 		float tClamped = glm::clamp(t, 0.0f, 1.0f);
-		cameraObject->SetLocalRotationZ(MathUtils::Lerp(-90.0f, 90.0f, glm::sineEaseInOut(tClamped)));
+		cameraObject->SetLocalRotationZ(MathUtils::Lerp(-90.0f, -270.0f, glm::sineEaseInOut(tClamped)));
 
 		if (t >= 1.05f)
 		{
@@ -352,10 +356,12 @@ void Crawl::DungeonMenu::UpdateMainMenuCamera(float delta)
 			ImGui::SetNextWindowSize({ (float)introPressSpace->width+15, (float)introPressSpace->height });
 			ImGui::Begin("Press Space Text", 0, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize);
 			workingNum = newGameSequenceTime - 12;
-			DrawImage(introPressSpace, glm::clamp(workingNum, 0.0f, 1.0f));
+			if(Input::GetLastInputType() == Input::InputType::Gamepad)
+				DrawImage(introPressSpacePad, glm::clamp(workingNum, 0.0f, 1.0f));
+			else
+				DrawImage(introPressSpace, glm::clamp(workingNum, 0.0f, 1.0f));
 			ImGui::End();
 		}
-		if(Input::Alias("Interact").Down()) StartNewGame();
 		break;
 	}
 	}

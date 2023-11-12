@@ -57,6 +57,7 @@ namespace Crawl
 		Dungeon* GetDungeonLoaded() { return dungeon; }
 		Dungeon* GetDungeonLobbyLevel2() { return lobbyLevel2Dungeon; }
 
+		STATE GetState() { return state; }
 		void SetStateIdle() { state = IDLE; }
 
 		void SetMenu(DungeonMenu* menu) { gameMenu = menu; }
@@ -135,12 +136,6 @@ namespace Crawl
 		void UpdateStateRH(float delta);
 
 		void LoadSelectedTransporter(DungeonTransporter* transporter);
-
-	public:
-		void UpdatePrompts(float delta);
-		void UpdateFTUE();
-		void SetFTUEPrompt(string prompt);
-		void ClearFTUEPrompt(bool instant = false);
 	private:
 		void DrawDevelopmentBuildUI();
 
@@ -256,11 +251,8 @@ namespace Crawl
 		bool ftueHasTurned = false;
 		bool ftueHasLooked = false;
 		bool ftueHasInteracted = false;
-
-		bool promptFadeIn = false;
-		float promptAmount = 0.0f;
-		const float promptFadeTime = 0.4f;
-		bool promptUse = false;
+		bool ftueHasWaited = false;
+		bool ftueHasPushed = false;
 
 		glm::vec3 transporterColour = glm::vec3(0.0, 0.0, 0.0);
 		DungeonTransporter* transporterToActivate = nullptr;

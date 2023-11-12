@@ -49,12 +49,6 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	DrawDevelopmentBuildUI();
 #endif // !RELEASE
 
-	if (ftueEnabled)
-	{
-		UpdateFTUE();
-		UpdatePrompts(deltaTime);
-	}
-
 	UpdateStateRH(deltaTime);
 
 	if (state == WAIT)
@@ -281,7 +275,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		fadeTimeCurrent = 0.0f;
 		fadeIn = false;
 		
-		DungeonGameManager::Get()->DoFTUEEvent(DungeonGameManager::FTUEEvent::Reset);
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Reset);
 		return false;
 	}
 
@@ -290,6 +284,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		if (currentDungeon->DoKick(position, facing))
 		{
 			inputBuffer = PlayerCommand::None;
+			ftueHasPushed = true;
 			//animator->BlendToAnimation(animationNamePush, 0.1f);
 			return true;
 		}
@@ -327,6 +322,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 	if (inputBuffer == PlayerCommand::Wait)
 	{
 		inputBuffer = PlayerCommand::None;
+		ftueHasWaited = true;
 		state = WAIT;
 		moveCurrent = 0.0f;
 		return true;
@@ -349,13 +345,8 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		inputBuffer = PlayerCommand::None;
 		if (currentDungeon->DoInteractable(position, facing))
 		{
-			if (!ftueHasInteracted)
-			{
-				ftueHasInteracted = true;
-				ClearFTUEPrompt();
-			}
 			UpdatePointOfInterestTilt();
-			//animator->BlendToAnimation(animationNamePush, 0.1f);
+			ftueHasInteracted = true;
 			if (!currentDungeon->playerInteractIsFree)
 				return true;
 		}
@@ -672,7 +663,6 @@ bool Crawl::DungeonPlayer::UpdateStateDying(float delta)
 		
 		if (Input::Alias("Interact").Down() || Input::Alias("Reset").Down() || Input::Alias("Start").Down()) // respawn
 		{
-			ClearFTUEPrompt(true);
 			dungeon->RebuildDungeonFromSerialised(dungeon->serialised);
 			Respawn();
 		}
@@ -928,80 +918,6 @@ void Crawl::DungeonPlayer::LoadSelectedTransporter(DungeonTransporter* transport
 	}
 }
 
-void Crawl::DungeonPlayer::UpdatePrompts(float delta)
-{
-	if (promptCurrent == "" && promptNext != "")
-	{
-		promptCurrent = promptNext;
-		promptNext = "";
-		promptFadeIn = true;
-		camera->promptUse = true;
-	}
-
-	camera->prompt = promptCurrent;
-
-	if (promptFadeIn && promptNext == "")
-	{
-		if (promptAmount < promptFadeTime)
-		{
-			promptAmount += delta;
-			float t = promptAmount / promptFadeTime;
-			camera->promptAmount = t;
-		}
-		else
-			camera->promptAmount = 1.0f; 
-	}
-	else
-	{
-		if (promptAmount > 0.0f)
-		{
-			promptAmount -= delta;
-			float t = promptAmount / promptFadeTime;
-			camera->promptAmount = t;
-		}
-		else
-		{
-			camera->promptAmount = 0.0f;
-			if (promptNext != "")
-			{
-				promptCurrent = promptNext;
-				promptNext = "";
-				fadeIn = true;
-			}
-			else
-			{
-				promptCurrent = "";
-				camera->promptUse = false;
-			}
-		}
-	}
-}
-
-void Crawl::DungeonPlayer::UpdateFTUE()
-{
-	if (ftueTurns == 2 && !ftueHasTurned)
-	{
-		DungeonGameManager::Get()->DoFTUEEvent(DungeonGameManager::FTUEEvent::Move);
-		ftueHasTurned = true;
-	}
-}
-
-void Crawl::DungeonPlayer::SetFTUEPrompt(string prompt)
-{
-	promptNext = prompt;
-	promptUse = true;
-}
-
-void Crawl::DungeonPlayer::ClearFTUEPrompt(bool instant)
-{
-	promptFadeIn = false;
-	promptNext = "";
-	if (instant)
-	{
-		promptCurrent = 0.0f;
-		camera->promptUse = false;
-	}
-}
 
 void Crawl::DungeonPlayer::DrawDevelopmentBuildUI()
 {
@@ -1086,11 +1002,14 @@ void Crawl::DungeonPlayer::ClearRespawn()
 
 void Crawl::DungeonPlayer::Respawn()
 {
+	DungeonGameManager::Get()->ClearAllFTUE();
+
 	if (!ftueEnabled && !ftueInitiated && dungeon->dungeonFileName == "start")
 	{
 		ftueEnabled = true;
 		ftueInitiated = true;
-		DungeonGameManager::Get()->DoFTUEEvent(DungeonGameManager::FTUEEvent::Turn);
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Turn);
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Move);
 	}
 
 	didJustRespawn = true;

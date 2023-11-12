@@ -109,6 +109,7 @@ namespace Crawl
 		Texture* intro04 = nullptr;
 		Texture* intro05 = nullptr;
 		Texture* introPressSpace = nullptr;
+		Texture* introPressSpacePad = nullptr;
 
 
 	private:

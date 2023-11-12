@@ -384,6 +384,7 @@
     <ClInclude Include="DungeonEnemySlugPath.h" />
     <ClInclude Include="DungeonEnemySwitcher.h" />
     <ClInclude Include="DungeonEventTrigger.h" />
+    <ClInclude Include="DungeonGameFTUE.h" />
     <ClInclude Include="DungeonGameManager.h" />
     <ClInclude Include="DungeonGameManagerEvent.h" />
     <ClInclude Include="DungeonHelpers.h" />

@@ -640,5 +640,8 @@
     <ClInclude Include="SceneRendererBatched.h">
       <Filter>Source Files\Application\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="DungeonGameFTUE.h">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
