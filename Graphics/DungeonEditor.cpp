@@ -1741,7 +1741,12 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLight()
 		MarkUnsavedChanges();
 		selectedLight->UpdateLight();
 	}
-	if (ImGui::DragFloat("Intensity", &selectedLight->intensity)) MarkUnsavedChanges();
+	if (ImGui::DragFloat("Intensity", &selectedLight->intensity))
+	{
+		selectedLight->intensityCurrent = selectedLight->intensity;
+		selectedLight->UpdateLight();
+		MarkUnsavedChanges();
+	}
 	if (ImGui::DragFloat3("Position", &selectedLight->localPosition.x, 0.1f, -2.0f, 10.0f))
 	{
 		MarkUnsavedChanges();
@@ -1817,11 +1822,18 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLight()
 	glm::vec3 offset(0, 0, 0.1f);
 	LineRenderer::DrawLine(worldPos, worldPos + offset, selectedLight->colour);
 
-	/*if (ImGui::Button("Enable")) selectedLight->Enable();
+
+	if (ImGui::Button("Apply Room Settings"))
+	{
+		selectedLight->MakeRoomLight();
+		MarkUnsavedChanges();
+	}
 	ImGui::SameLine();
-	if (ImGui::Button("Disable")) selectedLight->Disable();
-	ImGui::SameLine();
-	ImGui::Text("For testing purposes");*/
+	if (ImGui::Button("Apply Hallway Settings"))
+	{
+		selectedLight->MakeHallwayLight();
+		MarkUnsavedChanges();
+	}
 
 	if (ImGui::Button("Delete"))
 		ImGui::OpenPopup("delete_light_confirm");

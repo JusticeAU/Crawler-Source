@@ -35,6 +35,32 @@ void Crawl::DungeonLight::Init()
 	if (!startDisabled) Enable();
 }
 
+void Crawl::DungeonLight::MakeRoomLight()
+{
+	colour = { 1.0f, 0.556f, 0.286f };
+	intensity = 5.0f;
+	intensityCurrent = 5.0f;
+	localPosition.z = 2.4f;
+	lightDecorationID = 0;
+
+	LoadDecoration();
+	UpdateLight();
+	UpdateTransform();
+}
+
+void Crawl::DungeonLight::MakeHallwayLight()
+{
+	colour = { 0.078f, 0.098f, 0.2f };
+	intensity = 15.0f;
+	intensityCurrent = 15.0f;
+	localPosition.z = 2.4f;
+	lightDecorationID = 0;
+
+	LoadDecoration();
+	UpdateLight();
+	UpdateTransform();
+}
+
 void Crawl::DungeonLight::Enable()
 {
 	isEnabled = true;
@@ -72,7 +98,7 @@ void Crawl::DungeonLight::LoadDecoration()
 		lightDecoration->LoadFromJSON(ReadJSONFromDisk(lightDecorations[lightDecorationID]));
 		lightDecoration->localPosition = lightDecorationsOffsets[lightDecorationID];
 		object->SetLocalRotationZ(orientationEulersReversed[lightDecorationDirection]);
-		lightDecorationRenderer = (ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer);
+		lightDecorationRenderer = (ComponentRenderer*)lightDecoration->GetComponent(Component_Renderer);
 		lightDecorationRenderer->castsShadows = false;
 		if (startDisabled) intensityScale = 0.0f;
 	}

@@ -39,6 +39,9 @@ namespace Crawl
 
 		void Init();
 
+		void MakeRoomLight();
+		void MakeHallwayLight();
+
 		void Enable();
 		void Disable();
 
