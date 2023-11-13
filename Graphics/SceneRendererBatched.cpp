@@ -188,6 +188,12 @@ void RenderBatch::DrawBatches()
 					material->roughnessMap->Bind(7);
 					shader->SetIntUniform("roughnessMap", 7);
 				}
+				else
+				{
+					TextureManager::GetTexture("engine/texture/grey1x1.tga")->Bind(7);
+					shader->SetIntUniform("roughnessMap", 8);
+				}
+
 				if (material->aoMap)
 				{
 					material->aoMap->Bind(8);
