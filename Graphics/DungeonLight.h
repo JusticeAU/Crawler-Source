@@ -19,6 +19,7 @@ namespace Crawl
 		bool isEnabled = false;
 		glm::vec3 colour = { 1,1,1 };
 		float intensity = 5.0f;
+		float intensityCurrent = 5.0f;
 
 		bool isLobbyLight = false;
 		bool startDisabled = false;
@@ -55,7 +56,6 @@ namespace Crawl
 		int id = 1;
 		bool flickerIgnoreGlobal = false;
 
-		float flickerBaseIntensity = 0.0f;
 		float flickerCurrent = 0.0f;;
 		float flickerTime = 1.0f;
 		float intensityScale = 0.0f;

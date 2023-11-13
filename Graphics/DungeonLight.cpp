@@ -100,7 +100,7 @@ void Crawl::DungeonLight::UpdateLight()
 	if (light)
 	{
 		light->colour = colour;
-		light->intensity = intensity;
+		light->intensity = intensityCurrent;
 	}
 
 	if (lightDecorationRenderer)
@@ -120,7 +120,7 @@ void Crawl::DungeonLight::Flicker()
 void Crawl::DungeonLight::ConfigureFlickerState()
 {
 	if (flickerRepeat) flickerEnabled = true;
-	flickerBaseIntensity = intensity;
+	intensityCurrent = intensity;
 }
 
 void Crawl::DungeonLight::ResetRandomFlickerTime()
@@ -139,11 +139,11 @@ void Crawl::DungeonLight::UpdateVisual(float delta)
 		{
 			float t = flickerCurrent / flickerTime;
 			intensityScale = 1.0 - (glm::abs(glm::bounceEaseInOut(t) - 0.5f) * 2.0f);
-			intensity = flickerBaseIntensity - (flickerBaseIntensity * (1.0 - intensityScale));
+			intensityCurrent = intensity - (intensity * (1.0 - intensityScale));
 		}
 		else if (flickerCurrent > flickerTime)
 		{
-			intensity = flickerBaseIntensity;
+			intensityCurrent = intensity;
 			intensityScale = 1.0f;
 		
 			if (flickerRepeat) ResetRandomFlickerTime();

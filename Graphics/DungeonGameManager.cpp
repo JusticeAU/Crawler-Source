@@ -447,7 +447,7 @@ void Crawl::DungeonGameManager::UpdateLobbyVisualsLightning(float delta)
 	{
 		float t = glm::bounceEaseIn(glm::clamp(lobbyLightningTimeCurrent / lobbyLightningStrikeTime, 0.0f, 1.0f));
 		t = glm::clamp(t, 0.0f, 1.0f);
-		lobbyLightingLight->intensity = MathUtils::Lerp(0.0f, 1000.0f, t);
+		lobbyLightingLight->intensityCurrent = MathUtils::Lerp(0.0f, 1000.0f, t);
 		lobbyLightingLight->UpdateLight();
 
 		if (t > 0.3f && !playedSfx)
@@ -464,7 +464,7 @@ void Crawl::DungeonGameManager::UpdateLobbyVisualsLightning(float delta)
 		playedSfx = false;
 		if (lobbyLightingLight != nullptr)
 		{
-			lobbyLightingLight->intensity = 0.0f;
+			lobbyLightingLight->intensityCurrent = 0.0f;
 			lobbyLightingLight->UpdateLight();
 		}
 	}
