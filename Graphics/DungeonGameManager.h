@@ -145,7 +145,7 @@ namespace Crawl
 		float frontDoorUnlockShackleT[4] = { 0,0,0,0 };
 		float frontDoorUnlockPadlockT[4] = { 0,0,0,0 };
 		float frontDoorPadlockZPositions[4] = { 0, 0, 0, 0 }; // generated in constructor based on hinge positions
-		float frontDoorPadlockZOffset = -0.24;
+		float frontDoorPadlockZOffset = -0.021f; // 0.215;
 		Object* frontDoorPadLockObjects[4] = { nullptr, nullptr, nullptr, nullptr };
 		Object* frontDoorPadLockShackleObjects[4] = { nullptr, nullptr, nullptr, nullptr };
 		//Object* frontDoorPadLockLockObjects[4] = { nullptr, nullptr, nullptr, nullptr };

@@ -323,7 +323,7 @@ void Crawl::DungeonGameManager::ConfigureLobbyDoor()
 			frontDoorPadLockObjects[i] = Scene::CreateObject();
 			frontDoorPadLockObjects[i]->LoadFromJSON(ReadJSONFromDisk(frontDoorPadLockObjectPath));
 			vec3 pos = frontDoorPadLockObjects[i]->localPosition;
-			pos.z = frontDoorHingeZPositions[i] - 0.24f;
+			pos.z = frontDoorPadlockZPositions[i];
 			frontDoorPadLockObjects[i]->SetLocalPosition(pos);
 
 			frontDoorPadLockShackleObjects[i] = frontDoorPadLockObjects[i]->children[0];
@@ -504,7 +504,7 @@ void Crawl::DungeonGameManager::UpdateLobbyVisualsLocks(float delta)
 			float fallDelta = (1 / frontDoorPadLockFallSpeed) * delta;
 			float t = frontDoorUnlockPadlockT[i] = min(frontDoorUnlockPadlockT[i] + fallDelta, 1.0f);
 			float easedT = glm::sineEaseIn(t);
-			frontDoorPadLockObjects[i]->localPosition.z = MathUtils::Lerp(frontDoorPadlockZPositions[i], 0, easedT);
+			frontDoorPadLockObjects[i]->localPosition.z = MathUtils::Lerp(frontDoorPadlockZPositions[i], -0.1, easedT);
 			frontDoorPadLockObjects[i]->SetDirtyTransform();
 			if(t < 0.2)	break;
 		}
