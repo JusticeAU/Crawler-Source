@@ -56,6 +56,8 @@ void ComponentRenderer::Update(float delta)
 {
 	if (componentParent->wasDirtyTransform) // check if we should update our bounding boxes
 	{
+		if (model->meshes.size() != submeshBounds.size()) submeshBounds.resize(model->meshes.size());
+
 		for (int i = 0; i < model->meshes.size(); i++)
 		{
 			mat4 rotation = componentParent->transform * model->modelTransform;
