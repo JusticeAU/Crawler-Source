@@ -162,10 +162,9 @@ bool Crawl::DungeonPlayer::UpdateFreeLook(float delta, bool dontAutoReorient)
 		vec2 mouseDelta = -Input::GetMouseDelta() * lookSpeed;
 		if (invertYAxis) mouseDelta.y = -mouseDelta.y;
 		objectView->AddLocalRotation({ mouseDelta.y, 0, mouseDelta.x });
-		objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -lookMaxX, lookMaxX);
-		objectView->localRotation.z = glm::clamp(objectView->localRotation.z, -lookMaxZ, lookMaxZ);
 	}
 
+	// Gamepad
 	if (hasLookedWithGamepad)
 	{
 		// Gamepad
@@ -188,6 +187,11 @@ bool Crawl::DungeonPlayer::UpdateFreeLook(float delta, bool dontAutoReorient)
 		}
 	}
 
+	// Clamp
+	objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -lookMaxX, lookMaxX);
+	objectView->localRotation.z = glm::clamp(objectView->localRotation.z, -lookMaxZ, lookMaxZ);
+
+	// Auto Re-Orient
 	if (autoReOrientDuringFreeLook && state == IDLE)
 	{
 		if (objectView->localRotation.z > 50)
