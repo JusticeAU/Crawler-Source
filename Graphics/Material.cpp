@@ -268,6 +268,7 @@ void Material::DrawGUI()
 			}
 		}
 	}
+	ImGui::Checkbox("Cull Backfaces", &backFaceCulling);
 	ImGui::Spacing();
 	if (!isInGameData) ImGui::BeginDisabled();
 	if (ImGui::Button("Write changes to Game Data"))
@@ -328,7 +329,11 @@ void to_json(nlohmann::ordered_json& j, const Material& mat)
 
 	if (mat.blendMode != Material::BlendMode::Opaque)
 		j["blendMode"] = mat.blendMode;
+
+	if(mat.backFaceCulling)
+		j["backFaceCulling"] = true;
 }
+
 void from_json(const nlohmann::ordered_json& j, Material& mat)
 {
 	if (j.contains("shader"))			j.at("shader").get_to(mat.shaderName);
@@ -353,6 +358,8 @@ void from_json(const nlohmann::ordered_json& j, Material& mat)
 	if (j.contains("emissiveMap"))		j.at("emissiveMap").get_to(mat.emissiveMapName);
 
 	if (j.contains("blendMode"))		j.at("blendMode").get_to(mat.blendMode);
+	if (j.contains("backFaceCulling"))	j.at("backFaceCulling").get_to(mat.backFaceCulling);
+
 
 	if (mat.shaderName != "") mat.shader = ShaderManager::GetShaderProgram(mat.shaderName);
 	if (mat.shaderSkinnedName != "") mat.shaderSkinned = ShaderManager::GetShaderProgram(mat.shaderSkinnedName);

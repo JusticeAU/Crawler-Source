@@ -155,6 +155,11 @@ void RenderBatch::DrawBatches()
 		for (auto& materialBatch : shaderBatch.second.materialBatches)
 		{
 			Material* material = materialBatch.first;
+			if (material->backFaceCulling)
+				glEnable(GL_CULL_FACE);
+			else
+				glDisable(GL_CULL_FACE);
+
 			if (material->isPBR)
 			{
 				if (material->blendMode == Material::BlendMode::AlphaCutoff)

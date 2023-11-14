@@ -53,6 +53,7 @@ public:
 	BlendMode blendMode = BlendMode::Opaque;
 
 	// PBR
+	bool backFaceCulling = true;
 	bool isPBR = false;
 	Texture* albedoMap		= nullptr;
 	Texture* normalMap		= nullptr;
