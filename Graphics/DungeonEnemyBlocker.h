@@ -36,9 +36,9 @@ namespace Crawl
 		ComponentAnimator* animator = nullptr;
 
 		string animationBaseName = "crawler/model/monster_blocker.fbx";
-		string animationUpSwing = animationBaseName + "armature|ready.pose";
-		string animationDownSwing = animationBaseName + "armature|attack.pose";
-		string animationIdle = animationBaseName + "armature|idle.pose";
+		string animationUpSwing = animationBaseName + "ready.pose";
+		string animationDownSwing = animationBaseName + "attack.pose";
+		string animationIdle = animationBaseName + "idle.pose";
 
 		// Audio
 		string audioRaise = "crawler/sound/load/blocker/raise_1.wav";

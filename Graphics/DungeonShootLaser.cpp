@@ -7,6 +7,7 @@
 #include "MaterialManager.h"
 #include "AudioManager.h"
 #include "DungeonHelpers.h"
+#include "ComponentRenderer.h"
 
 Crawl::DungeonShootLaser::DungeonShootLaser()
 {
@@ -28,6 +29,7 @@ void Crawl::DungeonShootLaser::UpdateTransform()
 {
 	object->SetLocalPosition({ position.x * DUNGEON_GRID_SCALE, position.y * DUNGEON_GRID_SCALE, 0 });
 	object->SetLocalRotationZ(orientationEulersReversed[facing]);
+	renderer->emissiveScale = 0.0f;
 }
 
 void Crawl::DungeonShootLaser::Update()
@@ -83,6 +85,7 @@ void Crawl::DungeonShootLaser::Prime()
 	LogUtils::Log("Shooter has primed");
 	AudioManager::PlaySound(audioPrime, object->GetWorldSpacePosition());
 	jawObject->SetLocalRotation({ jawOpenAngle, 0, 0 });
+	renderer->emissiveScale = 1.0f;
 	primed = true;
 	turnPrimed = dungeon->turn;
 }
@@ -145,6 +148,7 @@ void Crawl::DungeonShootLaser::Fire()
 	}
 	LogUtils::Log("Shooter is no longer primed");
 	jawObject->SetLocalRotation(vec3(0));
+	renderer->emissiveScale = 0.0f;
 	primed = false;
 }
 

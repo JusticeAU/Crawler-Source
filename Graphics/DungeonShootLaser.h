@@ -6,7 +6,7 @@
 using glm::ivec2;
 
 class Object;
-
+class ComponentRenderer;
 
 namespace Crawl
 {
@@ -31,7 +31,8 @@ namespace Crawl
 
 		Object* object;
 		Object* jawObject;
-		const float jawOpenAngle = 25.0f;
+		ComponentRenderer* renderer;
+		const float jawOpenAngle = 45.0f;
 		Dungeon* dungeon = nullptr;
 		ivec2 targetPosition = { 0,0 };
 		void* thingAtTargetPosition = nullptr;

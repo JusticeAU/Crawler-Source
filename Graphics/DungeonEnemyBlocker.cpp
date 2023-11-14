@@ -51,7 +51,6 @@ void Crawl::DungeonEnemyBlocker::Update()
 		if (didDamge) PlaySFX(audioHit);
 		state = State::DownSwing;
 		animator->BlendToAnimation(animationDownSwing, 0.0f);
-		animator->next->animationSpeedScale = 4.0f;
 		break;
 	}
 	case(State::DownSwing):
@@ -67,7 +66,6 @@ void Crawl::DungeonEnemyBlocker::Update()
 			state = State::Idle;
 			PlaySFX(audioReturn);
 			animator->BlendToAnimation(animationIdle, 0.0f);
-			animator->next->animationSpeedScale = 4.0f;
 		}
 		break;
 	}
@@ -92,7 +90,6 @@ void Crawl::DungeonEnemyBlocker::CheckShouldPrime()
 		state = State::UpSwing;
 		PlaySFX(audioRaise);
 		animator->BlendToAnimation(animationUpSwing, 0.0f);
-		animator->next->animationSpeedScale = 4.0f;
 	}
 	else
 	{

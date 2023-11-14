@@ -1245,6 +1245,7 @@ Crawl::DungeonShootLaser* Crawl::Dungeon::CreateShootLaser(ivec2 position, FACIN
 	shootLaser->object = Scene::CreateObject();
 	shootLaser->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/monster_skull.object"));
 	shootLaser->object->children[0]->children[0]->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_shooter_head.object"));
+	shootLaser->renderer = (ComponentRenderer*)shootLaser->object->children[0]->children[0]->children[0]->GetComponent(Component_Renderer);
 	shootLaser->jawObject = shootLaser->object->children[0]->children[1];
 	shootLaser->object->children[0]->children[1]->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_shooter_jaw.object"));
 	shootLaser->UpdateTransform();
@@ -1305,6 +1306,7 @@ Crawl::DungeonEnemyBlocker* Crawl::Dungeon::CreateEnemyBlocker(ivec2 position, F
 	blocker->UpdateTransform();
 	blocker->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_blocker.object"));
 	blocker->animator = (ComponentAnimator*)blocker->object->children[0]->GetComponent(Component_Animator);
+	blocker->animator->StartAnimation(blocker->animationIdle, true);
 	blockers.emplace_back(blocker);
 
 	DungeonTile* tile = GetTile(position);
