@@ -82,7 +82,7 @@ void Crawl::DungeonShootLaser::Prime()
 {
 	LogUtils::Log("Shooter has primed");
 	AudioManager::PlaySound(audioPrime, object->GetWorldSpacePosition());
-	((ComponentRenderer*)object->children[0]->children[0]->GetComponent(Component_Renderer))->submeshMaterials[0] = MaterialManager::GetMaterial("engine/model/materials/LambertRed.material");
+	jawObject->SetLocalRotation({ jawOpenAngle, 0, 0 });
 	primed = true;
 	turnPrimed = dungeon->turn;
 }
@@ -144,7 +144,7 @@ void Crawl::DungeonShootLaser::Fire()
 		dungeon->CreateShootLaserProjectile(this, position, facing);
 	}
 	LogUtils::Log("Shooter is no longer primed");
-	((ComponentRenderer*)object->children[0]->children[0]->GetComponent(Component_Renderer))->submeshMaterials[0] = MaterialManager::GetMaterial("engine/model/materials/LambertBlue.material");
+	jawObject->SetLocalRotation(vec3(0));
 	primed = false;
 }
 

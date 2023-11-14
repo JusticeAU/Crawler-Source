@@ -30,6 +30,8 @@ namespace Crawl
 		unsigned int activateID = -1;
 
 		Object* object;
+		Object* jawObject;
+		const float jawOpenAngle = 25.0f;
 		Dungeon* dungeon = nullptr;
 		ivec2 targetPosition = { 0,0 };
 		void* thingAtTargetPosition = nullptr;

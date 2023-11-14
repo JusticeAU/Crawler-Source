@@ -50,6 +50,8 @@ Crawl::Dungeon::Dungeon(bool isLobbyLevel2) : isLobbyLevel2(isLobbyLevel2)
 	wallVariantPaths.push_back("crawler/model/tile_wall_2_half.object");
 	wallVariantPaths.push_back("crawler/model/tile_wall_3.object");
 	wallVariantPaths.push_back("crawler/model/tile_wall_fireplace.object");
+	wallVariantPaths.push_back("crawler/model/tile_wall_shooter.object");
+
 
 	floorVariantPaths.push_back("crawler/model/tile_wood.object");
 	floorVariantPaths.push_back("crawler/model/tile_marblefloor.object");
@@ -1239,11 +1241,13 @@ Crawl::DungeonShootLaser* Crawl::Dungeon::CreateShootLaser(ivec2 position, FACIN
 	shootLaser->id = id;
 	shootLaser->position = position;
 	shootLaser->facing = facing;
+
 	shootLaser->object = Scene::CreateObject();
-	shootLaser->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/monster_shootlaser.object"));
+	shootLaser->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/monster_skull.object"));
+	shootLaser->object->children[0]->children[0]->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_shooter_head.object"));
+	shootLaser->jawObject = shootLaser->object->children[0]->children[1];
+	shootLaser->object->children[0]->children[1]->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_shooter_jaw.object"));
 	shootLaser->UpdateTransform();
-	Object* gargoyle = Scene::CreateObject(shootLaser->object->children[0]);
-	gargoyle->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_gargoyle.object"));
 
 	shootLasers.emplace_back(shootLaser);
 	return shootLaser;
