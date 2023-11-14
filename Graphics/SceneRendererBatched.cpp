@@ -167,59 +167,29 @@ void RenderBatch::DrawBatches()
 				else
 					shader->SetBoolUniform("useAlphaCutoff", false);
 
-				if (material->albedoMap)
-				{
-					material->albedoMap->Bind(4);
-					shader->SetIntUniform("albedoMap", 4);
-				}
-				if (material->normalMap)
-				{
-					material->normalMap->Bind(5);
-					shader->SetIntUniform("normalMap", 5);
-				}
-				if (material->metallicMap)
-				{
-					material->metallicMap->Bind(6);
-					shader->SetIntUniform("metallicMap", 6);
-				}
-				else
-				{
-					TextureManager::GetTexture("engine/texture/black1x1.tga")->Bind(6);
-					shader->SetIntUniform("metallicMap", 6);
-				}
+				if (material->albedoMap) material->albedoMap->Bind(4);
+				shader->SetIntUniform("albedoMap", 4);
 
-				if (material->roughnessMap)
-				{
-					material->roughnessMap->Bind(7);
-					shader->SetIntUniform("roughnessMap", 7);
-				}
-				else
-				{
-					TextureManager::GetTexture("engine/texture/grey1x1.tga")->Bind(7);
-					shader->SetIntUniform("roughnessMap", 8);
-				}
+				if (material->normalMap) material->normalMap->Bind(5);
+				else TextureManager::GetTexture("engine/texture/normal1x1.tga")->Bind(5);
+				shader->SetIntUniform("normalMap", 5);
 
-				if (material->aoMap)
-				{
-					material->aoMap->Bind(8);
-					shader->SetIntUniform("aoMap", 8);
-				}
-				else
-				{
-					TextureManager::GetTexture("engine/texture/white1x1.tga")->Bind(8);
-					shader->SetIntUniform("aoMap", 8);
-				}
+				if (material->metallicMap) material->metallicMap->Bind(6);
+				else TextureManager::GetTexture("engine/texture/black1x1.tga")->Bind(6);
+				shader->SetIntUniform("metallicMap", 6);
 
-				if (material->emissiveMap)
-				{
-					material->emissiveMap->Bind(9);
-					shader->SetIntUniform("emissiveMap", 9);
-				}
-				else
-				{
-					TextureManager::GetTexture("engine/texture/black1x1.tga")->Bind(9);
-					shader->SetIntUniform("emissiveMap", 9);
-				}
+				if (material->roughnessMap) material->roughnessMap->Bind(7);
+				else TextureManager::GetTexture("engine/texture/grey1x1.tga")->Bind(7);
+				shader->SetIntUniform("roughnessMap", 7);
+
+				if (material->aoMap) material->aoMap->Bind(8);
+				else TextureManager::GetTexture("engine/texture/white1x1.tga")->Bind(8);
+				shader->SetIntUniform("aoMap", 8);
+
+				if (material->emissiveMap) material->emissiveMap->Bind(9);
+				else TextureManager::GetTexture("engine/texture/black1x1.tga")->Bind(9);
+				shader->SetIntUniform("emissiveMap", 9);
+
 			}
 			else
 			{
