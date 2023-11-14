@@ -15,6 +15,7 @@ namespace Crawl
 	class DungeonShootLaser
 	{
 	public:
+		DungeonShootLaser();
 		~DungeonShootLaser();
 		ivec2 position = {0,0};
 		FACING_INDEX facing = NORTH_INDEX;
@@ -41,6 +42,9 @@ namespace Crawl
 
 		void* AcquireTarget(ivec2& positionOut);
 		void SetInitialTarget();
+
+		string audioPrime = "crawler/sound/load/laser_prime.wav";
+		string audioShoot = "crawler/sound/load/laser_shoot.wav";
 	};
 
 	static void to_json(ordered_json& j, const DungeonShootLaser& object)

@@ -54,8 +54,13 @@ public:
 	static void SetAudioListener(AudioListener* listener);
 	static void Set3dSourcePosition(SoLoud::handle handle, vec3 position);
 	static void Set3dSourceMinMaxDistance(SoLoud::handle handle, float min, float max);
+	
 	static void PushSound(string soundname, float time, glm::vec3 position3D);
 	static void EmptyQueue();
+
+	static void SetAudioSourceAttentuation(string name, unsigned int attentuationModel, float attentionationRollOffFactor);
+	static void SetAudioSourceMinMaxDistance(string name, float minDistance, float maxDistance);
+
 
 protected:
 	AudioManager();

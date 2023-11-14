@@ -20,6 +20,7 @@ namespace Crawl
 			DownSwing
 		};
 	public:
+		DungeonEnemyBlocker();
 		~DungeonEnemyBlocker();
 		ivec2 position = { 0, 0 };
 		FACING_INDEX facing = EAST_INDEX;

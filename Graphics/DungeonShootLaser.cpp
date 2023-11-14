@@ -8,6 +8,16 @@
 #include "AudioManager.h"
 #include "DungeonHelpers.h"
 
+Crawl::DungeonShootLaser::DungeonShootLaser()
+{
+	AudioManager::SetAudioSourceAttentuation(audioPrime, 2, 0.7);
+	AudioManager::SetAudioSourceMinMaxDistance(audioPrime, 5, 15);
+
+	AudioManager::SetAudioSourceAttentuation(audioShoot, 2, 0.7);
+	AudioManager::SetAudioSourceMinMaxDistance(audioShoot, 5, 15);
+
+}
+
 Crawl::DungeonShootLaser::~DungeonShootLaser()
 {
 	if (object)
@@ -71,7 +81,7 @@ void Crawl::DungeonShootLaser::Activate()
 void Crawl::DungeonShootLaser::Prime()
 {
 	LogUtils::Log("Shooter has primed");
-	AudioManager::PlaySound("crawler/sound/load/laser_prime.wav", object->GetWorldSpacePosition());
+	AudioManager::PlaySound(audioPrime, object->GetWorldSpacePosition());
 	((ComponentRenderer*)object->children[0]->children[0]->GetComponent(Component_Renderer))->submeshMaterials[0] = MaterialManager::GetMaterial("engine/model/materials/LambertRed.material");
 	primed = true;
 	turnPrimed = dungeon->turn;
@@ -79,7 +89,7 @@ void Crawl::DungeonShootLaser::Prime()
 
 void Crawl::DungeonShootLaser::Fire()
 {
-	AudioManager::PlaySound("crawler/sound/load/laser_shoot.wav", object->GetWorldSpacePosition());
+	AudioManager::PlaySound(audioShoot, object->GetWorldSpacePosition());
 	if (!firesProjectile) // full line of sight attack
 	{
 		LogUtils::Log("Shooter Fired a full line of sight attack");

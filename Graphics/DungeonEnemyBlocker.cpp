@@ -6,6 +6,21 @@
 #include "LogUtils.h"
 #include "AudioManager.h"
 
+Crawl::DungeonEnemyBlocker::DungeonEnemyBlocker()
+{
+	// set the audio source configurations
+	AudioManager::SetAudioSourceAttentuation(audioRaise, 2, 1);
+	AudioManager::SetAudioSourceAttentuation(audioReturn, 2, 1);
+	AudioManager::SetAudioSourceAttentuation(audioSwing, 2, 1);
+	AudioManager::SetAudioSourceAttentuation(audioHit, 2, 1);
+
+	AudioManager::SetAudioSourceMinMaxDistance(audioRaise, 1, 10);
+	AudioManager::SetAudioSourceMinMaxDistance(audioReturn, 1, 10);
+	AudioManager::SetAudioSourceMinMaxDistance(audioSwing, 1, 10);
+	AudioManager::SetAudioSourceMinMaxDistance(audioHit, 1, 10);
+
+}
+
 Crawl::DungeonEnemyBlocker::~DungeonEnemyBlocker()
 {
 	if (object)

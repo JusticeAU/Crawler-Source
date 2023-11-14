@@ -212,6 +212,22 @@ void AudioManager::EmptyQueue()
 		s_instance->m_stepQueue.pop();
 }
 
+void AudioManager::SetAudioSourceAttentuation(string name, unsigned int attentuationModel, float attentionationRollOffFactor)
+{
+	SoLoud::AudioSource* sound = s_instance->m_loaded.at(name);
+	if (!sound) return;
+
+	sound->set3dAttenuation(attentuationModel, attentionationRollOffFactor);
+}
+
+void AudioManager::SetAudioSourceMinMaxDistance(string name, float minDistance, float maxDistance)
+{
+	SoLoud::AudioSource* sound = s_instance->m_loaded.at(name);
+	if (!sound) return;
+
+	sound->set3dMinMaxDistance(minDistance, maxDistance);
+}
+
 void AudioManager::LoadFromFile(const char* filename)
 {
 	Wav* sound = new Wav();
