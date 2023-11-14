@@ -42,6 +42,8 @@ public:
 	void DrawModel();
 	void BindBoneTransform();
 
+	void RecalculateBounds();
+
 	Component* Clone(Object* parent);
 
 	void DebugDrawBoundingBox(int meshIndex, vec3 colour = { 1.0, 1.0, 1.0 });

@@ -55,23 +55,8 @@ ComponentRenderer::~ComponentRenderer()
 void ComponentRenderer::Update(float delta)
 {
 	if (componentParent->wasDirtyTransform) // check if we should update our bounding boxes
-	{
-		if (model->meshes.size() != submeshBounds.size()) submeshBounds.resize(model->meshes.size());
+		RecalculateBounds();
 
-		for (int i = 0; i < model->meshes.size(); i++)
-		{
-			mat4 rotation = componentParent->transform * model->modelTransform;
-			Mesh::AABB& aabb = model->meshes[i]->aabb;
-			submeshBounds[i].points[0] = vec3(rotation * vec4(aabb.lowerA, 1));
-			submeshBounds[i].points[1] = vec3(rotation * vec4(aabb.lowerB, 1));
-			submeshBounds[i].points[2] = vec3(rotation * vec4(aabb.lowerC, 1));
-			submeshBounds[i].points[3] = vec3(rotation * vec4(aabb.lowerD, 1));
-			submeshBounds[i].points[4] = vec3(rotation * vec4(aabb.upperA, 1));
-			submeshBounds[i].points[5] = vec3(rotation * vec4(aabb.upperB, 1));
-			submeshBounds[i].points[6] = vec3(rotation * vec4(aabb.upperC, 1));
-			submeshBounds[i].points[7] = vec3(rotation * vec4(aabb.upperD, 1));
-		}
-	}
 }
 
 void ComponentRenderer::UpdateClosestLights()
@@ -110,6 +95,7 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 	{
 		// Confirm a material is assigned
 		if (submeshMaterials[i] == nullptr) return;
+		if (submeshBounds.size() < model->meshes.size()) RecalculateBounds();
 
 		// Frustum Cull
 		if (SceneRenderer::cullingFrustum && !isAnimated && SceneRenderer::ShouldCull(submeshBounds[i].points))
@@ -248,6 +234,11 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 				ssaoGeoShader->SetIntUniform("albedoMap", 4);
 			}
 			else ssaoGeoShader->SetBoolUniform("useAlphaCutoff", false);
+
+			if (material->backFaceCulling)
+				glEnable(GL_CULL_FACE);
+			else
+				glDisable(GL_CULL_FACE);
 
 			model->DrawSubMesh(i);
 
@@ -551,6 +542,25 @@ void ComponentRenderer::BindBoneTransform()
 
 		// Technically, all animated models can share the same boneTransformBuffer and just keep uploading their data in to it every frame.
 		// A dedicated animation system could provide a single global buffer for the shader for this.
+	}
+}
+
+void ComponentRenderer::RecalculateBounds()
+{
+	if (model->meshes.size() != submeshBounds.size()) submeshBounds.resize(model->meshes.size());
+
+	for (int i = 0; i < model->meshes.size(); i++)
+	{
+		mat4 rotation = componentParent->transform * model->modelTransform;
+		Mesh::AABB& aabb = model->meshes[i]->aabb;
+		submeshBounds[i].points[0] = vec3(rotation * vec4(aabb.lowerA, 1));
+		submeshBounds[i].points[1] = vec3(rotation * vec4(aabb.lowerB, 1));
+		submeshBounds[i].points[2] = vec3(rotation * vec4(aabb.lowerC, 1));
+		submeshBounds[i].points[3] = vec3(rotation * vec4(aabb.lowerD, 1));
+		submeshBounds[i].points[4] = vec3(rotation * vec4(aabb.upperA, 1));
+		submeshBounds[i].points[5] = vec3(rotation * vec4(aabb.upperB, 1));
+		submeshBounds[i].points[6] = vec3(rotation * vec4(aabb.upperC, 1));
+		submeshBounds[i].points[7] = vec3(rotation * vec4(aabb.upperD, 1));
 	}
 }
 
