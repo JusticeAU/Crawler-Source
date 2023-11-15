@@ -7,6 +7,7 @@
 #include "ModelManager.h"
 
 #include "LogUtils.h"
+#include "LineRenderer.h"
 
 using std::to_string;
 
@@ -74,6 +75,13 @@ void ComponentAnimator::Update(float delta)
 		// Update the array of transform matricies - this is sent in to the shader when Draw is called.
 		// Actually dont need to send this argument in given that its a member function - will refactor this in to an animator component at some point.
 		UpdateBoneMatrixBuffer();
+
+		if (renderBones)
+		{
+			for (auto& line : bonePositions)
+				LineRenderer::DrawLine(line.pointA, line.pointB);
+			bonePositions.clear();
+		}
 	}
 }
 
@@ -84,6 +92,7 @@ void ComponentAnimator::DrawGUI()
 	{
 		if (model->animations.size() > 0)
 		{
+			ImGui::Checkbox("Render Bones", &renderBones);
 			ImGui::Text("Playback Settings");
 			string AnimSpeedStr = "Animation Speed##" + to_string(componentParent->id);
 			ImGui::DragFloat(AnimSpeedStr.c_str(), &current->animationSpeedScale, 0.1f, -2, 2);
@@ -204,7 +213,15 @@ void ComponentAnimator::ProcessNode(Object* node, mat4 accumulated)
 		}
 	}
 
+
 	mat4 globalTransform = accumulated * nodeTransformation; // Apply matrix to accumulated transform down the tree.
+	if (renderBones)
+	{
+		BoneLine line;
+		line.pointA = GetComponentParentObject()->transform * model->modelTransform * accumulated[3];
+		line.pointB = GetComponentParentObject()->transform * model->modelTransform * globalTransform[3];
+		bonePositions.push_back(line);
+	}
 
 	// if it was an actual bone - apply it to the transform buffer that gets sent to the vertex shader.
 	if (bufferIndex != model->boneStructure->boneMapping.end())

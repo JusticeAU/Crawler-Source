@@ -65,4 +65,13 @@ public:
 	float transitionWeight = 0.0f;
 	bool transitionsShouldLoop = false;
 	float transitionBlendTime = 0.1f;
+
+
+	bool renderBones = false;
+	struct BoneLine
+	{
+		glm::vec3 pointA;
+		glm::vec3 pointB;
+	};
+	std::vector<BoneLine> bonePositions;
 };
