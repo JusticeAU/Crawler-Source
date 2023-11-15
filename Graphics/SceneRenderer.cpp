@@ -480,24 +480,10 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	glDepthFunc(GL_LESS);
 	glDepthMask(GL_TRUE);
 
-	//// If MSAA is enabled then we need to blit to a Single Sample surface before doing PostProcess.
-	//if (fxaaEnabled)
-	//{
-	//	// blit it to a non-multisampled FBO for texture attachment compatiability.
-	//	glBindFramebuffer(GL_READ_FRAMEBUFFER, frameBufferRaw->GetID());
-	//	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBufferBlit->GetID());
-	//	glBlitFramebuffer(0, 0, frameBufferRaw->GetWidth(), frameBufferRaw->GetHeight(), 0, 0, frameBufferBlit->GetWidth(), frameBufferBlit->GetHeight(), GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 
-	//	// bind output of first pass (raw render with no processing)
-	//	frameBufferCurrent = frameBufferBlit;
-	//}
-	//else
-	//	frameBufferCurrent = frameBufferRaw;
-
-
+	// Apply SSAO buffer if it is enabled.
 	frameBufferCurrent = frameBufferRaw;
 	frameBufferCurrent->BindTexture(20);
-	// Apply SSAO buffer if it is enabled.
 	if (ssaoEnabled)
 	{
 		// SSAO application
@@ -505,12 +491,20 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		SSAOshader->Bind();
 		SSAOshader->SetIntUniform("frame", 20);
 		SSAOshader->SetIntUniform("SSAO", 21);
-		blurBufferUsed->BindTexture(21); // This is a bit crap, SSAO is kind of half backed in to the above pipeline and a postprocess effect on the camera.
+		blurBufferUsed->BindTexture(21); // This is a bit crap, SSAO is kind of half baked in to the above pipeline and a postprocess effect on the camera.
 		frameBufferCurrent = ssaoPostProcess;
 		frameBufferCurrent->BindTarget();
+		glDrawBuffer(GL_COLOR_ATTACHMENT0);
 		PostProcess::PassThrough(true);
 		frameBufferCurrent->BindTexture(20);
 	}
+
+	// Render Transparent Pass
+	gBuffer->BindAsDepthAttachment();
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, frameBufferRaw->m_emissiveTexID, 0);
+	unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, attachments);
+	RenderTransparent(scene, c);
 
 	if (bloomEnabled)
 
@@ -552,8 +546,7 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	// Render Transparent Pass
-	RenderTransparent(scene, c);
+
 
 	// Run cameras post process effects.
 	c->RunPostProcess(frameBufferProcessed);
@@ -663,9 +656,9 @@ void SceneRenderer::RenderTransparent(Scene* scene, ComponentCamera* camera)
 		glDepthMask(GL_FALSE); // Disable writing to the depth buffer
 
 		// framebuffer
-		frameBufferCurrent->BindTarget();
+		//frameBufferCurrent->BindTarget();
 		
-		gBuffer->BindAsDepthAttachment();
+		//gBuffer->BindAsDepthAttachment();
 		// draw all components w/ transparent mode
 		glm::mat4 pv = camera->GetViewProjectionMatrix();
 		glm::vec3 pos = camera->GetWorldSpacePosition();

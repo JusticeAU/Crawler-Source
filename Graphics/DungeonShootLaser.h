@@ -37,11 +37,13 @@ namespace Crawl
 		ivec2 targetPosition = { 0,0 };
 		void* thingAtTargetPosition = nullptr;
 		bool primed = false;
+		bool justFired = false;
 		unsigned int turnPrimed = 0;
 		void Update(); // check if something is in line of sight or fire if primed
 		void Activate();
 		void Prime();
 		void Fire();
+		void SetMouthOpen(bool open = true);
 
 		void* AcquireTarget(ivec2& positionOut);
 		void SetInitialTarget();

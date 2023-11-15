@@ -35,6 +35,12 @@ void Crawl::DungeonShootLaser::UpdateTransform()
 void Crawl::DungeonShootLaser::Update()
 {
 	LogUtils::Log("Shooter Updated");
+	if (justFired)
+	{
+		SetMouthOpen(false);
+		justFired = false;
+	}
+
 	if (!primed && detectsLineOfSight)
 	{
 		ivec2 atPosition;
@@ -84,8 +90,7 @@ void Crawl::DungeonShootLaser::Prime()
 {
 	LogUtils::Log("Shooter has primed");
 	AudioManager::PlaySound(audioPrime, object->GetWorldSpacePosition());
-	jawObject->SetLocalRotation({ jawOpenAngle, 0, 0 });
-	renderer->emissiveScale = 1.0f;
+	SetMouthOpen();
 	primed = true;
 	turnPrimed = dungeon->turn;
 }
@@ -96,12 +101,16 @@ void Crawl::DungeonShootLaser::Fire()
 	if (!firesProjectile) // full line of sight attack
 	{
 		LogUtils::Log("Shooter Fired a full line of sight attack");
-		
+
 		// Damage Line Of Sight
 		bool shouldContinue = true;
 		FACING_INDEX direction = facing;
 		ivec2 currentPosition = position;
 		bool killedSomething = false;
+
+		// Create a shot from mouth to centre of tile
+		dungeon->CreateDamageVisual(currentPosition, facingIndexesReversed[direction]);
+
 		while (shouldContinue)
 		{
 			DungeonTile* tile = dungeon->GetTile(currentPosition);
@@ -147,9 +156,22 @@ void Crawl::DungeonShootLaser::Fire()
 		dungeon->CreateShootLaserProjectile(this, position, facing);
 	}
 	LogUtils::Log("Shooter is no longer primed");
-	jawObject->SetLocalRotation(vec3(0));
-	renderer->emissiveScale = 0.0f;
 	primed = false;
+	justFired = true;
+}
+
+void Crawl::DungeonShootLaser::SetMouthOpen(bool open)
+{
+	if (open)
+	{
+		jawObject->SetLocalRotation({ jawOpenAngle, 0, 0 });
+		renderer->emissiveScale = 1.0f;
+	}
+	else
+	{
+		jawObject->SetLocalRotation(vec3(0));
+		renderer->emissiveScale = 0.0f;
+	}
 }
 
 void* Crawl::DungeonShootLaser::AcquireTarget(ivec2& positionOut)
