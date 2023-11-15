@@ -20,7 +20,7 @@ namespace Crawl
 		void UpdateVisuals(float delta);
 
 		const float buttonIdlePos = -0.04f;
-		const float buttonMaxPress = 0.06f;
+		const float buttonMaxPress = 0.03f;
 
 		const float buttonInTime = 0.1f;
 		const float buttonHoldTime = 0.5f;
