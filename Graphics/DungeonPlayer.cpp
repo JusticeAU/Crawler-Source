@@ -8,6 +8,8 @@
 #include "AudioManager.h"
 #include "ComponentAnimator.h"
 #include "ComponentCamera.h"
+#include "ComponentRenderer.h"
+#include "ComponentLightPoint.h"
 
 #include "DungeonEnemySwitcher.h"
 #include "DungeonCheckpoint.h"
@@ -30,6 +32,8 @@ Crawl::DungeonPlayer::DungeonPlayer()
 	animator->StartAnimation(animationRHIdle, true);
 	objectView = object->children[0];
 	camera = (ComponentCamera*)object->children[0]->GetComponent(Component_Camera);
+	light = (ComponentLightPoint*)object->children[0]->children[1]->GetComponent(Component_LightPoint);
+	renderer = (ComponentRenderer*)object->children[0]->children[0]->children[0]->GetComponent(Component_Renderer);
 
 	// Create the lobby second level
 	lobbyLevel2Dungeon = new Dungeon(true);
@@ -40,6 +44,16 @@ void Crawl::DungeonPlayer::SetDungeon(Dungeon* dungeonPtr)
 {
 	dungeon = dungeonPtr;
 	currentDungeon = dungeon;
+}
+
+void Crawl::DungeonPlayer::SetLightIntensity(float intensity)
+{
+	light->intensity = intensity;
+}
+
+void Crawl::DungeonPlayer::SetLanternEmissionScale(float emissionScale)
+{
+	renderer->emissiveScale = emissionScale;
 }
 
 // Returns true if the player made a game-state changing action
@@ -997,6 +1011,7 @@ void Crawl::DungeonPlayer::ReturnToLobby()
 	lobbyTransporter->toDungeon = "crawler/dungeon/lobby";
 	lobbyTransporter->toTransporter = "TutExit";
 	LoadSelectedTransporter(lobbyTransporter);
+	delete lobbyTransporter;
 }
 
 void Crawl::DungeonPlayer::SetRespawn(ivec2 position, FACING_INDEX orientation, bool isLevel2)
@@ -1025,7 +1040,7 @@ void Crawl::DungeonPlayer::Respawn()
 	}
 
 	didJustRespawn = true;
-	AudioManager::PlaySound("crawler/sound/load/start.wav");
+	if(useRespawnSound) AudioManager::PlaySound("crawler/sound/load/start.wav");
 	camera->postProcessFadeAmount = 0.0f;
 
 	if (checkpointExists)

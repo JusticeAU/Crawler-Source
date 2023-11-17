@@ -6,7 +6,8 @@
 class Object;
 class ComponentAnimator;
 class ComponentCamera;
-
+class ComponentLightPoint;
+class ComponentRenderer;
 
 namespace Crawl
 {
@@ -57,6 +58,9 @@ namespace Crawl
 		Dungeon* GetDungeonLoaded() { return dungeon; }
 		Dungeon* GetDungeonLobbyLevel2() { return lobbyLevel2Dungeon; }
 
+		void SetLightIntensity(float intensity);
+		void SetLanternEmissionScale(float emissionScale);
+
 		STATE GetState() { return state; }
 		void SetStateIdle() { state = IDLE; }
 
@@ -72,6 +76,7 @@ namespace Crawl
 		FACING_INDEX GetOrientation() { return facing; }
 		
 		void SetShouldActivateTransporter(DungeonTransporter* transporter);
+		void LoadSelectedTransporter(DungeonTransporter* transporter);
 		void Teleport(ivec2 position);
 		void Orient(FACING_INDEX facing);
 		void ResetPlayer();
@@ -100,7 +105,7 @@ namespace Crawl
 		PlayerCommand inputBuffer = PlayerCommand::None;
 
 		bool didJustRespawn = false;
-
+		bool useRespawnSound = true;
 		bool enableDebugUI = true;
 		bool usingLevelEditor = false;
 		// Accessability Options
@@ -134,8 +139,6 @@ namespace Crawl
 		
 		void SetStateRH(RHState state);
 		void UpdateStateRH(float delta);
-
-		void LoadSelectedTransporter(DungeonTransporter* transporter);
 	private:
 		void DrawDevelopmentBuildUI();
 
@@ -182,6 +185,8 @@ namespace Crawl
 		Object* objectView = nullptr;
 		ComponentAnimator* animator = nullptr;
 		ComponentCamera* camera = nullptr;
+		ComponentLightPoint* light = nullptr;
+		ComponentRenderer* renderer = nullptr;
 
 		bool didMove = false;
 

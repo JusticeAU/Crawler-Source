@@ -14,6 +14,7 @@
 #include "gtx/easing.hpp"
 #include "TextureManager.h"
 #include "AudioManager.h"
+#include "SceneRenderer.h"
 #include "LogUtils.h"
 
 void Crawl::DungeonMenu::Initialise()
@@ -560,6 +561,9 @@ void Crawl::DungeonMenu::ExecuteReturnToMainMenuButton()
 	player->ResetPlayer();
 	player->SetLevel2(false);
 	player->Teleport({ 11, -2 });
+	player->SetLanternEmissionScale(1.0f);
+	player->SetLightIntensity(5.0f);
+	SceneRenderer::ambient = 0.03f;
 
 	introStage = IntroStage::Idle;
 	newGameSequenceTime = 0.0f;

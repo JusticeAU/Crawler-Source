@@ -46,6 +46,13 @@ namespace Crawl
 			Barricaded
 		};
 
+		enum class VoidState
+		{
+			HoldInDoor,
+			LightsOut,
+			Chasers
+		};
+
 		static void Init();
 		static DungeonGameManager* Get() { return instance; }
 
@@ -78,6 +85,7 @@ namespace Crawl
 		void ConfigureLobbyDoor();
 		void UpdateDoorStateEvent();
 		void MakeLobbyExitTraversable();
+		void MakeLobbyVoidUnTraversable();
 
 		void DoEvent(int eventID);
 
@@ -86,6 +94,16 @@ namespace Crawl
 		void UpdateLobbyVisualsLightning(float delta);
 		void UpdateLobbyVisualsLocks(float delta);
 
+		bool startVoid = false;
+		bool voidTrigger = false;
+		float voidTimer = 0.0f;
+		float voidTriggerTimer = 0.0f;
+		const float voidSoundTime = 3.0f;
+		const float voidEnterTime = 5.0f;
+		const float voidLightsOutTime = 4.0f;
+		const float voidChaserTime = 5.0f;
+		VoidState voidState = VoidState::HoldInDoor;
+		
 		void UpdateVoidVisuals(float delta);
 
 		void QueueFTUEPrompt(DungeonGameFTUE::FTUEType type);
@@ -164,6 +182,7 @@ namespace Crawl
 		glm::ivec2 frontDoorUnlockPositionMax = { -1, 0 };
 
 		glm::ivec2 positionToMakeTraversable = { -2, 0 };
+		glm::ivec2 positionToMakeUntraversable = { -3, 0 };
 
 		std::string frontDoorLocksObjectFilePath = "crawler/object/lobbyFrontDoorLocks.object";
 		std::string frontDoorLocksLeftDoor = "crawler/model/door_frontdoor_left.object";
@@ -173,6 +192,9 @@ namespace Crawl
 		std::string frontDoorLocksPadEye = "crawler/model/door_pad_eye.object";
 
 		float doorSwingAmount = 0.0f; // this is debug for imgui
+
+		// void ending sequence
+		int voidLights = 1;
 
 		// FTUE Configuration Items
 		std::queue<DungeonGameFTUE> ftueQueue;

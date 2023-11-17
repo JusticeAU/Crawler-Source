@@ -4,6 +4,7 @@
 #include "DungeonPlayer.h"
 #include "DungeonDoor.h"
 #include "DungeonLight.h"
+#include "DungeonTransporter.h"
 #include "Scene.h"
 #include "MathUtils.h"
 #include "gtx/easing.hpp"
@@ -14,6 +15,7 @@
 #include "Application.h"
 
 #include "TextureManager.h"
+#include "SceneRenderer.h"
 
 #include "Input.h"
 
@@ -115,10 +117,8 @@ void Crawl::DungeonGameManager::Update(float delta)
 		UpdateDoorStateEvent();
 	}
 
-	if (player->GetDungeonLoaded()->isVoid)
-	{
+	if (startVoid)
 		UpdateVoidVisuals(delta);
-	}
 }
 
 void Crawl::DungeonGameManager::PauseGame()
@@ -378,6 +378,15 @@ void Crawl::DungeonGameManager::MakeLobbyExitTraversable()
 	}
 }
 
+void Crawl::DungeonGameManager::MakeLobbyVoidUnTraversable()
+{
+	DungeonTile* tile = player->currentDungeon->GetTile(positionToMakeUntraversable);
+	if (tile)
+	{
+		tile->maskTraverse = 0;
+	}
+}
+
 void Crawl::DungeonGameManager::DoEvent(int eventID)
 {
 	switch (eventID)
@@ -428,9 +437,28 @@ void Crawl::DungeonGameManager::DoEvent(int eventID)
 		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Reset);
 		return;
 	}
-	case 50: // end game credit trigger
+	case 50: // void sequence
 	{
-		menu->OpenMenu(DungeonMenu::Menu::Thanks);
+		//menu->OpenMenu(DungeonMenu::Menu::Thanks);
+		MakeLobbyVoidUnTraversable();
+		startVoid = true;
+		voidTrigger = true;
+		player->SetLanternEmissionScale(0.0f);
+		player->SetLightIntensity(0.0f);
+		SceneRenderer::ambient = 0.0f;
+		AudioManager::PlaySound("crawler/sound/load/void/lights_out.wav");
+		player->useRespawnSound = false;
+		return;
+	}
+	case 51: // reached void checkpoint
+	{
+		voidTrigger = true;
+		voidLights += 1;
+		player->GetDungeonLoaded()->DisableLights(1);
+		player->GetDungeonLoaded()->GetTile(player->GetPosition())->maskTraverse = 0;
+		AudioManager::PlaySound("crawler/sound/load/void/fizzle1.wav");
+
+		// turn light off in level
 		return;
 	}
 	default:
@@ -552,11 +580,75 @@ void Crawl::DungeonGameManager::UpdateLobbyVisualsLocks(float delta)
 
 void Crawl::DungeonGameManager::UpdateVoidVisuals(float delta)
 {
-	if (Input::Keyboard(GLFW_KEY_T).Down())
+	voidTimer += delta;
+
+	if (voidTimer > voidSoundTime)
+	{
+		AudioManager::PlaySound("crawler/sound/load/start.wav");
+		voidTimer -= voidSoundTime;
+	}
+	
+	if (!voidTrigger) return;
+	voidTriggerTimer += delta;
+
+	switch (voidState)
+	{
+	case VoidState::HoldInDoor:
+	{
+		if (voidTriggerTimer > voidEnterTime)
+		{
+			AudioManager::ChangeMusic("crawler/sound/stream/void.ogg");
+			Scene::SetClearColour({ 0,0,0 });
+			DungeonTransporter* transporter = new DungeonTransporter();
+			transporter->toDungeon = "crawler/dungeon/levelVoid/void1";
+			transporter->toTransporter = "1";
+			player->LoadSelectedTransporter(transporter);
+			delete transporter;
+
+			voidState = VoidState::LightsOut;
+			voidTriggerTimer = 0.0f;
+			voidTrigger = false;
+		}
+		break;
+	}
+	case VoidState::LightsOut:
+	{
+		if (voidTriggerTimer > voidLightsOutTime)
+		{
+			DungeonTransporter* transporter;
+			if (voidLights != 4)
+			{
+				transporter = new DungeonTransporter();
+				transporter->toDungeon = "crawler/dungeon/levelVoid/void1";
+				transporter->toTransporter = to_string(voidLights);
+			}
+			else
+			{
+				transporter = new DungeonTransporter();
+				transporter->toDungeon = "crawler/dungeon/levelVoid/void2";
+				transporter->toTransporter = "Spawn";
+				voidState = VoidState::Chasers;
+			}
+			player->LoadSelectedTransporter(transporter);
+			delete transporter;
+			
+			voidTriggerTimer = 0.0f;
+			voidTrigger = false;
+		}
+		break;
+	}
+	case VoidState::Chasers:
+	{
+		break;
+	}
+
+	}
+
+	/*if (Input::Keyboard(GLFW_KEY_T).Down())
 	{
 		player->currentDungeon->DisableLights(1);
 
-	}
+	}*/
 }
 
 void Crawl::DungeonGameManager::QueueFTUEPrompt(DungeonGameFTUE::FTUEType type)
