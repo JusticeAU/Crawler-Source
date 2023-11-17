@@ -10,6 +10,7 @@ class Object;
 namespace Crawl
 {
 	class DungeonPlayer;
+	class DungeonEditor;
 	class DungeonDoor;
 	class DungeonLight;
 	class DungeonGameManagerEvent;
@@ -55,10 +56,12 @@ namespace Crawl
 
 		void SetPlayer(DungeonPlayer* player) { instance->player = player; }
 		void SetMenu(DungeonMenu* menu) { instance->menu = menu; }
+		void SetEditor(DungeonEditor* editor) { instance->editor = editor; }
+		DungeonMenu* GetMenu() { return menu; }
 
 		void PauseGame();
 		void UnpauseGame();
-
+		void ReturnToEditor();
 		void ResetGameState();
 		
 		void RunGMEvent(const DungeonGameManagerEvent& gme);
@@ -99,6 +102,7 @@ namespace Crawl
 		
 		DungeonPlayer* player;
 		DungeonMenu* menu;
+		DungeonEditor* editor;
 
 		// Lobby Configuration Items
 		// Status

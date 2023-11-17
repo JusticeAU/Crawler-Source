@@ -1,4 +1,5 @@
 #include "DungeonGameManager.h"
+#include "DungeonEditor.h"
 #include "DungeonGameManagerEvent.h"
 #include "DungeonPlayer.h"
 #include "DungeonDoor.h"
@@ -10,6 +11,7 @@
 #include "LogUtils.h"
 #include "AudioManager.h"
 #include "DungeonMenu.h"
+#include "Application.h"
 
 #include "TextureManager.h"
 
@@ -127,6 +129,12 @@ void Crawl::DungeonGameManager::PauseGame()
 void Crawl::DungeonGameManager::UnpauseGame()
 {
 	player->SetStateIdle();
+}
+
+void Crawl::DungeonGameManager::ReturnToEditor()
+{
+	Application::s_mode = Application::Mode::Design;
+	editor->Activate();
 }
 
 void Crawl::DungeonGameManager::ResetGameState()

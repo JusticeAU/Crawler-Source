@@ -12,6 +12,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 {
 	LogUtils::Log("Constructing Application.");
 	Application* app = new Application();
+
 #ifndef RELEASE
 	if (argc > 1)
 		app->LaunchArgumentPreLoad(argv[1]);

@@ -264,10 +264,18 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 
 	if (Input::Alias("Pause").Down() && gameMenu) // only perform this action if the gameMenu is initialised. This wont be the case in designer mode.
 	{
+		if (usingLevelEditor)
+		{
+			DungeonGameManager::Get()->ReturnToEditor();
+			return false;
+		}
+		else
+		{
 
-		DungeonGameManager::Get()->PauseGame();
-		state = MENU;
-		return false;
+			DungeonGameManager::Get()->PauseGame();
+			state = MENU;
+			return false;
+		}
 	}
 
 	// All these checks should move to a turn processors state machine.

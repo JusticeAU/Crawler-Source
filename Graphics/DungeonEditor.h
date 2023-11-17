@@ -59,6 +59,8 @@ namespace Crawl
 		void DrawGUIModeDungeonProperties();
 		void DrawGUIModeGameManager();
 
+		void NewDungeon();
+
 		void Update();
 		void UpdateModeTileBrush();
 		void UpdateModeTileEdit();

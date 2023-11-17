@@ -62,10 +62,6 @@ void Application::LaunchArgumentPostLoad(const char* arg)
 		
 	if (argument == "design")
 	{
-		Scene::CreateSceneEditorCamera();
-		dungeonEditor = new Crawl::DungeonEditor();
-		dungeonEditor->SetDungeon(dungeon);
-
 		s_mode = Mode::Design;
 		Scene::ChangeScene("Dungeon");
 		dungeonEditor->SetDungeon(dungeon);
@@ -252,18 +248,27 @@ void Application::InitialiseAdditionalGameAssets()
 	menu = new Crawl::DungeonMenu();
 	menu->SetPlayer(dungeonPlayer);
 	menu->SetApplication(this);
+	menu->Initialise();
 	dungeon->SetPlayer(dungeonPlayer);
 	dungeonPlayer->SetDungeon(dungeon);
 	dungeonPlayer->SetMenu(menu);
 	Crawl::DungeonGameManager::Init();
 	Crawl::DungeonGameManager::Get()->SetPlayer(dungeonPlayer);
 	Crawl::DungeonGameManager::Get()->SetMenu(menu);
+
+
+	Scene::CreateSceneEditorCamera();
+	dungeonEditor = new Crawl::DungeonEditor();
+	dungeonEditor->SetDungeon(dungeon);
+	menu->SetEditor(dungeonEditor);
+	Crawl::DungeonGameManager::Get()->SetEditor(dungeonEditor);
+
 	if(developerMode) Crawl::DungeonGameManager::Get()->manageLobby = false;
 }
 
 void Application::InitialiseMenu()
 {
-	menu->ExecuteReturnToMainMenu();
+	menu->ExecuteReturnToMainMenuButton();
 }
 
 void Application::InitialiseInput()
@@ -272,7 +277,7 @@ void Application::InitialiseInput()
 	Input::Init(window->GetGLFWwindow());
 
 	// Add support for OSTENT USB Dance Mat
-	glfwUpdateGamepadMappings("03000000790000001100000000000000,OSTENT Dance Mat,a:b5,b:b4,back:b8,start:b9,leftshoulder:b6,rightshoulder:b7,dpup:b2,dpleft:b0,dpdown:b1,dpright:b3,platform:Windows,");
+	glfwUpdateGamepadMappings("03000000790000001100000000000000,OSTENT Dance Mat,a:b5,a:b8,b:b4,back:b8,start:b9,leftshoulder:b6,rightshoulder:b7,dpup:b2,dpleft:b0,dpdown:b1,dpright:b3,platform:Windows,");
 
 
 	// Add Aliases
@@ -305,6 +310,7 @@ void Application::InitialiseInput()
 	Input::Alias("TurnRight").RegisterGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER);
 
 	Input::Alias("Interact").RegisterKeyButton(GLFW_KEY_SPACE);
+	Input::Alias("Interact").RegisterKeyButton(GLFW_KEY_ENTER);
 	Input::Alias("Interact").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_A);
 
 	Input::Alias("Wait").RegisterKeyButton(GLFW_KEY_LEFT_ALT);
@@ -436,22 +442,17 @@ void Application::Update(float delta)
 
 	Input::Update();
 
+	// Check for request for gameplay from editor.
+	if (dungeonEditor != nullptr && dungeonEditor->requestedGameMode)
+	{
+		s_mode = Mode::Game;
+		Scene::ChangeScene("Dungeon");
+		Scene::SetCameraByName("Player Camera");
+		dungeonEditor->requestedGameMode = false;
+	}
+
 	if (developerMode)
 	{
-		if (dungeonEditor != nullptr && dungeonEditor->requestedGameMode)
-		{
-			s_mode = Mode::Game;
-			Scene::ChangeScene("Dungeon");
-			Scene::SetCameraByName("Player Camera");
-			dungeonEditor->requestedGameMode = false;
-		}
-
-		if (dungeonEditor != nullptr && s_mode == Mode::Game && Input::Keyboard(GLFW_KEY_ESCAPE).Down())
-		{
-			s_mode = Mode::Design;
-			dungeonEditor->Activate();
-		}
-
 		if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_F11).Down())
 		{
 			if (s_mode == Mode::Programming)

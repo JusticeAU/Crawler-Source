@@ -1,6 +1,7 @@
 #include "DungeonMenu.h"
 #include "DungeonMenuButton.h"
 #include "DungeonPlayer.h"
+#include "DungeonEditor.h"
 #include "DungeonGameManager.h"
 #include "graphics.h"
 #include "Application.h"
@@ -15,38 +16,77 @@
 #include "AudioManager.h"
 #include "LogUtils.h"
 
-Crawl::DungeonMenu::DungeonMenu()
+void Crawl::DungeonMenu::Initialise()
 {
+	DungeonMenuButton::InitialiseCheckmarkTextures();
+
+	menuTitleCardTexture = TextureManager::GetTexture(menuTitleCardTexPath);
+	menuCreditsTexture = TextureManager::GetTexture(menuCreditsBigTexPath);
+
 	// Populate Main Menu
 	DungeonMenuButton* button = new DungeonMenuButton("New Game", menuNewGameTexPath);
 	button->BindMenuFunction(&DungeonMenu::ExecuteNewGameButton, this);
 	menuButtonsMain.push_back(button);
 
+	button = new DungeonMenuButton("Level Editor", menuEditorTexPath);
+	button->BindMenuFunction(&DungeonMenu::ExecuteLevelEditorButton, this);
+	menuButtonsMain.push_back(button);
+
 	button = new DungeonMenuButton("Settings", menuSettingsTexPath);
-	button->BindMenuFunction(&DungeonMenu::ExecuteNewGameButton, this);
-	//menuButtons[(int)Menu::Main].push_back(button);
+	button->BindMenuFunction(&DungeonMenu::ExecuteSettingsButton, this);
+	menuButtonsMain.push_back(button);
+
+
+	button = new DungeonMenuButton("Credits", menuCreditsTexPath);
+	button->BindMenuFunction(&DungeonMenu::ExecuteCreditsButton, this);
+	menuButtonsMain.push_back(button);
 
 	button = new DungeonMenuButton("QuitGame", menuQuitTexPath);
-	button->BindMenuFunction(&DungeonMenu::ExecuteQuitGame, this);
+	button->BindMenuFunction(&DungeonMenu::ExecuteQuitGameButton, this);
 	menuButtonsMain.push_back(button);
+
+	// Populate Settings Menu
+	button = new DungeonMenuButton("Toggle Fullscreen", menuSettingsFullscreenTexPath);
+	button->BindMenuFunction(&DungeonMenu::ExecuteToggleFullScreen, this);
+	menuButtonsSettings.push_back(button);
+
+	button = new DungeonMenuButton("Always Freelook", menuSettingsFreelookTexPath);
+	button->BindMenuFunction(&DungeonMenu::ExecuteSettingsAlwaysFreelook, this);
+	button->BindBoolPointer(&player->alwaysFreeLook);
+	menuButtonsSettings.push_back(button);
+
+	button = new DungeonMenuButton("Toggle Invert Y", menuSettingsInvertTexPath);
+	button->BindMenuFunction(&DungeonMenu::ExecuteSettingsInvertY, this);
+	button->BindBoolPointer(&player->invertYAxis);
+	menuButtonsSettings.push_back(button);
+
+	button = new DungeonMenuButton("Back", menuBackTexPath);
+	button->BindMenuFunction(&DungeonMenu::ExecuteBackButton, this);
+	menuButtonsSettings.push_back(button);
+	// Populate Credits Screen
+	menuButtonsCredits.push_back(button);
 
 
 	// Populate Pause Menu
 	button = new DungeonMenuButton("ResumeGame", menuResumeGameTexPath);
-	button->BindMenuFunction(&DungeonMenu::ExecuteResumeGame, this);
+	button->BindMenuFunction(&DungeonMenu::ExecuteResumeGameButton, this);
+	menuButtonsPause.push_back(button);
+
+	button = new DungeonMenuButton("Settings", menuSettingsTexPath);
+	button->BindMenuFunction(&DungeonMenu::ExecuteSettingsButtonViaPause, this);
 	menuButtonsPause.push_back(button);
 
 	button = new DungeonMenuButton("ReturnToLobby", menuReturnToLobbyPath);
-	button->BindMenuFunction(&DungeonMenu::ExecuteReturnToLobby, this);
+	button->BindMenuFunction(&DungeonMenu::ExecuteReturnToLobbyButton, this);
 	menuButtonsPause.push_back(button);
 
 	button = new DungeonMenuButton("ReturnToMenu", menuReturnToMenuTexPath);
-	button->BindMenuFunction(&DungeonMenu::ExecuteReturnToMainMenu, this);
+	button->BindMenuFunction(&DungeonMenu::ExecuteReturnToMainMenuButton, this);
 	menuButtonsPause.push_back(button);
 	menuButtonsThanks.push_back(button);
 
 	button = new DungeonMenuButton("QuitGame", menuQuitTexPath);
-	button->BindMenuFunction(&DungeonMenu::ExecuteQuitGame, this);
+	button->BindMenuFunction(&DungeonMenu::ExecuteQuitGameButton, this);
 	menuButtonsPause.push_back(button);
 	menuButtonsThanks.push_back(button);
 
@@ -67,7 +107,8 @@ Crawl::DungeonMenu::DungeonMenu()
 
 void Crawl::DungeonMenu::OpenMenu(Menu menu)
 {
-	currentMenu = menu;
+	selectedMenuOption = 0;
+	menuStack.push(menu);
 	app->s_mode = Application::Mode::Menu;
 	Window::GetWindow()->SetMouseCursorHidden(false);
 }
@@ -76,13 +117,19 @@ void Crawl::DungeonMenu::Update(float delta)
 {
 	UpdatePositions();
 
-	switch (currentMenu)
+	switch (menuStack.top())
 	{
 	case Menu::Main:
 	{
 		UpdateInput(&menuButtonsMain);
 		DrawMainMenu(delta);
 		UpdateMainMenuCamera(delta);
+		break;
+	}
+	case Menu::Settings:
+	{
+		UpdateInput(&menuButtonsSettings);
+		DrawSettingsMenu(delta);
 		break;
 	}
 	case Menu::Pause:
@@ -93,7 +140,9 @@ void Crawl::DungeonMenu::Update(float delta)
 	}
 	case Menu::Credits:
 	{
+		UpdateInput(&menuButtonsCredits);
 		DrawCredits(delta);
+		UpdateMainMenuCamera(delta);
 		break;
 	}
 	case Menu::Thanks:
@@ -129,16 +178,19 @@ void Crawl::DungeonMenu::UpdateInput(std::vector<DungeonMenuButton*>* menuButton
 		}
 
 		if (glfwGetMouseButton(Window::Get()->GetGLFWwindow(), GLFW_MOUSE_BUTTON_1) == GLFW_PRESS &&
-			menuButtons->at(selectedMenuOption)->IsMouseOver())
+			menuButtons->at(selectedMenuOption)->IsMouseOver() &&
+			mouseHasBeenReleased)
 		{
+			mouseHasBeenReleased = false;
 			menuButtons->at(selectedMenuOption)->Activate();
 		}
+		else if (glfwGetMouseButton(Window::Get()->GetGLFWwindow(), GLFW_MOUSE_BUTTON_1) == GLFW_RELEASE) mouseHasBeenReleased = true;
 	}
 }
 
 void Crawl::DungeonMenu::DrawMainMenu(float delta)
 {
-	UpdatePositions();
+	DrawTitleCard(menuTitleCardAlpha);
 
 	ImGui::SetNextWindowSize({ (float)titleMenuSize.x, (float)titleMenuSize.y });
 	ImGui::SetNextWindowPos({ (float)mainMenuXOffset, (float)mainMenuYOffset }, 0, { 0.0f, 1.0f });
@@ -158,16 +210,46 @@ void Crawl::DungeonMenu::DrawMainMenu(float delta)
 	}
 }
 
+void Crawl::DungeonMenu::DrawTitleCard(float alpha)
+{
+	ImGui::SetNextWindowSize({ (float)750, (float)250 });
+	ImGui::SetNextWindowPos({ (float)menuTitleCardPosition.x, (float)menuTitleCardPosition.y }, 0, { 0.5f, 0.0f });
+	ImGui::Begin("Crawler Title Card", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+	DrawImage(menuTitleCardTexture, alpha);
+	ImGui::End();
+}
+
+void Crawl::DungeonMenu::DrawSettingsMenu(float delta)
+{
+	if (settingsMenuViaPause)
+	{
+		DrawBlackScreen(0.50f);
+	}
+	else
+	{
+		UpdateMainMenuCamera(delta);
+		DrawTitleCard(1.0f);
+	}
+
+	ImGui::SetNextWindowSize({ (float)settingsMenuSize.x, (float)settingsMenuSize.y });
+	ImGui::SetNextWindowPos({ (float)mainMenuXOffset, (float)mainMenuYOffset }, 0, { 0.0f, 1.0f });
+	ImGui::Begin("Crawler", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+
+	for (int i = 0; i < menuButtonsSettings.size(); i++)
+	{
+		if (i == selectedMenuOption) menuButtonsSettings[i]->Hover();
+		menuButtonsSettings[i]->Update(delta);
+	}
+}
+
 void Crawl::DungeonMenu::DrawPauseMenu(float delta)
 {
 	if (Input::Keyboard(GLFW_KEY_ESCAPE).Down())
 	{
-		ExecuteResumeGame();
+		ExecuteResumeGameButton();
 		return;
 	}
-
-	UpdatePositions();
-	DrawBlackScreen(0.75f);
+	DrawBlackScreen(0.50f);
 	ImGui::SetNextWindowSize({ (float)pauseMenuSize.x, (float)pauseMenuSize.y });
 	ImGui::SetNextWindowPos({ (float)mainMenuXOffset, (float)mainMenuYOffset }, 0, { 0.0f, 1.0f });
 	ImGui::Begin("Crawler", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
@@ -177,27 +259,28 @@ void Crawl::DungeonMenu::DrawPauseMenu(float delta)
 		menuButtonsPause[i]->Update(delta);
 	}
 
-	ImGui::Text("");
-	if (ImGui::Button(textToggleFullScreen.c_str()))
-		ExecuteToggleFullScreen();
-	ImGui::Checkbox("Invert Y Axis", &player->invertYAxis);
-	if (ImGui::Checkbox("Always Free-Look", &player->alwaysFreeLook))
-	{
-		player->autoReOrientDuringFreeLook = true;
-	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-		ImGui::SetTooltip("The mouse will act like a traditional first person game");
-	if (player->alwaysFreeLook) ImGui::BeginDisabled();
-	ImGui::Checkbox("Auto-Orient during Free-Look", &player->autoReOrientDuringFreeLook);
-	if (player->alwaysFreeLook) ImGui::EndDisabled();
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-		ImGui::SetTooltip("The player will automatically re-orient themselves to the closest cardinal direction when Free-Looking");
-
 	ImGui::End();
 }
 
 void Crawl::DungeonMenu::DrawCredits(float delta)
 {
+	DrawTitleCard(1.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0,0 });
+	ImGui::SetNextWindowSize({ screenSize.x, screenSize.y });
+	ImGui::SetNextWindowPos({ creditsPosition.x, creditsPosition.y }, 0, { 0.5f, 0.5f });
+	ImGui::Begin("Credits Image", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+	DrawImage(menuCreditsTexture, 1.0f);
+	ImGui::End();
+	ImGui::PopStyleVar();
+
+	ImGui::SetNextWindowSize({ creditsMenuSize.x, creditsMenuSize.y });
+	ImGui::SetNextWindowPos({ mainMenuXOffset, mainMenuYOffset }, 0, { 0.0f, 1.0f });
+	ImGui::Begin("Credits", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+	for (int i = 0; i < menuButtonsCredits.size(); i++)
+	{
+		if (i == selectedMenuOption) menuButtonsCredits[i]->Hover();
+		menuButtonsCredits[i]->Update(delta);
+	}
 }
 
 void Crawl::DungeonMenu::DrawThanks(float delta)
@@ -223,7 +306,7 @@ void Crawl::DungeonMenu::DrawThanks(float delta)
 	//if (pauseButtonReturnToMenu->Update(delta))
 	//	ExecuteReturnToMainMenu();
 	//if (pauseButtonQuit->Update(delta))
-	//	ExecuteQuitGame();
+	//	ExecuteQuitGameButton();
 	ImGui::End();
 }
 
@@ -257,8 +340,14 @@ void Crawl::DungeonMenu::UpdatePositions()
 {
 	window = Window::Get();
 	screenSize = window->GetViewPortSize();
-	mainMenuXOffset = screenSize.x / 10;
-	mainMenuYOffset = (screenSize.y / 10) * 9;
+
+	mainMenuXOffset = screenSize.x / 20;
+	mainMenuYOffset = (screenSize.y / 15) * 14;
+	
+	menuTitleCardPosition.x = screenSize.x / 2;
+	menuTitleCardPosition.y = screenSize.y / 20;
+
+	creditsPosition = screenSize / 2.0f;
 }
 
 void Crawl::DungeonMenu::UpdateMainMenuCamera(float delta)
@@ -281,9 +370,11 @@ void Crawl::DungeonMenu::UpdateMainMenuCamera(float delta)
 	if (!newGameSequenceStarted)
 		return;
 
+
 	if (Input::Alias("Interact").Down() && newGameSequenceTime > 1.0f) StartNewGame();
 
 	newGameSequenceTime += delta;
+	menuTitleCardAlpha = max(menuTitleCardAlpha - delta, 0);
 	switch (introStage)
 	{
 	case IntroStage::Idle:
@@ -382,21 +473,65 @@ void Crawl::DungeonMenu::StartNewGame()
 	player->currentDungeon->Load("crawler/dungeon/start.dungeon");
 	player->ResetPlayer();
 	player->Respawn();
+	player->usingLevelEditor = false;
 	Scene::SetCameraByName("Player Camera");
 	cameraObject->markedForDeletion = true;
+	menuTitleCardAlpha = 1.0f;
 }
 
-void Crawl::DungeonMenu::ExecuteQuitGame()
+void Crawl::DungeonMenu::ExecuteQuitGameButton()
 {
 	glfwSetWindowShouldClose(window->GetGLFWwindow(), GLFW_TRUE);
 }
 
-void Crawl::DungeonMenu::ExecuteResumeGame()
+void Crawl::DungeonMenu::ExecuteBackButton()
 {
-	currentMenu = Menu::None;
+	if (menuStack.size() > 0) menuStack.pop();
+}
+
+void Crawl::DungeonMenu::ExecuteResumeGameButton()
+{
+	while (!menuStack.empty()) menuStack.pop();
 	app->s_mode = Application::Mode::Game;
 	Window::GetWindow()->SetMouseCursorHidden(true);
 	player->SetStateIdle();;
+}
+
+void Crawl::DungeonMenu::ExecuteSettingsButton()
+{
+	settingsMenuViaPause = false;
+	OpenMenu(Menu::Settings);
+}
+
+void Crawl::DungeonMenu::ExecuteSettingsButtonViaPause()
+{
+	settingsMenuViaPause = true;
+	OpenMenu(Menu::Settings);
+}
+
+void Crawl::DungeonMenu::ExecuteSettingsInvertY()
+{
+	player->invertYAxis = !player->invertYAxis;
+}
+
+void Crawl::DungeonMenu::ExecuteSettingsAlwaysFreelook()
+{
+	player->alwaysFreeLook = !player->alwaysFreeLook;
+}
+
+void Crawl::DungeonMenu::ExecuteLevelEditorButton()
+{
+	AudioManager::StopMusic();
+	editor->NewDungeon();
+	DungeonGameManager::Get()->ClearLocksObject();
+	editor->Activate();
+	app->s_mode = Application::Mode::Design;
+	cameraObject->markedForDeletion = true;
+}
+
+void Crawl::DungeonMenu::ExecuteCreditsButton()
+{
+	OpenMenu(Menu::Credits);
 }
 
 void Crawl::DungeonMenu::ExecuteToggleFullScreen()
@@ -404,18 +539,22 @@ void Crawl::DungeonMenu::ExecuteToggleFullScreen()
 	Window::GetWindow()->ToggleFullscreen();
 }
 
-void Crawl::DungeonMenu::ExecuteReturnToLobby()
+void Crawl::DungeonMenu::ExecuteReturnToLobbyButton()
 {
-	currentMenu = Menu::None;
+	while (!menuStack.empty()) menuStack.pop();
 	app->s_mode = Application::Mode::Game;
+
 	Window::GetWindow()->SetMouseCursorHidden(true);
 	player->SetStateIdle();
 	player->ClearCheckpoint();
 	player->ReturnToLobby();
 }
 
-void Crawl::DungeonMenu::ExecuteReturnToMainMenu()
+void Crawl::DungeonMenu::ExecuteReturnToMainMenuButton()
 {
+	while (!menuStack.empty()) menuStack.pop();
+	menuStack.push(Menu::Main);
+
 	DungeonGameManager::Get()->ResetGameState();
 	app->dungeon->Load("crawler/dungeon/lobby.dungeon");
 	player->ResetPlayer();
@@ -429,8 +568,8 @@ void Crawl::DungeonMenu::ExecuteReturnToMainMenu()
 	lobbyReturnEnabled = false;
 	newGameSequenceStarted = false;
 	newGameSequenceTime = 0.0f;
+
 	app->s_mode = Application::Mode::Menu;
-	currentMenu = Menu::Main;
 
 	for (auto& menuButton : menuButtonsMain) menuButton->SetEnabled();
 

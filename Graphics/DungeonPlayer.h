@@ -102,7 +102,7 @@ namespace Crawl
 		bool didJustRespawn = false;
 
 		bool enableDebugUI = true;
-
+		bool usingLevelEditor = false;
 		// Accessability Options
 		bool autoReOrientDuringFreeLook = true;
 		bool alwaysFreeLook = false;

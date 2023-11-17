@@ -13,7 +13,10 @@ namespace Crawl
 	{
 	public:
 		DungeonMenuButton(string name, string texturePath);
+		static void InitialiseCheckmarkTextures();
+
 		void BindMenuFunction(void (DungeonMenu::*&& _Func)(), DungeonMenu*&& _Args) { menuFunction = std::bind(_Func, _Args); };
+		void BindBoolPointer(bool* toggle) { boolMonitor = toggle; };
 		void Activate() { menuFunction(); };
 
 		void Hover();
@@ -25,6 +28,10 @@ namespace Crawl
 		string name = "";
 		Texture* tex = nullptr;
 		std::function<void()> menuFunction;
+		bool* boolMonitor;
+		static Texture* boolCheckedTex;
+		static Texture* boolUncheckedTex;
+
 		
 		bool isMouseOver = false;
 		bool isHovered = false;

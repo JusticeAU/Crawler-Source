@@ -1896,6 +1896,9 @@ void Crawl::Dungeon::Save(std::string filename)
 
 void Crawl::Dungeon::ClearDungeon()
 {
+	DestroySceneFromDungeonLayout();
+	if (isLobby) player->lobbyLevel2Dungeon->DestroySceneFromDungeonLayout();
+
 	dungeonFileName = "";
 	dungeonFilePath = "";
 	dungeonSubFolder = "";
@@ -1903,12 +1906,9 @@ void Crawl::Dungeon::ClearDungeon()
 	defaultPlayerStartOrientation = EAST_INDEX;
 	isLobby = false;
 	isVoid = false;
-	//isLobbyLevel2 = false;
 	noRoof = false;
 	
 	serialised.clear();
-
-	DestroySceneFromDungeonLayout();
 }
 
 void Crawl::Dungeon::ResetDungeon()

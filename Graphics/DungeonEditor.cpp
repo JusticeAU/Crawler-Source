@@ -22,6 +22,8 @@
 #include "DungeonEventTrigger.h"
 #include "DungeonEnemySlugPath.h"
 #include "DungeonCollectableKey.h"
+#include "DungeonGameManager.h"
+#include "DungeonMenu.h"
 
 #include "Object.h"
 #include "Input.h"
@@ -140,6 +142,7 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 		if (!dirtyGameplayScene)
 			dungeon->player->Respawn();
 		dirtyGameplayScene = true;
+		dungeon->player->usingLevelEditor = true;
 		TileEditUnselectAll();
 	}
 	if (unsavedChanges)
@@ -167,6 +170,12 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	if (!canReset) ImGui::EndDisabled();
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 		ImGui::SetTooltip("Resets the gameplay changes to the dungeon back to initial dungeon state.");
+
+	ImGui::SameLine();
+	if (ImGui::Button("Back to Menu"))
+	{
+		DungeonGameManager::Get()->GetMenu()->ExecuteReturnToMainMenuButton();
+	}
 
 	// File Manipulation
 	if (dirtyGameplayScene)
@@ -203,10 +212,7 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 		ImGui::SameLine();
 		if (ImGui::Button("New Dungeon"))
 		{
-			dungeon->ClearDungeon();
-			dungeonFileName = "";
-			dungeonFileNameSaveAs = "";
-			dungeonFilePath = "";
+			NewDungeon();
 			MarkUnsavedChanges();
 		}
 	}
@@ -1204,7 +1210,8 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditPlate()
 	ImGui::SetNextWindowSize({ 300, 100 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Edit Plate", &selectedActivatorPlateWindowOpen, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
 
-	ImGui::InputInt("Activate ID", (int*)&selectedActivatorPlate->activateID);
+	if (ImGui::InputInt("Activate ID", (int*)&selectedActivatorPlate->activateID))
+		MarkUnsavedChanges();
 	
 	if (ImGui::Button("Delete"))
 		ImGui::OpenPopup("delete_plate_confirm");
@@ -2116,6 +2123,16 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 void Crawl::DungeonEditor::DrawGUIModeGameManager()
 {
 	if (DungeonGameManager::Get()->DrawGUIInternal()) unsavedChanges = true;
+}
+
+void Crawl::DungeonEditor::NewDungeon()
+{
+	dungeon->ClearDungeon();
+	dungeonFileName = "";
+	dungeonFileNameSaveAs = "";
+	dungeonFilePath = "";
+	dirtyGameplayScene = false;
+	MarkUnsavedChanges();
 }
 
 

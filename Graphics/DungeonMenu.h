@@ -1,6 +1,7 @@
 #pragma once
 #include "Window.h"
 
+#include <stack>
 #include <vector>
 #include <string>
 
@@ -21,6 +22,7 @@ class Object;
 namespace Crawl
 {
 	class DungeonPlayer;
+	class DungeonEditor;
 	class DungeonMenuButton;
 	class DungeonMenu
 	{
@@ -29,6 +31,7 @@ namespace Crawl
 		{
 			None,
 			Main,
+			Settings,
 			Pause,
 			Thanks,
 			Credits
@@ -40,23 +43,29 @@ namespace Crawl
 			Fly,
 			Text
 		};
-		DungeonMenu();
 		int selectedMenuOption = 0;
+		std::stack<Menu> menuStack;
 		std::vector<DungeonMenuButton*> menuButtonsMain;
+		std::vector<DungeonMenuButton*> menuButtonsSettings;
+		std::vector<DungeonMenuButton*> menuButtonsCredits;
 		std::vector<DungeonMenuButton*> menuButtonsPause;
 		std::vector<DungeonMenuButton*> menuButtonsThanks;
+
+		void Initialise();
 
 		void OpenMenu(Menu menu);
 
 		void Update(float delta);
 		void UpdateInput(std::vector<DungeonMenuButton*>* menuButtons);
 		void DrawMainMenu(float delta);
+		void DrawTitleCard(float alpha);
+		void DrawSettingsMenu(float delta);
 		void DrawPauseMenu(float delta);
 		void DrawCredits(float delta);
 		void DrawThanks(float delta);
 
 		void DrawBlackScreen(float alpha, bool onTop = false);
-		void DrawImage(Texture* tex, float alpha);
+		static void DrawImage(Texture* tex, float alpha);
 
 		void UpdatePositions();
 
@@ -64,27 +73,54 @@ namespace Crawl
 
 		void SetApplication(Application* app) { this->app = app; }
 		void SetPlayer(DungeonPlayer* player) { this->player = player; }
+		void SetEditor(DungeonEditor* editor) { this->editor = editor; }
 		void SetLobbyReturnEnabled() { lobbyReturnEnabled = true; }
 		void SetMenuCameraObject(Object* cameraObject) { this->cameraObject = cameraObject; }
 
 		void ExecuteNewGameButton();
 		void StartNewGame();
-		void ExecuteQuitGame();
-		void ExecuteResumeGame();
+		void ExecuteLevelEditorButton();
+		void ExecuteCreditsButton();
+		void ExecuteQuitGameButton();
+		void ExecuteBackButton();
+		void ExecuteResumeGameButton();
+		void ExecuteSettingsButtonViaPause();
+		void ExecuteSettingsButton();
+		void ExecuteSettingsInvertY();
+		void ExecuteSettingsAlwaysFreelook();
+		void ExecuteSettingsVolumeUp();
+		void ExecuteSettingsVolumeDown();
 		void ExecuteToggleFullScreen();
-		void ExecuteReturnToLobby();
-		void ExecuteReturnToMainMenu();
+		void ExecuteReturnToLobbyButton();
+		void ExecuteReturnToMainMenuButton();
 
 
 		string textToggleFullScreen = "Toggle FullScreen";
 
 		// Menu Texture Paths
 		string menuTitleCardTexPath = "crawler/texture/gui/menu/title.tga";
+		glm::ivec2 menuTitleCardPosition = { 0,0 };
+		Texture* menuTitleCardTexture = nullptr;
+		float menuTitleCardAlpha = 1.0f;
 
 		string menuNewGameTexPath = "crawler/texture/gui/menu/new.tga";
+		string menuEditorTexPath = "crawler/texture/gui/menu/editor.tga";
 		string menuSettingsTexPath = "crawler/texture/gui/menu/settings.tga";
+		string menuCreditsTexPath = "crawler/texture/gui/menu/credits.tga";
 		string menuQuitTexPath = "crawler/texture/gui/menu/quit.tga";
+
+		// Settings
+		string menuSettingsFreelookTexPath = "crawler/texture/gui/menu/settings_alwaysfreelook.tga";
+		string menuSettingsFullscreenTexPath = "crawler/texture/gui/menu/settings_fullscreen.tga";
+		string menuSettingsInvertTexPath = "crawler/texture/gui/menu/settings_invert.tga";
+		//string menuSettingsVolumeTexPath = "crawler/texture/gui/menu/settings_volume.tga";
+		bool settingsMenuViaPause = false;
+
+		// Credits
+		string menuCreditsBigTexPath = "crawler/texture/gui/menu/creditsTeam.tga";
+		Texture* menuCreditsTexture = nullptr;
 		
+		// Pause
 		string menuResumeGameTexPath = "crawler/texture/gui/menu/resume.tga";
 		string menuReturnToLobbyPath = "crawler/texture/gui/menu/returnToLobby.tga";
 		string menuReturnToMenuTexPath = "crawler/texture/gui/menu/returnToMenu.tga";
@@ -93,6 +129,8 @@ namespace Crawl
 		// Thanks
 		string menuThanksCardTexPath = "crawler/texture/gui/prompt_thankyou.tga";
 		Texture* menuThanksCardTex = nullptr;
+
+		string menuBackTexPath = "crawler/texture/gui/menu/back.tga";
 
 
 		// Main Menu camera
@@ -113,17 +151,20 @@ namespace Crawl
 
 
 	private:
-		Menu currentMenu = Menu::None;
-
 		glm::vec2 screenSize = { 0,0 };
-		glm::ivec2 titleMenuSize = { 600, 300 };
-		glm::ivec2 pauseMenuSize = { 600, 600 };
+		glm::vec2 titleMenuSize = { 600, 500 };
+		glm::vec2 creditsMenuSize = { 600, 150 };
+		glm::vec2 settingsMenuSize = { 700, 500 };
+		glm::vec2 pauseMenuSize = { 600, 600 };
+		glm::vec2 creditsPosition = { 0,0 };
 
-		int mainMenuXOffset = 0.0f;
-		int mainMenuYOffset = 0.0f;
+		float mainMenuXOffset = 0.0f;
+		float mainMenuYOffset = 0.0f;
 		Window* window = nullptr;
 		Application* app = nullptr;
 		DungeonPlayer* player = nullptr;
+		DungeonEditor* editor = nullptr;
+		bool mouseHasBeenReleased = true; // Quick hack for how we're bypassing input manager controls due to ImGui usage
 
 		bool lobbyReturnEnabled = false;
 		bool indent = false;
