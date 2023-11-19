@@ -156,6 +156,7 @@ namespace Crawl
 		glm::vec2 creditsMenuSize = { 600, 150 };
 		glm::vec2 settingsMenuSize = { 700, 500 };
 		glm::vec2 pauseMenuSize = { 600, 600 };
+		glm::vec2 thanksMenuSize = { 600, 200 };
 		glm::vec2 creditsPosition = { 0,0 };
 
 		float mainMenuXOffset = 0.0f;

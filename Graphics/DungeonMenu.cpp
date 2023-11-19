@@ -296,18 +296,14 @@ void Crawl::DungeonMenu::DrawThanks(float delta)
 	ImGui::End();
 
 	// Buttons
-	ImGui::SetNextWindowSize({ (float)titleMenuSize.x, (float)titleMenuSize.y });
-	ImGui::SetNextWindowPos({ (float)mainMenuXOffset, (float)mainMenuYOffset }, 0, { 0.0f, 1.0f });
+	ImGui::SetNextWindowSize({ thanksMenuSize.x, thanksMenuSize.y });
+	ImGui::SetNextWindowPos({ mainMenuXOffset, mainMenuYOffset }, 0, { 0.0f, 1.0f });
 	ImGui::Begin("Buttons", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
 	for (int i = 0; i < menuButtonsThanks.size(); i++)
 	{
 		if (i == selectedMenuOption) menuButtonsThanks[i]->Hover();
 		menuButtonsThanks[i]->Update(delta);
 	}
-	//if (pauseButtonReturnToMenu->Update(delta))
-	//	ExecuteReturnToMainMenu();
-	//if (pauseButtonQuit->Update(delta))
-	//	ExecuteQuitGameButton();
 	ImGui::End();
 }
 
@@ -572,6 +568,7 @@ void Crawl::DungeonMenu::ExecuteReturnToMainMenuButton()
 	lobbyReturnEnabled = false;
 	newGameSequenceStarted = false;
 	newGameSequenceTime = 0.0f;
+
 
 	app->s_mode = Application::Mode::Menu;
 
