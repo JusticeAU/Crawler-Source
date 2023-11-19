@@ -29,6 +29,7 @@ namespace Crawl
 			Reset
 		};
 		enum STATE {
+			NOSTATE,
 			MENU,
 			IDLE,
 			WAIT,
@@ -36,7 +37,8 @@ namespace Crawl
 			TURNING,
 			STAIRBEARS,
 			DYING,
-			TRANSPORTER
+			TRANSPORTER,
+			NOCONTROL
 		};
 
 		enum class RHState
@@ -62,6 +64,7 @@ namespace Crawl
 		void SetLanternEmissionScale(float emissionScale);
 
 		STATE GetState() { return state; }
+		void SetNextState(STATE state = STATE::IDLE) { this->nextState = state; }
 		void SetStateIdle() { state = IDLE; }
 
 		void SetMenu(DungeonMenu* menu) { gameMenu = menu; }
@@ -106,6 +109,7 @@ namespace Crawl
 
 		bool didJustRespawn = false;
 		bool useRespawnSound = true;
+		bool canResetOrWait = true;
 		bool enableDebugUI = true;
 		bool usingLevelEditor = false;
 		// Accessability Options
@@ -149,6 +153,7 @@ namespace Crawl
 		FACING_INDEX facing = EAST_INDEX;
 		
 		STATE state = IDLE;
+		STATE nextState = NOSTATE;
 		float lookSpeed = 0.1f;
 		float lookMaxX = 45.0f;
 		float lookMaxZ = 170.0f;

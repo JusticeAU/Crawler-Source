@@ -94,6 +94,7 @@ namespace Crawl
 		void ExecuteMove();
 		void ExecuteDamage();
 
+		void Activate();
 		void Kick(FACING_INDEX inDirection);
 		void Bonk();
 		void Kill(Dungeon::DamageType damageType);

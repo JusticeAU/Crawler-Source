@@ -43,11 +43,7 @@ void Crawl::DungeonEnemyChase::Update()
 		{
 			if (dungeon->player->GetPosition() == currentPosition) // player is here - activate!
 			{
-				LogUtils::Log("Chaser saw player - activating.");
-				state = IDLE;
-				NewAnimationState(AnimationState::Activating);
-				// Play audio
-				PlaySFXActivate();
+				Activate();
 				return;
 			}
 
@@ -141,6 +137,15 @@ void Crawl::DungeonEnemyChase::ExecuteMove()
 void Crawl::DungeonEnemyChase::ExecuteDamage()
 {
 	dungeon->DamageAtPosition(position, this, false, Dungeon::DamageType::Chaser);
+}
+
+void Crawl::DungeonEnemyChase::Activate()
+{
+	LogUtils::Log("Chaser saw player - activating.");
+	state = IDLE;
+	NewAnimationState(AnimationState::Activating);
+	// Play audio
+	PlaySFXActivate();
 }
 
 void Crawl::DungeonEnemyChase::Kick(FACING_INDEX inDirection)

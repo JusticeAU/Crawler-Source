@@ -65,7 +65,14 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 
 	UpdateStateRH(deltaTime);
 
-	if (state == WAIT)
+
+	switch (state)
+	{
+	case NOCONTROL:
+	{
+		return false;
+	}
+	case WAIT:
 	{
 		UpdateInputs();
 
@@ -78,8 +85,9 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 			state = IDLE;
 			moveCurrent = 0.0f;
 		}
+		break;
 	}
-	else if (state == IDLE)
+	case IDLE:
 	{
 		UpdateInputs();
 
@@ -88,8 +96,10 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 
 		if (state == IDLE && UpdateStateIdle(deltaTime)) // Check state is still IDLE, freelook auto rotate might have changed it and we shouldnt consume commands if so.
 			return true;
+		
+		break;
 	}
-	else if (state == MOVING)
+	case MOVING:
 	{
 		UpdateInputs();
 
@@ -97,8 +107,9 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		else ContinueResettingTilt(deltaTime);
 
 		UpdateStateMoving(deltaTime);
+		break;
 	}
-	else if (state == TURNING)
+	case TURNING:
 	{
 		UpdateInputs();
 
@@ -106,8 +117,9 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		else ContinueResettingTilt(deltaTime);
 
 		UpdateStateTurning(deltaTime);
+		break;
 	}
-	else if (state == STAIRBEARS)
+	case STAIRBEARS:
 	{
 		UpdateInputsLooking();
 
@@ -115,18 +127,21 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 		else ContinueResettingTilt(deltaTime);
 
 		UpdateStateStairs(deltaTime);
+		break;
 	}
-	else if (state == DYING)
+	case DYING:
 	{
 		ContinueResettingTilt(deltaTime);
 		UpdateStateDying(deltaTime);
+		break;
 	}
-	else if (state == TRANSPORTER)
+	case TRANSPORTER:
 	{
 		ContinueResettingTilt(deltaTime);
 		UpdateStateTransporter(deltaTime);
+		break;
 	}
-
+	}
 	return false;
 }
 
@@ -148,8 +163,8 @@ void Crawl::DungeonPlayer::UpdateInputsMovement()
 
 	if (Input::Alias("Interact").Down()) inputBuffer = PlayerCommand::Interact;
 
+	if (!canResetOrWait) return;
 	if (Input::Alias("Wait").Down()) inputBuffer = PlayerCommand::Wait;
-
 	if (Input::Alias("Reset").Down()) inputBuffer = PlayerCommand::Reset;
 }
 
@@ -613,7 +628,14 @@ bool Crawl::DungeonPlayer::UpdateStateTurning(float delta)
 	float turnPrevious = object->localRotation.z;
 	if (turnCurrent > turnSpeed)
 	{
-		state = IDLE;
+		if (nextState != NOSTATE)
+		{
+			state = nextState;
+			nextState = NOSTATE;
+		}
+		else
+			state = IDLE;
+
 		turnDeltaPrevious = 0.0f;
 		targetTurn = orientationEulers[facing];
 		object->SetLocalRotationZ(targetTurn);

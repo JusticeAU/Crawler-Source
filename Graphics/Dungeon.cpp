@@ -2629,16 +2629,6 @@ void Crawl::Dungeon::Update()
 
 void Crawl::Dungeon::PostUpdate()
 {
-	// Events
-	for (auto& event : events)
-	{
-		if (event->position == player->GetPosition())
-		{
-			if (!event->mustBeFacing) event->Activate();
-			else if (event->facing == player->GetOrientation()) event->Activate();
-		}
-	}
-
 	// have all shooters update
 	for (auto& shooters : shootLasers)
 		shooters->Update();
@@ -2659,6 +2649,16 @@ void Crawl::Dungeon::PostUpdate()
 	// All Murderinas perform damage
 	for (auto& murderina : slugs)
 		DamageAtPosition(murderina->position, this, false, Dungeon::DamageType::Murderina);
+
+	// Events
+	for (auto& event : events)
+	{
+		if (event->position == player->GetPosition())
+		{
+			if (!event->mustBeFacing) event->Activate();
+			else if (event->facing == player->GetOrientation()) event->Activate();
+		}
+	}
 }
 
 void Crawl::Dungeon::UpdateVisuals(float delta)

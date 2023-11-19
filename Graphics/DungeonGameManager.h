@@ -15,6 +15,7 @@ namespace Crawl
 	class DungeonLight;
 	class DungeonGameManagerEvent;
 	class DungeonMenu;
+	class DungeonEnemyBlocker;
 
 	class DungeonGameManager
 	{
@@ -50,7 +51,8 @@ namespace Crawl
 		{
 			HoldInDoor,
 			LightsOut,
-			Chasers
+			End,
+			Done
 		};
 
 		static void Init();
@@ -93,16 +95,6 @@ namespace Crawl
 		void UpdateLobbyVisuals(float delta);
 		void UpdateLobbyVisualsLightning(float delta);
 		void UpdateLobbyVisualsLocks(float delta);
-
-		bool startVoid = false;
-		bool voidTrigger = false;
-		float voidTimer = 0.0f;
-		float voidTriggerTimer = 0.0f;
-		const float voidSoundTime = 3.0f;
-		const float voidEnterTime = 5.0f;
-		const float voidLightsOutTime = 4.0f;
-		const float voidChaserTime = 5.0f;
-		VoidState voidState = VoidState::HoldInDoor;
 		
 		void UpdateVoidVisuals(float delta);
 
@@ -195,6 +187,20 @@ namespace Crawl
 
 		// void ending sequence
 		int voidLights = 1;
+		bool startVoid = false;
+		bool voidTrigger = false;
+		float voidSoundTimer = 0.0f;
+		float voidTriggerTimer = 0.0f;
+		bool voidTriggerLightStarted = false;
+		const float voidSoundTimeStart = 3.0f;
+		float voidSoundTime = voidSoundTimeStart;
+		const float voudSoundTimeSpeedUp = 0.333333f;
+		const float voidEnterTime = 3.0f;
+		const float voidLightsOutTime = 2.5f;
+		const float voidLightsOnStartNegativeDelta = 1.5f;
+		const float voidEndTime = .45f;
+		DungeonEnemyBlocker* voidBlocker = nullptr;
+		VoidState voidState = VoidState::HoldInDoor;
 
 		// FTUE Configuration Items
 		std::queue<DungeonGameFTUE> ftueQueue;
