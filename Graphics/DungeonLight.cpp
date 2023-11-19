@@ -82,7 +82,7 @@ void Crawl::DungeonLight::Disable()
 		light->markedForDeletion = true;
 		light = nullptr;
 	}
-
+	intensityScale = 0.0f;
 }
 
 void Crawl::DungeonLight::LoadDecoration()
