@@ -43,8 +43,7 @@ namespace fs = std::filesystem;
 
 Crawl::DungeonEditor::DungeonEditor()
 {
-	brushObject = Scene::CreateObject("Tile Brush");
-	brushObject->LoadFromJSON(ReadJSONFromDisk("crawler/model/tile_wood.object"));
+	
 }
 
 void Crawl::DungeonEditor::Activate()
@@ -55,11 +54,18 @@ void Crawl::DungeonEditor::Activate()
 
 	// It's possible that gameplay took us in to another dungeon, and this, that is the one that should now be loaded.
 	RefreshDungeonFileNames();
+
+	if (!brushObject)
+	{
+		brushObject = Scene::CreateObject("Tile Brush");
+		brushObject->LoadFromJSON(ReadJSONFromDisk("crawler/model/tile_wood.object"));
+	}
 }
 
 void Crawl::DungeonEditor::Deactivate()
 {
-
+	brushObject->markedForDeletion = true;
+	brushObject = nullptr;
 }
 
 void Crawl::DungeonEditor::SetDungeon(Dungeon* dungeonPtr)
