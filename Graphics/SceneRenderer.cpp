@@ -35,8 +35,9 @@ bool SceneRenderer::bloomEnabled = true;
 float SceneRenderer::ambient = 0.03f;
 ComponentCamera* SceneRenderer::frustumCullingCamera = nullptr;
 bool SceneRenderer::frustumCullingShowBounds = false;
-vector<FrameBuffer*> SceneRenderer::pointLightCubeMapStatic;
-vector<FrameBuffer*> SceneRenderer::pointLightCubeMapDynamic;
+
+FrameBuffer* SceneRenderer::pointlightCubeMapArrayStatic = nullptr;
+FrameBuffer* SceneRenderer::pointlightCubeMapArrayDynamic = nullptr;
 
 CameraFrustum* SceneRenderer::cullingFrustum = nullptr;
 bool SceneRenderer::currentPassIsStatic = false;
@@ -50,6 +51,10 @@ SceneRenderer::Statistics SceneRenderer::statistic;
 
 SceneRenderer::SceneRenderer()
 {
+	pointlightCubeMapArrayStatic = new FrameBuffer(FrameBuffer::Type::ShadowCubeMapArray);
+	pointlightCubeMapArrayDynamic = new FrameBuffer(FrameBuffer::Type::ShadowCubeMapArray);
+
+
 	// Initialise the Render Buffers
 #pragma region Render Buffer creation
 	gBuffer = new FrameBuffer(FrameBuffer::Type::gBuffer);
@@ -308,13 +313,6 @@ void SceneRenderer::DrawShadowMappingGUI()
 void SceneRenderer::Prepare(Scene* scene)
 {
 	scene->UpdatePointLightData();
-
-	// Check we have allocated cubemaps for each point light
-	while (scene->m_pointLightComponents.size() > pointLightCubeMapStatic.size())
-	{
-		pointLightCubeMapStatic.push_back(new FrameBuffer(FrameBuffer::Type::ShadowCubeMap));
-		pointLightCubeMapDynamic.push_back(new FrameBuffer(FrameBuffer::Type::ShadowCubeMap));
-	}
 }
 
 void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
@@ -568,14 +566,7 @@ void SceneRenderer::RenderSceneShadowCubeMaps(Scene* scene)
 	//glDisable(GL_BLEND);
 	if (!currentPassIsStatic && scene->GetNumPointLights() > 0)
 	{
-		// blit the preepass to the active
-		int width = pointLightCubeMapStatic[0]->GetWidth();
-		int height = pointLightCubeMapStatic[0]->GetHeight();
-		for (int i = 0; i < scene->m_pointLightComponents.size(); i++)
-		{
-			glCopyImageSubData(pointLightCubeMapStatic[i]->m_depthID, GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0, pointLightCubeMapDynamic[i]->m_depthID, GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0, width, height, 6);
-		}
-
+		glCopyImageSubData(pointlightCubeMapArrayStatic->m_depthID, GL_TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, 0, pointlightCubeMapArrayDynamic->m_depthID, GL_TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, 0, pointlightCubeMapArrayStatic->m_width, pointlightCubeMapArrayStatic->m_height, 6 * scene->m_pointLightComponents.size());
 	}
 
 	// Render shadow maps for each point light
@@ -589,10 +580,13 @@ void SceneRenderer::RenderSceneShadowCubeMaps(Scene* scene)
 		{
 			if (currentPassIsStatic)
 			{
-				pointLightCubeMapStatic[light]->BindTarget(cubeMapDirections[i].CubemapFace);
+				pointlightCubeMapArrayStatic->BindTarget(i, light);
 				glClear(GL_DEPTH_BUFFER_BIT);
 			}
-			else pointLightCubeMapDynamic[light]->BindTarget(cubeMapDirections[i].CubemapFace);
+			else
+			{
+				pointlightCubeMapArrayDynamic->BindTarget(i, light);
+			}
 			
 			// Build the cubeMap projection and frustum
 			mat4 projection = glm::perspective(glm::radians(FOV), aspect, nearNum, farNum);
@@ -733,14 +727,6 @@ void SceneRenderer::RenderLines(ComponentCamera* camera)
 
 void SceneRenderer::CleanUp(Scene* scene)
 {
-	// Remove any shadow cubemaps no longer required;
-	/*while (scene->m_pointLightComponents.size() < pointLightCubeMapStatic.size())
-	{
-		delete pointLightCubeMapStatic[pointLightCubeMapStatic.size() - 1];
-		pointLightCubeMapStatic.erase(pointLightCubeMapStatic.end() - 1);
-		delete pointLightCubeMapDynamic[pointLightCubeMapDynamic.size() - 1];
-		pointLightCubeMapDynamic.erase(pointLightCubeMapDynamic.end() - 1);
-	}*/
 }
 
 void SceneRenderer::DrawBackBuffer()

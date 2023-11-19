@@ -15,6 +15,7 @@ public:
 		ObjectPicker,	// rgb32f, has depth buffer, viewport resolution.
 		ShadowMap,
 		ShadowCubeMap,
+		ShadowCubeMapArray,
 		gBuffer,
 		SSAOColourBuffer
 	};
@@ -29,7 +30,7 @@ public:
 	const FrameBuffer& operator=(const FrameBuffer& other) = delete;
 
 	void BindTarget();
-	void BindTarget(GLenum cubeFace);
+	void BindTarget(GLenum cubeFace, int cubemapArrayIndex = -1);
 	static void UnBindTarget() { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 
 	void BindTexture(int texture);

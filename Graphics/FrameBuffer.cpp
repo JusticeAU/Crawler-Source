@@ -200,7 +200,6 @@ FrameBuffer::FrameBuffer(Type type, float scale)
 	}
 	case Type::ShadowCubeMap:
 	{
-
 		m_width = 512;
 		m_height = 512;
 		// Create the FBO.
@@ -218,6 +217,44 @@ FrameBuffer::FrameBuffer(Type type, float scale)
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthID, 0);
+
+		// Disable writes to the color buffer
+		glDrawBuffer(GL_NONE);
+		// Disable reads from the color buffer
+		glReadBuffer(GL_NONE);
+
+		GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+		if (Status != GL_FRAMEBUFFER_COMPLETE) {
+			printf("FB error, status: 0x%x\n", Status);
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		break;
+	}
+	case Type::ShadowCubeMapArray:
+	{
+		m_width = 512;
+		m_height = 512;
+		// Create the FBO.
+		glGenFramebuffers(1, &m_fbID);
+
+		// Create Cube Depth Map
+		glGenTextures(1, &m_depthID);
+		glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, m_depthID);
+
+		glTexImage3D(GL_TEXTURE_CUBE_MAP_ARRAY, 0, GL_DEPTH_COMPONENT, m_width, m_height, 6 * 20, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		
+		glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP_ARRAY, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthID, 0);
@@ -338,10 +375,14 @@ void FrameBuffer::BindTarget()
 	glViewport(0, 0, m_width, m_height);
 }
 
-void FrameBuffer::BindTarget(GLenum cubeFace)
+void FrameBuffer::BindTarget(GLenum cubeFace, int cubemapArrayIndex)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, m_fbID);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, cubeFace, m_depthID, 0);
+	if(cubemapArrayIndex == -1)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, cubeFace, m_depthID, 0);
+	else
+		glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depthID, 0, cubemapArrayIndex * 6 + cubeFace);
+
 	glViewport(0, 0, m_width, m_height);
 }
 
@@ -352,8 +393,10 @@ void FrameBuffer::BindTexture(int texture)
 		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, m_texID);
 	else if(m_type == Type::ShadowMap)
 		glBindTexture(GL_TEXTURE_2D, m_depthID);
-	else if(m_type == Type::ShadowCubeMap)
+	else if (m_type == Type::ShadowCubeMap)
 		glBindTexture(GL_TEXTURE_CUBE_MAP, m_depthID);
+	else if (m_type == Type::ShadowCubeMapArray)
+		glBindTexture(GL_TEXTURE_CUBE_MAP_ARRAY, m_depthID);
 	else
 		glBindTexture(GL_TEXTURE_2D, m_texID);
 }

@@ -143,8 +143,8 @@ public:
 
 	// Point Light Shadow Map Dev
 public:
-	static vector<FrameBuffer*> pointLightCubeMapStatic;
-	static vector<FrameBuffer*> pointLightCubeMapDynamic;
+	static FrameBuffer* pointlightCubeMapArrayStatic;
+	static FrameBuffer* pointlightCubeMapArrayDynamic;
 	UniformBuffer* pointLightPositionBuffer;
 	UniformBuffer* pointLightColourBuffer;
 	bool pointLightShadowMapsStaticDirty = true;
