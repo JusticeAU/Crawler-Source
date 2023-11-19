@@ -1,5 +1,7 @@
 #include "DungeonDoor.h"
 #include "Object.h"
+#include "ComponentRenderer.h"
+#include "MaterialManager.h"
 #include "MathUtils.h"
 #include "Window.h"
 #include "AudioManager.h"
@@ -134,6 +136,19 @@ void Crawl::DungeonDoor::RemoveBarricaded()
 			objectBarricade->markedForDeletion = true;
 		}
 	}
+}
+
+void Crawl::DungeonDoor::MakeLobbyDoor()
+{
+	isLobbyDoor = true;
+	doorOriginalMaterial = renderer->submeshMaterials[0]->name;
+	renderer->submeshMaterials[0] = MaterialManager::GetMaterial(lobbyAlternativeMaterial);
+}
+
+void Crawl::DungeonDoor::RemoveLobbyDoorMaterial()
+{
+	isLobbyDoor = false;
+	renderer->submeshMaterials[0] = MaterialManager::GetMaterial(doorOriginalMaterial);
 }
 
 void Crawl::DungeonDoor::PlaySFX(string sfx)

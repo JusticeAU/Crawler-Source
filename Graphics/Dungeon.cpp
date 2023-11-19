@@ -1004,6 +1004,7 @@ Crawl::DungeonDoor* Crawl::Dungeon::CreateDoor(ivec2 position, unsigned int dire
 	Object* door_model = door_object->children[0]->children[0];
 	door_model->LoadFromJSON(door_modelJSON);
 	door_object->SetLocalRotationZ(orientationEulers[directionIndex]);
+	door->renderer = (ComponentRenderer*)door_object->children[0]->children[0]->GetComponent(Component_Renderer);
 
 	// Left Panel
 	ordered_json door_leftModelJSON = ReadJSONFromDisk("crawler/model/door_door_left.object");
@@ -2267,6 +2268,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		DungeonDoor door = it.value().get<Crawl::DungeonDoor>();
 		DungeonDoor* newDoor = CreateDoor(door.position, door.orientation, door.id, door.open);
 		if (door.isBarricaded) newDoor->MakeBarricaded();
+		if (door.isLobbyDoor) newDoor->MakeLobbyDoor();
 	}
 
 	auto& levers_json = serialised["levers"];

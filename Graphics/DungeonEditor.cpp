@@ -931,7 +931,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	ImGui::PopID();
 
 	ImGui::PushID("EntityProperties");
-	
+
 	if (selectedDoorWindowOpen)
 		DrawGUIModeTileEditDoor();
 	if (selectedLeverWindowOpen)
@@ -974,7 +974,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
 	ImGui::SetNextWindowSize({ 300, 150 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Edit Door", &selectedDoorWindowOpen);
 
-	if(ImGui::InputInt("ID", (int*)&selectedDoor->id))
+	if (ImGui::InputInt("ID", (int*)&selectedDoor->id))
 		MarkUnsavedChanges();
 
 	if (ImGui::BeginCombo("Orientation", orientationNames[selectedDoor->orientation].c_str()))
@@ -992,7 +992,14 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditDoor()
 			}
 		ImGui::EndCombo();
 	}
-
+	if (ImGui::Checkbox("Is Lobby Door", &selectedDoor->isLobbyDoor))
+	{
+		if (selectedDoor->isLobbyDoor)
+			selectedDoor->MakeLobbyDoor();
+		else
+			selectedDoor->RemoveLobbyDoorMaterial();
+		MarkUnsavedChanges();
+	}
 	bool open = selectedDoor->open;
 	if (ImGui::Checkbox("Is Open", &open))
 	{
