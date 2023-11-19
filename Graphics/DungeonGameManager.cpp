@@ -111,6 +111,8 @@ bool Crawl::DungeonGameManager::DrawGUIInternal()
 
 void Crawl::DungeonGameManager::Update(float delta)
 {
+	if (Input::Keyboard(GLFW_KEY_KP_ENTER).Down()) MakeLobbyExitTraversable();
+
 	UpdateFTUE(delta);
 	if (player->GetDungeonLoaded()->isLobby)
 	{
@@ -476,23 +478,26 @@ void Crawl::DungeonGameManager::DoEvent(int eventID)
 	}
 	case 52: // reached chaser in void 2
 	{
-		// just incasewe endered via dev mode.
+		// just incasewe entered via dev mode.
 		startVoid = true;
 		voidState = VoidState::End;
-
-
-		player->currentDungeon->GetEnemyChaseAtPosition({ 4,-29 })->Activate();
 		player->currentDungeon->GetTile(player->GetPosition())->maskTraverse = 0;
+
+		// spawn the blocker
 		voidBlocker = player->currentDungeon->CreateEnemyBlocker({ 3, -26 }, EAST_INDEX);
 		voidBlocker->Update();
 		return;
 	}
-	case 53: // Blocker hits the player
+	case 53: // Looked at chaser in void 2
+	{
+		player->currentDungeon->GetEnemyChaseAtPosition({ 4,-29 })->Activate();
+		return;
+	}
+	case 54: // Blocker hits the player
 	{
 		voidTrigger = true;
 		player->SetNextState(DungeonPlayer::STATE::NOCONTROL);
 		voidBlocker->Update();
-		// turn light off in level
 		return;
 	}
 	default:
