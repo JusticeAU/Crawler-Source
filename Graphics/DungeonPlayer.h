@@ -184,6 +184,10 @@ namespace Crawl
 		float turnDeltaPrevious = 0.0f;
 		float oldTurn = 0.0f;
 		float targetTurn = 0.0f;
+
+		bool hasJustPerformedAReset = false;
+		float resetTimeCurrent = 0.0f;
+		const float resetTime = 0.5f;
 		
 		Dungeon* dungeon = nullptr;	// This is a pointer to the currently loaded dungeon.
 							// The player stores the level level 2 in memory, and currentDungeon will either be this pointer, or lobbyLevel2.

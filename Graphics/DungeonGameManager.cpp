@@ -113,7 +113,10 @@ void Crawl::DungeonGameManager::Update(float delta)
 {
 	if (Input::Keyboard(GLFW_KEY_KP_ENTER).Down()) MakeLobbyExitTraversable();
 
+	CheckForBrokenLevel();
+
 	UpdateFTUE(delta);
+
 	if (player->GetDungeonLoaded()->isLobby)
 	{
 		UpdateLobbyVisuals(delta);
@@ -432,26 +435,32 @@ void Crawl::DungeonGameManager::DoEvent(int eventID)
 		return;
 	}
 
-	case 4: // trigger look prompt
+	case 4: // trigger Key Prompt
 	{
-		//if (!player->ftueHasLooked) player->SetFTUEPrompt(promptLook);
+		DungeonGameManager::Get()->DoFTUEEvent(DungeonGameManager::FTUEEvent::Key);
 		return;
 	}
 	case 5: // trigger Interact Prompt
 	{
-		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Interact);
+		DungeonGameManager::Get()->DoFTUEEvent(DungeonGameManager::FTUEEvent::Interact);
 		return;
 	}
 	case 6: // Trigger Wait prompt
 	{
-		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Wait);
+		DungeonGameManager::Get()->DoFTUEEvent(DungeonGameManager::FTUEEvent::Wait);
 		return;
 	}
 	case 7: // Trigger Reset prompt
 	{
-		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Reset);
+		DungeonGameManager::Get()->DoFTUEEvent(DungeonGameManager::FTUEEvent::Reset);
 		return;
 	}
+	case 8: // Chaser Push Prompt
+	{
+		DungeonGameManager::Get()->DoFTUEEvent(DungeonGameManager::FTUEEvent::Chaser);
+		return;
+	}
+
 	case 50: // void sequence
 	{
 		player->canResetOrWait = false;
@@ -755,6 +764,42 @@ void Crawl::DungeonGameManager::QueueFTUEPrompt(DungeonGameFTUE::FTUEType type)
 		else tex = TextureManager::GetTexture(ftuePush);
 		break;
 	}
+	case DungeonGameFTUE::FTUEType::Door1:
+	{
+		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueDoor1);
+		else tex = TextureManager::GetTexture(ftueDoor1);
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::Door2:
+	{
+		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueDoor2);
+		else tex = TextureManager::GetTexture(ftueDoor2);
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::ChaserPush:
+	{
+		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftuePush);
+		else tex = TextureManager::GetTexture(ftuePush);
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::Run:
+	{
+		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueRun);
+		else tex = TextureManager::GetTexture(ftueRun);
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::Key:
+	{
+		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueKey);
+		else tex = TextureManager::GetTexture(ftueKey);
+		break;
+	}
+	case DungeonGameFTUE::FTUEType::FailedLevel:
+	{
+		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueReset);
+		else tex = TextureManager::GetTexture(ftueResetPad);
+		break;
+	}
 	}
 
 	if (tex != nullptr)
@@ -803,8 +848,15 @@ bool Crawl::DungeonGameManager::IsFTUECompleted(DungeonGameFTUE::FTUEType type)
 		if (player->ftueHasPushed) return true;
 		break;
 	}
-	default:
+	case DungeonGameFTUE::FTUEType::FailedLevel:
+	{
 		return false;
+		break;
+	}
+	default: // anything without a particular trigger should clear after 2 seconds.
+	{
+		return ftueAutoCompleteCurrent > ftueAutoCompleteTime;
+	}
 	}
 
 	return false;
@@ -814,7 +866,6 @@ void Crawl::DungeonGameManager::UpdateFTUE(float delta)
 {
 	if (ftueQueue.size() > 0)
 	{
-
 		if (!ftueIsCompleting && IsFTUECompleted(ftueQueue.front().type)) ftueIsCompleting = true;
 		// Process queue!
 		if (ftueIsCompleting)
@@ -822,14 +873,15 @@ void Crawl::DungeonGameManager::UpdateFTUE(float delta)
 			ftueFadeTimeCurrent = max(ftueFadeTimeCurrent - delta, 0.0f);
 			if (ftueFadeTimeCurrent == 0.0f)
 			{
+				ftueAutoCompleteCurrent = 0.0f;
 				ftueIsCompleting = false;
 				ftueQueue.pop();
 			}
 		}
 		else
 		{
+			ftueAutoCompleteCurrent += delta;
 			ftueFadeTimeCurrent = min(ftueFadeTimeCurrent + delta, ftueFadeTime);
-
 		}
 
 		float alpha = ftueFadeTimeCurrent / ftueFadeTime;
@@ -850,6 +902,26 @@ void Crawl::DungeonGameManager::UpdateFTUE(float delta)
 			{ 1,1,1, alpha });
 		ImGui::PopStyleVar();
 		ImGui::End();
+	}
+}
+
+void Crawl::DungeonGameManager::CheckForBrokenLevel()
+{
+	if (player->currentDungeon->isFailed)
+	{
+		if (player->currentDungeon->isFailedMessageSent) return;
+
+		if (player->currentDungeon->failedTime > 3.0f)
+		{
+			DoFTUEEvent(FTUEEvent::FailedLevel);
+			player->currentDungeon->isFailedMessageSent = true;
+		}
+		return;
+	}
+
+	if (player->currentDungeon->dungeonFileName == "MurderinaBoxes")
+	{
+		if (player->currentDungeon->pushableBlocks.size() == 0) player->currentDungeon->isFailed = true;
 	}
 }
 
@@ -889,6 +961,34 @@ void Crawl::DungeonGameManager::DoFTUEEvent(FTUEEvent event)
 		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Wait);
 		break;
 	}
+	case FTUEEvent::Door:
+	{
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Door1);
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Door2);
 
+		break;
+	}
+	case FTUEEvent::Box:
+	{
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Push);
+
+		break;
+	}
+	case FTUEEvent::Chaser:
+	{
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::ChaserPush);
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Run);
+		break;
+	}
+	case FTUEEvent::Key:
+	{
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Key);
+		break;
+	}
+	case FTUEEvent::FailedLevel:
+	{
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::FailedLevel);
+		break;
+	}
 	}
 }

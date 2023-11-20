@@ -27,7 +27,12 @@ namespace Crawl
 			Look,
 			Interact,
 			Reset,
-			Wait
+			Wait,
+			Door,
+			Box,
+			Chaser,
+			Key,
+			FailedLevel
 		};
 		enum class LobbyDoor // not used right now, all strings and IDs.
 		{
@@ -101,6 +106,7 @@ namespace Crawl
 		void QueueFTUEPrompt(DungeonGameFTUE::FTUEType type);
 		bool IsFTUECompleted(DungeonGameFTUE::FTUEType type);
 		void UpdateFTUE(float delta);
+		void CheckForBrokenLevel();
 		void ClearAllFTUE();
 
 		void DoFTUEEvent(FTUEEvent event);
@@ -208,6 +214,8 @@ namespace Crawl
 		bool ftueIsCompleting = false;
 		float ftueFadeTimeCurrent = 0.0f;
 		const float ftueFadeTime = 0.75;
+		float ftueAutoCompleteCurrent = 0.0f;
+		const float ftueAutoCompleteTime = 2.0f;
 
 		std::string ftueTurn = "crawler/texture/gui/ftue/turn.tga";
 		std::string ftueTurnPad = "crawler/texture/gui/ftue/turnPad.tga";
@@ -223,6 +231,12 @@ namespace Crawl
 		std::string ftueWaitPad = "crawler/texture/gui/ftue/waitPad.tga";
 		std::string ftuePush = "crawler/texture/gui/ftue/push.tga";
 		std::string ftuePushPad = "crawler/texture/gui/ftue/pushPad.tga";
+
+		// New ones
+		std::string ftueDoor1 = "crawler/texture/gui/ftue/door_1.tga";
+		std::string ftueDoor2 = "crawler/texture/gui/ftue/door_2.tga";
+		std::string ftueRun = "crawler/texture/gui/ftue/run.tga";
+		std::string ftueKey = "crawler/texture/gui/ftue/keys.tga";
 	};
 }
 

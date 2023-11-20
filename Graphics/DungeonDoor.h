@@ -45,12 +45,14 @@ namespace Crawl
 		string openSound = "crawler/sound/load/door/open_1.wav";
 		string closeSound = "crawler/sound/load/door/close_1.wav";
 
-
 		// Wobble Interaction
 		bool shouldWobble = false;
 		const float wobbleTime = 0.4f;
 		float wobbleTimeCurrent = 0.0f;
 		string wobbleSound = "crawler/sound/load/door/rattle_1.wav";
+
+		// ftue Stuff
+		bool hasFTUEd = false;
 		
 		// Barricade info
 		bool isBarricaded = false;

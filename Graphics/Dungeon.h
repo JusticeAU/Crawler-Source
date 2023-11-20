@@ -251,6 +251,9 @@ namespace Crawl
 		string dungeonFilePath = "";
 
 		unsigned int turn = 0;
+		bool isFailed = false;
+		bool isFailedMessageSent = false;
+		float failedTime = 0.0f;
 		ivec2 defaultPlayerStartPosition = { 0,0 };
 		FACING_INDEX defaultPlayerStartOrientation = EAST_INDEX;
 		

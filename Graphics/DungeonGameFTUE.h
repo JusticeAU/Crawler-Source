@@ -16,7 +16,13 @@ struct DungeonGameFTUE
 		Reset,
 		Wait,
 		Look,
-		Push
+		Push,
+		Door1,
+		Door2,
+		ChaserPush,
+		Run,
+		Key,
+		FailedLevel
 	};
 	DungeonGameFTUE(Texture* tex, FTUEType t) { texture = tex, type = t; }
 	Texture* texture;

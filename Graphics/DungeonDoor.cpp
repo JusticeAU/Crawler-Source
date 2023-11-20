@@ -8,7 +8,7 @@
 #include "DungeonHelpers.h"
 
 #include "Scene.h"
-
+#include "DungeonGameManager.h"
 
 Crawl::DungeonDoor::~DungeonDoor()
 {
@@ -110,6 +110,12 @@ void Crawl::DungeonDoor::Interact()
 		PlaySFX(wobbleSound);
 		shouldWobble = true;
 		wobbleTimeCurrent = 0.0f;
+
+		if (!hasFTUEd)
+		{
+			hasFTUEd = true;
+			DungeonGameManager::Get()->DoFTUEEvent(DungeonGameManager::FTUEEvent::Door);
+		}
 	}
 }
 

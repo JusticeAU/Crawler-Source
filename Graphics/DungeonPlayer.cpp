@@ -170,7 +170,6 @@ void Crawl::DungeonPlayer::UpdateInputsMovement()
 
 	if (!canResetOrWait) return;
 	if (Input::Alias("Wait").Down()) inputBuffer = PlayerCommand::Wait;
-	if (Input::Alias("Reset").Down()) inputBuffer = PlayerCommand::Reset;
 }
 
 void Crawl::DungeonPlayer::UpdateInputsLooking()
@@ -336,13 +335,23 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 			return true;
 		}
 	}
-
-	if (inputBuffer == PlayerCommand::Reset)
+	if (Input::Alias("Reset").Pressed() && canResetOrWait && !hasJustPerformedAReset)
 	{
-		inputBuffer == PlayerCommand::None;
-		if (isOnLobbyLevel2) lobbyLevel2Dungeon->GetTile(position)->occupied = false; // because this level doesnt reset, we need to keep it tidy!!
-		Respawn();
-		return false;
+		resetTimeCurrent += delta;
+		gameMenu->DrawBlackScreen(resetTimeCurrent / resetTime, true);
+		if (resetTimeCurrent > resetTime)
+		{
+			if (isOnLobbyLevel2) lobbyLevel2Dungeon->GetTile(position)->occupied = false; // because this level doesnt reset, we need to keep it tidy!!
+			Respawn();
+			hasJustPerformedAReset = true;
+			resetTimeCurrent = 0.0f;
+			return false;
+		}
+	}
+	else if (!Input::Alias("Reset").Pressed())
+	{
+		hasJustPerformedAReset = false;
+		resetTimeCurrent = 0.0f;
 	}
 
 	if (currentDungeon->GetCheckpointAt(position))

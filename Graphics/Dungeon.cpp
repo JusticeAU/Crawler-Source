@@ -1906,7 +1906,9 @@ void Crawl::Dungeon::ClearDungeon()
 	isLobby = false;
 	isVoid = false;
 	noRoof = false;
-	
+	isFailed = false;
+	failedTime = 0.0f;
+	isFailedMessageSent = false;
 	serialised.clear();
 }
 
@@ -2079,6 +2081,10 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 
 void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 {
+	isFailed = false;
+	failedTime = 0.0f;
+	isFailedMessageSent = false;
+
 	if (!isLobbyLevel2)
 	{
 		DestroySceneFromDungeonLayout();
@@ -2665,6 +2671,8 @@ void Crawl::Dungeon::PostUpdate()
 
 void Crawl::Dungeon::UpdateVisuals(float delta)
 {
+	if (isFailed) failedTime += delta;
+
 	for (int i = 0; i < chasers.size(); i++)
 	{
 		chasers[i]->UpdateVisuals(delta);
