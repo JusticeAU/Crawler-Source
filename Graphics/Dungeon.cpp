@@ -775,12 +775,10 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 	{
 		for (int i = 0; i < slugs.size(); i++)
 		{
-			if (slugs[i]->position == position)
+			if (slugs[i]->state != DungeonEnemySlug::DEAD && slugs[i]->position == position)
 			{
-				if (dealer == slugs[i])
-					continue;
 				didDamage = true;
-				slugs[i]->isDead = true;
+				slugs[i]->Kill(facingIndexesReversed[((DungeonEnemyBlocker*)dealer)->facing]);
 				break;
 			}
 		}
@@ -2650,7 +2648,9 @@ void Crawl::Dungeon::PostUpdate()
 
 	// All Murderinas perform damage
 	for (auto& murderina : slugs)
-		DamageAtPosition(murderina->position, this, false, Dungeon::DamageType::Murderina);
+	{
+		if(murderina->state != DungeonEnemySlug::DEAD) DamageAtPosition(murderina->position, this, false, Dungeon::DamageType::Murderina);
+	}
 
 	// Events
 	for (auto& event : events)
@@ -2680,17 +2680,13 @@ void Crawl::Dungeon::UpdateVisuals(float delta)
 	for (int i = 0; i < slugs.size(); i++)
 	{
 		slugs[i]->UpdateVisuals(delta);
+		if (slugs[i]->shouldDelete)
 		{
-			if (slugs[i]->isDead && slugs[i]->state == Crawl::DungeonEnemySlug::IDLE)
-			{
-				RemoveSlug(slugs[i]);
-				i--;
-			}
+			RemoveSlug(slugs[i]);
+			i--;
 		}
+
 	}
-	
-	for (auto& slug : slugs)
-		slug->UpdateVisuals(delta);
 
 	for (int i = 0; i < pushableBlocks.size(); i++)
 	{

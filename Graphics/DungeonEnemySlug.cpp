@@ -5,11 +5,18 @@
 
 #include "MathUtils.h"
 #include "LogUtils.h"
+#include "gtx/easing.hpp"
 
 #include "DungeonPlayer.h"
 #include "DungeonEnemyChase.h"
 
 #include "AudioManager.h"
+
+Crawl::DungeonEnemySlug::DungeonEnemySlug()
+{
+	AudioManager::SetAudioSourceAttentuation(audioMoveSingle, 2, 1);
+	AudioManager::SetAudioSourceMinMaxDistance(audioMoveSingle, 1, 10);
+}
 
 Crawl::DungeonEnemySlug::~DungeonEnemySlug()
 {
@@ -23,10 +30,20 @@ void Crawl::DungeonEnemySlug::UpdateTransform()
 	object->SetLocalRotationZ(orientationEulers[facing]);
 }
 
+void Crawl::DungeonEnemySlug::Kill(FACING_INDEX direction)
+{
+	deathDirection = direction;
+	object->SetLocalPosition(targetPosition);
+	state = DEAD;
+}
+
 void Crawl::DungeonEnemySlug::Update()
 {
+
 	object->SetLocalPosition(dungeonPosToObjectScale(position));
 	oldPosition = dungeonPosToObjectScale(position);
+
+	if (state == DEAD) return;
 
 	// Slug Path system
 	// Get path at current position
@@ -80,35 +97,79 @@ void Crawl::DungeonEnemySlug::Update()
 
 void Crawl::DungeonEnemySlug::UpdateVisuals(float delta)
 {
+	float turnAmount = delta * spinSpeed * 360.0f;
 	switch (state)
 	{
 	case IDLE:
+	{
+		object->children[0]->AddLocalRotation({ 0,0,turnAmount });
+
 		break;
+	}
 	case MOVING:
 	{
+		turnAmount *= 2.0f;
 		moveCurrent += delta;
-		float t = MathUtils::InverseLerp(0, moveSpeed, max(0.0f, moveCurrent));
+		float t = moveCurrent / moveSpeed;
+		float tEased = glm::sineEaseOut(t);
 		if (moveCurrent > moveSpeed)
 		{
 			object->SetLocalPosition(targetPosition);
-			object->SetLocalRotationZ(-180);
 			state = IDLE;
 		}
 		else
 		{
-			object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, t));
-			object->SetLocalRotationZ(MathUtils::Lerp(-180, 180, t));
-
+			object->SetLocalPosition(MathUtils::Lerp(oldPosition, targetPosition, tEased));
 		}
-
+		object->children[0]->AddLocalRotation({ 0,0,turnAmount });
 		
 		break;
 	}
+	case DEAD:
+	{
+		deathCurrent += delta;
+		float t = deathCurrent / deathSpeed;
+		t = glm::clamp(t, 0.0f, 1.0f);
+		vec3 rotation = {0,0,0};
+		switch (deathDirection)
+		{
+		case NORTH_INDEX:
+		{
+			rotation.x = MathUtils::Lerp(0, 90, t);
+			break;
+		}
+		case EAST_INDEX:
+		{
+			rotation.y = MathUtils::Lerp(0, -90, t);
+			break;
+		}
+		case SOUTH_INDEX:
+		{
+			rotation.x = MathUtils::Lerp(0, -90, t);
+			break;
+		}
+		case WEST_INDEX:
+		{
+			rotation.y = MathUtils::Lerp(0, 90, t);
+			break;
+		}
+		}
+
+		object->SetLocalRotation(rotation);
+
+		if (deathCurrent > deathDeleteTime) shouldDelete = true;
+		break;
+	}
+
+
+	if (object->children[0]->localRotation.z > 180) object->children[0]->localRotation.z -= 360;
 	}
 }
 
 void Crawl::DungeonEnemySlug::PlayMoveSFX()
 {
-	int sfxIndex = rand() % 6;
-	AudioManager::PlaySound(audioMove[sfxIndex], object->GetWorldSpacePosition());
+	/*int sfxIndex = rand() % 6;
+	AudioManager::PlaySound(audioMove[sfxIndex], object->GetWorldSpacePosition());*/
+
+	AudioManager::PlaySound(audioMoveSingle, object->GetWorldSpacePosition());
 }
