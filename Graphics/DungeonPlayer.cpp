@@ -320,6 +320,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		camera->postProcessFadeColour = deathColour;
 		fadeTimeCurrent = 0.0f;
 		fadeIn = false;
+		AudioManager::PlaySound(deathSound);
 		
 		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Reset);
 		return false;

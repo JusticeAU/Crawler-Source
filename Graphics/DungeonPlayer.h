@@ -241,6 +241,7 @@ namespace Crawl
 		float fadeTimeCurrent = 0.0f;
 		float fadeTimeTotal = 0.7f;
 
+		const string deathSound = "crawler/sound/load/player/death.wav";
 		glm::vec3 deathColour = glm::vec3(0.121, 0.0, 0.0); // very dark red.
 		enum class KILLEDBY
 		{
