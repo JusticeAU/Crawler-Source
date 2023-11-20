@@ -58,7 +58,7 @@ namespace Crawl
 		string objectBarricadeJSON = "crawler/model/decoration_barricade.object";
 
 		// Lobby alternative material
-		const string lobbyAlternativeMaterial = "crawler/material/texture_atlas_2.material";
+		const string lobbyAlternativeMaterial = "crawler/material/door_texture_doorframe_lobby.material";
 		string doorOriginalMaterial = "";
 	};
 
