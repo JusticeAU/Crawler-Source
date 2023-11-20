@@ -581,41 +581,69 @@ int Crawl::DungeonPlayer::GetMoveIndex()
 
 void Crawl::DungeonPlayer::TurnLeft(bool autoReorient)
 {
-	turnCurrentIsManual = !autoReorient;
-	AudioManager::PlaySound("crawler/sound/load/turn.wav");
-	oldTurn = orientationEulers[facing];
-	int faceInt = (int)facing;
-	faceInt--;
-	if (faceInt == -1)
-		faceInt = 3;
-	facing = (FACING_INDEX)faceInt;
-	state = TURNING;
-	turnCurrent = 0.0f;
-	oldTurn = object->localRotation.z;
-	targetTurn = object->localRotation.z + 90;
-	UpdatePointOfInterestTilt();
+	if (autoReorient)
+	{
+		int faceInt = (int)facing;
+		faceInt--;
+		if (faceInt == -1)
+			faceInt = 3;
+		facing = (FACING_INDEX)faceInt;
 
-	if (!ftueHasTurned) ftueTurns++;
-	dungeon->DoEventTriggerFacing(position, facing);
+		object->SetLocalRotationZ(orientationEulers[facing]);
+		objectView->localRotation.z -= 90;
+	}
+	else
+	{
+		turnCurrentIsManual = !autoReorient;
+		AudioManager::PlaySound("crawler/sound/load/turn.wav");
+		oldTurn = orientationEulers[facing];
+		int faceInt = (int)facing;
+		faceInt--;
+		if (faceInt == -1)
+			faceInt = 3;
+		facing = (FACING_INDEX)faceInt;
+		state = TURNING;
+		turnCurrent = 0.0f;
+		oldTurn = object->localRotation.z;
+		targetTurn = object->localRotation.z + 90;
+		UpdatePointOfInterestTilt();
+
+		if (!ftueHasTurned) ftueTurns++;
+		dungeon->DoEventTriggerFacing(position, facing);
+	}
 }
 
 void Crawl::DungeonPlayer::TurnRight(bool autoReorient)
 {
-	turnCurrentIsManual = !autoReorient;
-	AudioManager::PlaySound("crawler/sound/load/turn.wav");
-	int faceInt = (int)facing;
-	faceInt++;
-	if (faceInt == 4)
-		faceInt = 0;
-	facing = (FACING_INDEX)faceInt;
-	state = TURNING;
-	turnCurrent = 0.0f;
-	oldTurn = object->localRotation.z;
-	targetTurn = object->localRotation.z - 90;
-	UpdatePointOfInterestTilt();
+	if (autoReorient)
+	{
+		int faceInt = (int)facing;
+		faceInt++;
+		if (faceInt == 4)
+			faceInt = 0;
+		facing = (FACING_INDEX)faceInt;
 
-	if (!ftueHasTurned) ftueTurns++;
-	dungeon->DoEventTriggerFacing(position, facing);
+		object->SetLocalRotationZ(orientationEulers[facing]);
+		objectView->localRotation.z += 90;
+	}
+	else
+	{
+		turnCurrentIsManual = !autoReorient;
+		AudioManager::PlaySound("crawler/sound/load/turn.wav");
+		int faceInt = (int)facing;
+		faceInt++;
+		if (faceInt == 4)
+			faceInt = 0;
+		facing = (FACING_INDEX)faceInt;
+		state = TURNING;
+		turnCurrent = 0.0f;
+		oldTurn = object->localRotation.z;
+		targetTurn = object->localRotation.z - 90;
+		UpdatePointOfInterestTilt();
+
+		if (!ftueHasTurned) ftueTurns++;
+		dungeon->DoEventTriggerFacing(position, facing);
+	}
 }
 
 bool Crawl::DungeonPlayer::UpdateStateMoving(float delta)
