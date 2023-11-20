@@ -22,6 +22,8 @@
 #include "gtx/spline.hpp"
 #include "gtx/easing.hpp"
 
+#include "TextureManager.h"
+
 Crawl::DungeonPlayer::DungeonPlayer()
 {
 	// Initialise the player Scene Object;
@@ -38,6 +40,9 @@ Crawl::DungeonPlayer::DungeonPlayer()
 	// Create the lobby second level
 	lobbyLevel2Dungeon = new Dungeon(true);
 	lobbyLevel2Dungeon->player = this;
+
+	// Configure the crosshair
+	crosshairTexture = TextureManager::GetTexture("crawler/texture/gui/crosshair.tga");
 }
 
 void Crawl::DungeonPlayer::SetDungeon(Dungeon* dungeonPtr)
@@ -64,7 +69,7 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 #endif // !RELEASE
 
 	UpdateStateRH(deltaTime);
-
+	if(showCrosshair) DrawCrosshair();
 
 	switch (state)
 	{
@@ -996,6 +1001,19 @@ void Crawl::DungeonPlayer::SoundPlayFootstep()
 	while (stepIndex == lastStepIndex)	stepIndex = rand() % 4;
 	lastStepIndex = stepIndex;
 	AudioManager::PlaySound(stepSounds[lastStepIndex]);
+}
+
+void Crawl::DungeonPlayer::DrawCrosshair()
+{
+	vec2 screenSize = Window::GetViewPortSize();
+	screenSize *= 0.5f;
+	ImGui::SetNextWindowPos({ screenSize.x, screenSize.y }, 0, { 0.5f, 0.5f });
+	ImGui::SetNextWindowSize({ 32,32 });
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0,0 });
+	ImGui::Begin("Crosshair", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration);
+	ImGui::Image((ImTextureID)crosshairTexture->texID, { (float)crosshairTexture->width, (float)crosshairTexture->height }, { 0,0 }, { 1,1 }, { 1,1,1,0.5f });
+	ImGui::End();
+	ImGui::PopStyleVar();
 }
 
 void Crawl::DungeonPlayer::Teleport(ivec2 position)

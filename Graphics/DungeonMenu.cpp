@@ -61,6 +61,11 @@ void Crawl::DungeonMenu::Initialise()
 	button->BindBoolPointer(&player->invertYAxis);
 	menuButtonsSettings.push_back(button);
 
+	button = new DungeonMenuButton("Toggle Crosshair", menuSettingsCrosshairTexPath);
+	button->BindMenuFunction(&DungeonMenu::ExecuteSettingsToggleCrosshair, this);
+	button->BindBoolPointer(&player->showCrosshair);
+	menuButtonsSettings.push_back(button);
+
 	button = new DungeonMenuButton("Back", menuBackTexPath);
 	button->BindMenuFunction(&DungeonMenu::ExecuteBackButton, this);
 	menuButtonsSettings.push_back(button);
@@ -514,6 +519,11 @@ void Crawl::DungeonMenu::ExecuteSettingsInvertY()
 void Crawl::DungeonMenu::ExecuteSettingsAlwaysFreelook()
 {
 	player->alwaysFreeLook = !player->alwaysFreeLook;
+}
+
+void Crawl::DungeonMenu::ExecuteSettingsToggleCrosshair()
+{
+	player->showCrosshair = !player->showCrosshair;
 }
 
 void Crawl::DungeonMenu::ExecuteLevelEditorButton()

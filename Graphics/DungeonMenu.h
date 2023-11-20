@@ -88,6 +88,7 @@ namespace Crawl
 		void ExecuteSettingsButton();
 		void ExecuteSettingsInvertY();
 		void ExecuteSettingsAlwaysFreelook();
+		void ExecuteSettingsToggleCrosshair();
 		void ExecuteSettingsVolumeUp();
 		void ExecuteSettingsVolumeDown();
 		void ExecuteToggleFullScreen();
@@ -113,6 +114,8 @@ namespace Crawl
 		string menuSettingsFreelookTexPath = "crawler/texture/gui/menu/settings_alwaysfreelook.tga";
 		string menuSettingsFullscreenTexPath = "crawler/texture/gui/menu/settings_fullscreen.tga";
 		string menuSettingsInvertTexPath = "crawler/texture/gui/menu/settings_invert.tga";
+		string menuSettingsCrosshairTexPath = "crawler/texture/gui/menu/settings_crosshair.tga";
+
 		//string menuSettingsVolumeTexPath = "crawler/texture/gui/menu/settings_volume.tga";
 		bool settingsMenuViaPause = false;
 

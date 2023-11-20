@@ -8,6 +8,7 @@ class ComponentAnimator;
 class ComponentCamera;
 class ComponentLightPoint;
 class ComponentRenderer;
+class Texture;
 
 namespace Crawl
 {
@@ -143,10 +144,10 @@ namespace Crawl
 		
 		void SetStateRH(RHState state);
 		void UpdateStateRH(float delta);
-	private:
 		void DrawDevelopmentBuildUI();
 
 		void SoundPlayFootstep();
+		void DrawCrosshair();
 
 		glm::ivec2 position = {0,0};
 		glm::ivec2 positionPrevious = { 0,0 };
@@ -288,8 +289,11 @@ namespace Crawl
 		string animationRHUp = animationRHBaseName + "down_reverse";
 		string animationRHStairs = animationRHBaseName + "walk_stairs";
 
-
-		
 		string animationNamePush = "crawler/model/viewmodel_hands.fbxarmature|armatureaction";
+
+		// Accessability crosshair
+		const string crossHairPath = "crawler/texture/gui/crosshair.tga";
+		Texture* crosshairTexture = nullptr;
+		bool showCrosshair = false;
 	};
 }
