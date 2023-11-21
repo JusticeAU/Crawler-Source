@@ -87,7 +87,7 @@ void Crawl::DungeonEnemySlug::Update()
 	// Check if a chaser has moved through us
 	for (auto& chaser : dungeon->chasers)
 	{
-		if (dungeon->player->GetPositionPrevious() == chaser->position && dungeon->player->GetPosition() == chaser->positionPrevious)
+		if (chaser->positionPrevious == position && chaser->position == positionPrevious)
 			chaser->Kill(Dungeon::DamageType::Murderina);
 	}
 	

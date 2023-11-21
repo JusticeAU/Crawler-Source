@@ -2565,11 +2565,7 @@ void Crawl::Dungeon::Update()
 			i--;
 		}
 	}
-
-	// slug logic
-	for (auto& slug : slugs)
-		slug->Update();
-
+ 
 	// Chaser Logic
 	for (auto& chaser : chasers)
 	{
@@ -2610,6 +2606,10 @@ void Crawl::Dungeon::Update()
 	{
 		if (!chaser->isDead) chaser->ExecuteDamage();
 	}
+
+	// slug logic
+	for (auto& slug : slugs)
+		slug->Update();
 
 	// test all activator plates
 	for (auto& tileTest : activatorPlates)
