@@ -1076,11 +1076,12 @@ void Crawl::DungeonPlayer::ResetPlayer()
 	ClearRespawn();
 	ftueInitiated = false;
 	ftueEnabled = false;
-	ftueHasInteracted = false;
-	ftueHasLooked = false;
 	ftueHasTurned = false;
+	ftueHasLooked = false;
+	ftueHasInteracted = false;
+	ftueHasWaited = false;
+	ftueHasPushed = false;
 	ftueTurns = 0;
-
 }
 
 void Crawl::DungeonPlayer::ReturnToLobby()

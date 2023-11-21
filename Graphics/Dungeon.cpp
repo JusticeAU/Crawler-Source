@@ -2667,6 +2667,8 @@ void Crawl::Dungeon::PostUpdate()
 			else if (event->facing == player->GetOrientation()) event->Activate();
 		}
 	}
+
+	DungeonGameManager::Get()->CheckForBrokenLevel();
 }
 
 void Crawl::Dungeon::UpdateVisuals(float delta)

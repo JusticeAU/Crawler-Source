@@ -14,6 +14,7 @@ struct DungeonGameFTUE
 		Move,
 		Interact,
 		Reset,
+		ResetHold,
 		Wait,
 		Look,
 		Push,

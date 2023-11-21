@@ -27,6 +27,7 @@ namespace Crawl
 			Look,
 			Interact,
 			Reset,
+			ResetHold,
 			Wait,
 			Door,
 			Box,
@@ -227,6 +228,8 @@ namespace Crawl
 		std::string ftueInteractPad = "crawler/texture/gui/ftue/interactPad.tga";
 		std::string ftueReset = "crawler/texture/gui/ftue/reset.tga";
 		std::string ftueResetPad = "crawler/texture/gui/ftue/resetPad.tga";
+		std::string ftueResetHold = "crawler/texture/gui/ftue/resetHold.tga";
+		std::string ftueResetHoldPad = "crawler/texture/gui/ftue/resetHoldPad.tga";
 		std::string ftueWait = "crawler/texture/gui/ftue/wait.tga";
 		std::string ftueWaitPad = "crawler/texture/gui/ftue/waitPad.tga";
 		std::string ftuePush = "crawler/texture/gui/ftue/push.tga";

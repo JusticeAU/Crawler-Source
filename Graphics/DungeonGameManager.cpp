@@ -20,6 +20,7 @@
 #include "Input.h"
 #include "DungeonEnemyChase.h"
 #include "DungeonEnemyBlocker.h"
+#include "DungeonPushableBlock.h"
 
 Crawl::DungeonGameManager* Crawl::DungeonGameManager::instance = nullptr;
 
@@ -112,8 +113,6 @@ bool Crawl::DungeonGameManager::DrawGUIInternal()
 void Crawl::DungeonGameManager::Update(float delta)
 {
 	if (Input::Keyboard(GLFW_KEY_KP_ENTER).Down()) MakeLobbyExitTraversable();
-
-	CheckForBrokenLevel();
 
 	UpdateFTUE(delta);
 
@@ -429,9 +428,9 @@ void Crawl::DungeonGameManager::DoEvent(int eventID)
 		//player->ClearFTUEPrompt();
 		return;
 	}
-	case 3: // trigger Move FTUE
+	case 3: // trigger Push Box Prompt
 	{
-		//player->SetFTUEPrompt(promptMove);
+		DungeonGameManager::Get()->DoFTUEEvent(DungeonGameManager::FTUEEvent::Box);
 		return;
 	}
 
@@ -758,6 +757,12 @@ void Crawl::DungeonGameManager::QueueFTUEPrompt(DungeonGameFTUE::FTUEType type)
 		else tex = TextureManager::GetTexture(ftueReset);
 		break;
 	}
+	case DungeonGameFTUE::FTUEType::ResetHold:
+	{
+		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueResetHoldPad);
+		else tex = TextureManager::GetTexture(ftueResetHold);
+		break;
+	}
 	case DungeonGameFTUE::FTUEType::Push:
 	{
 		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftuePushPad);
@@ -766,38 +771,34 @@ void Crawl::DungeonGameManager::QueueFTUEPrompt(DungeonGameFTUE::FTUEType type)
 	}
 	case DungeonGameFTUE::FTUEType::Door1:
 	{
-		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueDoor1);
-		else tex = TextureManager::GetTexture(ftueDoor1);
+		tex = TextureManager::GetTexture(ftueDoor1);
 		break;
 	}
 	case DungeonGameFTUE::FTUEType::Door2:
 	{
-		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueDoor2);
-		else tex = TextureManager::GetTexture(ftueDoor2);
+		tex = TextureManager::GetTexture(ftueDoor2);
 		break;
 	}
 	case DungeonGameFTUE::FTUEType::ChaserPush:
 	{
-		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftuePush);
+		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftuePushPad);
 		else tex = TextureManager::GetTexture(ftuePush);
 		break;
 	}
 	case DungeonGameFTUE::FTUEType::Run:
 	{
-		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueRun);
-		else tex = TextureManager::GetTexture(ftueRun);
+		tex = TextureManager::GetTexture(ftueRun);
 		break;
 	}
 	case DungeonGameFTUE::FTUEType::Key:
 	{
-		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueKey);
-		else tex = TextureManager::GetTexture(ftueKey);
+		tex = TextureManager::GetTexture(ftueKey);
 		break;
 	}
 	case DungeonGameFTUE::FTUEType::FailedLevel:
 	{
-		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueReset);
-		else tex = TextureManager::GetTexture(ftueResetPad);
+		if (useGamepadPrompt) tex = TextureManager::GetTexture(ftueResetHoldPad);
+		else tex = TextureManager::GetTexture(ftueResetHold);
 		break;
 	}
 	}
@@ -919,6 +920,21 @@ void Crawl::DungeonGameManager::CheckForBrokenLevel()
 		return;
 	}
 
+	if (player->currentDungeon->dungeonFileName == "Tutorial2")
+	{
+		// first box
+		if (player->currentDungeon->pushableBlocks[0]->position.x == -3) player->currentDungeon->isFailed = true;
+		if (player->currentDungeon->pushableBlocks[0]->position.y == 2) player->currentDungeon->isFailed = true;
+		if (player->currentDungeon->pushableBlocks[0]->position.y == -2) player->currentDungeon->isFailed = true;
+		if (player->currentDungeon->pushableBlocks[0]->position == ivec2( 1, 1 )) player->currentDungeon->isFailed = true;
+
+		// second box - not exhaustive but good enough.
+		if (player->currentDungeon->pushableBlocks[1]->position == ivec2(8, -2)) player->currentDungeon->isFailed = true;
+		if (player->currentDungeon->pushableBlocks[1]->position == ivec2(11, 1)) player->currentDungeon->isFailed = true;
+		
+	}
+
+
 	if (player->currentDungeon->dungeonFileName == "MurderinaBoxes")
 	{
 		if (player->currentDungeon->pushableBlocks.size() == 0) player->currentDungeon->isFailed = true;
@@ -954,6 +970,11 @@ void Crawl::DungeonGameManager::DoFTUEEvent(FTUEEvent event)
 	case FTUEEvent::Reset:
 	{
 		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Reset);
+		break;
+	}
+	case FTUEEvent::ResetHold:
+	{
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::ResetHold);
 		break;
 	}
 	case FTUEEvent::Wait:
