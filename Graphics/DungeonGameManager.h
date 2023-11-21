@@ -140,7 +140,6 @@ namespace Crawl
 
 
 		// Lightening Strikes
-		float emissiveValue = 1.0f;
 		int lobbyLightningLightID = 6969;
 		DungeonLight* lobbyLightingLight = nullptr;
 		string lightningSfx = "crawler/sound/load/lightning_strike.wav";

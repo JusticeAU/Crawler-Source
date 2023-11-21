@@ -64,8 +64,6 @@ void Crawl::DungeonPlayer::SetLanternEmissionScale(float emissionScale)
 // Returns true if the player made a game-state changing action
 bool Crawl::DungeonPlayer::Update(float deltaTime)
 {
-	DungeonGameManager::Get()->DrawGUI();
-
 #ifndef RELEASE
 	DrawDevelopmentBuildUI();
 #endif // !RELEASE

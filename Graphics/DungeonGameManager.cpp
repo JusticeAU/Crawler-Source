@@ -55,10 +55,6 @@ bool Crawl::DungeonGameManager::DrawGUI()
 
 bool Crawl::DungeonGameManager::DrawGUIInternal()
 {
-	ImGui::DragFloat("Emissive Scale", &emissiveValue, 0.1, 0, 5);
-	int quantity = lighteningAffectedRenderers.size();
-	ImGui::InputInt("quantity", &quantity);
-
 	bool changed = false;
 	if (ImGui::Checkbox("Manage Lobby", &manageLobby)) changed = true;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
