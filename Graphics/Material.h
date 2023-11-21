@@ -68,6 +68,8 @@ public:
 	string roughnessMapName = "";
 	string aoMapName		= "";
 	string emissiveMapName = "";
+
+	float tiling = 1.0f;
 };
 
 extern void to_json(nlohmann::ordered_json& j, const Material& mat);

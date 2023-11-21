@@ -68,6 +68,8 @@ void RenderBatch::DrawBatches()
 				else
 					shader->SetBoolUniform("useAlphaCutoff", false);
 
+				shader->SetFloatUniform("tiling", material->tiling);
+
 				if (material->albedoMap) material->albedoMap->Bind(4);
 				shader->SetIntUniform("albedoMap", 4);
 

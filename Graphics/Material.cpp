@@ -256,6 +256,8 @@ void Material::DrawGUI()
 			ImGui::EndCombo();
 		}
 	}
+	ImGui::DragFloat("Tiling Scale", &tiling, -0.1, -10, 10);
+
 	if (ImGui::BeginCombo("Blend Mode", Material::blendModeStrings[(int)blendMode].c_str()))
 	{
 		for (int i = 0; i < (int)Material::BlendMode::Count; i++)
@@ -332,6 +334,9 @@ void to_json(nlohmann::ordered_json& j, const Material& mat)
 
 	if(!mat.backFaceCulling)
 		j["backFaceCulling"] = false;
+
+	if (mat.tiling != 1.0f)
+		j["tiling"] = mat.tiling;
 }
 
 void from_json(const nlohmann::ordered_json& j, Material& mat)
@@ -360,9 +365,12 @@ void from_json(const nlohmann::ordered_json& j, Material& mat)
 	if (j.contains("blendMode"))		j.at("blendMode").get_to(mat.blendMode);
 	if (j.contains("backFaceCulling"))	j.at("backFaceCulling").get_to(mat.backFaceCulling);
 
+	if (j.contains("tiling"))			j.at("tiling").get_to(mat.tiling);
 
 	if (mat.shaderName != "") mat.shader = ShaderManager::GetShaderProgram(mat.shaderName);
 	if (mat.shaderSkinnedName != "") mat.shaderSkinned = ShaderManager::GetShaderProgram(mat.shaderSkinnedName);
+
+
 }
 
 string Material::blendModeStrings[3] = {
