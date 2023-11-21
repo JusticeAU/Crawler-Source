@@ -16,6 +16,8 @@
 
 #include "TextureManager.h"
 #include "SceneRenderer.h"
+#include "ModelManager.h"
+#include "ComponentRenderer.h"
 
 #include "Input.h"
 #include "DungeonEnemyChase.h"
@@ -29,6 +31,13 @@ Crawl::DungeonGameManager::DungeonGameManager()
 	instance = this;
 	// Generate the padlock Z positions based on the hinges.
 	for (int i = 0; i < 4; i++) frontDoorPadlockZPositions[i] = frontDoorHingeZPositions[i] + frontDoorPadlockZOffset;
+
+	// Populate our list of models that have renderes affected by emissive scale
+	lighteningAffectedModels.push_back(ModelManager::GetModel("crawler/model/tile_arched_window.fbx"));
+	lighteningAffectedModels.push_back(ModelManager::GetModel("crawler/model/tile_window_square.fbx"));
+	lighteningAffectedModels.push_back(ModelManager::GetModel("crawler/model/tile_window_square_2.fbx"));
+	lighteningAffectedModels.push_back(ModelManager::GetModel("crawler/model/decoration_window_tall.fbx"));
+	lighteningAffectedModels.push_back(ModelManager::GetModel("crawler/model/decoration_lobby_mainwindow.fbx"));
 }
 
 void Crawl::DungeonGameManager::Init()
@@ -46,6 +55,10 @@ bool Crawl::DungeonGameManager::DrawGUI()
 
 bool Crawl::DungeonGameManager::DrawGUIInternal()
 {
+	ImGui::DragFloat("Emissive Scale", &emissiveValue, 0.1, 0, 5);
+	int quantity = lighteningAffectedRenderers.size();
+	ImGui::InputInt("quantity", &quantity);
+
 	bool changed = false;
 	if (ImGui::Checkbox("Manage Lobby", &manageLobby)) changed = true;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
@@ -252,8 +265,33 @@ void Crawl::DungeonGameManager::ClearLocksObject()
 	frontDoorUpdateTriggered = false;
 }
 
+void Crawl::DungeonGameManager::FindAllEmissiveWindows()
+{
+	lighteningAffectedRenderers.clear();
+
+	for (auto& renderer : Scene::s_instance->m_rendererComponents)
+	{
+		for (auto& model : lighteningAffectedModels)
+		{
+			if (model == renderer->model)
+			{
+				lighteningAffectedRenderers.push_back(renderer);
+				renderer->emissiveScale = 0.0f;
+				break;
+			}
+		}
+	}
+}
+
+void Crawl::DungeonGameManager::SetAllEmissiveWindows(float emissiveScale)
+{
+	for (auto& renderer : lighteningAffectedRenderers) renderer->emissiveScale = emissiveScale;
+}
+
 void Crawl::DungeonGameManager::ConfigureLobby()
 {
+	FindAllEmissiveWindows();
+
 	Dungeon* lobby1 = player->GetDungeonLoaded();
 	Dungeon* lobby2 = player->GetDungeonLobbyLevel2();
 	
@@ -531,6 +569,7 @@ void Crawl::DungeonGameManager::UpdateLobbyVisualsLightning(float delta)
 		float t = glm::bounceEaseIn(glm::clamp(lobbyLightningTimeCurrent / lobbyLightningStrikeTime, 0.0f, 1.0f));
 		t = glm::clamp(t, 0.0f, 1.0f);
 		lobbyLightingLight->intensityCurrent = MathUtils::Lerp(0.0f, 1000.0f, t);
+		SetAllEmissiveWindows(MathUtils::Lerp(0.0f, 10.0f, t));
 		lobbyLightingLight->UpdateLight();
 
 		if (t > 0.3f && !playedSfx)

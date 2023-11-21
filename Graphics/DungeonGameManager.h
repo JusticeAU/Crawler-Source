@@ -6,6 +6,8 @@
 #include <string>
 
 class Object;
+class ComponentRenderer;
+class Model;
 
 namespace Crawl
 {
@@ -89,6 +91,9 @@ namespace Crawl
 		void RemoveFrontDoorLock(int lockID) { frontDoorUnlocked[lockID] = true; }
 		void ClearLocksObject();
 
+		void FindAllEmissiveWindows();
+		void SetAllEmissiveWindows(float emissiveScale);
+
 		void ConfigureLobby();
 		void ConfigureLobbyDoor();
 		void UpdateDoorStateEvent();
@@ -133,12 +138,17 @@ namespace Crawl
 		DungeonDoor* doors[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 		DungeonLight* doorLights[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 
+
+		// Lightening Strikes
+		float emissiveValue = 1.0f;
 		int lobbyLightningLightID = 6969;
 		DungeonLight* lobbyLightingLight = nullptr;
 		string lightningSfx = "crawler/sound/load/lightning_strike.wav";
 		bool playedSfx = false;
 		float lobbyLightningTimeCurrent = 0.0f;
 		const float lobbyLightningStrikeTime = 0.5f;
+		std::vector<Model*> lighteningAffectedModels; // List of model pointers that should have their emmissive scale controlled by the lighting strike
+		std::vector<ComponentRenderer*> lighteningAffectedRenderers; // list of renderers as build by matching model pointers above;
 
 		// Front Door lock hinges
 		bool frontDoorUpdateTriggered = false;
