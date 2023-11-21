@@ -729,6 +729,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Button("Yes"))
 		{
 			TileEditDeleteAllObjectsOnTile();
+			MarkUnsavedChanges();
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::SameLine();
