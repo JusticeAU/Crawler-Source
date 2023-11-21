@@ -330,8 +330,8 @@ void to_json(nlohmann::ordered_json& j, const Material& mat)
 	if (mat.blendMode != Material::BlendMode::Opaque)
 		j["blendMode"] = mat.blendMode;
 
-	if(mat.backFaceCulling)
-		j["backFaceCulling"] = true;
+	if(!mat.backFaceCulling)
+		j["backFaceCulling"] = false;
 }
 
 void from_json(const nlohmann::ordered_json& j, Material& mat)
