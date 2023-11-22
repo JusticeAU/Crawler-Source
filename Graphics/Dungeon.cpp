@@ -9,6 +9,7 @@
 #include "DungeonTransporter.h"
 #include "DungeonSpikes.h"
 #include "DungeonPushableBlock.h"
+#include "DungeonPushableBlockExploding.h"
 #include "DungeonShootLaser.h"
 #include "DungeonDamageVisual.h"
 #include "DungeonShootLaserProjectile.h"
@@ -1223,6 +1224,11 @@ Crawl::DungeonPushableBlock* Crawl::Dungeon::GetPushableBlockAtPosition(ivec2 po
 	}
 
 	return nullptr;
+}
+
+void Crawl::Dungeon::CreateBoxExplosionAtPosition(vec3 position)
+{
+	explodingBlocks.emplace_back(new DungeonPushableBlockExploding(position));
 }
 
 Crawl::DungeonTransporter* Crawl::Dungeon::GetTransporter(string transporterName)
@@ -2459,6 +2465,10 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 		delete pushableBlocks[i];
 	pushableBlocks.clear();
 
+	for (int i = 0; i < explodingBlocks.size(); i++)
+		delete explodingBlocks[i];
+	explodingBlocks.clear();
+
 	for (int i = 0; i < shootLasers.size(); i++)
 		delete shootLasers[i];
 	shootLasers.clear();
@@ -2701,6 +2711,7 @@ void Crawl::Dungeon::UpdateVisuals(float delta)
 		pushableBlocks[i]->UpdateVisuals(delta);
 		if (pushableBlocks[i]->isDead && pushableBlocks[i]->state == DungeonPushableBlock::STATE::IDLE)
 		{
+			//CreateBoxExplosionAtPosition(pushableBlocks[i]->targetPosition); // Disabled until the skinned mesh comes in
 			RemovePushableBlock(pushableBlocks[i]->position);
 			i--;
 		}

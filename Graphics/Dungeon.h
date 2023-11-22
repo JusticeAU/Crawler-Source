@@ -21,6 +21,7 @@ namespace Crawl
 	class DungeonTransporter;
 	class DungeonSpikes;
 	class DungeonPushableBlock;
+	class DungeonPushableBlockExploding;
 	class DungeonShootLaser;
 	class DungeonDamageVisual;
 	class DungeonShootLaserProjectile;
@@ -121,6 +122,7 @@ namespace Crawl
 		void RemovePushableBlock(ivec2 position);
 		bool IsPushableBlockAtPosition(ivec2 position);
 		DungeonPushableBlock* GetPushableBlockAtPosition(ivec2 position, bool includeDisabled = true);
+		void CreateBoxExplosionAtPosition(glm::vec3 position);
 
 		DungeonShootLaser* CreateShootLaser(ivec2 position, FACING_INDEX facing, unsigned int id);
 		void RemoveDungeonShootLaser(DungeonShootLaser* laser);
@@ -278,7 +280,6 @@ namespace Crawl
 		std::vector<DungeonPushableBlock*> pushableBlocks;
 		std::vector<DungeonShootLaser*> shootLasers;
 		std::vector<DungeonShootLaserProjectile*> shootLaserProjectiles;
-		std::vector<DungeonDamageVisual*> damageVisuals;
 		std::vector<DungeonEnemyBlocker*> blockers;
 
 		std::vector<DungeonEnemyChase*> chasers;
@@ -298,6 +299,9 @@ namespace Crawl
 
 		std::vector<DungeonCollectableKey*> keys;
 		
+		std::vector<DungeonDamageVisual*> damageVisuals;
+		std::vector<DungeonPushableBlockExploding*> explodingBlocks;
+
 		DungeonPlayer* player = nullptr;
 
 

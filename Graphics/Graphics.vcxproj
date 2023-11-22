@@ -310,6 +310,7 @@
     <ClCompile Include="DungeonPlayer.cpp" />
     <ClCompile Include="DungeonActivatorPlate.cpp" />
     <ClCompile Include="DungeonPushableBlock.cpp" />
+    <ClCompile Include="DungeonPushableBlockExploding.cpp" />
     <ClCompile Include="DungeonShootLaser.cpp" />
     <ClCompile Include="DungeonShootLaserProjectile.cpp" />
     <ClCompile Include="DungeonDamageVisual.cpp" />
@@ -396,6 +397,7 @@
     <ClInclude Include="DungeonMirror.h" />
     <ClInclude Include="DungeonPlayer.h" />
     <ClInclude Include="DungeonPushableBlock.h" />
+    <ClInclude Include="DungeonPushableBlockExploding.h" />
     <ClInclude Include="DungeonShootLaser.h" />
     <ClInclude Include="DungeonShootLaserProjectile.h" />
     <ClInclude Include="DungeonDamageVisual.h" />
