@@ -94,6 +94,7 @@ namespace Crawl
 		void ClearCheckpoint();
 
 		void TakeDamage();
+		void TakeKeyAnimation();
 
 		void SetShouldSwitchWith(DungeonEnemySwitcher* switcher) { shouldSwitchWith = switcher; }
 		void SetShouldActivateStairs(DungeonStairs* stairs);
@@ -193,7 +194,6 @@ namespace Crawl
 							// The player stores the level level 2 in memory, and currentDungeon will either be this pointer, or lobbyLevel2.
 		Object* object = nullptr;
 		Object* objectView = nullptr;
-		ComponentAnimator* animator = nullptr;
 		ComponentCamera* camera = nullptr;
 		ComponentLightPoint* light = nullptr;
 		ComponentRenderer* renderer = nullptr;
@@ -277,6 +277,9 @@ namespace Crawl
 
 		// viewmodel stuff
 		// Right hand
+		ComponentAnimator* rhAnimator = nullptr;
+		string rhModelPath = "crawler/model/viewmodel_right.object";
+		string animationRHIdle2 = "crawler/model/viewmodel_right.fbxarm.rig|anim.idle";
 		bool rhShouldBeDown = false;
 		bool rhIsDown = false;
 		RHState stateRH = RHState::Idle;
@@ -294,7 +297,11 @@ namespace Crawl
 		string animationRHUp = animationRHBaseName + "down_reverse";
 		string animationRHStairs = animationRHBaseName + "walk_stairs";
 
-		string animationNamePush = "crawler/model/viewmodel_hands.fbxarmature|armatureaction";
+		// Left Hand
+		ComponentAnimator* lhAnimator = nullptr;
+		string lhModelPath = "crawler/model/viewmodel_left.object";
+		string animationLHGetKey = "crawler/model/viewmodel_left.fbxleft.hand.rig|left.hand";
+		string animationNamePush = "crawler/model/viewmodel_hands.fbxarmature|armatureaction"; // deprecated
 
 		// Accessability crosshair
 		const string crossHairPath = "crawler/texture/gui/crosshair.tga";

@@ -3,6 +3,7 @@
 #include "Object.h"
 #include "Dungeon.h"
 #include "DungeonGameManager.h"
+#include "DungeonPlayer.h"
 #include "AudioManager.h"
 
 Crawl::DungeonCollectableKey::~DungeonCollectableKey()
@@ -31,6 +32,7 @@ void Crawl::DungeonCollectableKey::Interact()
 
 	// mark key as collected in game manager
 	DungeonGameManager::Get()->RemoveFrontDoorLock(lockReleaseID-1); // IDs are 1 indexed on collectable keys.
+	dungeon->player->TakeKeyAnimation();
 	// checkpoint??
 
 	// SFX

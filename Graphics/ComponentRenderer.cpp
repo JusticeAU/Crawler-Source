@@ -292,7 +292,7 @@ void ComponentRenderer::DrawGUI()
 		ImGui::PopID();
 	}
 	ImGui::DragFloat("Emissive Scale", &emissiveScale, 0.05, 0, 1);
-	//ImGui::Checkbox("Casts Shadows", &castsShadows);
+	ImGui::Checkbox("Casts Shadows", &castsShadows);
 
 	//string targetStr = "Target##" + to_string(componentParent->id);
 	//if (ImGui::BeginCombo(targetStr.c_str(), frameBufferName.c_str()))

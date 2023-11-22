@@ -29,9 +29,16 @@ Crawl::DungeonPlayer::DungeonPlayer()
 	// Initialise the player Scene Object;
 	object = Scene::CreateObject();
 	object->LoadFromJSON(ReadJSONFromDisk("crawler/object/player.object"));
-	object->children[0]->children[0]->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/viewmodel.object"));
-	animator = (ComponentAnimator*)object->children[0]->children[0]->children[0]->GetComponent(Component_Animator);
-	animator->StartAnimation(animationRHIdle, true);
+	object->children[0]->children[0]->children[0]->LoadFromJSON(ReadJSONFromDisk(rhModelPath));
+	rhAnimator = (ComponentAnimator*)object->children[0]->children[0]->children[0]->GetComponent(Component_Animator);
+	//rhAnimator->StartAnimation(animationRHIdle, true);
+	rhAnimator->StartAnimation(animationRHIdle2, true);
+
+	object->children[0]->children[1]->children[0]->LoadFromJSON(ReadJSONFromDisk(lhModelPath));
+	lhAnimator = (ComponentAnimator*)object->children[0]->children[1]->children[0]->GetComponent(Component_Animator);
+	//lhAnimator->StartAnimation(animationRHIdle, true);
+
+	
 	objectView = object->children[0];
 	camera = (ComponentCamera*)object->children[0]->GetComponent(Component_Camera);
 	light = (ComponentLightPoint*)object->children[0]->children[1]->GetComponent(Component_LightPoint);
@@ -68,7 +75,7 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	DrawDevelopmentBuildUI();
 #endif // !RELEASE
 
-	UpdateStateRH(deltaTime);
+	//UpdateStateRH(deltaTime);
 	if(showCrosshair) DrawCrosshair();
 
 	switch (state)
@@ -803,56 +810,57 @@ void Crawl::DungeonPlayer::UpdateStateTransporter(float delta)
 void Crawl::DungeonPlayer::SetStateRH(RHState newState)
 {
 	stateRH = newState;
+	return;
 	switch (newState)
 	{
 	case RHState::Idle:
 	{
-		animator->BlendToAnimation(animationRHIdle, 0.1f, 0.0f, true);
+		rhAnimator->BlendToAnimation(animationRHIdle, 0.1f, 0.0f, true);
 		break;
 	}
 	case RHState::DownIdle:
 	{
-		animator->BlendToAnimation(animationRHDownIdle, 0.1f, 0.0f, true);
+		rhAnimator->BlendToAnimation(animationRHDownIdle, 0.1f, 0.0f, true);
 		break;
 	}
 	case RHState::WalkForward:
 	{
-		animator->BlendToAnimation(animationRHWalkForward, 0.1f);
+		rhAnimator->BlendToAnimation(animationRHWalkForward, 0.1f);
 		break;
 	}
 	case RHState::WalkBack:
 	{
-		animator->BlendToAnimation(animationRHWalkBack, 0.1f);
+		rhAnimator->BlendToAnimation(animationRHWalkBack, 0.1f);
 		break;
 	}
 	case RHState::WalkLeft:
 	{
-		animator->BlendToAnimation(animationRHWalkLeft, 0.1f);
+		rhAnimator->BlendToAnimation(animationRHWalkLeft, 0.1f);
 		break;
 	}
 	case RHState::WalkRight:
 	{
-		animator->BlendToAnimation(animationRHWalkRight, 0.1f);
+		rhAnimator->BlendToAnimation(animationRHWalkRight, 0.1f);
 		break;
 	}
 	case RHState::MoveUp:
 	{
-		animator->BlendToAnimation(animationRHUp, 0.1f);
+		rhAnimator->BlendToAnimation(animationRHUp, 0.1f);
 		break;
 	}
 	case RHState::DownWalk:
 	{
-		animator->BlendToAnimation(animationRHWalkForward, 0.1f, 0.0f, true);
+		rhAnimator->BlendToAnimation(animationRHWalkForward, 0.1f, 0.0f, true);
 		break;
 	}
 	case RHState::MoveDown:
 	{
-		animator->BlendToAnimation(animationRHDown, 0.1f);
+		rhAnimator->BlendToAnimation(animationRHDown, 0.1f);
 		break;
 	}
 	case RHState::Stairs:
 	{
-		animator->BlendToAnimation(animationRHStairs, 0.1f);
+		rhAnimator->BlendToAnimation(animationRHStairs, 0.1f);
 		break;
 	}
 	}
@@ -877,7 +885,7 @@ void Crawl::DungeonPlayer::UpdateStateRH(float delta)
 	case RHState::WalkLeft:
 	case RHState::WalkRight:
 	{
-		if (animator->IsFinished())
+		if (rhAnimator->IsFinished())
 		{
 			if (rhIsDown)
 				SetStateRH(RHState::DownIdle);
@@ -888,22 +896,22 @@ void Crawl::DungeonPlayer::UpdateStateRH(float delta)
 	}
 	case RHState::MoveUp:
 	{
-		if (animator->IsFinished()) SetStateRH(RHState::Idle);
+		if (rhAnimator->IsFinished()) SetStateRH(RHState::Idle);
 		break;
 	}
 	case RHState::DownWalk:
 	{
-		if (animator->IsFinished())  SetStateRH(RHState::DownIdle);
+		if (rhAnimator->IsFinished())  SetStateRH(RHState::DownIdle);
 		break;
 	}
 	case RHState::MoveDown:
 	{
-		if (animator->IsFinished())  SetStateRH(RHState::DownIdle);
+		if (rhAnimator->IsFinished())  SetStateRH(RHState::DownIdle);
 		break;
 	}
 	case RHState::Stairs:
 	{
-		if (animator->IsFinished())  SetStateRH(RHState::Idle);
+		if (rhAnimator->IsFinished())  SetStateRH(RHState::Idle);
 		break;
 	}
 	}
@@ -1166,6 +1174,11 @@ void Crawl::DungeonPlayer::ClearCheckpoint()
 void Crawl::DungeonPlayer::TakeDamage()
 {
 	hp -= 1;
+}
+
+void Crawl::DungeonPlayer::TakeKeyAnimation()
+{
+	lhAnimator->BlendToAnimation(animationLHGetKey, 0.0f);
 }
 
 void Crawl::DungeonPlayer::SetShouldActivateStairs(DungeonStairs* stairs)

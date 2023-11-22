@@ -218,7 +218,7 @@ void Crawl::DungeonMenu::DrawMainMenu(float delta)
 
 void Crawl::DungeonMenu::DrawTitleCard(float alpha)
 {
-	ImGui::SetNextWindowSize({ (float)750, (float)250 });
+	ImGui::SetNextWindowSize({ (float)1050, (float)250 });
 	ImGui::SetNextWindowPos({ (float)menuTitleCardPosition.x, (float)menuTitleCardPosition.y }, 0, { 0.5f, 0.0f });
 	ImGui::Begin("Crawler Title Card", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
 	DrawImage(menuTitleCardTexture, alpha);
@@ -347,7 +347,7 @@ void Crawl::DungeonMenu::UpdatePositions()
 	mainMenuYOffset = (screenSize.y / 15) * 14;
 	
 	menuTitleCardPosition.x = screenSize.x / 2;
-	menuTitleCardPosition.y = screenSize.y / 20;
+	menuTitleCardPosition.y = screenSize.y / 14;
 
 	creditsPosition = screenSize / 2.0f;
 }
