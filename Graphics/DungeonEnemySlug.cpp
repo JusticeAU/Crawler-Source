@@ -110,7 +110,7 @@ void Crawl::DungeonEnemySlug::UpdateVisuals(float delta)
 	{
 		turnAmount *= 2.0f;
 		moveCurrent += delta;
-		float t = moveCurrent / moveSpeed;
+		float t = glm::clamp(moveCurrent / moveSpeed, 0.0f, 1.0f);
 		float tEased = glm::sineEaseOut(t);
 		if (moveCurrent > moveSpeed)
 		{

@@ -719,7 +719,7 @@ bool Crawl::Dungeon::ShouldActivateTransporter(ivec2 position, FACING_INDEX dire
 	return false;
 }
 
-bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer, DamageType damageType)
+bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer, DamageType damageType, FACING_INDEX FROM_DIRECTION)
 {
 	bool didDamage = false;
 	//CreateDamageVisual(position, fromPlayer);
@@ -738,7 +738,11 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 		{
 			if (pushableBlocks[i]->position == position)
 			{
-				if(!pushableBlocks[i]->isOnSpikes) pushableBlocks[i]->isDead = true;
+				if (!pushableBlocks[i]->isOnSpikes)
+				{
+					pushableBlocks[i]->isDead = true;
+					CreateBoxExplosionAtPosition(pushableBlocks[i]->object->localPosition, FROM_DIRECTION);
+				}
 				break;
 			}
 		}
@@ -1226,9 +1230,9 @@ Crawl::DungeonPushableBlock* Crawl::Dungeon::GetPushableBlockAtPosition(ivec2 po
 	return nullptr;
 }
 
-void Crawl::Dungeon::CreateBoxExplosionAtPosition(vec3 position)
+void Crawl::Dungeon::CreateBoxExplosionAtPosition(vec3 position, FACING_INDEX direction)
 {
-	explodingBlocks.emplace_back(new DungeonPushableBlockExploding(position));
+	explodingBlocks.emplace_back(new DungeonPushableBlockExploding(position, direction));
 }
 
 Crawl::DungeonTransporter* Crawl::Dungeon::GetTransporter(string transporterName)
@@ -2663,7 +2667,7 @@ void Crawl::Dungeon::PostUpdate()
 	// All Murderinas perform damage
 	for (auto& murderina : slugs)
 	{
-		if(murderina->state != DungeonEnemySlug::DEAD) DamageAtPosition(murderina->position, this, false, Dungeon::DamageType::Murderina);
+		if(murderina->state != DungeonEnemySlug::DEAD) DamageAtPosition(murderina->position, this, false, Dungeon::DamageType::Murderina, murderina->facing);
 	}
 
 	// Events

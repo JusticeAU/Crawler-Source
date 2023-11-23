@@ -93,7 +93,7 @@ namespace Crawl
 		bool ShouldActivateTransporter(ivec2 position, FACING_INDEX direction);
 
 		// Returns true if this hit something
-		bool DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer = false, DamageType damageType = DamageType::Generic);
+		bool DamageAtPosition(ivec2 position, void* dealer, bool fromPlayer = false, DamageType damageType = DamageType::Generic, FACING_INDEX direction = NORTH_INDEX);
 		bool DoKick(ivec2 position, FACING_INDEX facing);
 		
 		void* GetOccupyingObjectAtPosition(ivec2 position);
@@ -122,7 +122,7 @@ namespace Crawl
 		void RemovePushableBlock(ivec2 position);
 		bool IsPushableBlockAtPosition(ivec2 position);
 		DungeonPushableBlock* GetPushableBlockAtPosition(ivec2 position, bool includeDisabled = true);
-		void CreateBoxExplosionAtPosition(glm::vec3 position);
+		void CreateBoxExplosionAtPosition(glm::vec3 position, FACING_INDEX direction);
 
 		DungeonShootLaser* CreateShootLaser(ivec2 position, FACING_INDEX facing, unsigned int id);
 		void RemoveDungeonShootLaser(DungeonShootLaser* laser);
