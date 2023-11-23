@@ -394,6 +394,15 @@ void Crawl::DungeonMenu::UpdateMainMenuCamera(float delta)
 		float tClamped = glm::clamp(t, 0.0f, 1.0f);
 		cameraObject->SetLocalRotationZ(MathUtils::Lerp(-90.0f, -270.0f, glm::sineEaseInOut(tClamped)));
 
+		if (t >= 0.5f)
+		{
+			float moveT = glm::clamp((t - 0.5f) * 2.0f, 0.0f, 1.0f);
+			vec3 newPos = cameraObject->localPosition;
+			float easedMoveT = glm::sineEaseInOut(moveT);
+			newPos.x = MathUtils::Lerp(4.0f, 0.0f, easedMoveT);
+			cameraObject->SetLocalPosition(newPos);
+		}
+
 		if (t >= 1.05f)
 		{
 			introStage = IntroStage::Fly;
@@ -403,12 +412,14 @@ void Crawl::DungeonMenu::UpdateMainMenuCamera(float delta)
 	}
 	case IntroStage::Fly:
 	{
-		float spinT = glm::clamp(newGameSequenceTime / 1.0f, 0.0f, 1.0f);
-		float moveT = glm::clamp(newGameSequenceTime / 1.0f, 0.0f, 1.0f);
+		float spinT = glm::clamp(newGameSequenceTime, 0.0f, 1.0f);
+		float moveT = glm::clamp(newGameSequenceTime, 0.0f, 1.0f);
+		float easedT = glm::sineEaseIn(moveT);
+		float bouncedT = glm::backEaseIn(spinT);
 		vec3 newPos = cameraObject->localPosition;
-		newPos.x = MathUtils::Lerp(0.0f, 22.0f, moveT);
+		newPos.x = MathUtils::Lerp(0.0f, 22.0f, easedT);
 		vec3 newRot = { 0,0,90.0f };
-		newRot.y = MathUtils::Lerp(0.0f, 45, spinT);
+		newRot.y = MathUtils::Lerp(0.0f, 45, easedT);
 		cameraObject->SetLocalPosition(newPos);
 		cameraObject->SetLocalRotation(newRot);
 
