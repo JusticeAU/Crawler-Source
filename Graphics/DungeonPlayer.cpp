@@ -41,7 +41,7 @@ Crawl::DungeonPlayer::DungeonPlayer()
 	
 	objectView = object->children[0];
 	camera = (ComponentCamera*)object->children[0]->GetComponent(Component_Camera);
-	light = (ComponentLightPoint*)object->children[0]->children[1]->GetComponent(Component_LightPoint);
+	light = (ComponentLightPoint*)object->children[0]->children[2]->GetComponent(Component_LightPoint);
 	renderer = (ComponentRenderer*)object->children[0]->children[0]->children[0]->GetComponent(Component_Renderer);
 
 	// Create the lobby second level
@@ -598,6 +598,7 @@ void Crawl::DungeonPlayer::TurnLeft(bool autoReorient)
 
 		object->SetLocalRotationZ(orientationEulers[facing]);
 		objectView->localRotation.z -= 90;
+		dungeon->DoEventTriggerFacing(position, facing);
 	}
 	else
 	{
@@ -632,6 +633,7 @@ void Crawl::DungeonPlayer::TurnRight(bool autoReorient)
 
 		object->SetLocalRotationZ(orientationEulers[facing]);
 		objectView->localRotation.z += 90;
+		dungeon->DoEventTriggerFacing(position, facing);
 	}
 	else
 	{
