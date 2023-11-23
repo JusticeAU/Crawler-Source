@@ -420,17 +420,25 @@ void Application::Update(float delta)
 	}
 	case Mode::Programming:
 	{
-		MeshManager::DrawGUI();
-		TextureManager::DrawGUI();
-		ShaderManager::DrawGUI();
-		MaterialManager::DrawGUI();
-		ModelManager::DrawGUI();
-		AudioManager::DrawGUI();
-		Scene::s_instance->DrawGUI();
-		Scene::s_instance->renderer->DrawGUI();
+		if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_F9).Down()) dontDrawGUI = !dontDrawGUI;
+		if (dontDrawGUI)
+		{
+
+		}
+		else
+		{
+			MeshManager::DrawGUI();
+			TextureManager::DrawGUI();
+			ShaderManager::DrawGUI();
+			MaterialManager::DrawGUI();
+			ModelManager::DrawGUI();
+			AudioManager::DrawGUI();
+			Scene::s_instance->DrawGUI();
+			Scene::s_instance->renderer->DrawGUI();
+			Scene::s_editorCamera->DrawGUI();
+		}
 		//Scene::s_instance->renderer->DrawShadowCubeMappingGUI();
 		Scene::s_editorCamera->Update(delta);
-		Scene::s_editorCamera->DrawGUI();
 		break;
 	}
 	case Mode::Scene:

@@ -66,4 +66,6 @@ public:
 	Crawl::ArtTester* artTester = nullptr;
 
 	Crawl::DungeonMenu* menu = nullptr;
+
+	bool dontDrawGUI = false;
 };

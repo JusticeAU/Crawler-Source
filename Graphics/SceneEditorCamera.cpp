@@ -85,6 +85,9 @@ void SceneEditorCamera::DrawGUI()
 		ImGui::SliderFloat("Look Speed", &lookSpeed, 0.01f, 0.5f);
 		ImGui::SliderFloat("Near Clip", &camera->nearClip, 0.001f, 5.0f);
 		ImGui::SliderFloat("Far Clip", &camera->farClip, 5.0f, 10000.0f);
+		ImGui::InputFloat3("Position", &object->localPosition.x);
+		ImGui::InputFloat3("Rotation", &object->localRotation.x);
+
 
 		ImGui::Text("Controls:");
 		ImGui::Text("Right Click +");
