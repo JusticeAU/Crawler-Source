@@ -279,17 +279,17 @@ namespace Crawl
 		// Right hand
 		ComponentAnimator* rhAnimator = nullptr;
 		string rhModelPath = "crawler/model/viewmodel_right.object";
-		string animationRHIdle2 = "crawler/model/viewmodel_right.fbxarm.rig|anim.idle";
+		//string animationRHIdle2 = "crawler/model/viewmodel_right.fbxarm.riganim.idle";
 		bool rhShouldBeDown = false;
 		bool rhIsDown = false;
 		RHState stateRH = RHState::Idle;
-		string animationRHBaseName = "crawler/model/viewmodel.fbxviewmodel_rig|";
+		string animationRHBaseName = "crawler/model/viewmodel_right.fbx";
 
-		string animationRHIdle = animationRHBaseName + "idle";
+		string animationRHIdle = animationRHBaseName + "anim.idle";
 		string animationRHWalkForward = animationRHBaseName + "grid_move_forward";
-		string animationRHWalkBack = animationRHBaseName + "grid_move_back";
+		string animationRHWalkBack = animationRHBaseName + "grid_move_backward";
 		string animationRHWalkLeft = animationRHBaseName + "grid_move_left";
-		string animationRHWalkRight = animationRHBaseName + "grid_move_right";
+		string animationRHWalkRight = animationRHBaseName + "grid_move_right.001";
 
 		string animationRHDown = animationRHBaseName + "down";
 		string animationRHDownIdle = animationRHBaseName + "down_idle";

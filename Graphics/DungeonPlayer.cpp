@@ -31,12 +31,11 @@ Crawl::DungeonPlayer::DungeonPlayer()
 	object->LoadFromJSON(ReadJSONFromDisk("crawler/object/player.object"));
 	object->children[0]->children[0]->children[0]->LoadFromJSON(ReadJSONFromDisk(rhModelPath));
 	rhAnimator = (ComponentAnimator*)object->children[0]->children[0]->children[0]->GetComponent(Component_Animator);
-	//rhAnimator->StartAnimation(animationRHIdle, true);
-	rhAnimator->StartAnimation(animationRHIdle2, true);
+	rhAnimator->StartAnimation(animationRHIdle, true);
+	//rhAnimator->StartAnimation(animationRHIdle2, true);
 
 	object->children[0]->children[1]->children[0]->LoadFromJSON(ReadJSONFromDisk(lhModelPath));
 	lhAnimator = (ComponentAnimator*)object->children[0]->children[1]->children[0]->GetComponent(Component_Animator);
-	//lhAnimator->StartAnimation(animationRHIdle, true);
 
 	
 	objectView = object->children[0];
@@ -75,7 +74,7 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	DrawDevelopmentBuildUI();
 #endif // !RELEASE
 
-	//UpdateStateRH(deltaTime);
+	UpdateStateRH(deltaTime);
 	if(showCrosshair) DrawCrosshair();
 
 	switch (state)
@@ -812,7 +811,6 @@ void Crawl::DungeonPlayer::UpdateStateTransporter(float delta)
 void Crawl::DungeonPlayer::SetStateRH(RHState newState)
 {
 	stateRH = newState;
-	return;
 	switch (newState)
 	{
 	case RHState::Idle:
