@@ -477,7 +477,7 @@ void Crawl::DungeonMenu::ExecuteNewGameButton()
 	for (auto& menuButton : menuButtonsMain) menuButton->SetEnabled(false);
 
 	Window::GetWindow()->SetMouseCursorHidden(true);
-	AudioManager::StopMusic();
+	AudioManager::ChangeMusic("crawler/sound/stream/intro.ogg", false);
 }
 
 void Crawl::DungeonMenu::StartNewGame()
@@ -490,6 +490,7 @@ void Crawl::DungeonMenu::StartNewGame()
 	Scene::SetCameraByName("Player Camera");
 	cameraObject->markedForDeletion = true;
 	menuTitleCardAlpha = 1.0f;
+	AudioManager::StopMusic();
 }
 
 void Crawl::DungeonMenu::ExecuteQuitGameButton()

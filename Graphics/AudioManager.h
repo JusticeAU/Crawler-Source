@@ -39,7 +39,7 @@ public:
 	static const unordered_map<string, WavStream*>* Streams() { return &s_instance->m_stream; }
 
 	static void StartMusic();
-	static void ChangeMusic(string name);
+	static void ChangeMusic(string name, bool loop = true);
 	static void StopMusic();
 
 	static void PauseMusic();

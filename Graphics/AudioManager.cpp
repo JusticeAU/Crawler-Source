@@ -122,11 +122,11 @@ void AudioManager::StartMusic()
 	s_instance->gSoloud.fadeVolume(s_instance->m_currentTrack, 1.0f, .5f);
 }
 
-void AudioManager::ChangeMusic(string name)
+void AudioManager::ChangeMusic(string name, bool loop)
 {
 	s_instance->gSoloud.fadeVolume(s_instance->m_currentTrack, 0.0f, 1.0f);
 	s_instance->m_currentTrack = s_instance->gSoloud.play(*s_instance->m_stream[name]);
-	s_instance->gSoloud.setLooping(s_instance->m_currentTrack, true);
+	s_instance->gSoloud.setLooping(s_instance->m_currentTrack, loop);
 }
 
 void AudioManager::StopMusic()
