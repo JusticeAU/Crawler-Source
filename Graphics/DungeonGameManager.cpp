@@ -1002,6 +1002,11 @@ void Crawl::DungeonGameManager::DoFTUEEvent(FTUEEvent event)
 		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Look);
 		break;
 	}
+	case FTUEEvent::Interact:
+	{
+		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Interact);
+		break;
+	}
 	case FTUEEvent::Reset:
 	{
 		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Reset);
@@ -1012,6 +1017,7 @@ void Crawl::DungeonGameManager::DoFTUEEvent(FTUEEvent event)
 		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::ResetHold);
 		break;
 	}
+
 	case FTUEEvent::Wait:
 	{
 		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Wait);
