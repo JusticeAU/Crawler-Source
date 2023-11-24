@@ -10,15 +10,16 @@ namespace Crawl
 	class DungeonPushableBlockExploding
 	{
 	public:
+		DungeonPushableBlockExploding(glm::vec3 position);
 		DungeonPushableBlockExploding(glm::vec3 position, FACING_INDEX direction);
 		~DungeonPushableBlockExploding();
 	private:
 		Object* object;
-		//std::string modelPath = "crawler/model/monster_chaser.";
-		std::string modelPath = "crawler/model/interactable_crate_break_entrance.";
+		std::string modelPathMurderina = "crawler/model/interactable_crate_break_entrance.";
+		std::string animationNameMurderina = modelPathMurderina + "fbxscene";
 
-		//std::string animationName = modelPath + "someanimation";
-		std::string animationName = modelPath + "fbxscene";
+		std::string modelPathBlocker = "crawler/model/interactable_crate_break_blocker.";
+		std::string animationNameBlocker = modelPathBlocker + "fbxscene";
 	};
 }
 

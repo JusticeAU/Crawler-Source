@@ -1,5 +1,6 @@
 #pragma once
 #include "glm.hpp"
+#include "DungeonHelpers.h"
 #include "serialisation.h"
 
 using glm::ivec2;
@@ -15,7 +16,8 @@ namespace Crawl
 		{
 			IDLE,
 			MOVING,
-			FALLING
+			FALLING,
+			EXPLODING
 		};
 		~DungeonPushableBlock();
 		ivec2 position;
@@ -23,7 +25,7 @@ namespace Crawl
 		STATE state = STATE::IDLE;
 
 		bool isOnSpikes = false;
-		bool isDead = false;
+
 		
 		Object* object;
 		Dungeon* dungeon;
@@ -42,8 +44,16 @@ namespace Crawl
 		float fallCurrent = 0.0f;
 		const float fallPosition = -1.33f;
 
+		// exploding
+		bool isDead = false;
+		float fuse = 0.0f;
+		int explodeDirection = -1;
+
 		void MoveTo(ivec2 position, bool snap = false);
 		void UpdateVisuals(float delta);
+
+		void Explode(float fuse);
+		void Explode(float fuse, FACING_INDEX fromDirection);
 	private:
 	};
 

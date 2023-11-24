@@ -740,8 +740,10 @@ bool Crawl::Dungeon::DamageAtPosition(ivec2 position, void* dealer, bool fromPla
 			{
 				if (!pushableBlocks[i]->isOnSpikes)
 				{
-					pushableBlocks[i]->isDead = true;
-					CreateBoxExplosionAtPosition(pushableBlocks[i]->object->localPosition, FROM_DIRECTION);
+					if (damageType == DamageType::Murderina)
+						pushableBlocks[i]->Explode(0.0f, FROM_DIRECTION);
+					else if (damageType == DamageType::Blocker)
+						pushableBlocks[i]->Explode(0.4);
 				}
 				break;
 			}
@@ -1228,6 +1230,11 @@ Crawl::DungeonPushableBlock* Crawl::Dungeon::GetPushableBlockAtPosition(ivec2 po
 	}
 
 	return nullptr;
+}
+
+void Crawl::Dungeon::CreateBoxExplosionAtPosition(glm::vec3 position)
+{
+	explodingBlocks.emplace_back(new DungeonPushableBlockExploding(position));
 }
 
 void Crawl::Dungeon::CreateBoxExplosionAtPosition(vec3 position, FACING_INDEX direction)
@@ -2713,9 +2720,12 @@ void Crawl::Dungeon::UpdateVisuals(float delta)
 	for (int i = 0; i < pushableBlocks.size(); i++)
 	{
 		pushableBlocks[i]->UpdateVisuals(delta);
-		if (pushableBlocks[i]->isDead && pushableBlocks[i]->state == DungeonPushableBlock::STATE::IDLE)
+		if (pushableBlocks[i]->state == DungeonPushableBlock::STATE::EXPLODING && pushableBlocks[i]->fuse <= 0)
 		{
-			//CreateBoxExplosionAtPosition(pushableBlocks[i]->targetPosition); // Disabled until the skinned mesh comes in
+			if (pushableBlocks[i]->explodeDirection == -1)
+				CreateBoxExplosionAtPosition(pushableBlocks[i]->targetPosition);
+			else
+				CreateBoxExplosionAtPosition(pushableBlocks[i]->targetPosition, (FACING_INDEX)pushableBlocks[i]->explodeDirection);
 			RemovePushableBlock(pushableBlocks[i]->position);
 			i--;
 		}

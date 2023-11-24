@@ -86,5 +86,26 @@ void Crawl::DungeonPushableBlock::UpdateVisuals(float delta)
 		}
 		break;
 	}
+	case STATE::EXPLODING:
+	{
+		fuse -= delta;
+		break;
 	}
+	}
+}
+
+void Crawl::DungeonPushableBlock::Explode(float fuse)
+{
+	isDead = true;
+	state = STATE::EXPLODING;
+	this->fuse = fuse;
+	DungeonTile* tile = dungeon->GetTile(position);
+	if (tile) tile->occupied = false;
+}
+
+void Crawl::DungeonPushableBlock::Explode(float fuse, FACING_INDEX fromDirection)
+{
+	Explode(fuse);
+	explodeDirection = fromDirection;
+
 }
