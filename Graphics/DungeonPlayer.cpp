@@ -233,12 +233,12 @@ bool Crawl::DungeonPlayer::UpdateFreeLook(float delta, bool dontAutoReorient)
 	// Auto Re-Orient
 	if (autoReOrientDuringFreeLook && state == IDLE)
 	{
-		if (objectView->localRotation.z > 50)
+		if (objectView->localRotation.z > 45.0f)
 		{
 			TurnLeft(true);
 			return false;
 		}
-		else if (objectView->localRotation.z < -50)
+		else if (objectView->localRotation.z < -45.0f)
 		{
 			TurnRight(true);
 			return false;
