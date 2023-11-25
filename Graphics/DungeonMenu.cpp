@@ -578,7 +578,8 @@ void Crawl::DungeonMenu::ExecuteReturnToMainMenuButton()
 	app->dungeon->Load("crawler/dungeon/lobby.dungeon");
 	player->ResetPlayer();
 	player->SetLevel2(false);
-	player->Teleport({ 11, -2 });
+	player->Teleport(player->currentDungeon->defaultPlayerStartPosition);
+	player->Orient(player->currentDungeon->defaultPlayerStartOrientation);
 	player->SetLanternEmissionScale(1.0f);
 	player->SetLightIntensity(5.0f);
 	SceneRenderer::ambient = 0.03f;
