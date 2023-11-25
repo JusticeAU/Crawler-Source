@@ -109,7 +109,6 @@ namespace Crawl
 		
 		PlayerCommand inputBuffer = PlayerCommand::None;
 
-		bool didJustRespawn = false;
 		bool useRespawnSound = true;
 		bool canResetOrWait = true;
 		bool enableDebugUI = true;

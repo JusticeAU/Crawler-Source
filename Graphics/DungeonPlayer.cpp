@@ -349,8 +349,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		{
 			if (isOnLobbyLevel2) lobbyLevel2Dungeon->GetTile(position)->occupied = false; // because this level doesnt reset, we need to keep it tidy!!
 			Respawn();
-			hasJustPerformedAReset = true;
-			resetTimeCurrent = 0.0f;
+
 			return false;
 		}
 	}
@@ -757,15 +756,13 @@ bool Crawl::DungeonPlayer::UpdateStateDying(float delta)
 		float t = fadeTimeCurrent / fadeTimeTotal;
 		camera->postProcessFadeAmount = fadeIn ? 1 - t : t;
 	}
-	else
+
+	if (Input::Alias("Interact").Down() || Input::Alias("Reset").Down() || Input::Alias("Start").Down()) // respawn
 	{
-		
-		if (Input::Alias("Interact").Down() || Input::Alias("Reset").Down() || Input::Alias("Start").Down()) // respawn
-		{
-			dungeon->RebuildDungeonFromSerialised(dungeon->serialised);
-			Respawn();
-		}
+		dungeon->RebuildDungeonFromSerialised(dungeon->serialised);
+		Respawn();
 	}
+
 	return false;
 }
 
@@ -1116,6 +1113,9 @@ void Crawl::DungeonPlayer::ClearRespawn()
 
 void Crawl::DungeonPlayer::Respawn()
 {
+	hasJustPerformedAReset = true;
+	resetTimeCurrent = 0.0f;
+
 	DungeonGameManager::Get()->ClearAllFTUE();
 
 	if (!ftueEnabled && !ftueInitiated && dungeon->dungeonFileName == "start")
@@ -1126,7 +1126,6 @@ void Crawl::DungeonPlayer::Respawn()
 		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Move);
 	}
 
-	didJustRespawn = true;
 	if(useRespawnSound) AudioManager::PlaySound("crawler/sound/load/start.wav");
 	camera->postProcessFadeAmount = 0.0f;
 
