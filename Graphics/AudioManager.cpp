@@ -152,12 +152,13 @@ SoLoud::handle AudioManager::PlaySound(string soundname, bool loop)
 
 SoLoud::handle AudioManager::PlaySound(string soundname, glm::vec3 position3D, bool loop)
 {
-	s_instance->m_loaded[soundname]->setLooping(loop);
-	return s_instance->gSoloud.play3d(
+	SoLoud::handle handle = s_instance->gSoloud.play3d(
 		*s_instance->m_loaded[soundname],
 		position3D.x,
 		position3D.y,
 		position3D.z);
+	if (loop) s_instance->gSoloud.setLooping(handle, true);
+	return handle;
 }
 
 SoLoud::handle AudioManager::PlayStream(string streamname, bool loop)
@@ -220,11 +221,12 @@ void AudioManager::SetAudioSourceAttentuation(string name, unsigned int attentua
 	sound->set3dAttenuation(attentuationModel, attentionationRollOffFactor);
 }
 
-void AudioManager::SetAudioSourceMinMaxDistance(string name, float minDistance, float maxDistance)
+void AudioManager::SetAudioSourceMinMaxDistance(string name, float minDistance, float maxDistance, bool shouldTickIfInAudible)
 {
 	SoLoud::AudioSource* sound = s_instance->m_loaded.at(name);
 	if (!sound) return;
 
+	sound->setInaudibleBehavior(shouldTickIfInAudible, true);
 	sound->set3dMinMaxDistance(minDistance, maxDistance);
 }
 

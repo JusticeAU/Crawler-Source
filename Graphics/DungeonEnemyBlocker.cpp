@@ -14,11 +14,10 @@ Crawl::DungeonEnemyBlocker::DungeonEnemyBlocker()
 	AudioManager::SetAudioSourceAttentuation(audioSwing, 2, 1);
 	AudioManager::SetAudioSourceAttentuation(audioHit, 2, 1);
 
-	AudioManager::SetAudioSourceMinMaxDistance(audioRaise, 1, 10);
-	AudioManager::SetAudioSourceMinMaxDistance(audioReturn, 1, 10);
-	AudioManager::SetAudioSourceMinMaxDistance(audioSwing, 1, 10);
-	AudioManager::SetAudioSourceMinMaxDistance(audioHit, 1, 10);
-
+	AudioManager::SetAudioSourceMinMaxDistance(audioRaise, 1, 16);
+	AudioManager::SetAudioSourceMinMaxDistance(audioReturn, 1, 16);
+	AudioManager::SetAudioSourceMinMaxDistance(audioSwing, 1, 16);
+	AudioManager::SetAudioSourceMinMaxDistance(audioHit, 1, 16);
 }
 
 Crawl::DungeonEnemyBlocker::~DungeonEnemyBlocker()

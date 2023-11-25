@@ -59,7 +59,7 @@ public:
 	static void EmptyQueue();
 
 	static void SetAudioSourceAttentuation(string name, unsigned int attentuationModel, float attentionationRollOffFactor);
-	static void SetAudioSourceMinMaxDistance(string name, float minDistance, float maxDistance);
+	static void SetAudioSourceMinMaxDistance(string name, float minDistance, float maxDistance, bool shouldTickIfInAudible = false);
 
 
 protected:
