@@ -975,7 +975,7 @@ void* Crawl::Dungeon::GetOccupyingObjectAtPosition(ivec2 position)
 	if (thing) return thing;
 
 	// murderrina
-	thing = GetMurderinaAtPosition(position);
+	thing = GetMurderinaAtPosition(position, false);
 	if (thing) return thing;
 
 	// box
@@ -1628,10 +1628,14 @@ Crawl::DungeonEnemySlug* Crawl::Dungeon::CreateMurderina(ivec2 position, FACING_
 	return slug;
 }
 
-Crawl::DungeonEnemySlug* Crawl::Dungeon::GetMurderinaAtPosition(ivec2 position)
+Crawl::DungeonEnemySlug* Crawl::Dungeon::GetMurderinaAtPosition(ivec2 position, bool returnDeadMurderinas)
 {
 	for (auto& slug : slugs)
-		if (slug->position == position) return slug;
+		if (slug->position == position)
+		{
+			if (!returnDeadMurderinas && slug->state == DungeonEnemySlug::DEAD) continue;
+			else return slug;
+		}
 
 	return nullptr;
 }

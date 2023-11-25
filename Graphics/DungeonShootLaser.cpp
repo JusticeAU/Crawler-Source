@@ -128,7 +128,7 @@ void Crawl::DungeonShootLaser::Fire()
 			}
 			else
 			{
-				bool wasOccupied = tile->occupied || (dungeon->GetMurderinaAtPosition(currentPosition) != nullptr);
+				bool wasOccupied = tile->occupied || (dungeon->GetMurderinaAtPosition(currentPosition, false) != nullptr);
 
 				dungeon->DamageAtPosition(currentPosition, this, false, Dungeon::DamageType::Shooter);
 

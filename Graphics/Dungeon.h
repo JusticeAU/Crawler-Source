@@ -157,7 +157,7 @@ namespace Crawl
 		void RotateMirror(DungeonMirror* mirror, int direction);
 
 		DungeonEnemySlug* CreateMurderina(ivec2 position, FACING_INDEX direction);
-		DungeonEnemySlug* GetMurderinaAtPosition(ivec2 position);
+		DungeonEnemySlug* GetMurderinaAtPosition(ivec2 position, bool returnDeadMurderinas = true);
 		void RemoveSlug(DungeonEnemySlug* slug);
 		
 		DungeonEnemySlugPath* CreateSlugPath(ivec2 position);

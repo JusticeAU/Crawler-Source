@@ -83,7 +83,7 @@ void Crawl::DungeonEnemyBlocker::CheckShouldPrime()
 	if (!tile)
 		return;
 
-	if (tile->occupied || dungeon->GetMurderinaAtPosition(tile->position))
+	if (tile->occupied || dungeon->GetMurderinaAtPosition(tile->position, false))
 	{
 		LogUtils::Log("Object infront - Transition to Upswing");
 		state = State::UpSwing;
