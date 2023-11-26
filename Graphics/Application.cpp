@@ -46,14 +46,14 @@ Application::~Application()
 void Application::LaunchArgumentPreLoad(const char* arg)
 {
 	std::string argument = arg;
-	if (argument == "design") developerMode = true;
+	if (argument == "design") developerModeLaunch = true;
 	else if (argument == "art")
 	{
-		developerMode = true;
+		developerModeLaunch = true;
 		s_mode = Mode::Art;
 	}
-	else if (argument == "scene") developerMode = true;
-	else if (argument == "dev") developerMode = true;
+	else if (argument == "scene") developerModeLaunch = true;
+	else if (argument == "dev") developerModeLaunch = true;
 }
 
 void Application::LaunchArgumentPostLoad(const char* arg)
@@ -108,12 +108,12 @@ void Application::ConstructWindow()
 		LogUtils::Log("Sucessfully initialised GLFW.");
 
 	// Create GLFWwindow Wrapper (class Window).
-	if (developerMode)
+	if (developerModeLaunch)
 	{
-		window = new Window(1600, 900, "Crawler");
-		//window = new Window(1920, 1080, "Crawler");
+		window = new Window(1600, 900, "Escape From Briar Mansion");
+		//window = new Window(1920, 1080, "Escape From Briar Mansion");
 	}
-	else window = new Window("Crawler");
+	else window = new Window("Escape From Briar Mansion");
 	
 	if (!window->GetGLFWwindow())
 	{
@@ -194,12 +194,8 @@ void Application::LoadResourceManagers()
 
 void Application::DoLoadingScreen()
 {
-	if (!developerMode)
-	{
+	if (!developerModeLaunch)
 		PreloadAssetsAndRenderProgress();
-		//TextureManager::PreloadAllFilesContaining("prompt"); // preload the prompt textures because they arent referenced by materials atm.
-		//RefreshImGui();
-	}
 }
 
 void Application::PreloadAssetsAndRenderProgress()
@@ -263,7 +259,8 @@ void Application::InitialiseAdditionalGameAssets()
 	menu->SetEditor(dungeonEditor);
 	Crawl::DungeonGameManager::Get()->SetEditor(dungeonEditor);
 
-	if(developerMode) Crawl::DungeonGameManager::Get()->manageLobby = false;
+	// Disable the game manager for purposes of level editing.
+	if(developerModeLaunch) Crawl::DungeonGameManager::Get()->manageLobby = false;
 }
 
 void Application::InitialiseMenu()
@@ -355,6 +352,20 @@ void Application::Run()
 	}
 }
 
+void Application::HandleDevelopmentModeToggle()
+{
+	if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_F11).Down())
+	{
+		if (s_mode == Mode::Developer)
+			s_mode = s_modeOld;
+		else
+		{
+			s_modeOld = s_mode;
+			s_mode = Mode::Developer;
+		}
+	}
+}
+
 void Application::RefreshImGui()
 {
 	// Refresh ImGui
@@ -379,6 +390,9 @@ void Application::SwapBuffers()
 
 void Application::Update(float delta)
 {
+	Input::Update();
+	HandleDevelopmentModeToggle();
+
 	switch (s_mode)
 	{
 	case Mode::Menu:
@@ -388,12 +402,12 @@ void Application::Update(float delta)
 	}
 	case Mode::Game:
 	{
-		if (dungeonPlayer->Update(delta))
+		if (dungeonPlayer->Update(delta)) // returns true if the player performed a game altering action.
 			dungeon->Update();
 
 		Crawl::DungeonGameManager::Get()->Update(delta);
-
 		dungeon->UpdateVisuals(delta);
+
 		break;
 	}
 	case Mode::Design:
@@ -402,8 +416,8 @@ void Application::Update(float delta)
 		Scene::s_editorCamera->DrawGUI();
 		dungeonEditor->Update();
 		dungeonEditor->DrawGUI();
-		
 		dungeon->UpdateVisuals(delta);
+
 		break;
 	}
 	case Mode::Art:
@@ -418,14 +432,10 @@ void Application::Update(float delta)
 		MaterialManager::DrawGUI();
 		break;
 	}
-	case Mode::Programming:
+	case Mode::Developer:
 	{
-		if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_F9).Down()) dontDrawGUI = !dontDrawGUI;
-		if (dontDrawGUI)
-		{
-
-		}
-		else
+		if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_F8).Down()) developerModeDrawGUI = !developerModeDrawGUI;
+		if (developerModeDrawGUI)
 		{
 			MeshManager::DrawGUI();
 			TextureManager::DrawGUI();
@@ -437,18 +447,11 @@ void Application::Update(float delta)
 			Scene::s_instance->renderer->DrawGUI();
 			Scene::s_editorCamera->DrawGUI();
 		}
-		//Scene::s_instance->renderer->DrawShadowCubeMappingGUI();
+
 		Scene::s_editorCamera->Update(delta);
 		break;
 	}
-	case Mode::Scene:
-	{
-		
 	}
-
-	}
-
-	Input::Update();
 
 	// Check for request for gameplay from editor.
 	if (dungeonEditor != nullptr && dungeonEditor->requestedGameMode)
@@ -459,25 +462,13 @@ void Application::Update(float delta)
 		dungeonEditor->requestedGameMode = false;
 	}
 
-	if (developerMode)
-	{
-		if (Input::Keyboard(GLFW_KEY_LEFT_CONTROL).Pressed() && Input::Keyboard(GLFW_KEY_F11).Down())
-		{
-			if (s_mode == Mode::Programming)
-				s_mode = s_modeOld;
-			else
-			{
-				s_modeOld = s_mode;
-				s_mode = Mode::Programming;
-			}
-		}
-	}
-
 
 	AudioManager::s_instance->Update(delta);
-
 	Scene::s_instance->Update(delta);
 	Scene::s_instance->CleanUp();
+	
+	if(Crawl::DungeonGameManager::Initialised())
+		Crawl::DungeonGameManager::Get()->PostSceneCleanUpTasks();;
 
 	Scene::s_instance->Render();
 }

@@ -24,7 +24,7 @@ public:
 		Game,
 		Design,
 		Art,
-		Programming,
+		Developer,
 		Scene
 	};
 
@@ -42,6 +42,8 @@ public:
 	void InitialiseInput();
 	void Run();
 
+	void HandleDevelopmentModeToggle();
+
 	void RefreshImGui();
 	void RenderImGui();
 
@@ -53,7 +55,9 @@ protected:
 	Camera* camera;
 
 public:
-	bool developerMode = false;
+	bool developerModeLaunch = false;
+	bool developerModeDrawGUI = true;
+
 	// Crawl Game and Editor Objects
 	static Mode s_mode;
 	static Mode s_modeOld;
@@ -67,5 +71,4 @@ public:
 
 	Crawl::DungeonMenu* menu = nullptr;
 
-	bool dontDrawGUI = false;
 };

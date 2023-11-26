@@ -3021,13 +3021,13 @@ std::string Crawl::DungeonEditor::GetDungeonFilePath()
 void Crawl::DungeonEditor::MarkUnsavedChanges()
 {
 	unsavedChanges = true;
-	Window::SetWindowTitle("Crawler Editor | ***(Unsaved Changes)***");
+	Window::SetWindowTitle("Briar Mansion Editor | ***(Unsaved Changes)***");
 }
 
 void Crawl::DungeonEditor::UnMarkUnsavedChanges()
 {
 	unsavedChanges = false;
-	Window::SetWindowTitle("Crawler Editor");
+	Window::SetWindowTitle("Briar Mansion Editor");
 }
 
 void Crawl::DungeonEditor::TileEditUnselectAll()
