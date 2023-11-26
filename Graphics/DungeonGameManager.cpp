@@ -3,6 +3,7 @@
 #include "DungeonGameManagerEvent.h"
 #include "DungeonPlayer.h"
 #include "DungeonDoor.h"
+#include "gtc/noise.hpp"
 #include "DungeonLight.h"
 #include "DungeonTransporter.h"
 #include "Scene.h"
@@ -56,6 +57,7 @@ bool Crawl::DungeonGameManager::DrawGUI()
 bool Crawl::DungeonGameManager::DrawGUIInternal()
 {
 	bool changed = false;
+	if (ImGui::Checkbox("Lightning has Started", &lightningHasStarted));
 	if (ImGui::Checkbox("Manage Lobby", &manageLobby)) changed = true;
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 		ImGui::SetTooltip("Enables whether the GameManager should configure the lobby. If this is disabled then all doors in the lobby will be open.");
@@ -124,15 +126,7 @@ void Crawl::DungeonGameManager::Update(float delta)
 	if (Input::Keyboard(GLFW_KEY_KP_ENTER).Down()) MakeLobbyExitTraversable();
 
 	UpdateFTUE(delta);
-
-	if (player->GetDungeonLoaded()->isLobby)
-	{
-		UpdateLobbyVisuals(delta);
-		UpdateDoorStateEvent();
-	}
-
-	if (startVoid)
-		UpdateVoidVisuals(delta);
+	UpdateVisuals(delta);
 
 }
 
@@ -161,7 +155,7 @@ void Crawl::DungeonGameManager::ResetGameState()
 	for (int i = 0; i < 8; i++) enabledLights[i] = false;
 	enabledLights[0] = true;
 
-	lobbyHasTriggeredLightning = false;
+	lightningHasStarted = false;
 	frontDoorUpdateTriggered = false;
 	for (int i = 0; i < 4; i++)
 	{
@@ -261,10 +255,20 @@ void Crawl::DungeonGameManager::ClearLocksObject()
 	frontDoorUpdateTriggered = false;
 }
 
-void Crawl::DungeonGameManager::FindAllEmissiveWindows()
+void Crawl::DungeonGameManager::PostSceneCleanUpTasks()
+{
+	if (ShouldCaptureEmissiveWindows())
+		FindAllEmissiveWindows();
+}
+
+void Crawl::DungeonGameManager::ClearAllEmissiveWindows()
 {
 	lighteningAffectedRenderers.clear();
+	shouldCaptureEmissiveWindows = true;
+}
 
+void Crawl::DungeonGameManager::FindAllEmissiveWindows()
+{
 	for (auto& renderer : Scene::s_instance->m_rendererComponents)
 	{
 		for (auto& model : lighteningAffectedModels)
@@ -277,6 +281,7 @@ void Crawl::DungeonGameManager::FindAllEmissiveWindows()
 			}
 		}
 	}
+	shouldCaptureEmissiveWindows = false;
 }
 
 void Crawl::DungeonGameManager::SetAllEmissiveWindows(float emissiveScale)
@@ -286,8 +291,6 @@ void Crawl::DungeonGameManager::SetAllEmissiveWindows(float emissiveScale)
 
 void Crawl::DungeonGameManager::ConfigureLobby()
 {
-	FindAllEmissiveWindows();
-
 	Dungeon* lobby1 = player->GetDungeonLoaded();
 	Dungeon* lobby2 = player->GetDungeonLobbyLevel2();
 	
@@ -498,6 +501,7 @@ void Crawl::DungeonGameManager::DoEvent(int eventID)
 	{
 		player->canResetOrWait = false;
 		MakeLobbyVoidUnTraversable();
+		lightningHasStarted = false;
 		startVoid = true;
 		voidTrigger = true;
 		player->SetLanternEmissionScale(0.0f);
@@ -550,6 +554,59 @@ void Crawl::DungeonGameManager::DoEvent(int eventID)
 	}
 }
 
+void Crawl::DungeonGameManager::UpdateVisuals(float delta)
+{
+	UpdateStandardVisuals(delta);
+
+	if (player->currentDungeon->isLobby)
+	{
+		UpdateLobbyVisuals(delta);
+		UpdateDoorStateEvent();
+	}
+	
+	if (startVoid)
+	{
+		UpdateVoidVisuals(delta);
+	}
+}
+
+void Crawl::DungeonGameManager::UpdateStandardVisuals(float delta)
+{
+	if (lightningHasStarted && lightningTimeCurrent < (lightningStrikeTime + 0.15f))
+	{
+		lightningTimeCurrent += delta;
+
+		if (lightningTimeCurrent > 0.0f) // thundersnap
+		{
+			float t = glm::bounceEaseIn(glm::clamp(lightningTimeCurrent / lightningStrikeTime, 0.0f, 1.0f));
+			t = glm::clamp(t, 0.0f, 1.0f);
+			SetAllEmissiveWindows(MathUtils::Lerp(0.0f, 10.0f, t));
+		
+			if (t > 0.3f && !lightningSfxPlayed)
+			{
+				float lighteningVolume = 1.0f;
+				if (!player->GetDungeonLoaded()->isLobby) lighteningVolume = 0.2f;
+				if (lighteningAffectedRenderers.size() == 0) lighteningVolume = 0.1f;
+				
+				AudioManager::PlaySound(lightningSfx, false, lighteningVolume);
+				lightningSfxPlayed = true;
+			}
+		}
+		else // subtle glowing
+		{
+			float t = glm::perlin(glm::vec2(0.0f, lightningTimeCurrent * 0.2f));
+			t = (t + 1.0f) * 0.5f; // remap from -1,1 to 0,1
+			t *= 0.2f; // scale down
+			SetAllEmissiveWindows(t);
+		}
+	}
+	else
+	{
+		lightningTimeCurrent = (-rand() % 15) - 5.0f;
+		lightningSfxPlayed = false;
+	}
+}
+
 void Crawl::DungeonGameManager::UpdateLobbyVisuals(float delta)
 {
 	UpdateLobbyVisualsLightning(delta);
@@ -559,27 +616,16 @@ void Crawl::DungeonGameManager::UpdateLobbyVisuals(float delta)
 void Crawl::DungeonGameManager::UpdateLobbyVisualsLightning(float delta)
 {
 	// lightning strike
-// This gotta be moved to some game / global event manager
-	if (lobbyHasTriggeredLightning && lobbyLightingLight != nullptr && lobbyLightningTimeCurrent < (lobbyLightningStrikeTime + 0.15f))
+	// This gotta be moved to some game / global event manager
+	if (lightningHasStarted && lobbyLightingLight != nullptr && lightningTimeCurrent < (lightningStrikeTime + 0.15f))
 	{
-		float t = glm::bounceEaseIn(glm::clamp(lobbyLightningTimeCurrent / lobbyLightningStrikeTime, 0.0f, 1.0f));
+		float t = glm::bounceEaseIn(glm::clamp(lightningTimeCurrent / lightningStrikeTime, 0.0f, 1.0f));
 		t = glm::clamp(t, 0.0f, 1.0f);
 		lobbyLightingLight->intensityCurrent = MathUtils::Lerp(0.0f, 1000.0f, t);
-		SetAllEmissiveWindows(MathUtils::Lerp(0.0f, 10.0f, t));
 		lobbyLightingLight->UpdateLight();
-
-		if (t > 0.3f && !playedSfx)
-		{
-			AudioManager::PlaySound(lightningSfx);
-			playedSfx = true;
-		}
-		lobbyLightningTimeCurrent += delta;
-
 	}
 	else
 	{
-		lobbyLightningTimeCurrent = (-rand() % 15) - 5.0f;
-		playedSfx = false;
 		if (lobbyLightingLight != nullptr)
 		{
 			lobbyLightingLight->intensityCurrent = 0.0f;
@@ -912,6 +958,7 @@ void Crawl::DungeonGameManager::UpdateFTUE(float delta)
 				ftueAutoCompleteCurrent = 0.0f;
 				ftueIsCompleting = false;
 				ftueQueue.pop();
+				return;
 			}
 		}
 		else

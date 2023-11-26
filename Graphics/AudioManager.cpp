@@ -144,10 +144,10 @@ void AudioManager::UnPauseMusic()
 	s_instance->gSoloud.setPause(s_instance->m_currentTrack, false);
 }
 
-SoLoud::handle AudioManager::PlaySound(string soundname, bool loop)
+SoLoud::handle AudioManager::PlaySound(string soundname, bool loop, float volume)
 {
 	s_instance->m_loaded[soundname]->setLooping(loop);
-	return s_instance->gSoloud.play(*s_instance->m_loaded[soundname]);
+	return s_instance->gSoloud.play(*s_instance->m_loaded[soundname], volume);
 }
 
 SoLoud::handle AudioManager::PlaySound(string soundname, glm::vec3 position3D, bool loop)

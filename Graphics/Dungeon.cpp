@@ -2410,7 +2410,9 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	}
 	
 	if (!isLobbyLevel2)
+	{
 		Scene::s_instance->SetStaticObjectsDirty();
+	}
 
 	// Configure all shoot laser targets
 	for (auto& laser : shootLasers)
@@ -2436,6 +2438,7 @@ void Crawl::Dungeon::InitialiseTileMap()
 void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 {
 	turn = 0;
+	DungeonGameManager::Get()->ClearAllEmissiveWindows();
 
 	for (auto& x : tiles)
 	{

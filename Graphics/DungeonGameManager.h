@@ -64,6 +64,7 @@ namespace Crawl
 		};
 
 		static void Init();
+		static bool Initialised() { return instance != nullptr;  }
 		static DungeonGameManager* Get() { return instance; }
 
 		bool DrawGUI();
@@ -91,6 +92,10 @@ namespace Crawl
 		void RemoveFrontDoorLock(int lockID) { frontDoorUnlocked[lockID] = true; }
 		void ClearLocksObject();
 
+		void PostSceneCleanUpTasks();
+
+		void ClearAllEmissiveWindows();
+		bool ShouldCaptureEmissiveWindows() { return shouldCaptureEmissiveWindows; }
 		void FindAllEmissiveWindows();
 		void SetAllEmissiveWindows(float emissiveScale);
 
@@ -102,7 +107,9 @@ namespace Crawl
 
 		void DoEvent(int eventID);
 
-		void ActivateLobbyLight() { lobbyHasTriggeredLightning = true; lobbyLightningTimeCurrent = 0.0f; }
+		void ActivateLobbyLight() { lightningHasStarted = true; lightningTimeCurrent = 0.0f; }
+		void UpdateVisuals(float delta);
+		void UpdateStandardVisuals(float delta);
 		void UpdateLobbyVisuals(float delta);
 		void UpdateLobbyVisualsLightning(float delta);
 		void UpdateLobbyVisualsLocks(float delta);
@@ -130,7 +137,7 @@ namespace Crawl
 		// Status
 		DoorState doorStates[8] = { DoorState::Open, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed, DoorState::Closed };
 		bool enabledLights[8] = { true, false, false, false, false, false, false, false };
-		bool lobbyHasTriggeredLightning = false;
+		bool lightningHasStarted = false;
 		
 		// References
 		std::string doorNames[8] = { "G  South 1", "G  North 1", "L2 North 1", "L2 North 2", "L2 North 3","L2 South 1", "L2 South 2", "L2 South 3" };
@@ -139,13 +146,17 @@ namespace Crawl
 		DungeonLight* doorLights[8] = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 
 
-		// Lightening Strikes
+		// Standard Visuals
+		float timeCurrent = 0.0f;
+		bool shouldCaptureEmissiveWindows = true;
+
+		// Lobby Visuals
 		int lobbyLightningLightID = 6969;
 		DungeonLight* lobbyLightingLight = nullptr;
 		string lightningSfx = "crawler/sound/load/lightning_strike.wav";
-		bool playedSfx = false;
-		float lobbyLightningTimeCurrent = 0.0f;
-		const float lobbyLightningStrikeTime = 0.5f;
+		bool lightningSfxPlayed = false;
+		float lightningTimeCurrent = 0.0f;
+		const float lightningStrikeTime = 0.5f;
 		std::vector<Model*> lighteningAffectedModels; // List of model pointers that should have their emmissive scale controlled by the lighting strike
 		std::vector<ComponentRenderer*> lighteningAffectedRenderers; // list of renderers as build by matching model pointers above;
 

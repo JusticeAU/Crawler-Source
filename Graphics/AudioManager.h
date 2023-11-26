@@ -45,7 +45,7 @@ public:
 	static void PauseMusic();
 	static void UnPauseMusic();
 
-	static SoLoud::handle PlaySound(string soundname, bool loop = false);
+	static SoLoud::handle PlaySound(string soundname, bool loop = false, float volume = -1.0f);
 	static SoLoud::handle PlaySound(string soundname, glm::vec3 position3D, bool loop = false);
 	static SoLoud::handle PlayStream(string streamname, bool loop = false);
 	static SoLoud::handle PlayStream(string streamname, glm::vec3 position3D, bool loop = false);

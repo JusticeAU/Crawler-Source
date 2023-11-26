@@ -601,7 +601,7 @@ void Crawl::DungeonMenu::ExecuteReturnToMainMenuButton()
 	camera->LoadFromJSON(ReadJSONFromDisk("crawler/object/menu_camera.object"));
 	SetMenuCameraObject(camera);
 	Scene::SetCameraByName("Camera");
-	DrawBlackScreen(1.0f);
+	//DrawBlackScreen(1.0f);
 
 	AudioManager::ChangeMusic(menuMusic);
 }
