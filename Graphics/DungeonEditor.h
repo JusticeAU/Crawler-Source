@@ -23,6 +23,7 @@ namespace Crawl
 
 		void Activate();
 		void Deactivate();
+		void SetCustomLevelsOnly(bool customLevelsOnly);
 		bool requestedGameMode = false;
 		bool dirtyGameplayScene = false;
 
@@ -126,7 +127,7 @@ namespace Crawl
 		const int WALL_VARIANT_COUNT = 3;
 
 		Mode editMode = Mode::TileBrush;
-		std::string editModeNames[6]{ "Tile Brush", "Tile Edit", "Rail Brush", "Rail Edit", "Dungeon Properties", "Game Manager"};
+		std::string editModeNames[6]{ "Tile Brush", "Tile Edit", "Murderina Rail Brush", "Murderina Rail Edit", "Level Properties", "Game Manager"};
 
 		// Brush Mode
 		Object* brushObject = nullptr;
@@ -227,9 +228,6 @@ namespace Crawl
 		std::vector<Object*> pathFindObjects;
 		ordered_json path_template = ReadJSONFromDisk("crawler/object/testing/path.object");
 		int facingTest = 0;
-
-		// Beauty Scene Config
-		Object* beautySceneLights = nullptr;
 	};
 }
 

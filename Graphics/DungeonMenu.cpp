@@ -541,7 +541,9 @@ void Crawl::DungeonMenu::ExecuteSettingsToggleCrosshair()
 void Crawl::DungeonMenu::ExecuteLevelEditorButton()
 {
 	AudioManager::StopMusic();
+	editor->SetCustomLevelsOnly(true);
 	editor->NewDungeon();
+	player->Teleport({ 0,0 });
 	DungeonGameManager::Get()->ClearLocksObject();
 	editor->Activate();
 	app->s_mode = Application::Mode::Design;
@@ -575,6 +577,7 @@ void Crawl::DungeonMenu::ExecuteReturnToMainMenuButton()
 	menuStack.push(Menu::Main);
 
 	DungeonGameManager::Get()->ResetGameState();
+	editor->SetCustomLevelsOnly(false);
 	app->dungeon->Load("crawler/dungeon/lobby.dungeon");
 	player->ResetPlayer();
 	player->SetLevel2(false);

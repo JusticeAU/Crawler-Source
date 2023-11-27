@@ -247,7 +247,9 @@ namespace Crawl
 	public:
 		ordered_json serialised;
 		string dungeonFileExtension = ".dungeon";
-		string dungeonFileLocation = "crawler/dungeon/";
+		const string dungeonFileLocation = "crawler/dungeon/";
+		const string dungeonFileLocationCustom = "crawler/customlevels/";
+		string dungeonFileLocationCurrent = dungeonFileLocation;
 
 		string dungeonFileName = "";
 		string dungeonSubFolder = "";

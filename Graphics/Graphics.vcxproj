@@ -101,29 +101,29 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LibraryPath>$(SolutionDir)assimp\out\build\x64-$(Configuration)\lib;$(LibraryPath)</LibraryPath>
     <IncludePath>$(SolutionDir)assimp\include;$(IncludePath)</IncludePath>
-    <TargetName>Crawler</TargetName>
+    <TargetName>BriarMansion</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Development|x64'">
     <LibraryPath>$(SolutionDir)assimp\out\build\x64-Release\lib;$(LibraryPath)</LibraryPath>
     <IncludePath>$(SolutionDir)assimp\include;$(IncludePath)</IncludePath>
-    <TargetName>Crawler</TargetName>
+    <TargetName>BriarMansion</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LibraryPath>$(SolutionDir)assimp\out\build\x64-Release\lib;$(LibraryPath)</LibraryPath>
     <IncludePath>$(SolutionDir)assimp\include;$(IncludePath)</IncludePath>
-    <TargetName>Crawler</TargetName>
+    <TargetName>BriarMansion</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>$(SolutionDir)assimp\include;$(IncludePath)</IncludePath>
-    <TargetName>Crawler</TargetName>
+    <TargetName>BriarMansion</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Development|Win32'">
     <IncludePath>$(SolutionDir)assimp\include;$(IncludePath)</IncludePath>
-    <TargetName>Crawler</TargetName>
+    <TargetName>BriarMansion</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(SolutionDir)assimp\include;$(IncludePath)</IncludePath>
-    <TargetName>Crawler</TargetName>
+    <TargetName>BriarMansion</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

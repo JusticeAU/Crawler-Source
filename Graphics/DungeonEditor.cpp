@@ -68,6 +68,14 @@ void Crawl::DungeonEditor::Deactivate()
 	brushObject = nullptr;
 }
 
+void Crawl::DungeonEditor::SetCustomLevelsOnly(bool customLevelsOnly)
+{
+	if (customLevelsOnly)
+		dungeon->dungeonFileLocationCurrent = dungeon->dungeonFileLocationCustom;
+	else
+		dungeon->dungeonFileLocationCurrent = dungeon->dungeonFileLocation;
+}
+
 void Crawl::DungeonEditor::SetDungeon(Dungeon* dungeonPtr)
 {
 	dungeon = dungeonPtr;
@@ -86,8 +94,6 @@ void Crawl::DungeonEditor::SetDungeon(Dungeon* dungeonPtr)
 		int extension = varient.find_last_of('.');
 		floorVarientShortNames.push_back(varient.substr(lastSlash + 1, extension - lastSlash - 1));
 	}
-
-
 }
 
 void Crawl::DungeonEditor::DrawGUI()
@@ -95,6 +101,7 @@ void Crawl::DungeonEditor::DrawGUI()
 	ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_Always);
 	ImGui::SetNextWindowSize({ 320, 600 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Dungeon Edit", 0, ImGuiWindowFlags_NoMove);
+
 	DrawGUIFileOperations();
 	DrawGUIModeSelect();
 	switch (editMode)
@@ -139,8 +146,7 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	ImGui::EndDisabled();
 
 	// Gameplay
-	if (unsavedChanges)
-		ImGui::BeginDisabled();
+	if (unsavedChanges)	ImGui::BeginDisabled();
 
 	if (ImGui::Button(!dirtyGameplayScene ? "Play" : "Resume"))
 	{
@@ -151,6 +157,7 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 		dungeon->player->usingLevelEditor = true;
 		TileEditUnselectAll();
 	}
+
 	if (unsavedChanges)
 	{
 		ImGui::EndDisabled();
@@ -178,30 +185,26 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 		ImGui::SetTooltip("Resets the gameplay changes to the dungeon back to initial dungeon state.");
 
 	ImGui::SameLine();
-	if (ImGui::Button("Back to Menu"))
-	{
-		DungeonGameManager::Get()->GetMenu()->ExecuteReturnToMainMenuButton();
-	}
+	if (ImGui::Button("Return to Menu") || Input::Keyboard(GLFW_KEY_ESCAPE).Down())
+		ImGui::OpenPopup("Return To Menu");
 
 	// File Manipulation
-	if (dirtyGameplayScene)
-		ImGui::BeginDisabled();
-
-	if (dungeonFilePath == "" || !unsavedChanges)
-		ImGui::BeginDisabled();
+	if (dirtyGameplayScene || dungeon->dungeonFileName == "" || !unsavedChanges) ImGui::BeginDisabled();
 
 	if (ImGui::Button("Save"))
 		Save();
-	else if (dungeonFilePath == "" || !unsavedChanges)
-		ImGui::EndDisabled();
+
+	if (dirtyGameplayScene || dungeon->dungeonFileName == "" || !unsavedChanges) ImGui::EndDisabled();
 
 	ImGui::SameLine();
+	if(dirtyGameplayScene) ImGui::BeginDisabled();
 	if (ImGui::Button("Save As"))
 	{
 		didSaveAs = false;
 		ImGui::OpenPopup("Save As");
 		dungeonFileNameSaveAs = dungeonFileName;
 	}
+	if (dirtyGameplayScene) ImGui::EndDisabled();
 
 	ImGui::SameLine();
 	if (ImGui::Button("Load"))
@@ -209,6 +212,7 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 
 	if (dirtyGameplayScene)
 	{
+		ImGui::BeginDisabled();
 		ImGui::SameLine();
 		ImGui::Text("Scene is Dirty");
 		ImGui::EndDisabled();
@@ -227,7 +231,7 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	// Save As prompt
 	ImGui::SetNextWindowSize({ 300, 100 });
 	ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_Always);
-	if (ImGui::BeginPopupModal("Save As", 0, ImGuiWindowFlags_NoCollapse & ImGuiWindowFlags_NoResize & ImGuiWindowFlags_NoMove))
+	if (ImGui::BeginPopupModal("Save As", 0, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
 	{
 		ImGui::PushID("save_popup");
 		ImGui::InputText(dungeon->dungeonFileExtension.c_str(), &dungeonFileNameSaveAs);
@@ -249,7 +253,7 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 
 		ImGui::SetNextWindowSize({ 300, 100 });
 		ImGui::SetNextWindowPos({ 0,0 }, ImGuiCond_Always);
-		if (ImGui::BeginPopupModal("Overwrite Existing File", 0, ImGuiWindowFlags_NoCollapse & ImGuiWindowFlags_NoResize & ImGuiWindowFlags_NoMove))
+		if (ImGui::BeginPopupModal("Overwrite Existing File", 0, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
 		{
 			ImGui::PushID("save_popup_exists");
 			ImGui::Text("File already exists. Are you sure?");
@@ -278,7 +282,7 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	{
 		ImGui::SameLine();
 		ImGui::SeparatorText("Dungeon Name");
-		for (auto d : fs::recursive_directory_iterator(dungeon->dungeonFileLocation))
+		for (auto d : fs::recursive_directory_iterator(dungeon->dungeonFileLocationCurrent))
 		{
 			if (d.path().has_extension() && d.path().extension() == dungeon->dungeonFileExtension)
 			{
@@ -323,7 +327,27 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 		}
 		ImGui::EndPopup();
 	}
+
+
+	// Return to Menu Check
+	ImGui::SetNextWindowSize({ 565, 75 });
+	if (ImGui::BeginPopupModal("Return To Menu", 0, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+	{
+		ImGui::PushID("return_to_menu");
+		ImGui::Text("Are you sure you want to return to the menu? All unsaved progress will be lost.");
+		if (ImGui::Button("Return To Menu"))
+		{
+			ImGui::CloseCurrentPopup();
+			DungeonGameManager::Get()->GetMenu()->ExecuteReturnToMainMenuButton();
+		}
+		ImGui::SameLine(ImGui::GetWindowWidth() - 60);
+		if (ImGui::Button("Cancel"))
+			ImGui::CloseCurrentPopup();
+		ImGui::PopID();
+		ImGui::EndPopup();
+	}
 }
+
 void Crawl::DungeonEditor::DrawGUIModeSelect()
 {
 	if (ImGui::BeginCombo("Mode", editModeNames[(int)editMode].c_str()))
@@ -359,12 +383,12 @@ void Crawl::DungeonEditor::DrawGUIModeSelect()
 		if (ImGui::Selectable(editModeNames[4].c_str()))
 			editMode = Mode::DungeonProperties;
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-			ImGui::SetTooltip("Edit specific configuration items about this particular dungeon");
+			ImGui::SetTooltip("Edit specific configuration items about this particular level");
 
-		if (ImGui::Selectable(editModeNames[5].c_str()))
+	/*	if (ImGui::Selectable(editModeNames[5].c_str()))
 			editMode = Mode::GameManager;
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-			ImGui::SetTooltip("The GameManager contains configuration items specific to the lobby state. These values change over time, but you can mess with them here for testing purposes.");
+			ImGui::SetTooltip("The GameManager contains configuration items specific to the lobby state. These values change over time, but you can mess with them here for testing purposes.");*/
 
 		ImGui::EndCombo();
 	}
@@ -613,13 +637,13 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 			selectedTileOccupied = true;
 		}
 		//ImGui::SameLine();
-		if (ImGui::Selectable("Mirror"))
+		/*if (ImGui::Selectable("Mirror"))
 		{
 			MarkUnsavedChanges();
 			selectedMirror = dungeon->CreateMirror(selectedTilePosition, NORTH_INDEX);
 			selectedMirrorWindowOpen = true;
 			selectedTileOccupied = true;
-		}
+		}*/
 
 		if (ImGui::Selectable("Transporter"))
 		{
@@ -666,13 +690,13 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 			selectedTileOccupied = true;
 		}
 		//ImGui::SameLine();
-		if (ImGui::Selectable("Switcher"))
+		/*if (ImGui::Selectable("Switcher"))
 		{
 			MarkUnsavedChanges();
 			selectedSwitcherEnemy = dungeon->CreateEnemySwitcher(selectedTilePosition, NORTH_INDEX);
 			selectedSwitcherEnemyWindowOpen = true;
 			selectedTileOccupied = true;
-		}
+		}*/
 		if (tileOccupied) ImGui::EndDisabled();
 		ImGui::Unindent();
 		ImGui::Text("Miscellaneous");
@@ -697,7 +721,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		}
 		if (cantMakeLight) ImGui::EndDisabled();
 
-		bool cantMakeStairs = selectedStairs != nullptr;
+		/*bool cantMakeStairs = selectedStairs != nullptr;
 		if (cantMakeStairs) ImGui::BeginDisabled();
 		if (ImGui::Selectable("Stairs"))
 		{
@@ -705,15 +729,15 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 			selectedStairs = dungeon->CreateStairs(selectedTilePosition);
 			selectedStairsWindowOpen = true;
 		}
-		if (cantMakeStairs) ImGui::EndDisabled();
+		if (cantMakeStairs) ImGui::EndDisabled();*/
 
 		//ImGui::SameLine();
-		if (ImGui::Selectable("Event Trigger"))
+		/*if (ImGui::Selectable("Event Trigger"))
 		{
 			MarkUnsavedChanges();
 			selectedEventTrigger = dungeon->CreateEventTrigger(selectedTilePosition);
 			selectedEventTriggerWindowOpen = true;
-		}
+		}*/
 		ImGui::Unindent();
 		ImGui::EndCombo();
 	}
@@ -1287,7 +1311,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditTransporter()
 	if (selectedTransporter->toLobby2) ImGui::BeginDisabled();
 	if (ImGui::BeginCombo("To Dungeon", selectedTransporter->toDungeon.c_str(), ImGuiComboFlags_HeightLargest))
 	{
-		for (auto d : fs::recursive_directory_iterator(dungeon->dungeonFileLocation))
+		for (auto d : fs::recursive_directory_iterator(dungeon->dungeonFileLocationCurrent))
 		{
 			bool selected = false;
 			string folder = d.path().relative_path().parent_path().string();
@@ -2085,53 +2109,15 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 		ImGui::EndCombo();
 	}
 
-	if (ImGui::Checkbox("No Roof", &dungeon->noRoof))
-		MarkUnsavedChanges();
-
-	if (ImGui::Checkbox("Is Lobby (Don't mess with this!)", &dungeon->isLobby))
-		MarkUnsavedChanges();
-
-	if (ImGui::Checkbox("Is Void (Don't mess with this!)", &dungeon->isVoid))
-		MarkUnsavedChanges();
-
-	//if (ImGui::Checkbox("Player Turn is Free (Default is True)", &dungeon->playerTurnIsFree))
+	//if (ImGui::Checkbox("No Roof", &dungeon->noRoof))
 	//	MarkUnsavedChanges();
 
-	//if (ImGui::Checkbox("Player Interact is Free (Default is False)", &dungeon->playerInteractIsFree))
+	//if (ImGui::Checkbox("Is Lobby (Don't mess with this!)", &dungeon->isLobby))
 	//	MarkUnsavedChanges();
 
-	///*if (ImGui::Checkbox("Player can Knife (Default is False)", &dungeon->playerHasKnife))
-	//	MarkUnsavedChanges();*/
-
-	//if (ImGui::Checkbox("Player can Kick (Default is True)", &dungeon->playerCanKickBox))
+	//if (ImGui::Checkbox("Is Void (Don't mess with this!)", &dungeon->isVoid))
 	//	MarkUnsavedChanges();
 
-	//if (ImGui::Checkbox("Player Can Push Box (Default is False)", &dungeon->playerCanPushBox))
-	//	MarkUnsavedChanges();
-
-	//if (ImGui::Checkbox("Switchers Must Be Looked At (Default is False)", &dungeon->switchersMustBeLookedAt))
-	//	MarkUnsavedChanges();
-
-	//if (ImGui::Checkbox("Player Can Push Mirrors (Default is False)", &dungeon->playerCanPushMirror))
-	//	MarkUnsavedChanges();
-
-
-	if (ImGui::Button("Beauty Scene Quick Config"))
-	{
-		if (beautySceneLights == nullptr)
-		{
-			beautySceneLights = Scene::CreateObject();
-			beautySceneLights->LoadFromJSON(ReadJSONFromDisk("crawler/object/beautySceneLights.object"));
-		}
-
-		Scene::s_instance->drawGizmos = false;
-
-		Scene::s_editorCamera->object->SetLocalPosition({ -2.970f, 1.447f, 1.694f });
-		Scene::s_editorCamera->object->SetLocalRotationZ(-130.2f);
-		Scene::s_editorCamera->object->SetLocalRotationX(-2.7f);
-
-		dungeon->player->Respawn();
-	}
 }
 
 void Crawl::DungeonEditor::DrawGUIModeGameManager()
@@ -2753,7 +2739,7 @@ void Crawl::DungeonEditor::RefreshDungeonFileNames()
 	if ((dungeon->dungeonSubFolder.size() > 0)) dungeonFileName += dungeon->dungeonSubFolder + "/";
 	dungeonFileName += dungeon->dungeonFileName;
 	dungeonFileNameSaveAs = dungeonFileName;
-	dungeonFilePath = dungeon->dungeonFilePath;
+	dungeonFilePath = dungeon->dungeonFileLocationCurrent;
 }
 
 void Crawl::DungeonEditor::DrawGizmos()
@@ -2992,7 +2978,7 @@ void Crawl::DungeonEditor::UpdateSurroundingTiles(ivec2 position)
 
 void Crawl::DungeonEditor::Save()
 {
-	dungeonFilePath = dungeon->dungeonFileLocation + dungeonFileNameSaveAs + dungeon->dungeonFileExtension;
+	dungeonFilePath = dungeon->dungeonFileLocationCurrent + dungeonFileNameSaveAs + dungeon->dungeonFileExtension;
 	dungeon->Save(dungeonFilePath);
 	RefreshDungeonFileNames();
 	dungeonWantLoad = "";

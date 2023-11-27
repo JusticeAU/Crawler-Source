@@ -47,13 +47,12 @@ void Application::LaunchArgumentPreLoad(const char* arg)
 {
 	std::string argument = arg;
 	if (argument == "design") developerModeLaunch = true;
+	else if  (argument == "leveledit") developerModeLaunch = true;
 	else if (argument == "art")
 	{
 		developerModeLaunch = true;
 		s_mode = Mode::Art;
 	}
-	else if (argument == "scene") developerModeLaunch = true;
-	else if (argument == "dev") developerModeLaunch = true;
 }
 
 void Application::LaunchArgumentPostLoad(const char* arg)
@@ -65,6 +64,14 @@ void Application::LaunchArgumentPostLoad(const char* arg)
 		s_mode = Mode::Design;
 		Scene::ChangeScene("Dungeon");
 		dungeonEditor->SetDungeon(dungeon);
+		dungeonEditor->Activate();
+	}
+	else if (argument == "leveledit")
+	{
+		s_mode = Mode::Design;
+		Scene::ChangeScene("Dungeon");
+		dungeonEditor->SetDungeon(dungeon);
+		dungeonEditor->SetCustomLevelsOnly(true);
 		dungeonEditor->Activate();
 	}
 	else if (argument == "art")
