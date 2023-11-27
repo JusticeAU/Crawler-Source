@@ -49,7 +49,7 @@ void Crawl::DungeonEnemyBlocker::Update()
 		bool didDamge = dungeon->DamageAtPosition(position + directions[facing], this, false, Dungeon::DamageType::Blocker);
 		if (didDamge) PlaySFX(audioHit);
 		state = State::DownSwing;
-		animator->BlendToAnimation(animationDownSwing, 0.0f);
+		animator->StartAnimation(animationDownSwing);
 		break;
 	}
 	case(State::DownSwing):
@@ -64,7 +64,7 @@ void Crawl::DungeonEnemyBlocker::Update()
 			LogUtils::Log("No Rapid Attack - Moving to Idle");
 			state = State::Idle;
 			PlaySFX(audioReturn);
-			animator->BlendToAnimation(animationIdle, 0.0f);
+			animator->StartAnimation(animationReturnToIdle);
 		}
 		break;
 	}

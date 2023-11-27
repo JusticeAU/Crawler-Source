@@ -17,7 +17,8 @@ namespace Crawl
 		{
 			Idle,
 			UpSwing,
-			DownSwing
+			DownSwing,
+			ReturnToIdle
 		};
 	public:
 		DungeonEnemyBlocker();
@@ -39,6 +40,8 @@ namespace Crawl
 		string animationUpSwing = animationBaseName + "ready.pose";
 		string animationDownSwing = animationBaseName + "attack.pose";
 		string animationIdle = animationBaseName + "idle.pose";
+		string animationReturnToIdle = animationBaseName + "return.pose";
+
 
 		// Audio
 		string audioRaise = "crawler/sound/load/blocker/raise_1.wav";
