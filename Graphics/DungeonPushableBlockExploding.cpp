@@ -3,7 +3,7 @@
 #include "Object.h"
 #include "ComponentAnimator.h"
 #include "serialisation.h"
-
+#include "AudioManager.h"
 
 Crawl::DungeonPushableBlockExploding::DungeonPushableBlockExploding(glm::vec3 position)
 {
@@ -12,6 +12,7 @@ Crawl::DungeonPushableBlockExploding::DungeonPushableBlockExploding(glm::vec3 po
 	object->SetLocalPosition(position);
 	ComponentAnimator* animator = (ComponentAnimator*)object->GetComponent(Component_Animator);
 	animator->StartAnimation(animationNameBlocker);
+	AudioManager::PlaySound(sfxBreaking, object->localPosition);
 }
 
 Crawl::DungeonPushableBlockExploding::DungeonPushableBlockExploding(glm::vec3 position, FACING_INDEX direction)
@@ -22,6 +23,7 @@ Crawl::DungeonPushableBlockExploding::DungeonPushableBlockExploding(glm::vec3 po
 	object->SetLocalRotationZ(orientationEulersReversed[direction]);
 	ComponentAnimator* animator = (ComponentAnimator*)object->GetComponent(Component_Animator);
 	animator->StartAnimation(animationNameMurderina);
+	AudioManager::PlaySound(sfxBreaking, object->localPosition);
 }
 
 Crawl::DungeonPushableBlockExploding::~DungeonPushableBlockExploding()

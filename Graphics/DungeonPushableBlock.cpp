@@ -43,7 +43,7 @@ void Crawl::DungeonPushableBlock::MoveTo(ivec2 toPosition, bool snap)
 		state = STATE::IDLE;
 	}
 	else
-		AudioManager::PlaySound(sfxName, targetPosition);
+		AudioManager::PlaySound(sfxSliding, targetPosition);
 }
 
 void Crawl::DungeonPushableBlock::UpdateVisuals(float delta)

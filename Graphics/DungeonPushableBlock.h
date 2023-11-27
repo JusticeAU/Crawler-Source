@@ -37,7 +37,8 @@ namespace Crawl
 		glm::vec3 targetPosition;
 
 		// Audio
-		string sfxName = "crawler/sound/load/sliding_box.wav";
+		const string sfxSliding = "crawler/sound/load/box_sliding.wav";
+
 
 		// falling on spikes
 		float fallSpeed = 0.25f;

@@ -20,6 +20,8 @@ namespace Crawl
 
 		std::string modelPathBlocker = "crawler/model/interactable_crate_break_blocker.";
 		std::string animationNameBlocker = modelPathBlocker + "fbxscene";
+
+		const std::string sfxBreaking = "crawler/sound/load/box_breaking.wav";
 	};
 }
 
