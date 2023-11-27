@@ -331,6 +331,7 @@ void Scene::RemovePointLight(ComponentLightPoint* light)
 			break;
 		}
 	}
+	renderer->SetStaticShadowMapsDirty();
 }
 
 void Scene::AddRendererComponent(ComponentRenderer* rendererComponent)

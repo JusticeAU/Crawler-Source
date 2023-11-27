@@ -564,6 +564,8 @@ void SceneRenderer::RenderSceneShadowCubeMaps(Scene* scene)
 {
 	// if not prepass then we blit the prepasses to the regular pass, then those are the targets we're rendering (adding) too
 	//glDisable(GL_BLEND);
+
+
 	if (!currentPassIsStatic && scene->GetNumPointLights() > 0)
 	{
 		glCopyImageSubData(pointlightCubeMapArrayStatic->m_depthID, GL_TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, 0, pointlightCubeMapArrayDynamic->m_depthID, GL_TEXTURE_CUBE_MAP_ARRAY, 0, 0, 0, 0, pointlightCubeMapArrayStatic->m_width, pointlightCubeMapArrayStatic->m_height, 6 * scene->m_pointLightComponents.size());
@@ -572,7 +574,10 @@ void SceneRenderer::RenderSceneShadowCubeMaps(Scene* scene)
 	// Render shadow maps for each point light
 	for (int light = 0; light < scene->m_pointLightComponents.size(); light++)
 	{
-		if (currentPassIsStatic && (!scene->m_pointLightComponents[light]->GetComponentParentObject()->wasDirtyTransform && !scene->rendererShouldRefreshStaticMaps)) continue;
+		if (currentPassIsStatic && // We're doing a static pass
+			(!scene->m_pointLightComponents[light]->GetComponentParentObject()->wasDirtyTransform && // The light hasnt moved
+				!scene->rendererShouldRefreshStaticMaps && // 
+				!pointLightShadowMapsStaticDirty)) continue;
 
 		vec3 lightPosition = scene->m_pointLightComponents[light]->GetComponentParentObject()->GetWorldSpacePosition();
 		// Render to each side of the cube face.
