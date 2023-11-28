@@ -23,6 +23,7 @@
 #include "gtx/easing.hpp"
 
 #include "TextureManager.h"
+#include "Animation.h"
 
 Crawl::DungeonPlayer::DungeonPlayer()
 {
@@ -1153,6 +1154,7 @@ void Crawl::DungeonPlayer::Respawn()
 	hp = maxHp;
 	shouldSwitchWith = nullptr;
 	UpdatePointOfInterestTilt(true);
+	StopTakeKeyAnimation();
 	inputBuffer = PlayerCommand::None;
 }
 
@@ -1175,9 +1177,14 @@ void Crawl::DungeonPlayer::TakeDamage()
 	hp -= 1;
 }
 
-void Crawl::DungeonPlayer::TakeKeyAnimation()
+void Crawl::DungeonPlayer::StartTakeKeyAnimation()
 {
-	lhAnimator->BlendToAnimation(animationLHGetKey, 0.0f);
+	lhAnimator->StartAnimation(animationLHGetKey, 0.0f);
+}
+
+void Crawl::DungeonPlayer::StopTakeKeyAnimation()
+{
+	lhAnimator->current->position = lhAnimator->current->animation->duration;
 }
 
 void Crawl::DungeonPlayer::SetShouldActivateStairs(DungeonStairs* stairs)

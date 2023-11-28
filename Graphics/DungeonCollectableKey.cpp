@@ -32,7 +32,7 @@ void Crawl::DungeonCollectableKey::Interact()
 
 	// mark key as collected in game manager
 	DungeonGameManager::Get()->RemoveFrontDoorLock(lockReleaseID-1); // IDs are 1 indexed on collectable keys.
-	dungeon->player->TakeKeyAnimation();
+	dungeon->player->StartTakeKeyAnimation();
 	// checkpoint??
 
 	// SFX

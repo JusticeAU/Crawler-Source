@@ -94,7 +94,8 @@ namespace Crawl
 		void ClearCheckpoint();
 
 		void TakeDamage();
-		void TakeKeyAnimation();
+		void StartTakeKeyAnimation();
+		void StopTakeKeyAnimation();
 
 		void SetShouldSwitchWith(DungeonEnemySwitcher* switcher) { shouldSwitchWith = switcher; }
 		void SetShouldActivateStairs(DungeonStairs* stairs);
