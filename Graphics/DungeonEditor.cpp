@@ -60,12 +60,14 @@ void Crawl::DungeonEditor::Activate()
 		brushObject = Scene::CreateObject("Tile Brush");
 		brushObject->LoadFromJSON(ReadJSONFromDisk("crawler/model/tile_wood.object"));
 	}
+	Scene::SetClearColour(vec3(0.2));
 }
 
 void Crawl::DungeonEditor::Deactivate()
 {
-	brushObject->markedForDeletion = true;
+	if(brushObject != nullptr)	brushObject->markedForDeletion = true;
 	brushObject = nullptr;
+	Scene::SetClearColour(vec3(0));
 }
 
 void Crawl::DungeonEditor::SetCustomLevelsOnly(bool customLevelsOnly)
@@ -156,6 +158,7 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 		dirtyGameplayScene = true;
 		dungeon->player->usingLevelEditor = true;
 		TileEditUnselectAll();
+		Deactivate();
 	}
 
 	if (unsavedChanges)

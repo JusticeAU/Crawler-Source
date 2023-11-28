@@ -578,6 +578,7 @@ void Crawl::DungeonMenu::ExecuteReturnToMainMenuButton()
 
 	DungeonGameManager::Get()->ResetGameState();
 	editor->SetCustomLevelsOnly(false);
+	editor->Deactivate();
 	app->dungeon->Load("crawler/dungeon/lobby.dungeon");
 	player->ResetPlayer();
 	player->SetLevel2(false);
