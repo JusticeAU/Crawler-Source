@@ -13,7 +13,14 @@ class FrameBuffer;
 class TextureManager
 {
 public:
-	static void Init();
+	enum class Quality
+	{
+		Low,
+		Medium,
+		High,
+		Auto
+	};
+	static void Init(Quality quality);
 
 	static Texture* GetTexture(string name);
 
@@ -58,6 +65,8 @@ protected:
 
 	Texture* selectedTexture = nullptr;
 	bool selectedTextureWindowOpen = false;
+	Quality m_quality = Quality::Auto;
 
+	void DetectQuality();
 };
 

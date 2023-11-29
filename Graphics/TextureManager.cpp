@@ -6,6 +6,8 @@
 #include "StringUtils.h"
 #include "serialisation.h"
 
+#include "GraphicsUtility.h"
+
 using std::vector;
 namespace fs = std::filesystem;
 
@@ -15,9 +17,43 @@ TextureManager::TextureManager()
 	frameBuffers.emplace("_null", nullptr);
 }
 
-void TextureManager::Init()
+void TextureManager::DetectQuality()
 {
-	if (!s_instance) s_instance = new TextureManager();
+	int vram = GraphicsUtility::GetVRAMTotal();
+	if (vram != -1)
+	{
+		if (vram > (6000 * 1024))
+			m_quality = Quality::High;
+		if (vram <= (6000 * 1024))
+			m_quality = Quality::Medium;
+		if (vram < (2400 * 1024))
+			m_quality = Quality::Low;
+
+	}
+
+
+	switch (m_quality)
+	{
+	case Quality::High:
+		LogUtils::Log("Setting Graphics quality to High.");
+		break;
+	case Quality::Medium:
+		LogUtils::Log("Setting Graphics quality to Medium.");
+		break;
+	case Quality::Low:
+		LogUtils::Log("Setting Graphics quality to Low.");
+		break;
+	}
+}
+
+void TextureManager::Init(Quality quality)
+{
+	if (!s_instance)
+	{
+		s_instance = new TextureManager();
+		if (quality == Quality::Auto) s_instance->DetectQuality();
+		else s_instance->m_quality = quality;
+	}
 	else LogUtils::Log("Tried to Init MeshManager when it was already initilised");
 }
 
@@ -116,6 +152,8 @@ void TextureManager::CreateTextureFromFile(const char* filename, bool inferChann
 	textures.emplace(StringUtils::ToLower(filename), texture);
 	if (inferChannelsFromName) texture->channels = InferChannelsFromName(filename);
 	else texture->channels = -1;
+
+	if (texture->channels != -1) texture->quality = (Texture::Quality)m_quality;
 }
 
 int TextureManager::InferChannelsFromName(string name)

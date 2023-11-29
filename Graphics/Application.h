@@ -57,6 +57,7 @@ protected:
 public:
 	bool developerModeLaunch = false;
 	bool developerModeDrawGUI = true;
+	int quality = 3; // 0-2 Low-High, 3 == Auto.
 
 	// Crawl Game and Editor Objects
 	static Mode s_mode;
@@ -64,11 +65,9 @@ public:
 	Crawl::Dungeon* dungeon = nullptr;
 	Crawl::DungeonPlayer* dungeonPlayer = nullptr;
 	Crawl::DungeonGameManager* gameManager = nullptr;
-	
-	// Dev stuff
 	Crawl::DungeonEditor* dungeonEditor = nullptr;
+	
 	Crawl::ArtTester* artTester = nullptr;
-
 	Crawl::DungeonMenu* menu = nullptr;
 
 };

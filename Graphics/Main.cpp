@@ -15,13 +15,22 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
 #ifndef RELEASE
 	if (argc > 1)
-		app->LaunchArgumentPreLoad(argv[1]);
+	{
+		for (int i = 1; i < argc; i++)
+		{
+			app->LaunchArgumentPreLoad(argv[i]);
+		}
+	}
 #else
 	std::string commands = lpCmdLine;
 	if (commands.size() > 0)
 	{
-		std::string* split = StringUtils::Split(commands, " ");
-		app->LaunchArgumentPreLoad(split[0].c_str());
+		int count = 1;
+		std::string* split = StringUtils::Split(commands, " ", &count);
+		for (int i = 0; i < count; i++)
+		{
+			app->LaunchArgumentPreLoad(split[i].c_str());
+		}
 		delete[] split;
 	}
 #endif // !RELEASE
@@ -35,12 +44,21 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
 #ifndef RELEASE
 	if (argc > 1)
-		app->LaunchArgumentPostLoad(argv[1]);
+	{
+		for (int i = 1; i < argc; i++)
+		{
+			app->LaunchArgumentPostLoad(argv[i]);
+		}
+	}
 #else
 	if (commands.size() > 0)
 	{
-		std::string* split = StringUtils::Split(commands, " ");
-		app->LaunchArgumentPostLoad(split[0].c_str());
+		int count = 1;
+		std::string* split = StringUtils::Split(commands, " ", &count);
+		for (int i = 0; i < count; i++)
+		{
+			app->LaunchArgumentPostLoad(split[i].c_str());
+		}
 		delete[] split;
 	}
 

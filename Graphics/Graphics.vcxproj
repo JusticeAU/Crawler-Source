@@ -411,6 +411,7 @@
     <ClInclude Include="glad.h" />
     <ClInclude Include="glfwCallbacks.h" />
     <ClInclude Include="glm2json.h" />
+    <ClInclude Include="GraphicsUtility.h" />
     <ClInclude Include="LineRenderer.h" />
     <ClInclude Include="PostProcess.h" />
     <ClInclude Include="Primitives.h" />
@@ -418,6 +419,7 @@
     <ClInclude Include="SceneRenderer.h" />
     <ClInclude Include="SceneRendererBatched.h" />
     <ClInclude Include="serialisation.h" />
+    <ClInclude Include="stb_image_resize2.h" />
     <ClInclude Include="stb_image_write.h" />
     <ClInclude Include="StringUtils.h" />
     <ClInclude Include="Window.h" />

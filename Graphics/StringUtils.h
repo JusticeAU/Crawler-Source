@@ -15,7 +15,7 @@ public:
 		return output;
 	}
 
-	static std::string* Split(std::string str, std::string delim)
+	static std::string* Split(std::string str, std::string delim, int* count = nullptr)
 	{
 		int offset = 0;
 		std::vector<std::string> splits;
@@ -37,6 +37,8 @@ public:
 		std::string* stringArray = new std::string[splits.size()];
 		for (int i = 0; i < splits.size(); i++)
 			stringArray[i] = splits[i];
+		
+		if (count != nullptr) *count = (int)splits.size();
 
 		return stringArray;
 	}

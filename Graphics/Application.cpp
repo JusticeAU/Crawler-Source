@@ -29,7 +29,6 @@
 
 Application::Application()
 {
-	
 }
 
 Application::~Application()
@@ -47,12 +46,17 @@ void Application::LaunchArgumentPreLoad(const char* arg)
 {
 	std::string argument = arg;
 	if (argument == "design") developerModeLaunch = true;
-	else if  (argument == "leveledit") developerModeLaunch = true;
-	else if (argument == "art")
+	if (argument == "leveledit") developerModeLaunch = true;
+	if (argument == "art")
 	{
 		developerModeLaunch = true;
 		s_mode = Mode::Art;
+		quality = 2;
 	}
+	if (argument == "low")		quality = 0;
+	if (argument == "medium")	quality = 1;
+	if (argument == "high")		quality = 2;
+
 }
 
 void Application::LaunchArgumentPostLoad(const char* arg)
@@ -174,7 +178,7 @@ void Application::LoadResourceManagers()
 	string gameFolder = "crawler";
 	MeshManager::Init();
 
-	TextureManager::Init();
+	TextureManager::Init((TextureManager::Quality)quality);
 	TextureManager::FindAllFiles(engineFolder);
 	TextureManager::FindAllFiles(gameFolder);
 

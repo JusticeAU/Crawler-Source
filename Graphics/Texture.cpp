@@ -3,6 +3,8 @@
 #include "stb_image.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
+#define STB_IMAGE_RESIZE2_IMPLEMENTATION
+#include "stb_image_resize2.h";
 #include "Window.h"
 #include "LogUtils.h"
 
@@ -37,6 +39,41 @@ void Texture::Load()
 	stbi_set_flip_vertically_on_load(true); // OpenGL expect y=0 to be the bottom of the texture.
 	int requestedChannels = channels != -1 ? channels : 4;
 	unsigned char* data = stbi_load(name.c_str(), &width, &height, &channels, requestedChannels);
+	unsigned char* dataProcessed = nullptr;
+	bool resized = false;
+	switch (quality)
+	{
+	case Quality::Low:
+	{
+		resized = true;
+		int newWidth, newHeight;
+		int layout = GetLayoutFromChannels(requestedChannels);
+		newWidth = glm::max(1,(int)(width * m_qualityScales[(int)quality]));
+		newHeight = glm::max(1,(int)(height * m_qualityScales[(int)quality]));
+		dataProcessed = stbir_resize_uint8_linear(data, width, height, 0, 0, newWidth, newHeight, 0, (stbir_pixel_layout)layout);
+		width = newWidth;
+		height = newHeight;
+		break;
+	}
+	case Quality::Medium:
+	{
+		resized = true;
+		int newWidth, newHeight;
+		int layout = GetLayoutFromChannels(requestedChannels);
+		newWidth = (float)width * m_qualityScales[(int)quality];
+		newHeight = (float)height * m_qualityScales[(int)quality];
+		dataProcessed = stbir_resize_uint8_linear(data, width, height, 0, 0, newWidth, newHeight, 0, (stbir_pixel_layout)layout);
+		width = newWidth;
+		height = newHeight;
+		break;
+	}
+	case Quality::High:
+	{
+		dataProcessed = data;
+		break;
+	}
+	}
+	
 	// Modifcations have been made to stbi__convert_format in order to have it load images to a single channel the way I want.
 	// Out of the box is takes the RGB values and calculate luminosity and returns that, but I just want the red channel only.
 	GLint internalType;
@@ -59,7 +96,7 @@ void Texture::Load()
 	// transfer to VRAM
 	glGenTextures(1, &texID);
 	glBindTexture(GL_TEXTURE_2D, texID);
-	glTexImage2D(GL_TEXTURE_2D, 0, internalType, width, height, 0, internalType, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, 0, internalType, width, height, 0, internalType, GL_UNSIGNED_BYTE, dataProcessed);
 
 	// Configure this particular texture filtering
 	glGenerateMipmap(GL_TEXTURE_2D);
@@ -75,8 +112,28 @@ void Texture::Load()
 	// clean up
 	glBindTexture(GL_TEXTURE_2D, 0);
 	stbi_image_free(data);
+	if(resized) stbi_image_free(dataProcessed);
 
 	loaded = true;
+}
+
+void Texture::Resize()
+{
+}
+
+int Texture::GetLayoutFromChannels(int channels)
+{
+	switch (channels)
+	{
+	case 1:
+		return STBIR_1CHANNEL;
+	case 2:
+		return STBIR_2CHANNEL;
+	case 3:
+		return STBIR_RGB;
+	case 4:
+		return STBIR_RGBA;
+	}
 }
 
 void Texture::Bind(unsigned int slot)
