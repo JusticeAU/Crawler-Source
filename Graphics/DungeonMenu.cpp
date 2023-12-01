@@ -294,10 +294,12 @@ void Crawl::DungeonMenu::DrawThanks(float delta)
 	DrawBlackScreen(1.0f);
 
 	// Thanks
-	ImGui::SetNextWindowSize({ 850, 650 });
+	ImGui::SetNextWindowSize({ 1920, 1000 });
 	ImGui::SetNextWindowPos({ screenSize.x/2, 0 }, 0, { 0.5f, 0.0f });
+	ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, { 0,0 });
 	ImGui::Begin("Thanks", 0, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
 	DrawImage(menuThanksCardTex, 1.0f);
+	ImGui::PopStyleVar();
 	ImGui::End();
 
 	// Buttons
