@@ -1381,13 +1381,8 @@ Crawl::DungeonEnemyChase* Crawl::Dungeon::CreateEnemyChase(ivec2 position, FACIN
 	chaser->facing = facing;
 	chaser->dungeon = this;
 	chaser->object = Scene::CreateObject();
-	chaser->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/monster_chaser.object"));
-	chaser->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_chaser.object"));
-	chaser->object->children[0]->SetLocalRotationZ(180);
-
-	chaser->animator = (ComponentAnimator*)chaser->object->children[0]->GetComponent(Component_Animator);
-	chaser->animator->SetPose(chaser->animationActivate);
-
+	chaser->Initialise();
+	chaser->UpdateTransform();
 	chasers.emplace_back(chaser);
 
 	DungeonTile* tile = GetTile(position);
@@ -1398,7 +1393,6 @@ Crawl::DungeonEnemyChase* Crawl::Dungeon::CreateEnemyChase(ivec2 position, FACIN
 	else
 		LogUtils::Log("WARNING - ATTEMPTING TO ADD CHASER TO TILE THAT DOESN'T EXIST");
 
-	chaser->UpdateTransform();
 	return chaser;
 }
 
@@ -1619,10 +1613,7 @@ Crawl::DungeonEnemySlug* Crawl::Dungeon::CreateMurderina(ivec2 position, FACING_
 	slug->position = position;
 	slug->facing = direction;
 	slug->dungeon = this;
-	slug->object = Scene::CreateObject();
-	slug->object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/slug.object"));
-	slug->object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_sawarina.object"));
-	slug->object->children[0]->SetLocalRotationZ(180);
+	slug->Initialise();
 	slug->UpdateTransform();
 	slugs.push_back(slug);
 	return slug;

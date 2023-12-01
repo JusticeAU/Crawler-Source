@@ -1,7 +1,10 @@
 #include "DungeonEnemySlug.h"
 #include "DungeonEnemySlugPath.h"
 #include "Dungeon.h"
+#include "Scene.h"
 #include "Object.h"
+
+#include "ComponentRenderer.h"
 
 #include "MathUtils.h"
 #include "LogUtils.h"
@@ -22,6 +25,15 @@ Crawl::DungeonEnemySlug::~DungeonEnemySlug()
 {
 	if (object)
 		object->markedForDeletion = true;
+}
+
+void Crawl::DungeonEnemySlug::Initialise()
+{
+	object = Scene::CreateObject();
+	object->LoadFromJSON(ReadJSONFromDisk("crawler/object/prototype/slug.object"));
+	object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_sawarina.object"));
+	object->children[0]->SetLocalRotationZ(180);
+	renderer = (ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer);
 }
 
 void Crawl::DungeonEnemySlug::UpdateTransform()
@@ -157,7 +169,11 @@ void Crawl::DungeonEnemySlug::UpdateVisuals(float delta)
 
 		object->SetLocalRotation(rotation);
 
-		if (deathCurrent > deathDeleteTime) shouldDelete = true;
+		if (deathCurrent > deathDeleteTime)
+		{
+			renderer->dissolveThreshold -= delta;
+			if(renderer->dissolveThreshold <= 0.0f)	shouldDelete = true;
+		}
 		break;
 	}
 

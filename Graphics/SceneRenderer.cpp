@@ -382,6 +382,9 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	ssaoGeoShader->Bind();
 	ssaoGeoShader->SetMatrixUniform("view", c->GetViewMatrix());
 	ssaoGeoShader->SetMatrixUniform("projection", c->GetProjectionMatrix());
+	TextureManager::GetTexture("crawler/texture/perlin_noise.tga")->Bind(10);
+	ssaoGeoShader->SetIntUniform("perlinNoise", 10);
+
 	for (auto& o : scene->objects)
 		o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::SSAOgBuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

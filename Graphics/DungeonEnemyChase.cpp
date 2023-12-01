@@ -6,6 +6,7 @@
 #include "DungeonMirror.h"
 #include "MathUtils.h"
 #include "LogUtils.h"	
+#include "ComponentRenderer.h"
 #include "ComponentAnimator.h"
 #include "Animation.h"
 #include "AudioManager.h"
@@ -14,6 +15,17 @@ Crawl::DungeonEnemyChase::~DungeonEnemyChase()
 {
 	if (object)
 		object->markedForDeletion = true;
+}
+
+void Crawl::DungeonEnemyChase::Initialise()
+{
+	object->LoadFromJSON(ReadJSONFromDisk("crawler/object/monster_chaser.object"));
+	object->children[0]->LoadFromJSON(ReadJSONFromDisk("crawler/model/monster_chaser.object"));
+	object->children[0]->SetLocalRotationZ(180);
+
+	renderer = (ComponentRenderer*)object->children[0]->GetComponent(Component_Renderer);
+	animator = (ComponentAnimator*)object->children[0]->GetComponent(Component_Animator);
+	animator->SetPose(animationActivate);
 }
 
 void Crawl::DungeonEnemyChase::UpdateTransform()
@@ -397,7 +409,8 @@ void Crawl::DungeonEnemyChase::UpdateVisuals(float delta)
 	{
 		if (animator->IsFinished() && animationTime > 2.0f) // animations have finished
 		{
-			canRemove = true;
+			renderer->dissolveThreshold -= delta;
+			if(renderer->dissolveThreshold < 0.0f)	canRemove = true;
 		}
 		break;
 	}
