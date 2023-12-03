@@ -17,6 +17,7 @@ namespace Crawl
 			MurderinaPathEdit,
 			DungeonProperties,
 			GameManager,
+			EditorSettings
 		};
 
 		DungeonEditor();
@@ -59,6 +60,8 @@ namespace Crawl
 		void DrawGUIModeRailLines();
 		void DrawGUIModeDungeonProperties();
 		void DrawGUIModeGameManager();
+		void DrawGUIModeEditorSettings();
+
 
 		void NewDungeon();
 
@@ -74,8 +77,10 @@ namespace Crawl
 		void UpdateModeMurderinaBrush();
 		void UpdateModeMurderinaEdit();
 
-
 		void DrawTileInformation(DungeonTile* tile, bool drawBorder = false);
+		void DrawTileTraversal(DungeonTile* tile);
+		void DrawTileVision(DungeonTile* tile);
+
 
 		void RefreshSelectedTile();
 		void RefreshSelectedTransporterData(string dungeonPath);
@@ -127,11 +132,12 @@ namespace Crawl
 		const int WALL_VARIANT_COUNT = 3;
 
 		Mode editMode = Mode::TileBrush;
-		std::string editModeNames[6]{ "Tile Brush", "Tile Edit", "Murderina Rail Brush", "Murderina Rail Edit", "Level Properties", "Game Manager"};
+		std::string editModeNames[7]{ "Tile Brush", "Tile Edit", "Murderina Rail Brush", "Murderina Rail Edit", "Level Properties", "Game Manager", "Editor Settings"};
 
 		// Brush Mode
 		Object* brushObject = nullptr;
 		unsigned int brush_tileMask = 0;
+
 		// Auto Tile configuration
 		bool brush_AutoTileEnabled = true;
 		bool brush_AutoTileSurround = true;
@@ -228,6 +234,11 @@ namespace Crawl
 		std::vector<Object*> pathFindObjects;
 		ordered_json path_template = ReadJSONFromDisk("crawler/object/testing/path.object");
 		int facingTest = 0;
+
+		bool showTraversalDebug = false;
+		bool showVisionDebug = false;
+		bool showHintsDebug = true;
+
 	};
 }
 

@@ -127,7 +127,6 @@ void Crawl::DungeonGameManager::Update(float delta)
 
 	UpdateFTUE(delta);
 	UpdateVisuals(delta);
-
 }
 
 void Crawl::DungeonGameManager::PauseGame()
@@ -177,6 +176,7 @@ void Crawl::DungeonGameManager::ResetGameState()
 	startVoid = false;
 	voidSoundTime = voidSoundTimeStart;
 	player->canResetOrWait = true;
+	overrideWindowEmission = false;
 }
 
 void Crawl::DungeonGameManager::RunGMEvent(const DungeonGameManagerEvent& gme)
@@ -604,6 +604,11 @@ void Crawl::DungeonGameManager::UpdateStandardVisuals(float delta)
 	{
 		lightningTimeCurrent = (-rand() % 15) - 5.0f;
 		lightningSfxPlayed = false;
+	}
+
+	if (overrideWindowEmission)
+	{
+		SetAllEmissiveWindows(overrideWindowEmissionAmount);
 	}
 }
 

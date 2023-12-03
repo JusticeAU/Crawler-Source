@@ -149,6 +149,10 @@ namespace Crawl
 		// Standard Visuals
 		float timeCurrent = 0.0f;
 		bool shouldCaptureEmissiveWindows = true;
+	public:
+		bool overrideWindowEmission = false;
+		float overrideWindowEmissionAmount = 1.0f;
+	private:
 
 		// Lobby Visuals
 		int lobbyLightningLightID = 6969;

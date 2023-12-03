@@ -138,6 +138,11 @@ void Crawl::DungeonEditor::DrawGUI()
 			DrawGUIModeGameManager();
 			break;
 		}
+		case Mode::EditorSettings:
+		{
+			DrawGUIModeEditorSettings();
+			break;
+		}
 	}
 	ImGui::End();
 }
@@ -386,9 +391,15 @@ void Crawl::DungeonEditor::DrawGUIModeSelect()
 		if (ImGui::Selectable(editModeNames[4].c_str()))
 			editMode = Mode::DungeonProperties;
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-			ImGui::SetTooltip("Edit specific configuration items about this particular level");
+			ImGui::SetTooltip("Edit specific configuration items about this particular level.");
 
-	/*	if (ImGui::Selectable(editModeNames[5].c_str()))
+		if (ImGui::Selectable(editModeNames[6].c_str()))
+			editMode = Mode::EditorSettings;
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+			ImGui::SetTooltip("Configure some basic settings for the editor.");
+
+
+		/*if (ImGui::Selectable(editModeNames[5].c_str()))
 			editMode = Mode::GameManager;
 		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 			ImGui::SetTooltip("The GameManager contains configuration items specific to the lobby state. These values change over time, but you can mess with them here for testing purposes.");*/
@@ -2112,8 +2123,8 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 		ImGui::EndCombo();
 	}
 
-	//if (ImGui::Checkbox("No Roof", &dungeon->noRoof))
-	//	MarkUnsavedChanges();
+	if (ImGui::Checkbox("No Roof (Requires Reload)", &dungeon->noRoof))
+		MarkUnsavedChanges();
 
 	//if (ImGui::Checkbox("Is Lobby (Don't mess with this!)", &dungeon->isLobby))
 	//	MarkUnsavedChanges();
@@ -2126,6 +2137,23 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 void Crawl::DungeonEditor::DrawGUIModeGameManager()
 {
 	if (DungeonGameManager::Get()->DrawGUIInternal()) unsavedChanges = true;
+}
+
+void Crawl::DungeonEditor::DrawGUIModeEditorSettings()
+{
+	ImGui::Checkbox("Preview Window Emission", &DungeonGameManager::Get()->overrideWindowEmission);
+	if (!DungeonGameManager::Get()->overrideWindowEmission) ImGui::BeginDisabled();
+	if (ImGui::DragFloat("Preview Window Emission Amount", &DungeonGameManager::Get()->overrideWindowEmissionAmount, 0.1, 0, 5))
+	{
+		DungeonGameManager::Get()->UpdateVisuals(0.0f);
+	}
+	if (!DungeonGameManager::Get()->overrideWindowEmission) ImGui::EndDisabled();
+
+	ImGui::Checkbox("Show Traversal Debug Information", &showTraversalDebug);
+	ImGui::Checkbox("Show Vision Debug Information", &showVisionDebug);
+	ImGui::Checkbox("Show Tile Hints", &showHintsDebug);
+
+
 }
 
 void Crawl::DungeonEditor::NewDungeon()
@@ -2238,20 +2266,24 @@ void Crawl::DungeonEditor::Update()
 		UpdateModeMurderinaBrush();	break;
 	case Mode::MurderinaPathEdit:
 		UpdateModeMurderinaEdit();	break;
-	case Mode::DungeonProperties:
+	default:
+		break;
+	}
+
+	// Enabled from the
+	if (showTraversalDebug || showVisionDebug)
 	{
 		for (auto& column : dungeon->tiles)
 		{
 			for (auto& dungeonTile : column.second.row)
 			{
-				DrawTileInformation(&dungeonTile.second);
+				if (showTraversalDebug) DrawTileTraversal(&dungeonTile.second);
+				if (showVisionDebug) DrawTileVision(&dungeonTile.second);
+
 			}
 		}
-		break;
 	}
-	default:
-		break;
-	}
+
 	DrawGizmos();
 }
 void Crawl::DungeonEditor::UpdateModeTileBrush()
@@ -2525,14 +2557,8 @@ void Crawl::DungeonEditor::DrawTileInformation(DungeonTile* tile, bool drawBorde
 
 	if (!tile->permanentlyOccupied)
 	{
-		glm::vec3 tileOrigin = dungeonPosToObjectScale(tile->position);
-		for (int i = 0; i < 4; i++)
-			if ((tile->maskTraverse & orientationMasksIndex[i]) == orientationMasksIndex[i]) LineRenderer::DrawLine(tileOrigin, tileOrigin + dungeonPosToObjectScale(directions[i]) * 0.5f, { 0,1,0 });
-
-
-		tileOrigin.z += 0.2f;
-		for (int i = 0; i < 4; i++)
-			if ((tile->maskSee & orientationMasksIndex[i]) == orientationMasksIndex[i]) LineRenderer::DrawLine(tileOrigin, tileOrigin + dungeonPosToObjectScale(directions[i]) * 0.5f, { 0.5,.5,1 });
+		DrawTileTraversal(tile);
+		DrawTileVision(tile);
 	}
 	else
 	{
@@ -2546,6 +2572,22 @@ void Crawl::DungeonEditor::DrawTileInformation(DungeonTile* tile, bool drawBorde
 			LineRenderer::DrawLine(tilePos + a, tilePos + b, vec3(1, 0, 0));
 		}
 	}
+}
+
+void Crawl::DungeonEditor::DrawTileTraversal(DungeonTile* tile)
+{
+	glm::vec3 tileOrigin = dungeonPosToObjectScale(tile->position);
+	for (int i = 0; i < 4; i++)
+		if ((tile->maskTraverse & orientationMasksIndex[i]) == orientationMasksIndex[i]) LineRenderer::DrawLine(tileOrigin, tileOrigin + dungeonPosToObjectScale(directions[i]) * 0.5f, { 0,1,0 });
+}
+
+void Crawl::DungeonEditor::DrawTileVision(DungeonTile* tile)
+{
+	glm::vec3 tileOrigin = dungeonPosToObjectScale(tile->position);
+	tileOrigin.z += 0.2f;
+	for (int i = 0; i < 4; i++)
+		if ((tile->maskSee & orientationMasksIndex[i]) == orientationMasksIndex[i]) LineRenderer::DrawLine(tileOrigin, tileOrigin + dungeonPosToObjectScale(directions[i]) * 0.5f, { 0.5,.5,1 });
+
 }
 
 void Crawl::DungeonEditor::RefreshSelectedTile()
@@ -2749,6 +2791,22 @@ void Crawl::DungeonEditor::DrawGizmos()
 {
 	DrawCompassAtCoordinate(GetMousePosOnGrid());
 
+	if (murderinaPathSelected)
+	{
+		vec3 position = dungeonPosToObjectScale(murderinaPathSelected->position);
+		vec3 colour = { 0, 1,1 };
+		if (!murderinaPathSelected->IsValidConfiguration())  colour = { 1, 0, 0 };
+		LineRenderer::DrawFlatBox(position, 0.2f, colour);
+	}
+
+	if (editMode == Mode::TileEdit)
+	{
+		if (selectedTile) DrawTileInformation(selectedTile, true);
+		else LineRenderer::DrawFlatBox(dungeonPosToObjectScale(selectedTilePosition), 1, vec3(0.5, 0.5, 0.5));
+	}
+
+	if (!showHintsDebug) return;
+
 	// All transporters
 	for (auto& transporter : dungeon->transporterPlates)
 	{
@@ -2798,20 +2856,6 @@ void Crawl::DungeonEditor::DrawGizmos()
 		vec3 position = dungeonPosToObjectScale(decoration->position) + vec3(0.5f, -0.5f, 0.0f);
 		LineRenderer::DrawFlatBox(position, 0.2f, { 1.0f, 0.0f, 1.0f });
 		LineRenderer::DrawFlatBox(position, 0.3f, { 1.0f, 0.0f, 1.0f });
-	}
-
-	if (murderinaPathSelected)
-	{
-		vec3 position = dungeonPosToObjectScale(murderinaPathSelected->position);
-		vec3 colour = { 0, 1,1 };
-		if (!murderinaPathSelected->IsValidConfiguration())  colour = { 1, 0, 0 };
-		LineRenderer::DrawFlatBox(position, 0.2f, colour);
-	}
-
-	if (editMode == Mode::TileEdit)
-	{
-		if (selectedTile) DrawTileInformation(selectedTile, true);
-		else LineRenderer::DrawFlatBox(dungeonPosToObjectScale(selectedTilePosition), 1, vec3(0.5, 0.5, 0.5));
 	}
 }
 
