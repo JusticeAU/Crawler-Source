@@ -2555,10 +2555,21 @@ void Crawl::DungeonEditor::DrawTileInformation(DungeonTile* tile, bool drawBorde
 		LineRenderer::DrawFlatBox(dungeonPosToObjectScale(selectedTilePosition), 1, vec3(0.5, 0.5, 0.5));
 	}
 
+	DrawTileTraversal(tile);
+	DrawTileVision(tile);
+}
+
+void Crawl::DungeonEditor::DrawTileTraversal(DungeonTile* tile)
+{
+	glm::vec3 tileOrigin = dungeonPosToObjectScale(tile->position);
 	if (!tile->permanentlyOccupied)
 	{
-		DrawTileTraversal(tile);
-		DrawTileVision(tile);
+		for (int i = 0; i < 4; i++)
+		{
+			if ((tile->maskTraverse & orientationMasksIndex[i]) == orientationMasksIndex[i])
+				LineRenderer::DrawLine(tileOrigin, tileOrigin + dungeonPosToObjectScale(directions[i]) * 0.5f, { 0,1,0 });
+
+		}
 	}
 	else
 	{
@@ -2569,24 +2580,37 @@ void Crawl::DungeonEditor::DrawTileInformation(DungeonTile* tile, bool drawBorde
 			vec3 a = dungeonPosToObjectScale(directionsDiagonal[i]) * 0.4f;;
 			vec3 b = dungeonPosToObjectScale(directionsDiagonal[nextI]) * 0.4f;;
 
-			LineRenderer::DrawLine(tilePos + a, tilePos + b, vec3(1, 0, 0));
+			LineRenderer::DrawLine(tileOrigin + a, tileOrigin + b, vec3(1, 0, 0));
 		}
 	}
-}
-
-void Crawl::DungeonEditor::DrawTileTraversal(DungeonTile* tile)
-{
-	glm::vec3 tileOrigin = dungeonPosToObjectScale(tile->position);
-	for (int i = 0; i < 4; i++)
-		if ((tile->maskTraverse & orientationMasksIndex[i]) == orientationMasksIndex[i]) LineRenderer::DrawLine(tileOrigin, tileOrigin + dungeonPosToObjectScale(directions[i]) * 0.5f, { 0,1,0 });
 }
 
 void Crawl::DungeonEditor::DrawTileVision(DungeonTile* tile)
 {
 	glm::vec3 tileOrigin = dungeonPosToObjectScale(tile->position);
-	tileOrigin.z += 0.2f;
-	for (int i = 0; i < 4; i++)
-		if ((tile->maskSee & orientationMasksIndex[i]) == orientationMasksIndex[i]) LineRenderer::DrawLine(tileOrigin, tileOrigin + dungeonPosToObjectScale(directions[i]) * 0.5f, { 0.5,.5,1 });
+	if (!tile->permanentlyOccupied)
+	{
+
+		tileOrigin.z += 0.2f;
+		for (int i = 0; i < 4; i++)
+		{
+			if ((tile->maskSee & orientationMasksIndex[i]) == orientationMasksIndex[i])
+				LineRenderer::DrawLine(tileOrigin, tileOrigin + dungeonPosToObjectScale(directions[i]) * 0.5f, { 0.5,.5,1 });
+
+		}
+	}
+	else
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			int nextI = i + 1;
+			if (nextI == 4) nextI = 0;
+			vec3 a = dungeonPosToObjectScale(directionsDiagonal[i]) * 0.4f;;
+			vec3 b = dungeonPosToObjectScale(directionsDiagonal[nextI]) * 0.4f;;
+
+			LineRenderer::DrawLine(tileOrigin + a, tileOrigin + b, vec3(1, 0, 0));
+		}
+	}
 
 }
 
