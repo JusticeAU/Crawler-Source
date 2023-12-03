@@ -14,7 +14,7 @@ namespace GraphicsUtility
 	{
 		NVIDIA,
 		AMD,
-		UNKNOWN
+		UNSUPPORTEDVENDOR
 	};
 	string stringsNvidia[] =
 	{
@@ -24,10 +24,6 @@ namespace GraphicsUtility
 	{
 		"ATI Technologies Inc.",
 		"AMD"
-	};
-	string stringsIntel[] =
-	{
-		"Intel"
 	};
 
 	Vendor GetVendorFromString(string vendorString);
@@ -39,9 +35,8 @@ namespace GraphicsUtility
 		const GLubyte* vendorGL = glGetString(GL_VENDOR); // Returns the vendor
 		string vendorString((char*)vendorGL);
 		Vendor vendor = GetVendorFromString(vendorString);
-
 		// get the vram total
-		if (vendor != Vendor::UNKNOWN) return GetVRAM(vendor);
+		if (vendor != Vendor::UNSUPPORTEDVENDOR) return GetVRAM(vendor);
 		else return -1;
 	}
 
@@ -59,8 +54,7 @@ namespace GraphicsUtility
 			if (vendorString == stringsAMD[i]) return Vendor::AMD;
 		}
 
-		// Check for Intel ahaha
-		return Vendor::UNKNOWN; // Just assume nvidia for now - Dat market share.
+		return Vendor::UNSUPPORTEDVENDOR;
 	}
 
 	int GetVRAM(Vendor vendor)

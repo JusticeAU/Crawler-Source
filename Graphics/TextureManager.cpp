@@ -30,7 +30,7 @@ void TextureManager::DetectQuality()
 			m_quality = Quality::Low;
 
 	}
-
+	else m_quality = Quality::High;
 
 	switch (m_quality)
 	{
