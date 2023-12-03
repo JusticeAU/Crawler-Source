@@ -196,8 +196,14 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 			shader->SetMatrixUniform("pvmMatrix", pvm);
 			shader->SetMatrixUniform("mMatrix", componentParent->transform * model->modelTransform);
 			shader->SetVector3Uniform("cameraPosition", position);
+			
+			
 			if (isAnimated)
 				BindBoneTransform();
+
+			TextureManager::GetTexture("crawler/texture/perlin_noise.tga")->Bind(10);
+			shader->SetIntUniform("perlinNoise", 10);
+			shader->SetFloatUniform("dissolveThreshold", dissolveThreshold);
 
 			// Check for alpha cutoff and configured if required.
 			if (material != nullptr && material->blendMode == Material::BlendMode::AlphaCutoff)
@@ -222,6 +228,7 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 			ssaoGeoShader->SetMatrixUniform("pvmMatrix", pvm);
 			ssaoGeoShader->SetMatrixUniform("model", modelMat);
 			ssaoGeoShader->SetMatrixUniform("mMatrix", modelMat);
+			ssaoGeoShader->SetFloatUniform("dissolveThreshold", dissolveThreshold);
 
 			if (isAnimated)
 				BindBoneTransform();
@@ -292,6 +299,10 @@ void ComponentRenderer::DrawGUI()
 		ImGui::PopID();
 	}
 	ImGui::DragFloat("Emissive Scale", &emissiveScale, 0.05, 0, 1);
+	ImGui::DragFloat("Dissolve Threshold", &dissolveThreshold, 0.01, 0, 1);
+	ImGui::DragFloat("Dissolve Edge", &dissolveEdge, 0.01, 0, 1);
+
+
 	ImGui::Checkbox("Casts Shadows", &castsShadows);
 
 	//string targetStr = "Target##" + to_string(componentParent->id);

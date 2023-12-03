@@ -67,6 +67,8 @@ public:
 	float shadowBias = 0.005f;
 	bool dontFrustumCull = false;
 	float emissiveScale = 1.0f;
+	float dissolveThreshold = 1.0f;
+	float dissolveEdge = 0.05f;
 
 	bool modifiedMaterials = false; // This is used for Editor APIs to see if it needs consider reserialising the model configuration.
 

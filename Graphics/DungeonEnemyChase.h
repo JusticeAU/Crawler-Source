@@ -4,6 +4,7 @@
 #include "Dungeon.h"
 
 class Object;
+class ComponentRenderer;
 class ComponentAnimator;
 
 namespace Crawl
@@ -42,6 +43,7 @@ namespace Crawl
 
 		const bool sightReflectsOffMirrors = true;
 		~DungeonEnemyChase();
+		void Initialise();
 		glm::ivec2 position = {0,0};
 		glm::ivec2 positionPrevious;
 		FACING_INDEX facing = NORTH_INDEX;
@@ -107,6 +109,7 @@ namespace Crawl
 		// dependencies
 		Dungeon* dungeon = nullptr;
 		Object* object = nullptr;
+		ComponentRenderer* renderer = nullptr;
 		ComponentAnimator* animator = nullptr;
 
 		// visuals

@@ -46,6 +46,9 @@ void RenderBatch::DrawBatches()
 		shader->SetVector3Uniform("cameraPosition", cameraPosition);
 		shader->SetMatrixUniform("lightSpaceMatrix", Scene::GetLightSpaceMatrix());
 		shader->SetFloatUniform("ambient", SceneRenderer::ambient);
+
+		TextureManager::GetTexture("crawler/texture/perlin_noise.tga")->Bind(10);
+		shader->SetIntUniform("perlinNoise", 10);
 		
 		int numPointLights = Scene::GetNumPointLights();
 		shader->SetIntUniform("shadowMapArray", 31);
@@ -157,6 +160,9 @@ void RenderBatch::DrawBatches()
 						}
 
 						shader->SetFloatUniform("emissiveScale", renderer->emissiveScale);
+						shader->SetFloatUniform("dissolveThreshold", renderer->dissolveThreshold);
+						shader->SetFloatUniform("dissolveEdge", renderer->dissolveEdge);
+
 
 						// Draw the mesh
 						modelBatch.first->DrawSubMesh(meshBatch.first);
