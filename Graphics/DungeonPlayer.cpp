@@ -328,7 +328,8 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 		fadeIn = false;
 		AudioManager::PlaySound(deathSound);
 		
-		DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Reset);
+		if(canResetOrWait) DungeonGameManager::Get()->QueueFTUEPrompt(DungeonGameFTUE::FTUEType::Reset);
+
 		return false;
 	}
 
