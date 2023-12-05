@@ -14,6 +14,7 @@
 #include "MathUtils.h"
 
 #include <random>
+#include "GraphicsQuality.h"
 
 // Stuff to move away
 #include "SceneEditorCamera.h"
@@ -131,6 +132,26 @@ SceneRenderer::SceneRenderer()
 #pragma endregion
 
 	LineRenderer::Initialise();
+}
+
+void SceneRenderer::SetQuality()
+{
+	switch (GraphicsQuality::m_quality)
+	{
+	case GraphicsQuality::Quality::High:
+		shadowMapRealtimeMaxDistance = 300;
+		ssaoKernelTaps = 16;
+		break;
+	case GraphicsQuality::Quality::Medium:
+		shadowMapRealtimeMaxDistance = 150;
+		ssaoKernelTaps = 8;
+		break;
+	case GraphicsQuality::Quality::Low:
+		shadowMapRealtimeMaxDistance = 100;
+		ssaoKernelTaps = 4;
+		break;
+
+	}
 }
 
 void SceneRenderer::DrawGUI()

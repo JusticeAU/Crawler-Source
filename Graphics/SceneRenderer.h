@@ -24,6 +24,8 @@ class SceneRenderer
 {
 public:
 	SceneRenderer();
+	
+	void SetQuality();
 
 	void DrawGUI();
 	void DrawStatistics();

@@ -320,6 +320,7 @@
     <ClCompile Include="DungeonTransporter.cpp" />
     <ClCompile Include="FrameBuffer.cpp" />
     <ClCompile Include="glad.c" />
+    <ClCompile Include="GraphicsQuality.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="LineRenderer.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -418,6 +419,7 @@
     <ClInclude Include="PostProcess.h" />
     <ClInclude Include="Primitives.h" />
     <ClInclude Include="SceneEditorCamera.h" />
+    <ClInclude Include="GraphicsQuality.h" />
     <ClInclude Include="SceneRenderer.h" />
     <ClInclude Include="SceneRendererBatched.h" />
     <ClInclude Include="serialisation.h" />

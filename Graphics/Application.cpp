@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "Graphics.h"
+#include "GraphicsQuality.h"
 
 #include "MeshManager.h"
 #include "TextureManager.h"
@@ -173,12 +174,14 @@ void Application::ConstructWindow()
 
 void Application::LoadResourceManagers()
 {
+	// Detect Quality
+	GraphicsQuality::DetectQuality();
+
 	// Load Assets
 	string engineFolder = "engine";
 	string gameFolder = "crawler";
 	MeshManager::Init();
-
-	TextureManager::Init((TextureManager::Quality)quality);
+	TextureManager::Init();
 	TextureManager::FindAllFiles(engineFolder);
 	TextureManager::FindAllFiles(gameFolder);
 
@@ -197,10 +200,12 @@ void Application::LoadResourceManagers()
 	AudioManager::Init();
 	AudioManager::LoadAllFiles(engineFolder);
 	AudioManager::LoadAllFiles(gameFolder);
+	
 	// Load Crawl Game Dependencies
 	Scene* scene = Scene::NewScene("Dungeon");
 	Scene::s_instance = scene;
 	Scene::renderer = new SceneRenderer();
+	Scene::renderer->SetQuality();
 }
 
 void Application::DoLoadingScreen()

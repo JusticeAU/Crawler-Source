@@ -3,6 +3,7 @@
 #include <map>
 #include "Texture.h"
 #include <vector>
+#include "GraphicsQuality.h"
 
 using std::string;
 using std::map;
@@ -13,14 +14,7 @@ class FrameBuffer;
 class TextureManager
 {
 public:
-	enum class Quality
-	{
-		Low,
-		Medium,
-		High,
-		Auto
-	};
-	static void Init(Quality quality);
+	static void Init();
 
 	static Texture* GetTexture(string name);
 
@@ -65,8 +59,7 @@ protected:
 
 	Texture* selectedTexture = nullptr;
 	bool selectedTextureWindowOpen = false;
-	Quality m_quality = Quality::Auto;
 
-	void DetectQuality();
+	GraphicsQuality::Quality m_quality = GraphicsQuality::Quality::High;
 };
 

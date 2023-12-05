@@ -356,6 +356,9 @@
     <ClCompile Include="DungeonLightToggler.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
+    <ClCompile Include="GraphicsQuality.cpp">
+      <Filter>Source Files\Application\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -660,6 +663,9 @@
     </ClInclude>
     <ClInclude Include="DungeonLightToggler.h">
       <Filter>Source Files\Application\Crawler</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsQuality.h">
+      <Filter>Source Files\Application\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,12 +1,11 @@
 #include "TextureManager.h"
 #include "Graphics.h"
+#include "GraphicsQuality.h"
 #include <filesystem>
 #include "LogUtils.h"
 #include "FrameBuffer.h"
 #include "StringUtils.h"
 #include "serialisation.h"
-
-#include "GraphicsUtility.h"
 #include "SceneRenderer.h"
 
 using std::vector;
@@ -18,44 +17,12 @@ TextureManager::TextureManager()
 	frameBuffers.emplace("_null", nullptr);
 }
 
-void TextureManager::DetectQuality()
-{
-	int vram = GraphicsUtility::GetVRAMTotal();
-	if (vram != -1)
-	{
-		if (vram > (6000 * 1024))
-			m_quality = Quality::High;
-		if (vram <= (6000 * 1024))
-			m_quality = Quality::Medium;
-		if (vram < (2400 * 1024))
-			m_quality = Quality::Low;
-
-	}
-	else m_quality = Quality::High;
-
-	switch (m_quality)
-	{
-	case Quality::High:
-		LogUtils::Log("Setting Graphics quality to High.");
-		break;
-	case Quality::Medium:
-		SceneRenderer::ssaoKernelTaps = 8;
-		LogUtils::Log("Setting Graphics quality to Medium.");
-		break;
-	case Quality::Low:
-		SceneRenderer::ssaoKernelTaps = 4;
-		LogUtils::Log("Setting Graphics quality to Low.");
-		break;
-	}
-}
-
-void TextureManager::Init(Quality quality)
+void TextureManager::Init()
 {
 	if (!s_instance)
 	{
 		s_instance = new TextureManager();
-		if (quality == Quality::Auto) s_instance->DetectQuality();
-		else s_instance->m_quality = quality;
+		s_instance->m_quality = GraphicsQuality::m_quality;
 	}
 	else LogUtils::Log("Tried to Init MeshManager when it was already initilised");
 }
