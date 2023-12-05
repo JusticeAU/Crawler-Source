@@ -304,6 +304,7 @@
     <ClCompile Include="DungeonGameManagerEvent.cpp" />
     <ClCompile Include="DungeonInteractableLever.cpp" />
     <ClCompile Include="DungeonLight.cpp" />
+    <ClCompile Include="DungeonLightToggler.cpp" />
     <ClCompile Include="DungeonMenu.cpp" />
     <ClCompile Include="DungeonMenuButton.cpp" />
     <ClCompile Include="DungeonMirror.cpp" />
@@ -392,6 +393,7 @@
     <ClInclude Include="DungeonInteractable.h" />
     <ClInclude Include="DungeonInteractableLever.h" />
     <ClInclude Include="DungeonLight.h" />
+    <ClInclude Include="DungeonLightToggler.h" />
     <ClInclude Include="DungeonMenu.h" />
     <ClInclude Include="DungeonMenuButton.h" />
     <ClInclude Include="DungeonMirror.h" />

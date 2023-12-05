@@ -484,6 +484,7 @@ bool Crawl::DungeonPlayer::UpdateStateIdle(float delta)
 				positionPrevious = position;
 				position += directions[index];
 				currentDungeon->GetTile(position)->occupied = true;
+				currentDungeon->ProcessLightTogglers(positionPrevious, (FACING_INDEX)index);
 				didMove = true;
 			}
 		}

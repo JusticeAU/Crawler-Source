@@ -51,6 +51,7 @@ namespace Crawl
 
 		void DrawGUIModeTileEditStairs();
 		void DrawGUIModeTileEditLight();
+		void DrawGUIModeTileEditLightToggler();
 		void DrawGUIModeTileEditEventTrigger();
 		string DrawGUIModeTileEditEventTriggerGetEventTypeString(DungeonEventTrigger* trigger);
 
@@ -217,6 +218,9 @@ namespace Crawl
 
 		DungeonLight* selectedLight = nullptr;
 		bool selectedLightWindowOpen = false;
+
+		DungeonLightToggler* selectedLightToggler = nullptr;
+		bool selectedLightTogglerWindowOpen = false;
 
 		DungeonEventTrigger* selectedEventTrigger = nullptr;
 		bool selectedEventTriggerWindowOpen = false;

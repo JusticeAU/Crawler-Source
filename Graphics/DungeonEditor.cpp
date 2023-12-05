@@ -19,6 +19,7 @@
 #include "DungeonDecoration.h"
 #include "DungeonStairs.h"
 #include "DungeonLight.h"
+#include "DungeonLightToggler.h"
 #include "DungeonEventTrigger.h"
 #include "DungeonEnemySlugPath.h"
 #include "DungeonCollectableKey.h"
@@ -752,6 +753,12 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 			selectedEventTrigger = dungeon->CreateEventTrigger(selectedTilePosition);
 			selectedEventTriggerWindowOpen = true;
 		}*/
+		if (ImGui::Selectable("Light Toggler"))
+		{
+			MarkUnsavedChanges();
+			selectedLightToggler = dungeon->CreateLightToggler(selectedTilePosition);
+			selectedLightTogglerWindowOpen = true;
+		}
 		ImGui::Unindent();
 		ImGui::EndCombo();
 	}
@@ -966,6 +973,13 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		if (ImGui::Selectable("Event Trigger")) selectedEventTriggerWindowOpen = true;
 	}
 
+	if (selectedLightToggler)
+	{
+		if (ImGui::Selectable("Light Toggler")) selectedLightTogglerWindowOpen = true;
+	}
+
+
+
 	ImGui::Unindent();
 	ImGui::PopID();
 
@@ -1002,6 +1016,10 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		DrawGUIModeTileEditStairs();
 	if (selectedLightWindowOpen)
 		DrawGUIModeTileEditLight();
+
+	if (selectedLightTogglerWindowOpen)
+		DrawGUIModeTileEditLightToggler();
+
 	if (selectedEventTriggerWindowOpen)
 		DrawGUIModeTileEditEventTrigger();
 	ImGui::PopID();
@@ -1860,7 +1878,7 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLight()
 
 	if (ImGui::InputInt("ID", &selectedLight->id)) MarkUnsavedChanges();
 	if (ImGui::Checkbox("Ignore Global Flicker", &selectedLight->flickerIgnoreGlobal))	MarkUnsavedChanges();
-	if (ImGui::Checkbox("Starts Disabled", &selectedLight->startDisabled)) MarkUnsavedChanges();
+	if (ImGui::Checkbox("Starts Disabled", &selectedLight->isDisabled)) MarkUnsavedChanges();
 	if (ImGui::Checkbox("Flickers Randomly", &selectedLight->flickerRepeat))
 	{
 		MarkUnsavedChanges();
@@ -1917,6 +1935,64 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditLight()
 	}
 
 	ImGui::End();
+}
+void Crawl::DungeonEditor::DrawGUIModeTileEditLightToggler()
+{
+	// Draw lines the lights they control
+	for (auto& light : dungeon->pointLights)
+	{
+		glm::vec3 fromPos = dungeonPosToObjectScale(selectedLightToggler->position);
+		glm::vec3 toPos = dungeonPosToObjectScale(light->position) + light->localPosition;
+		if (light->id == selectedLightToggler->enableID) LineRenderer::DrawLine(fromPos, toPos, { 0.0f,0.8f,0.0f });
+		if (light->id == selectedLightToggler->disableID) LineRenderer::DrawLine(fromPos, toPos, { 0.8f,0.0f,0.0f });
+
+	}
+
+	ImGui::SetNextWindowPos({ 400,0 }, ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize({ 450, 350 }, ImGuiCond_FirstUseEver);
+	ImGui::Begin("Edit Light Toggler", &selectedLightTogglerWindowOpen);
+	if (ImGui::BeginCombo("Exit Direction", orientationNames[selectedLightToggler->facing].c_str()))
+	{
+		int oldOrientation = selectedLightToggler->facing;
+		for (int i = 0; i < 4; i++)
+			if (ImGui::Selectable(orientationNames[i].c_str()))
+			{
+				selectedLightToggler->facing = (FACING_INDEX)i;
+				MarkUnsavedChanges();
+			}
+		ImGui::EndCombo();
+	}
+
+	if (ImGui::InputInt("Enable light IDs", &selectedLightToggler->enableID)) MarkUnsavedChanges();
+	if (ImGui::InputInt("Disable light IDs", &selectedLightToggler->disableID)) MarkUnsavedChanges();
+
+	if (ImGui::Checkbox("Two Way Trigger?", &selectedLightToggler->twoWay)) MarkUnsavedChanges();
+	if (ImGui::Checkbox("Only Triggers Once?", &selectedLightToggler->onlyOnce)) MarkUnsavedChanges();
+
+	if (ImGui::Button("Delete"))
+		ImGui::OpenPopup("delete_toggle_confirm");
+
+
+	if (ImGui::BeginPopupModal("delete_toggle_confirm"))
+	{
+		ImGui::Text("Are you sure you want to delete the toggler?");
+		if (ImGui::Button("Yes"))
+		{
+			MarkUnsavedChanges();
+			dungeon->RemoveLightToggler(selectedLightToggler);
+			selectedLightToggler = nullptr;
+			selectedLightTogglerWindowOpen = false;
+			RefreshSelectedTile();
+		}
+		if (ImGui::Button("Cancel"))
+		{
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+
+	ImGui::End();
+
 }
 void Crawl::DungeonEditor::DrawGUIModeTileEditEventTrigger()
 {
@@ -2777,6 +2853,13 @@ void Crawl::DungeonEditor::RefreshSelectedTile()
 		if (dungeon->events[i]->position == selectedTilePosition)
 			selectedEventTrigger = dungeon->events[i];
 	}
+
+	selectedLightToggler = nullptr;
+	for (int i = 0; i < dungeon->lightTogglers.size(); i++)
+	{
+		if (dungeon->lightTogglers[i]->position == selectedTilePosition)
+			selectedLightToggler = dungeon->lightTogglers[i];
+	}
 }
 void Crawl::DungeonEditor::RefreshSelectedTransporterData(string dungeonPath)
 {
@@ -2872,6 +2955,22 @@ void Crawl::DungeonEditor::DrawGizmos()
 		vec3 positionB = positionA;
 		positionA.z = 0.0f;
 		LineRenderer::DrawLine(positionA, positionB, light->colour);
+	}
+
+	// All Light Togglers
+	for (auto& lightToggler : dungeon->lightTogglers)
+	{
+		vec3 position = dungeonPosToObjectScale(lightToggler->position);
+		LineRenderer::DrawFlatBox(position, 0.2f, { 0.2f,0.8f,0.8f });
+		LineRenderer::DrawFlatBox(position, 0.3f, { 0.2f,0.8f,0.8f });
+		glm::vec2 direction = directions[lightToggler->facing];
+		LineRenderer::DrawLine(position, position + vec3(direction.x, direction.y, 0) * 0.5f, { 0.2f,0.8f,0.8f });
+
+		if (lightToggler->twoWay)
+		{
+			direction = directionsReversed[lightToggler->facing];
+			LineRenderer::DrawLine(position, position + vec3(direction.x, direction.y, 0) * 0.5f, { 0.2f,0.8f,0.8f });
+		}
 	}
 
 	// All decorations
@@ -3105,6 +3204,7 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedTileDecoration = nullptr;
 	selectedStairs = nullptr;
 	selectedLight = nullptr;
+	selectedLightToggler = nullptr;
 	selectedEventTrigger = nullptr;
 	murderinaPathSelected = nullptr;
 
@@ -3123,6 +3223,7 @@ void Crawl::DungeonEditor::TileEditUnselectAll()
 	selectedDecorationWindowOpen = false;
 	selectedStairsWindowOpen = false;
 	selectedLightWindowOpen = false;
+	selectedLightTogglerWindowOpen = false;
 	selectedEventTriggerWindowOpen = false;
 
 	selectedTileDoors.clear();

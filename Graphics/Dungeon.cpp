@@ -23,6 +23,7 @@
 #include "DungeonDecoration.h"
 #include "DungeonStairs.h"
 #include "DungeonLight.h"
+#include "DungeonLightToggler.h"
 #include "DungeonEventTrigger.h"
 #include "DungeonCollectableKey.h"
 
@@ -1786,6 +1787,36 @@ void Crawl::Dungeon::RemoveLight(DungeonLight* light)
 		}
 	}
 }
+
+Crawl::DungeonLightToggler* Crawl::Dungeon::CreateLightToggler(ivec2 position)
+{
+	DungeonLightToggler* toggler = new DungeonLightToggler();
+	toggler->dungeon = this;
+	toggler->position = position;
+	lightTogglers.push_back(toggler);
+	return toggler;
+}
+
+void Crawl::Dungeon::RemoveLightToggler(DungeonLightToggler* toggler)
+{
+	for (int i = 0; i < lightTogglers.size(); i++)
+	{
+		if (toggler == lightTogglers[i])
+		{
+			delete lightTogglers[i];
+			lightTogglers.erase(lightTogglers.begin() + i);
+		}
+	}
+}
+void Crawl::Dungeon::ProcessLightTogglers(ivec2 position, FACING_INDEX direction)
+{
+	for (auto& toggler : lightTogglers)
+	{
+		if (toggler->position == position && toggler->facing == direction) toggler->Trigger();
+		if (toggler->twoWay && toggler->position == position && toggler->facing == facingIndexesReversed[direction]) toggler->ReverseTrigger();
+	}
+
+}
 // ID defaults to 0, if 0 is used, it will flicker all lights. Otherwise, just flicker lights with matching ID.
 void Crawl::Dungeon::FlickerLights(int id)
 {
@@ -2073,6 +2104,11 @@ ordered_json Crawl::Dungeon::GetDungeonSerialised()
 		pointLights_json.push_back(*pointLight);
 	dungeon_serialised["pointLights"] = pointLights_json;
 
+	ordered_json lightToggles_json;
+	for (auto& lightToggle : lightTogglers)
+		lightToggles_json.push_back(*lightToggle);
+	dungeon_serialised["lightToggles"] = lightToggles_json;
+
 	ordered_json events_json;
 	for (auto& event : events)
 		events_json.push_back(*event);
@@ -2267,7 +2303,7 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 		newPointLight->flickerRepeatMin = pointLight.flickerRepeatMin;
 		newPointLight->flickerRepeatMax = pointLight.flickerRepeatMax;
 		newPointLight->flickerEnabled = pointLight.flickerEnabled;
-		newPointLight->startDisabled = pointLight.startDisabled;
+		newPointLight->isDisabled = pointLight.isDisabled;
 		newPointLight->lightDecorationID = pointLight.lightDecorationID;
 		newPointLight->lightDecorationDirection = pointLight.lightDecorationDirection;
 		newPointLight->Init();
@@ -2361,7 +2397,6 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 	}
 
 	// Invisible objects
-
 	auto& events_json = serialised["events"];
 	for (auto it = events_json.begin(); it != events_json.end(); it++)
 	{
@@ -2376,6 +2411,20 @@ void Crawl::Dungeon::RebuildDungeonFromSerialised(ordered_json& serialised)
 			newEvent->facing = event.facing;
 
 		}
+	}
+
+	auto& lightToggles_json = serialised["lightToggles"];
+	for (auto it = lightToggles_json.begin(); it != lightToggles_json.end(); it++)
+	{
+		DungeonLightToggler lightToggle = it.value().get<Crawl::DungeonLightToggler>();
+		DungeonLightToggler* newLightToggle = CreateLightToggler(lightToggle.position);
+		newLightToggle->facing = lightToggle.facing;
+		newLightToggle->enableID = lightToggle.enableID;
+		newLightToggle->disableID = lightToggle.disableID;
+
+		if (lightToggle.triggered) newLightToggle->triggered = true;
+		if (lightToggle.twoWay) newLightToggle->twoWay = true;
+		if (lightToggle.onlyOnce) newLightToggle->onlyOnce = true;
 	}
 
 	auto& stairs_json = serialised["stairs"];
@@ -2526,6 +2575,10 @@ void Crawl::Dungeon::DestroySceneFromDungeonLayout()
 	for (int i = 0; i < pointLights.size(); i++)
 		delete pointLights[i];
 	pointLights.clear();
+
+	for (int i = 0; i < lightTogglers.size(); i++)
+		delete lightTogglers[i];
+	lightTogglers.clear();
 
 	for (int i = 0; i < events.size(); i++)
 		delete events[i];

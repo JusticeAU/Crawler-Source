@@ -353,6 +353,9 @@
     <ClCompile Include="DungeonPushableBlockExploding.cpp">
       <Filter>Source Files\Application\Crawler</Filter>
     </ClCompile>
+    <ClCompile Include="DungeonLightToggler.cpp">
+      <Filter>Source Files\Application\Crawler</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="glad.h">
@@ -654,6 +657,9 @@
     </ClInclude>
     <ClInclude Include="stb_image_resize2.h">
       <Filter>Libraries\stb_image</Filter>
+    </ClInclude>
+    <ClInclude Include="DungeonLightToggler.h">
+      <Filter>Source Files\Application\Crawler</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

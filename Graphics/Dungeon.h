@@ -35,6 +35,7 @@ namespace Crawl
 	class DungeonDecoration;
 	class DungeonStairs;
 	class DungeonLight;
+	class DungeonLightToggler;
 	class DungeonEventTrigger;
 	class DungeonCollectableKey;
 
@@ -174,6 +175,10 @@ namespace Crawl
 		DungeonLight* CreateLight(ivec2 position);
 		DungeonLight* GetLightWithID(int id);
 		void RemoveLight(DungeonLight* light);
+
+		DungeonLightToggler* CreateLightToggler(ivec2 position);
+		void RemoveLightToggler(DungeonLightToggler* toggler);
+		void ProcessLightTogglers(ivec2 position, FACING_INDEX direction);
 		
 		void FlickerLights(int id = 0);
 		void EnableLights(int id);
@@ -298,6 +303,7 @@ namespace Crawl
 		std::vector<DungeonStairs*> stairs;
 
 		std::vector<DungeonLight*> pointLights;
+		std::vector<DungeonLightToggler*> lightTogglers;
 		std::vector<DungeonEventTrigger*> events;
 
 		std::vector<DungeonCollectableKey*> keys;

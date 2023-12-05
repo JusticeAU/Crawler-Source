@@ -32,7 +32,7 @@ void Crawl::DungeonLight::Init()
 	ConfigureFlickerState();
 	LoadDecoration();
 	UpdateTransform();
-	if (!startDisabled) Enable();
+	if (!isDisabled) Enable();
 }
 
 void Crawl::DungeonLight::MakeRoomLight()
@@ -63,7 +63,7 @@ void Crawl::DungeonLight::MakeHallwayLight()
 
 void Crawl::DungeonLight::Enable()
 {
-	isEnabled = true;
+	isDisabled = false;
 	if (!light)
 	{
 		light = (ComponentLightPoint*)ComponentFactory::NewComponent(object, Component_LightPoint);
@@ -76,7 +76,7 @@ void Crawl::DungeonLight::Enable()
 
 void Crawl::DungeonLight::Disable()
 {
-	isEnabled = false;
+	isDisabled = true;
 	if (light)
 	{
 		light->markedForDeletion = true;
@@ -100,7 +100,7 @@ void Crawl::DungeonLight::LoadDecoration()
 		object->SetLocalRotationZ(orientationEulersReversed[lightDecorationDirection]);
 		lightDecorationRenderer = (ComponentRenderer*)lightDecoration->GetComponent(Component_Renderer);
 		lightDecorationRenderer->castsShadows = false;
-		if (startDisabled) intensityScale = 0.0f;
+		if (isDisabled) intensityScale = 0.0f;
 	}
 	else
 	{
@@ -137,7 +137,7 @@ void Crawl::DungeonLight::UpdateLight()
 
 void Crawl::DungeonLight::Flicker()
 {
-	if (!isEnabled) return;
+	if (isDisabled) return;
 
 	flickerEnabled = true;
 	flickerCurrent = -0.3f;

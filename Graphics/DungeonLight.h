@@ -16,13 +16,12 @@ namespace Crawl
 		glm::ivec2 position = { 0,0 }; // grid coordinate
 		glm::vec3 localPosition = { 0,0,2.5f }; // scene scale position on grid square;
 
-		bool isEnabled = false;
 		glm::vec3 colour = { 1,1,1 };
 		float intensity = 5.0f;
 		float intensityCurrent = 5.0f;
 
 		bool isLobbyLight = false;
-		bool startDisabled = false;
+		bool isDisabled = false;
 
 		Object* object = nullptr;
 		ComponentLightPoint* light = nullptr;
@@ -81,7 +80,7 @@ namespace Crawl
 			j["flickerRepeatMin"] = object.flickerRepeatMin;
 			j["flickerRepeatMax"] = object.flickerRepeatMax;
 		}
-		if (object.startDisabled) j["startDisabled"] = true;
+		if (object.isDisabled) j["startDisabled"] = true;
 		if (object.lightDecorationID != -1)
 		{
 			j["lightDecorationID"] = object.lightDecorationID;
@@ -104,7 +103,7 @@ namespace Crawl
 			j.at("flickerRepeatMin").get_to(object.flickerRepeatMin);
 			j.at("flickerRepeatMax").get_to(object.flickerRepeatMax);
 		}
-		if (j.contains("startDisabled")) object.startDisabled = true;
+		if (j.contains("startDisabled")) object.isDisabled = true;
 		if (j.contains("lightDecorationID"))
 		{
 			j.at("lightDecorationID").get_to(object.lightDecorationID);
