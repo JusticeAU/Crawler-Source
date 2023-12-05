@@ -7,6 +7,7 @@
 #include "serialisation.h"
 
 #include "GraphicsUtility.h"
+#include "SceneRenderer.h"
 
 using std::vector;
 namespace fs = std::filesystem;
@@ -38,9 +39,11 @@ void TextureManager::DetectQuality()
 		LogUtils::Log("Setting Graphics quality to High.");
 		break;
 	case Quality::Medium:
+		SceneRenderer::ssaoKernelTaps = 8;
 		LogUtils::Log("Setting Graphics quality to Medium.");
 		break;
 	case Quality::Low:
+		SceneRenderer::ssaoKernelTaps = 4;
 		LogUtils::Log("Setting Graphics quality to Low.");
 		break;
 	}

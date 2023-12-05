@@ -35,6 +35,8 @@ bool SceneRenderer::bloomEnabled = true;
 float SceneRenderer::ambient = 0.03f;
 ComponentCamera* SceneRenderer::frustumCullingCamera = nullptr;
 bool SceneRenderer::frustumCullingShowBounds = false;
+float SceneRenderer::shadowMapRealtimeMaxDistance = 150;
+int SceneRenderer::ssaoKernelTaps = 16;
 
 FrameBuffer* SceneRenderer::pointlightCubeMapArrayStatic = nullptr;
 FrameBuffer* SceneRenderer::pointlightCubeMapArrayDynamic = nullptr;
@@ -142,6 +144,7 @@ void SceneRenderer::DrawGUI()
 	ImGui::SetNextWindowPos({ 1200, 200 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Graphics");
 
+	ImGui::DragFloat("Max ShadowMap Distance", &shadowMapRealtimeMaxDistance, 1, 0, 50000);
 	float averageTotalRenderTime = 0.0f;
 	for (int i = 0; i < 100; i++)
 		averageTotalRenderTime += renderTotalSamples[i];
@@ -378,15 +381,16 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	// Build G Buffer
 	gBuffer->BindTarget();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	ShaderProgram* ssaoGeoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOGeometryPass");
-	ssaoGeoShader->Bind();
-	ssaoGeoShader->SetMatrixUniform("view", c->GetViewMatrix());
-	ssaoGeoShader->SetMatrixUniform("projection", c->GetProjectionMatrix());
-	TextureManager::GetTexture("crawler/texture/perlin_noise.tga")->Bind(10);
-	ssaoGeoShader->SetIntUniform("perlinNoise", 10);
+
+	renderBatch.SetRenderPass(RenderBatch::RenderPass::gBuffer);
 
 	for (auto& o : scene->objects)
 		o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::SSAOgBuffer);
+
+	renderBatch.SetCameraMatricies(c);
+	renderBatch.DrawBatches();
+	renderBatch.ClearBatches();
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	
 	// SSAO
@@ -469,14 +473,13 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	glDepthMask(GL_FALSE);
 
 	// Build render batches
+	renderBatch.SetRenderPass(RenderBatch::RenderPass::Opaque);
 	for (auto& o : scene->objects)
 		o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::BatchedOpaque);
 
-	// Draw render batches
-	renderBatch.SetMatricies(c->GetViewProjectionMatrix(), cameraPosition);
+	renderBatch.SetCameraMatricies(c);
 	renderBatch.DrawBatches();
 	renderBatch.ClearBatches();
-
 
 	glDepthFunc(GL_LESS);
 	glDepthMask(GL_TRUE);

@@ -122,7 +122,7 @@ protected:
 	vec3 m_ambientColour = { 0.25f, 0.25f, 0.25f };
 
 	// Point Lights
-	int MAX_POINTLIGHTS = 50;
+	int MAX_POINTLIGHTS = 20;
 public:
 	vector<ComponentLightPoint*> m_pointLightComponents;
 	vector<ComponentRenderer*> m_rendererComponents;

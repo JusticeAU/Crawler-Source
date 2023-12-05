@@ -64,6 +64,10 @@ public:
 
 	static float ambient;
 
+	static float shadowMapRealtimeMaxDistance;
+
+	static int ssaoKernelTaps;
+
 
 	// This stores the batches for the Opaque pass. May get scoped out to other passes.
 	static RenderBatch renderBatch;
@@ -85,7 +89,7 @@ protected:
 	// SSAO
 	float ssaoRadius = 0.25f;
 	float ssaoBias = 0.025f;
-	int ssaoKernelTaps = 16;
+
 	FrameBuffer* ssaoFBO;
 	FrameBuffer* ssaoPingFBO;
 	FrameBuffer* ssaoPongFBO;

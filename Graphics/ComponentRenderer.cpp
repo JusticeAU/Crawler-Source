@@ -188,6 +188,11 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 			if (!castsShadows) return;
 			if (material->blendMode == Material::BlendMode::Transparent) return;
 
+			if (!SceneRenderer::currentPassIsStatic)
+			{
+				if (glm::distance2(position, componentParent->GetWorldSpacePosition()) > SceneRenderer::shadowMapRealtimeMaxDistance) return;
+			}
+
 			ShaderProgram* shader = isAnimated ? ShaderManager::GetShaderProgram("engine/shader/lightPointShadowMapSkinned") : ShaderManager::GetShaderProgram("engine/shader/lightPointShadowMap");
 			shader->Bind();
 			glm::mat4 pvm = pv * componentParent->transform * model->modelTransform;
@@ -221,33 +226,7 @@ void ComponentRenderer::Draw(mat4 pv, vec3 position, DrawMode mode)
 		{
 			if (material->blendMode == Material::BlendMode::Transparent) return;
 
-			ShaderProgram* ssaoGeoShader = ShaderManager::GetShaderProgram("engine/shader/SSAOGeometryPass");
-			// Positions and Rotations
-			glm::mat4 modelMat = componentParent->transform * model->modelTransform;
-			glm::mat4 pvm = pv * modelMat;
-			ssaoGeoShader->SetMatrixUniform("pvmMatrix", pvm);
-			ssaoGeoShader->SetMatrixUniform("model", modelMat);
-			ssaoGeoShader->SetMatrixUniform("mMatrix", modelMat);
-			ssaoGeoShader->SetFloatUniform("dissolveThreshold", dissolveThreshold);
-
-			if (isAnimated)
-				BindBoneTransform();
-
-			// Check for alpha cutoff and configured if required.
-			if (material != nullptr && submeshMaterials[i]->blendMode == Material::BlendMode::AlphaCutoff)
-			{
-				ssaoGeoShader->SetBoolUniform("useAlphaCutoff", true);
-				material->albedoMap->Bind(4);
-				ssaoGeoShader->SetIntUniform("albedoMap", 4);
-			}
-			else ssaoGeoShader->SetBoolUniform("useAlphaCutoff", false);
-
-			if (material->backFaceCulling)
-				glEnable(GL_CULL_FACE);
-			else
-				glDisable(GL_CULL_FACE);
-
-			model->DrawSubMesh(i);
+			SceneRenderer::renderBatch.AddDraw(this, i);
 
 			break;
 		}
