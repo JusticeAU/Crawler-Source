@@ -15,5 +15,5 @@ public:
 	static const unsigned int vramHigh = 6000;
 	static const unsigned int vramMedium = 2400;
 
-	static void DetectQuality();
+	static void SetQuality(Quality quality);
 };

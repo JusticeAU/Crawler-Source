@@ -3,20 +3,28 @@
 
 GraphicsQuality::Quality GraphicsQuality::m_quality = Quality::Auto;
 
-void GraphicsQuality::DetectQuality()
+void GraphicsQuality::SetQuality(Quality quality)
 {
-	int vram = GraphicsUtility::GetVRAMTotal();
-	if (vram != -1)
+	if (quality == Quality::Auto)
 	{
-		if (vram > (vramHigh * 1024))
-			m_quality = Quality::High;
-		if (vram <= (vramHigh * 1024))
-			m_quality = Quality::Medium;
-		if (vram < (vramMedium * 1024))
-			m_quality = Quality::Low;
 
+		int vram = GraphicsUtility::GetVRAMTotal();
+		if (vram != -1)
+		{
+			if (vram > (vramHigh * 1024))
+				m_quality = Quality::High;
+			if (vram <= (vramHigh * 1024))
+				m_quality = Quality::Medium;
+			if (vram < (vramMedium * 1024))
+				m_quality = Quality::Low;
+
+		}
+		else m_quality = Quality::High;
 	}
-	else m_quality = Quality::High;
+	else
+	{
+		m_quality = quality;
+	}
 
 	switch (m_quality)
 	{

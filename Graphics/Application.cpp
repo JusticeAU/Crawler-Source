@@ -175,7 +175,7 @@ void Application::ConstructWindow()
 void Application::LoadResourceManagers()
 {
 	// Detect Quality
-	GraphicsQuality::DetectQuality();
+	GraphicsQuality::SetQuality((GraphicsQuality::Quality)quality);
 
 	// Load Assets
 	string engineFolder = "engine";
