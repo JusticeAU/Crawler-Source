@@ -60,6 +60,7 @@ void RenderBatch::DrawBatches()
 
 		TextureManager::GetTexture("crawler/texture/perlin_noise.tga")->Bind(10);
 		shader->SetIntUniform("perlinNoise", 10);
+		shader->SetFloatUniform("gamma", SceneRenderer::gamma);
 		
 		switch (renderPass)
 		{

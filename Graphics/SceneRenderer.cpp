@@ -34,6 +34,8 @@ bool SceneRenderer::fxaaEnabled = true; // leave false whilst refactoring depth 
 bool SceneRenderer::ssaoEnabled = true;
 bool SceneRenderer::bloomEnabled = true;
 float SceneRenderer::ambient = 0.03f;
+float SceneRenderer::gamma = 2.2f;
+
 ComponentCamera* SceneRenderer::frustumCullingCamera = nullptr;
 bool SceneRenderer::frustumCullingShowBounds = false;
 float SceneRenderer::shadowMapRealtimeMaxDistance = 150;
@@ -157,15 +159,14 @@ void SceneRenderer::SetQuality()
 void SceneRenderer::DrawGUI()
 {
 	// Graphics Options - Abstract this as these options develop.
-	int itemWidth = 150;
+	int itemWidth = 200;
 	float windowWidth = 315;
-	float windowHeight = 620;
+	float windowHeight = 670;
 	float advancedStatisticsHeight = 90;
 	ImGui::SetNextWindowSize({ windowWidth, windowHeight }, ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowPos({ 1200, 200 }, ImGuiCond_FirstUseEver);
 	ImGui::Begin("Graphics");
 
-	ImGui::DragFloat("Max ShadowMap Distance", &shadowMapRealtimeMaxDistance, 1, 0, 50000);
 	float averageTotalRenderTime = 0.0f;
 	for (int i = 0; i < 100; i++)
 		averageTotalRenderTime += renderTotalSamples[i];
@@ -182,7 +183,19 @@ void SceneRenderer::DrawGUI()
 	if (showAdvancedStats) DrawStatistics();
 	ImGui::Text("Configuration");
 	ImGui::PushItemWidth(itemWidth);
-		ImGui::DragFloat("PBR Ambient", &ambient, 0.02, 0, 1);
+	ImGui::PushID("pbr_ambient");
+	ImGui::Text("PBR Ambient");
+	ImGui::DragFloat("", &ambient, 0.02, 0, 1);
+	ImGui::SameLine();
+	if (ImGui::Button("Reset")) ambient = 0.03;
+	ImGui::PopID();
+	ImGui::PushID("pbr_gamma");
+	ImGui::Text("PBR Gamma");
+	ImGui::DragFloat("", &gamma, 0.02, 0.0, 4.0);
+	ImGui::SameLine();
+	if (ImGui::Button("Reset")) gamma = 2.2f;
+	ImGui::PopID();
+
 	ImGui::PopItemWidth();
 	if (ImGui::Checkbox("VSync", &vsyncEnabled))
 	{

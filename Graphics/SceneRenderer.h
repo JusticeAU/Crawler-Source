@@ -65,6 +65,7 @@ public:
 	static bool currentPassIsSplit;
 
 	static float ambient;
+	static float gamma;
 
 	static float shadowMapRealtimeMaxDistance;
 
