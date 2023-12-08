@@ -313,6 +313,7 @@ void Crawl::Dungeon::CreateTileObject(DungeonTile* tile)
 	if (tile->floorVariant != -1)
 	{
 		obj->children[0]->children[0]->LoadFromJSON(ReadJSONFromDisk(floorVariantPaths[tile->floorVariant]));
+		ComponentRenderer::SetShadowCasting(obj->children[0]->children[0], false, true);
 	}
 
 	// Set up Pillars

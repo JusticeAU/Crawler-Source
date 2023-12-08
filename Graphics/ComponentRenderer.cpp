@@ -551,3 +551,16 @@ void ComponentRenderer::DebugDrawBoundingBox(int meshIndex, vec3 colour)
 	LineRenderer::DrawLine(b.points[2], b.points[6], colour);
 	LineRenderer::DrawLine(b.points[3], b.points[7], colour);
 }
+
+// Helper function to find renderer componts and adjust their shadow casting status.
+void ComponentRenderer::SetShadowCasting(Object* object, bool castsShadows, bool recursive)
+{
+	ComponentRenderer* renderer = (ComponentRenderer*)object->GetComponent(Component_Renderer);
+	if(renderer) renderer->castsShadows = castsShadows;
+
+	if (recursive)
+	{
+		for (auto& child : object->children)
+			ComponentRenderer::SetShadowCasting(child, castsShadows, recursive);
+	}
+}

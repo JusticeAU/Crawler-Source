@@ -47,6 +47,8 @@ public:
 	Component* Clone(Object* parent);
 
 	void DebugDrawBoundingBox(int meshIndex, vec3 colour = { 1.0, 1.0, 1.0 });
+
+	static void SetShadowCasting(Object* object, bool castsShadows, bool recursive = false);
 public:
 	Model* model = nullptr;
 	bool isAnimated = false;
