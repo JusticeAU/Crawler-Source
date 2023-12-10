@@ -28,8 +28,9 @@ void Input::DrawTourBoxConfig()
 	if (ImGui::Button(tourBoxConnected ? "Reconnect" : "Connect"))
 	{
 		if (tourBoxConnected) delete tourBox;
-
-		tourBox = new TourBox("COM" + std::to_string(tourBoxComPort));
+		std::string comPortString = "COM" + std::to_string(tourBoxComPort);
+		LogUtils::Log("Connecting to: " + comPortString);
+		tourBox = new TourBox(comPortString);
 		tourBoxConnected = true;
 	}
 

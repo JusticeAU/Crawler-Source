@@ -61,7 +61,7 @@ bool SerialPort::GetByte(unsigned char& data)
 
 	ClearCommError(handleToCOM, &errors, &status);
 
-	//TODO we're currently ignoring anything we find in 'errors'.
+	//TODO we're currently ignoring anything we find in 'errors' which doesn't *feel* like the right approach.
 
 	if (status.cbInQue > 0)
 	{
