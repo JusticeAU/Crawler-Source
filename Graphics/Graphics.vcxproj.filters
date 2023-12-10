@@ -667,5 +667,12 @@
     <ClInclude Include="GraphicsQuality.h">
       <Filter>Source Files\Application\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Graphics.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\BriarMansionIcon.ico" />
   </ItemGroup>
 </Project>

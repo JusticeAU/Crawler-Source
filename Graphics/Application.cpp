@@ -27,6 +27,7 @@
 #include "DungeonMenu.h"
 
 #include "ComponentFactory.h"
+#include "stb_image.h"
 
 Application::Application()
 {
@@ -119,6 +120,7 @@ void Application::ConstructWindow()
 	else
 		LogUtils::Log("Sucessfully initialised GLFW.");
 
+
 	// Create GLFWwindow Wrapper (class Window).
 	if (developerModeLaunch)
 	{
@@ -135,6 +137,11 @@ void Application::ConstructWindow()
 	}
 	else
 		LogUtils::Log("Sucessfully Created GLFW Window.");
+
+	// Configure the icon - fairly lazy implementation.
+	GLFWimage icon;
+	icon.pixels = stbi_load("crawler/BriarMansionIcon.png", &icon.width, &icon.height, 0, 4);
+	glfwSetWindowIcon(window->GetGLFWwindow(), 1, &icon);
 
 	// Tell GLFW that the window we created is the one we should render to
 	LogUtils::Log("Linking GLFW Window to render target.");

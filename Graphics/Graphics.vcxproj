@@ -418,6 +418,7 @@
     <ClInclude Include="LineRenderer.h" />
     <ClInclude Include="PostProcess.h" />
     <ClInclude Include="Primitives.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="SceneEditorCamera.h" />
     <ClInclude Include="GraphicsQuality.h" />
     <ClInclude Include="SceneRenderer.h" />
@@ -448,6 +449,12 @@
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="UniformBuffer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Graphics.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\BriarMansionIcon.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
