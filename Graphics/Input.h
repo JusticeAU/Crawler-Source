@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "TourBox.h"
 
 using glm::vec2;
 
@@ -20,7 +21,8 @@ public:
 	{
 		Keyboard,
 		Mouse,
-		Gamepad
+		Gamepad,
+		TourBox
 	};
 	class KeyButton
 	{
@@ -80,11 +82,14 @@ public:
 		void RegisterGamepadButton(int GLFW_GAMEPAD_BUTTON);
 		void RegisterGamepadAxis(int GLFW_GAMEPAD_AXES, bool downIsNegativeValue = false);
 
+		void RegisterTourBoxButton(TourBoxCode code);
+
 		std::vector<int> keys;
 		std::vector<int> clicks;
 		std::vector<int> gamepadButtons;
 		std::vector<int> gamepadPostiveAxes;
 		std::vector<int> gamepadNegativeAxes;
+		std::vector<TourBoxCode> tourBoxButtonCodes;
 	};
 public:
 	static void Init(GLFWwindow* window);
@@ -98,12 +103,18 @@ public:
 	static MouseButton& Mouse(int number) { return s_instance->mouseButtons[number]; };
 	static GamepadState& Gamepad() { return s_instance->gamepad; };
 	static InputAlias& Alias(std::string alias) { return s_instance->aliases[alias]; };
+	
+	static bool TourBoxButtonDown(TourBoxCode code) { return s_instance->tourBox->WasButtonPressed(code); };
+	static bool TourBoxButtonPressed(TourBoxCode code) { return s_instance->tourBox->IsButtonDown(code); };
+	static bool TourBoxButtonUp(TourBoxCode code) { return s_instance->tourBox->WasButtonReleased(code); };
+
 
 	static void SetGamepadStatus(int joystickID, bool connected);
 	static bool IsGamepadConnected() { return s_instance->isGamepadConnected; }
 
 	static InputType GetLastInputType() { return s_instance->m_lastInputType; };
 
+	static void DrawGUI();
 protected:
 	Input(GLFWwindow* window);
 	static Input* s_instance;
@@ -127,6 +138,13 @@ protected:
 	bool isGamepadConnected = false;
 	bool lastInputWasGamepad = false;
 	GamepadState gamepad;
+
+	// Tourbox
+	void DrawTourBoxConfig();
+
+	TourBox* tourBox = nullptr;
+	int tourBoxComPort = 0;
+	bool tourBoxConnected = false;
 
 	// Aliasing
 	std::map<std::string, InputAlias> aliases;

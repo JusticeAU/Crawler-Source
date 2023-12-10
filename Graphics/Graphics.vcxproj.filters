@@ -59,6 +59,9 @@
     <Filter Include="Source Files\Application\Crawler">
       <UniqueIdentifier>{e59a8875-a180-4083-99f7-968dc4fabf36}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Libraries\TourBoxAPI">
+      <UniqueIdentifier>{673d8925-f52f-46fb-90f4-b8bf8c155d03}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -358,6 +361,12 @@
     </ClCompile>
     <ClCompile Include="GraphicsQuality.cpp">
       <Filter>Source Files\Application\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="SerialPort.cpp">
+      <Filter>Libraries\TourBoxAPI</Filter>
+    </ClCompile>
+    <ClCompile Include="TourBox.cpp">
+      <Filter>Libraries\TourBoxAPI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -666,6 +675,12 @@
     </ClInclude>
     <ClInclude Include="GraphicsQuality.h">
       <Filter>Source Files\Application\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="SerialPort.h">
+      <Filter>Libraries\TourBoxAPI</Filter>
+    </ClInclude>
+    <ClInclude Include="TourBox.h">
+      <Filter>Libraries\TourBoxAPI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

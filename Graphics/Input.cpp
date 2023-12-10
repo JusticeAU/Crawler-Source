@@ -3,6 +3,13 @@
 
 #include "LogUtils.h"
 
+#include "TourBox.h"
+
+void Input::DrawGUI()
+{
+	s_instance->DrawTourBoxConfig();
+}
+
 Input::Input(GLFWwindow* window)
 {
 	m_window = window;
@@ -10,6 +17,23 @@ Input::Input(GLFWwindow* window)
 
 	m_mousePosition = { 0,0 };
 	m_lastMousePosition = { 0,0 };
+}
+
+void Input::DrawTourBoxConfig()
+{
+	ImGui::SetNextWindowPos({ 400,400 }, ImGuiCond_Once);
+	ImGui::SetNextWindowSize({ 400, 400 }, ImGuiCond_Once);
+	ImGui::Begin("TourBox Configuration");
+	ImGui::InputInt("COM Port", &tourBoxComPort, 1, 1);
+	if (ImGui::Button(tourBoxConnected ? "Reconnect" : "Connect"))
+	{
+		if (tourBoxConnected) delete tourBox;
+
+		tourBox = new TourBox("COM" + std::to_string(tourBoxComPort));
+		tourBoxConnected = true;
+	}
+
+	ImGui::End();
 }
 
 bool Input::IsAnyKeyboardInput()
@@ -101,6 +125,12 @@ void Input::Update()
 		if (s_instance->IsAnyGamepadInput()) s_instance->s_instance->m_lastInputType = InputType::Gamepad;
 	}
 
+	// TourBox - oh yeah baby.
+	if (s_instance->tourBox && s_instance->tourBoxConnected)
+		s_instance->tourBox->Update();
+
+
+	// Misc - move to graphics or something?
 	if (Input::Keyboard(GLFW_KEY_F10).Down())
 		Window::Get()->ToggleFullscreen();
 
@@ -186,6 +216,7 @@ bool Input::InputAlias::Down()
 	for (auto& button : gamepadButtons) if (Input::Gamepad().Down(button)) return true;
 	for (auto& axis : gamepadNegativeAxes) if (Input::Gamepad().AxesDown(axis, true)) return true;
 	for (auto& axis : gamepadPostiveAxes)  if (Input::Gamepad().AxesDown(axis, false)) return true;
+	for (auto& tourBoxButton : tourBoxButtonCodes) if (Input::TourBoxButtonDown(tourBoxButton)) return true;
 	return false;
 }
 
@@ -198,7 +229,7 @@ bool Input::InputAlias::Pressed()
 	for (auto& button : gamepadButtons) if (Input::Gamepad().Pressed(button)) return true;
 	for (auto& axis : gamepadNegativeAxes) if (Input::Gamepad().AxesPressed(axis, true)) return true;
 	for (auto& axis : gamepadPostiveAxes)  if (Input::Gamepad().AxesPressed(axis, false)) return true;
-	
+	for (auto& tourBoxButton : tourBoxButtonCodes) if (Input::TourBoxButtonPressed(tourBoxButton)) return true;
 	return false;
 }
 
@@ -211,7 +242,7 @@ bool Input::InputAlias::Up()
 	for (auto& button : gamepadButtons) if (Input::Gamepad().Up(button)) return true;
 	for (auto& axis : gamepadNegativeAxes) if (Input::Gamepad().AxesUp(axis, true)) return true;
 	for (auto& axis : gamepadPostiveAxes)  if (Input::Gamepad().AxesUp(axis, false)) return true;
-	
+	for (auto& tourBoxButton : tourBoxButtonCodes) if (Input::TourBoxButtonUp(tourBoxButton)) return true;
 	return false;
 }
 
@@ -249,4 +280,10 @@ void Input::InputAlias::RegisterGamepadAxis(int GLFW_GAMEPAD_AXES, bool downIsNe
 		for (auto& axis : gamepadPostiveAxes) if (axis == GLFW_GAMEPAD_AXES) return;
 		gamepadPostiveAxes.emplace_back(GLFW_GAMEPAD_AXES);
 	}
+}
+
+void Input::InputAlias::RegisterTourBoxButton(TourBoxCode code)
+{
+	for (auto& tourBoxButtonCode : tourBoxButtonCodes) if (tourBoxButtonCode == code) return;
+	tourBoxButtonCodes.emplace_back(code);
 }

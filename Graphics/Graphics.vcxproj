@@ -337,11 +337,13 @@
     <ClCompile Include="SceneEditorCamera.cpp" />
     <ClCompile Include="SceneRendererBatched.cpp" />
     <ClCompile Include="SceneRenderer.cpp" />
+    <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="ShaderProgram.cpp" />
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureManager.cpp" />
+    <ClCompile Include="TourBox.cpp" />
     <ClCompile Include="UniformBuffer.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
@@ -423,9 +425,11 @@
     <ClInclude Include="SceneRenderer.h" />
     <ClInclude Include="SceneRendererBatched.h" />
     <ClInclude Include="serialisation.h" />
+    <ClInclude Include="SerialPort.h" />
     <ClInclude Include="stb_image_resize2.h" />
     <ClInclude Include="stb_image_write.h" />
     <ClInclude Include="StringUtils.h" />
+    <ClInclude Include="TourBox.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Input.h" />

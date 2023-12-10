@@ -298,45 +298,56 @@ void Application::InitialiseInput()
 	Input::Alias("Forward").RegisterKeyButton(GLFW_KEY_UP);
 	Input::Alias("Forward").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_DPAD_UP);
 	Input::Alias("Forward").RegisterGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_Y, true);
+	Input::Alias("Forward").RegisterTourBoxButton(TourBoxCode::Up);
 
 	Input::Alias("Backward").RegisterKeyButton(GLFW_KEY_S);
 	Input::Alias("Backward").RegisterKeyButton(GLFW_KEY_DOWN);
 	Input::Alias("Backward").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_DPAD_DOWN);
 	Input::Alias("Backward").RegisterGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_Y, false);
+	Input::Alias("Backward").RegisterTourBoxButton(TourBoxCode::Down);
 
 	Input::Alias("Left").RegisterKeyButton(GLFW_KEY_A);
 	Input::Alias("Left").RegisterKeyButton(GLFW_KEY_LEFT);
 	Input::Alias("Left").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_DPAD_LEFT);
 	Input::Alias("Left").RegisterGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_X, true);
+	Input::Alias("Left").RegisterTourBoxButton(TourBoxCode::C1);
 
 	Input::Alias("Right").RegisterKeyButton(GLFW_KEY_D);
 	Input::Alias("Right").RegisterKeyButton(GLFW_KEY_RIGHT);
 	Input::Alias("Right").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_DPAD_RIGHT);
 	Input::Alias("Right").RegisterGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_X, false);
+	Input::Alias("Right").RegisterTourBoxButton(TourBoxCode::C2);
 
 	Input::Alias("TurnLeft").RegisterKeyButton(GLFW_KEY_Q);
 	Input::Alias("TurnLeft").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_LEFT_BUMPER);
 	Input::Alias("TurnLeft").RegisterGamepadAxis(GLFW_GAMEPAD_AXIS_LEFT_TRIGGER);
+	Input::Alias("TurnLeft").RegisterTourBoxButton(TourBoxCode::Left);
 
 	Input::Alias("TurnRight").RegisterKeyButton(GLFW_KEY_E);
 	Input::Alias("TurnRight").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER);
 	Input::Alias("TurnRight").RegisterGamepadAxis(GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER);
+	Input::Alias("TurnRight").RegisterTourBoxButton(TourBoxCode::Right);
 
 	Input::Alias("Interact").RegisterKeyButton(GLFW_KEY_SPACE);
 	Input::Alias("Interact").RegisterKeyButton(GLFW_KEY_ENTER);
 	Input::Alias("Interact").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_A);
+	Input::Alias("Interact").RegisterTourBoxButton(TourBoxCode::Tall);
 
 	Input::Alias("Wait").RegisterKeyButton(GLFW_KEY_LEFT_ALT);
 	Input::Alias("Wait").RegisterKeyButton(GLFW_KEY_LEFT_SHIFT);
 	Input::Alias("Wait").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_B);
+	Input::Alias("Wait").RegisterTourBoxButton(TourBoxCode::Short);
 
 	Input::Alias("Reset").RegisterKeyButton(GLFW_KEY_R);
 	Input::Alias("Reset").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_Y);
+	Input::Alias("Reset").RegisterTourBoxButton(TourBoxCode::Side);
 
 	Input::Alias("ResetView").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_RIGHT_THUMB);
+	Input::Alias("ResetView").RegisterTourBoxButton(TourBoxCode::Tour);
 
 	Input::Alias("Pause").RegisterGamepadButton(GLFW_GAMEPAD_BUTTON_START);
 	Input::Alias("Pause").RegisterKeyButton(GLFW_KEY_ESCAPE);
+	Input::Alias("Pause").RegisterTourBoxButton(TourBoxCode::Top);
 }
 
 void Application::Run()
@@ -407,6 +418,7 @@ void Application::SwapBuffers()
 void Application::Update(float delta)
 {
 	Input::Update();
+	Input::DrawGUI();
 	HandleDevelopmentModeToggle();
 
 	switch (s_mode)
