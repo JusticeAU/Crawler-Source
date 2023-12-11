@@ -117,7 +117,9 @@ public:
 	static void DrawGUI();
 protected:
 	Input(GLFWwindow* window);
+public:
 	static Input* s_instance;
+protected:
 	GLFWwindow* m_window;
 
 	InputType m_lastInputType = InputType::Mouse;
@@ -140,11 +142,13 @@ protected:
 	GamepadState gamepad;
 
 	// Tourbox
+public:
 	void DrawTourBoxConfig();
 
 	TourBox* tourBox = nullptr;
 	int tourBoxComPort = 0;
 	bool tourBoxConnected = false;
+protected:
 
 	// Aliasing
 	std::map<std::string, InputAlias> aliases;

@@ -130,7 +130,6 @@ void Input::Update()
 	if (s_instance->tourBox && s_instance->tourBoxConnected)
 		s_instance->tourBox->Update();
 
-
 	// Misc - move to graphics or something?
 	if (Input::Keyboard(GLFW_KEY_F10).Down())
 		Window::Get()->ToggleFullscreen();
@@ -213,11 +212,16 @@ bool Input::InputAlias::Down()
 	for (auto& key : keys) if (Input::Keyboard(key).Down()) return true;
 	for (auto& click : clicks)  if (Input::Mouse(click).Down()) return true;
 
-	if (!Input::IsGamepadConnected()) return false;
-	for (auto& button : gamepadButtons) if (Input::Gamepad().Down(button)) return true;
-	for (auto& axis : gamepadNegativeAxes) if (Input::Gamepad().AxesDown(axis, true)) return true;
-	for (auto& axis : gamepadPostiveAxes)  if (Input::Gamepad().AxesDown(axis, false)) return true;
-	for (auto& tourBoxButton : tourBoxButtonCodes) if (Input::TourBoxButtonDown(tourBoxButton)) return true;
+	if (Input::IsGamepadConnected())
+	{
+		for (auto& button : gamepadButtons) if (Input::Gamepad().Down(button)) return true;
+		for (auto& axis : gamepadNegativeAxes) if (Input::Gamepad().AxesDown(axis, true)) return true;
+		for (auto& axis : gamepadPostiveAxes)  if (Input::Gamepad().AxesDown(axis, false)) return true;
+	}
+	if (Input::s_instance->tourBox)
+	{
+		for (auto& tourBoxButton : tourBoxButtonCodes) if (Input::TourBoxButtonDown(tourBoxButton)) return true;
+	}
 	return false;
 }
 
@@ -226,11 +230,16 @@ bool Input::InputAlias::Pressed()
 	for (auto& key : keys) if (Input::Keyboard(key).Pressed()) return true;
 	for (auto& click : clicks)  if (Input::Mouse(click).Pressed()) return true;
 
-	if (!Input::IsGamepadConnected()) return false;
-	for (auto& button : gamepadButtons) if (Input::Gamepad().Pressed(button)) return true;
-	for (auto& axis : gamepadNegativeAxes) if (Input::Gamepad().AxesPressed(axis, true)) return true;
-	for (auto& axis : gamepadPostiveAxes)  if (Input::Gamepad().AxesPressed(axis, false)) return true;
-	for (auto& tourBoxButton : tourBoxButtonCodes) if (Input::TourBoxButtonPressed(tourBoxButton)) return true;
+	if (Input::IsGamepadConnected())
+	{
+		for (auto& button : gamepadButtons) if (Input::Gamepad().Pressed(button)) return true;
+		for (auto& axis : gamepadNegativeAxes) if (Input::Gamepad().AxesPressed(axis, true)) return true;
+		for (auto& axis : gamepadPostiveAxes)  if (Input::Gamepad().AxesPressed(axis, false)) return true;
+	}
+	if (Input::s_instance->tourBox)
+	{
+		for (auto& tourBoxButton : tourBoxButtonCodes) if (Input::TourBoxButtonPressed(tourBoxButton)) return true;
+	}
 	return false;
 }
 
@@ -239,11 +248,16 @@ bool Input::InputAlias::Up()
 	for (auto& key : keys) if (Input::Keyboard(key).Up()) return true;
 	for (auto& click : clicks)  if (Input::Mouse(click).Up()) return true;
 
-	if (!Input::IsGamepadConnected()) return false;
-	for (auto& button : gamepadButtons) if (Input::Gamepad().Up(button)) return true;
-	for (auto& axis : gamepadNegativeAxes) if (Input::Gamepad().AxesUp(axis, true)) return true;
-	for (auto& axis : gamepadPostiveAxes)  if (Input::Gamepad().AxesUp(axis, false)) return true;
-	for (auto& tourBoxButton : tourBoxButtonCodes) if (Input::TourBoxButtonUp(tourBoxButton)) return true;
+	if (Input::IsGamepadConnected())
+	{
+		for (auto& button : gamepadButtons) if (Input::Gamepad().Up(button)) return true;
+		for (auto& axis : gamepadNegativeAxes) if (Input::Gamepad().AxesUp(axis, true)) return true;
+		for (auto& axis : gamepadPostiveAxes)  if (Input::Gamepad().AxesUp(axis, false)) return true;
+	}
+	if (Input::s_instance->tourBox)
+	{
+		for (auto& tourBoxButton : tourBoxButtonCodes) if (Input::TourBoxButtonUp(tourBoxButton)) return true;
+	}
 	return false;
 }
 

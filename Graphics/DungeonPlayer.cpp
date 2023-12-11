@@ -88,7 +88,7 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	{
 		UpdateInputs();
 
-		if (isFreeLooking) UpdateFreeLook(deltaTime);
+		if (isFreeLooking || Input::s_instance->tourBox) UpdateFreeLook(deltaTime);
 		else ContinueResettingTilt(deltaTime);
 
 		moveCurrent += deltaTime;
@@ -103,7 +103,7 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	{
 		UpdateInputs();
 
-		if (isFreeLooking) UpdateFreeLook(deltaTime);
+		if (isFreeLooking || Input::s_instance->tourBox) UpdateFreeLook(deltaTime);
 		else ContinueResettingTilt(deltaTime);
 
 		if (state == IDLE && UpdateStateIdle(deltaTime)) // Check state is still IDLE, freelook auto rotate might have changed it and we shouldnt consume commands if so.
@@ -115,7 +115,7 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	{
 		UpdateInputs();
 
-		if (isFreeLooking) UpdateFreeLook(deltaTime);
+		if (isFreeLooking || Input::s_instance->tourBox) UpdateFreeLook(deltaTime);
 		else ContinueResettingTilt(deltaTime);
 
 		UpdateStateMoving(deltaTime);
@@ -125,7 +125,7 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	{
 		UpdateInputs();
 
-		if (isFreeLooking) UpdateFreeLook(deltaTime);
+		if (isFreeLooking || Input::s_instance->tourBox) UpdateFreeLook(deltaTime);
 		else ContinueResettingTilt(deltaTime);
 
 		UpdateStateTurning(deltaTime);
@@ -135,7 +135,7 @@ bool Crawl::DungeonPlayer::Update(float deltaTime)
 	{
 		UpdateInputsLooking();
 
-		if (isFreeLooking) UpdateFreeLook(deltaTime);
+		if (isFreeLooking || Input::s_instance->tourBox) UpdateFreeLook(deltaTime);
 		else ContinueResettingTilt(deltaTime);
 
 		UpdateStateStairs(deltaTime);
@@ -226,6 +226,37 @@ bool Crawl::DungeonPlayer::UpdateFreeLook(float delta, bool dontAutoReorient)
 			objectView->AddLocalRotation(lookDelta);
 		}
 	}
+	// Tourbox
+	LogUtils::Log("Checking if tourbox is plugged in");
+	if (Input::s_instance->tourBox)
+	{
+		LogUtils::Log("Chcking Dial movement");
+		TourBox* tb = Input::s_instance->tourBox;
+		if (tb->GetWheelChange(TourBoxCode::Dial))
+		{
+			int direction = glm::sign(tb->GetWheelPosition(TourBoxCode::Dial));
+			tb->ZeroWheelPosition(TourBoxCode::Dial);
+			LogUtils::Log(std::to_string(direction));
+			objectView->AddLocalRotation({ 0,0, 12.0f * -direction });
+		}
+
+		if (tb->GetWheelChange(TourBoxCode::Knob))
+		{
+			int direction = glm::sign(tb->GetWheelPosition(TourBoxCode::Knob));
+			tb->ZeroWheelPosition(TourBoxCode::Knob);
+			LogUtils::Log(std::to_string(direction));
+			objectView->AddLocalRotation({ 0,0, 12.0f * -direction });
+		}
+
+		if (tb->GetWheelChange(TourBoxCode::Scroll))
+		{
+			int direction = glm::sign(tb->GetWheelPosition(TourBoxCode::Scroll));
+			tb->ZeroWheelPosition(TourBoxCode::Scroll);
+			LogUtils::Log(std::to_string(direction));
+			objectView->AddLocalRotation({ 12.0f * -direction, 0,0});
+		}
+	}
+
 
 	// Clamp
 	objectView->localRotation.x = glm::clamp(objectView->localRotation.x, -lookMaxX, lookMaxX);
