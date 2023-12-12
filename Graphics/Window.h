@@ -6,25 +6,30 @@
 class Window
 {
 public:
-	Window(const char* title); // Creates a fullscreen borderless window on the primary monitor
+	// Creates a fullscreen borderless window on the primary monitor.
+	Window(const char* title); 
+	// Creates a Window with decoration of a particular size.
 	Window(int width, int height, const char* title);
-	static Window* GetWindow() { return s_instance; };
+	// Returns the instance of this container class window.
+	static Window* Get() { return s_instance; };
+
 	static const glm::ivec2 GetViewPortSize() { return s_instance->m_viewPortSize; };
 	static void SetViewPortSize(glm::ivec2 size) { s_instance->m_viewPortSize = size; };
 	static void SetWindowTitle(std::string title);
 	static double GetTime() { return glfwGetTime(); }
-
-	static Window* Get() { return s_instance; };
 	
 	void ToggleFullscreen();
-	bool GetFullscreen() { return fullScreen; };
+	bool IsFullscreen() { return fullScreen; };
 
+	// Positions the window in the centre of the primary monitor.
 	void RecentreWindow();
 
+	// Toggles whether the mouse cursor is hidden or not
 	void ToggleMouseCursor();
 	void SetMouseCursorHidden(bool hidden);
+
+	// returns the wrapped GLFW window
 	GLFWwindow* GetGLFWwindow() { return m_window; }
-	
 protected:
 	glm::ivec2 m_fullScreenSize;
 	glm::ivec2 m_windowSize = { 1600, 900 };

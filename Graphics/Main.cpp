@@ -2,17 +2,20 @@
 #include "LogUtils.h"
 #include "DungeonHelpers.h"
 
+// We have two different entry points here depending on if we want to show the console window or not.
+// Commandline arguments have to be handled differently depending on the entry point!
 #ifndef RELEASE
 int main(int argc, char * argv[])
 #else
 #include "Windows.h"
 #include "StringUtils.h"
-int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+int WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nCmdShow)
 #endif // !RELEASE
 {
 	LogUtils::Log("Constructing Application.");
 	Application* app = new Application();
 
+	// Run Command Line Arguments
 #ifndef RELEASE
 	if (argc > 1)
 	{
@@ -37,7 +40,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 	app->ConstructWindow();
 	app->LoadResourceManagers();
 	app->InitialiseInput();
-	app->DoLoadingScreen();
+	app->DoLoadingScreen(); // This will load every texture and render a progress bar whilst this is happening until all textures are loaded.
 
 	if (app->s_mode != Application::Mode::Art)
 		app->InitialiseAdditionalGameAssets();

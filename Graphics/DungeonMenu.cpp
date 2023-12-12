@@ -116,7 +116,7 @@ void Crawl::DungeonMenu::OpenMenu(Menu menu)
 	selectedMenuOption = 0;
 	menuStack.push(menu);
 	app->s_mode = Application::Mode::Menu;
-	Window::GetWindow()->SetMouseCursorHidden(false);
+	Window::Get()->SetMouseCursorHidden(false);
 }
 
 void Crawl::DungeonMenu::Update(float delta)
@@ -478,7 +478,7 @@ void Crawl::DungeonMenu::ExecuteNewGameButton()
 	newGameSequenceStarted = true;
 	for (auto& menuButton : menuButtonsMain) menuButton->SetEnabled(false);
 
-	Window::GetWindow()->SetMouseCursorHidden(true);
+	Window::Get()->SetMouseCursorHidden(true);
 	AudioManager::ChangeMusic("crawler/sound/stream/intro.ogg", false);
 }
 
@@ -509,7 +509,7 @@ void Crawl::DungeonMenu::ExecuteResumeGameButton()
 {
 	while (!menuStack.empty()) menuStack.pop();
 	app->s_mode = Application::Mode::Game;
-	Window::GetWindow()->SetMouseCursorHidden(true);
+	Window::Get()->SetMouseCursorHidden(true);
 	player->SetStateIdle();;
 }
 
@@ -559,7 +559,7 @@ void Crawl::DungeonMenu::ExecuteCreditsButton()
 
 void Crawl::DungeonMenu::ExecuteToggleFullScreen()
 {
-	Window::GetWindow()->ToggleFullscreen();
+	Window::Get()->ToggleFullscreen();
 }
 
 void Crawl::DungeonMenu::ExecuteReturnToLobbyButton()
@@ -567,7 +567,7 @@ void Crawl::DungeonMenu::ExecuteReturnToLobbyButton()
 	while (!menuStack.empty()) menuStack.pop();
 	app->s_mode = Application::Mode::Game;
 
-	Window::GetWindow()->SetMouseCursorHidden(true);
+	Window::Get()->SetMouseCursorHidden(true);
 	player->SetStateIdle();
 	player->ClearCheckpoint();
 	player->ReturnToLobby();

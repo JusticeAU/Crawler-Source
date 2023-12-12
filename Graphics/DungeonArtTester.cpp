@@ -47,7 +47,7 @@ void Crawl::ArtTester::Update(float delta)
 
 void Crawl::ArtTester::Activate()
 {
-	glfwSetDropCallback(Window::GetWindow()->GetGLFWwindow(), &ModelDropCallback);
+	glfwSetDropCallback(Window::Get()->GetGLFWwindow(), &ModelDropCallback);
 	Scene::ChangeScene("CrawlArtTest");
 	Scene::SetCameraByName("Player Camera");
 	Refresh();
@@ -56,7 +56,7 @@ void Crawl::ArtTester::Activate()
 
 void Crawl::ArtTester::Deactivate()
 {
-	glfwSetDropCallback(Window::GetWindow()->GetGLFWwindow(), NULL);
+	glfwSetDropCallback(Window::Get()->GetGLFWwindow(), NULL);
 }
 
 void Crawl::ArtTester::DrawGUI()
