@@ -37,6 +37,8 @@ ComponentAnimator::~ComponentAnimator()
 {
 	delete boneTransforms;
 	delete boneTransfomBuffer;
+	delete current;
+	delete next;
 	AnnounceChange();
 }
 
@@ -60,8 +62,9 @@ void ComponentAnimator::Update(float delta)
 
 			if (transitionProgress >= transitionTime)
 			{
+				delete current;
 				current = next;
-				next = nullptr; // TO DO animation manager? ahahahaha more managers.
+				next = nullptr;
 				transitionProgress = 0.0f;
 			}
 
@@ -243,21 +246,34 @@ void ComponentAnimator::StartAnimation(string name, bool loop)
 	newAnimation->animation = animation;
 	newAnimation->looping = loop;
 
-	delete current;
+	if (next != nullptr)
+	{
+		delete next;
+		next = nullptr;
+	}
+
+	if (current != nullptr)
+	{
+		delete current;
+		current = nullptr;
+	}
 	current = newAnimation;
 	isPlaying = true;
 }
 
 void ComponentAnimator::BlendToAnimation(string name, float time, float offset, bool loop)
 {
-	if (next != nullptr) // If we're already in the process of blending to an animation, just terminate the blend and set the next animation as current.
-		current = next;
-
 	Animation* animation = ModelManager::GetAnimation(name);
 	if (animation == nullptr)
 	{
 		LogUtils::Log("Attemping to play animation that does not exist: " + name);
 		return;
+	}
+
+	if (next != nullptr) // If we're already in the process of blending to an animation, just terminate the blend and set the next animation as current.
+	{
+		delete current;
+		current = next;
 	}
 
 	isPlaying = true;

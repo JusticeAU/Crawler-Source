@@ -87,6 +87,7 @@ ComponentCamera::~ComponentCamera()
 		if (*gizmoIt == cameraGizmo)
 		{
 			Scene::s_instance->gizmos.erase(gizmoIt);
+			delete cameraGizmo;
 			break;
 		}
 		gizmoIt++;
