@@ -18,9 +18,8 @@ class ShaderProgram;
 class Material;
 class UniformBuffer;
 
-// Primary container for objects in the application. Contains all model, texture, shader, material and animation information.
-// Ideally this should all be split out in to a component system, similar to Unity where this only holds Transform information.
-
+// Primary container for objects in the application.
+// Objects can have children, and components, and can be serialised and deserialised to and from JSON.
 class Object
 {
 public:
@@ -41,6 +40,7 @@ public:
 	mat4 localTransform;
 	mat4 transform;
 	
+	// These are updated for use reading, but cannot be set.
 	vec3 forward;
 	vec3 right;
 	vec3 up;
@@ -78,6 +78,7 @@ public:
 
 	Component* GetComponent(ComponentType type);
 
+	// Some components need knowledge of each other. This forces them to check.
 	void RefreshComponents();
 	void RecalculateTransforms();
 	void SetDirtyTransform();

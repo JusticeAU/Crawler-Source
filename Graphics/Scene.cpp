@@ -251,7 +251,7 @@ Object* Scene::CreateObject(string name, Object* parent)
 	o->objectName = name;
 	return o;
 }
-Object* Scene::DuplicateObject(Object* object, Object* newParent)
+Object* Scene::DuplicateObject(const Object* object, Object* newParent)
 {
 	// Copy object properties
 	Object* o = CreateObject(newParent);

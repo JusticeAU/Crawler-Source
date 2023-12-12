@@ -20,6 +20,7 @@ class UniformBuffer;
 using std::vector;
 using glm::vec3;
 
+// SceneRenderer will take a scene and run it through the rendering pipeline!
 class SceneRenderer
 {
 public:
@@ -70,7 +71,6 @@ public:
 	static float shadowMapRealtimeMaxDistance;
 
 	static int ssaoKernelTaps;
-
 
 	// This stores the batches for the Opaque pass. May get scoped out to other passes.
 	static RenderBatch renderBatch;

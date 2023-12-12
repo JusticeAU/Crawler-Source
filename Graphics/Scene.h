@@ -29,15 +29,22 @@ public:
 	~Scene();
 	static void Init();
 
+	// Creates a new Scene and adds it to the s_instances map.
 	static Scene* NewScene(string name);
+	// Sets a particular scene as the active scene. Has no protections for null scenes. Use carfully.
 	static void ChangeScene(string name) { s_instance = s_instances[name]; SetClearColour(); }
+
+	// Initialises the editor camera. It's a camera that doesnt exist in the gameworld. Uses camera index -1 and has input controls available when in the scene graph viewer.
 	static void CreateSceneEditorCamera();
 
 	static Object* CreateObject(Object* parent = nullptr);
 	static Object* CreateObject(string name, Object * parent = nullptr);
-	static Object* DuplicateObject(Object* object, Object* newParent);
+	// Clones the object, its children and all components - Returns the new object.
+	static Object* DuplicateObject(const Object* object, Object* newParent);
 	
+	// Applies the scene specific clear colour  to the OpenGL context.
 	static void SetClearColour();
+	// Sets a new clear colour and applies it to the OpenGL context.
 	static void SetClearColour(vec3 clearColour);
 	
 	static vec3 GetSunColour();
@@ -68,12 +75,15 @@ public:
 	static void RequestObjectSelection() { s_instance->requestedObjectSelection = true; };
 
 	static Object* FindObjectWithID(unsigned int id);
+	// Searches the Scene hierarchy for an object with the name objectName. Try to set an ID to an object and search for it by that instead.
 	static Object* FindObjectWithName(string objectName);
 
+	// Tells the renderer that static objects may have moved and it should refresh any cached shadow maps.
 	void SetStaticObjectsDirty() { rendererShouldRefreshStaticMaps = true; };
 	void SetAllObjectsStatic();
 
-	bool drawn3DGizmo = false;;
+	// Deprecated funtionality to try the 3D gizmo in the scene editor. Do not use.
+	bool drawn3DGizmo = false;
 
 	static Scene* s_instance;
 	static unordered_map<string, Scene*> s_instances;

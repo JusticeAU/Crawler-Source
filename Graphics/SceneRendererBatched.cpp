@@ -28,7 +28,7 @@ void RenderBatch::AddDraw(ComponentRenderer* renderer, int meshIndex)
 	bool isSkinned = renderer->isAnimated;
 	switch (renderPass)
 	{
-	case RenderPass::gBuffer:
+	case RenderPass::gBuffer: // gBuffer only uses one shader.
 	{	
 		shader = ShaderManager::GetShaderProgram("engine/shader/SSAOGeometryPass");
 		break;
@@ -49,10 +49,12 @@ void RenderBatch::AddDraw(ComponentRenderer* renderer, int meshIndex)
 
 void RenderBatch::DrawBatches()
 {
+	// Prepare statistics.
 	SceneRenderer::Statistics newStat;
 	SceneRenderer::statistic = newStat;
 	SceneRenderer::statistic.shaderBatches = renderBatch.shaderBatches.size();
-	// Go for shaders
+
+	// First we group all the shaders. Shader binding is expensive.
 	for (auto& shaderBatch : renderBatch.shaderBatches)
 	{
 		ShaderProgram* shader = shaderBatch.first;
@@ -82,7 +84,7 @@ void RenderBatch::DrawBatches()
 		}
 
 
-		// Go for Materials
+		// Then all the materials. Material binding is expensive.
 		SceneRenderer::statistic.materialBatches += shaderBatch.second.materialBatches.size();
 		for (auto& materialBatch : shaderBatch.second.materialBatches)
 		{
@@ -97,7 +99,7 @@ void RenderBatch::DrawBatches()
 
 			switch (renderPass)
 			{
-			case RenderPass::gBuffer:
+			case RenderPass::gBuffer: // For the (lite - SSAO only) gBuffer we only need albedo and only if we're doing alpha punch on it.
 			{
 				if (material->blendMode == Material::BlendMode::AlphaCutoff)
 				{
@@ -167,12 +169,11 @@ void RenderBatch::DrawBatches()
 
 			}
 
-			// Go for Models
+			// Meshes are attached to Models so we group by those, too.
 			for (auto& modelBatch : materialBatch.second.modelBatches)
 			{
 
-				// Bind shadow maps based on the cursed way im doing it right now.
-				// go for meshes
+				// Now we start drawing the meshes in batches, swapping only a small amount of uniforms.
 				MeshBatch batch = modelBatch.second;
 				for (auto& meshBatch : batch.meshBatches)
 				{

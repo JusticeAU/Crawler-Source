@@ -4,13 +4,18 @@
 
 class ShaderProgram;
 
+// Immediate Mode 3D drawing.
 class LineRenderer
 {
 public:
+	// Must be called once - Sets the shader and creates the buffer.
 	static void Initialise();
+	// Add a Line to be drawn on the next render call.
 	static void DrawLine(glm::vec3 a, glm::vec3 b, glm::vec3 colour = { 1,1,1 });
+	// Add a box to be drawn on the next render call. The box is oriented to the ground.
 	static void DrawFlatBox(glm::vec3 position, float size, glm::vec3 colour = { 1,1,1 });
 
+	// Upload the point and colour data do the GPU and then render.
 	static void Render(glm::mat4 pvMatrix);
 
 	static LineRenderer* s_instance;

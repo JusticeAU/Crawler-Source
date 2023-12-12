@@ -3,6 +3,7 @@
 class Object;
 class ComponentCamera;
 
+// Wrapper for a camera componen used for scene editing purposes. It shoudn't be a member of the scene, so it's contained here.
 class SceneEditorCamera
 {
 public:
