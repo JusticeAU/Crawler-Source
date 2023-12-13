@@ -6,6 +6,8 @@
 #include "ComponentCamera.h"
 #include "ComponentAudioSource.h"
 #include "ComponentLightPoint.h"
+#include "ComponentBillboard.h"
+#include "ComponentParticleSystem.h"
 #include "PostProcess.h"
 
 #include "serialisation.h"

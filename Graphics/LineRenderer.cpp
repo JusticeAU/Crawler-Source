@@ -30,6 +30,52 @@ void LineRenderer::DrawFlatBox(glm::vec3 position, float size, glm::vec3 colour)
 	DrawLine(position + glm::vec3(-size, -size, 0), position + glm::vec3(-size, size, 0), colour);
 }
 
+void LineRenderer::DrawAABB(glm::vec3 min, glm::vec3 max, glm::vec3 c)
+{
+	glm::vec3 points[8];
+	points[0] = min;
+	points[1] = { max.x, min.y, min.z };
+	points[2] = { max.x, max.y, min.z };
+	points[3] = { min.x, max.y, min.z };
+	points[4] = { min.x, min.y, max.z };
+	points[5] = { max.x, min.y, max.z };
+	points[6] = max;
+	points[7] = { min.x, max.y, max.z };
+
+	DrawLine(points[0], points[1], c);
+	DrawLine(points[1], points[2], c);
+	DrawLine(points[2], points[3], c);
+	DrawLine(points[3], points[0], c);
+
+	DrawLine(points[4], points[5], c);
+	DrawLine(points[5], points[6], c);
+	DrawLine(points[6], points[7], c);
+	DrawLine(points[7], points[4], c);
+
+	DrawLine(points[0], points[4], c);
+	DrawLine(points[1], points[5], c);
+	DrawLine(points[2], points[6], c);
+	DrawLine(points[3], points[7], c);
+}
+
+void LineRenderer::DrawBoxFromPoints(glm::vec3* points, glm::vec3 c)
+{
+	DrawLine(points[0], points[1], c);
+	DrawLine(points[1], points[2], c);
+	DrawLine(points[2], points[3], c);
+	DrawLine(points[3], points[0], c);
+
+	DrawLine(points[4], points[5], c);
+	DrawLine(points[5], points[6], c);
+	DrawLine(points[6], points[7], c);
+	DrawLine(points[7], points[4], c);
+
+	DrawLine(points[0], points[4], c);
+	DrawLine(points[1], points[5], c);
+	DrawLine(points[2], points[6], c);
+	DrawLine(points[3], points[7], c);
+}
+
 void LineRenderer::Render(glm::mat4 pvMatrix)
 {
 	// Test if there is anything to draw.

@@ -19,7 +19,9 @@ enum ComponentType
 	Component_Camera,
 	Component_AudioSource,
 	Component_LightPoint,
-	Component_LightDirectional
+	Component_LightDirectional,
+	Component_Billboard,
+	Component_ParticleSystem
 };
 
 class Component
@@ -34,7 +36,9 @@ public:
 		ShadowCubeMapping,
 		SSAOgBuffer,
 		SSAOColourPass,
-		Blended
+		Blended,
+		Billboard,
+		ParticleSystem
 	};
 	virtual ~Component() {};
 

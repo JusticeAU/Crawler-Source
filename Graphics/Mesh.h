@@ -18,6 +18,11 @@ public:
 	Mesh(Mesh const& other) = delete;
 	Mesh& operator=(const Mesh* other) = delete;
 
+	void Bind();
+	void Draw();
+
+	static void Unbind();
+
 	struct Vertex
 	{
 		vec3 position =	{ 0,0,0 };

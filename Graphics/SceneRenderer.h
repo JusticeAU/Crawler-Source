@@ -3,11 +3,14 @@
 #include "SceneRendererBatched.h"
 #include "Mesh.h"
 #include <vector>
-
+#include "BillboardList.h"
 
 class Scene;
 class ComponentCamera;
 class ComponentRenderer;
+class ComponentBillboard;
+class ComponentParticleSystem;
+
 class FrameBuffer;
 class Texture;
 class CameraFrustum;
@@ -40,7 +43,11 @@ public:
 	void RenderSceneShadowMaps(Scene* scene, ComponentCamera* camera);
 	void RenderSceneObjectPick(Scene* scene, ComponentCamera* camera);
 	void RenderTransparent(Scene* scene, ComponentCamera* camera);
+	
+	void RenderParticleSystems(ComponentCamera* camera);
+
 	void RenderSceneGizmos(Scene* scene, ComponentCamera* camera);
+	
 	void RenderLines(ComponentCamera* camera);
 
 	void CleanUp(Scene* scene);
@@ -74,6 +81,14 @@ public:
 
 	// This stores the batches for the Opaque pass. May get scoped out to other passes.
 	static RenderBatch renderBatch;
+
+	// Billboard stuff
+	static void AddBillBoardDraw(ComponentBillboard* billboard);
+	static std::map<Texture*, BillboardList*> billboardLists;
+
+	// Particle stuff!
+	static void AddParticleDraw(ComponentParticleSystem* ps);
+	static std::vector<ComponentParticleSystem*> particleSystems;
 
 protected:
 	// Render Buffers

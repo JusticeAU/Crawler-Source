@@ -3,67 +3,88 @@
 #include <iostream>
 #include "LogUtils.h"
 
+#include "ComponentParticleSystem.h"
+
 void ShaderProgram::LoadFromFiles(std::string vertFilename, std::string fragFilename)
 {
-	vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-	fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-	shaderProgramID = glCreateProgram();
+	CreateShaderProgram();
+	LoadStageFromFile(vertFilename, GL_VERTEX_SHADER);
+	LoadStageFromFile(fragFilename, GL_FRAGMENT_SHADER);
+	Link();
 
-	this->vertFilename = vertFilename;
-	this->fragFilename = fragFilename;
-	
+}
+
+void ShaderProgram::LoadFromFiles(std::string geomFilename, std::string vertFilename, std::string fragFilename)
+{
+	CreateShaderProgram();
+	LoadStageFromFile(geomFilename, GL_GEOMETRY_SHADER);
+	LoadStageFromFile(vertFilename, GL_VERTEX_SHADER);
+	LoadStageFromFile(fragFilename, GL_FRAGMENT_SHADER);
+	Link();
+}
+
+void ShaderProgram::CreateShaderProgram()
+{
+	shaderProgramID = glCreateProgram();
+}
+
+void ShaderProgram::LoadStageFromFile(std::string filename, int shaderStage)
+{
 	GLchar errorLog[512];
 	GLint successStatus = 0;
+	GLuint currentShaderID = 0;
 
-	// Load and compile vertex shader
-	std::string vertexShaderSource = FileUtils::LoadFileAsString(vertFilename);
-	if (vertexShaderSource != "")
+	std::string shaderSource = FileUtils::LoadFileAsString(filename);
+	const char* shaderSourceC = shaderSource.c_str();
+
+	switch (shaderStage)
 	{
-		const char* vertexShaderSourceC = vertexShaderSource.c_str();
-		glShaderSource(vertexShaderID, 1, &vertexShaderSourceC, nullptr);
-		glCompileShader(vertexShaderID);
-		// Check for success
-		
-		glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, &successStatus);
-		if (successStatus == GL_FALSE)
-		{
-			LogUtils::Log("Vertex shader compilation failure");
-			glGetShaderInfoLog(vertexShaderID, 512, nullptr, errorLog);
-			LogUtils::Log(errorLog);
-			loaded = false;
-		}
-		else
-			LogUtils::Log("Vertex shader compilation success!");
+	case GL_GEOMETRY_SHADER:
+	{
+		geometryShaderID = glCreateShader(GL_GEOMETRY_SHADER);
+		currentShaderID = geometryShaderID;
+		geomFilename = filename;
+		break;
+	}
+	case GL_VERTEX_SHADER:
+	{
+		vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+		currentShaderID = vertexShaderID;
+		vertFilename = filename;
+		break;
+	}
+	case GL_FRAGMENT_SHADER:
+	{
+		fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+		currentShaderID = fragmentShaderID;
+		fragFilename = filename;
+		break;
+	}
+	}
+
+	glShaderSource(currentShaderID, 1, &shaderSourceC, nullptr);
+	glCompileShader(currentShaderID);
+
+	// Check for success
+	glGetShaderiv(currentShaderID, GL_COMPILE_STATUS, &successStatus);
+	if (successStatus == GL_FALSE)
+	{
+		LogUtils::Log("Shader compilation failure");
+		glGetShaderInfoLog(currentShaderID, 512, nullptr, errorLog);
+		LogUtils::Log(errorLog);
+		loaded = false;
 	}
 	else
-		LogUtils::Log("Vertex shader load failure - empty or missing file.");
-	
-	// Load and compile fragment shader
-	std::string fragmentShaderSource = FileUtils::LoadFileAsString(fragFilename);
-	if (fragmentShaderSource != "")
 	{
-		const char* fragmentShaderSourceC = fragmentShaderSource.c_str();
-		glShaderSource(fragmentShaderID, 1, &fragmentShaderSourceC, nullptr);
-		glCompileShader(fragmentShaderID);
-
-		// Check for success
-		glGetShaderiv(fragmentShaderID, GL_COMPILE_STATUS, &successStatus);
-		if (successStatus == GL_FALSE)
-		{
-			LogUtils::Log("Fragment shader compilation failure");
-			glGetShaderInfoLog(fragmentShaderID, 512, nullptr, errorLog);
-			LogUtils::Log(errorLog);
-			loaded = false;
-		}
-		else
-			LogUtils::Log("Fragment shader compilation success!");
+		LogUtils::Log("Shader compilation success!");
+		glAttachShader(shaderProgramID, currentShaderID);
 	}
-	else
-		LogUtils::Log("Fragment shader load failure - empty or missing file.");
+}
 
-	// Link shaders
-	glAttachShader(shaderProgramID, vertexShaderID);
-	glAttachShader(shaderProgramID, fragmentShaderID);
+void ShaderProgram::Link()
+{
+	GLchar errorLog[512];
+	GLint successStatus = 0;
 	glLinkProgram(shaderProgramID);
 
 	// Check for success
@@ -83,7 +104,6 @@ void ShaderProgram::LoadFromFiles(std::string vertFilename, std::string fragFile
 
 	if (loaded)
 		LogUtils::Log("Shader loaded successfully");
-
 }
 
 void ShaderProgram::Bind()
@@ -99,12 +119,16 @@ void ShaderProgram::Bind()
 void ShaderProgram::Reload()
 {
 	// Delete old shaders.
+	glDeleteShader(geometryShaderID);
 	glDeleteShader(vertexShaderID);
 	glDeleteShader(fragmentShaderID);
 	glDeleteProgram(shaderProgramID);
 
 	// Start again.
-	LoadFromFiles(vertFilename, fragFilename);
+	if (geomFilename != "")
+		LoadFromFiles(geomFilename, vertFilename, fragFilename);
+	else
+		LoadFromFiles(vertFilename, fragFilename);
 }
 
 void ShaderProgram::SetBoolUniform(std::string variableName, bool value)

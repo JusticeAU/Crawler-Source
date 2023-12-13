@@ -52,15 +52,15 @@ void PerformFunctionOnMatchingKeysRecursive(const json& j, const string key, Una
 //Serialisation example
 //namespace glm
 //{
-//	void to_json(nlohmann::ordered_json& j, const vec3& vec3)
+//	void to_json(nlohmann::ordered_json& j, const vec3& obj)
 //	{
-//		j = { {"x", vec3.x}, {"y", vec3.y}, {"z", vec3.z} };
+//		j = { {"x", obj.x}, {"y", obj.y}, {"z", obj.z} };
 //	}
 //
-//	void from_json(const nlohmann::ordered_json& j, vec3& vec3)
+//	void from_json(const nlohmann::ordered_json& j, vec3& obj)
 //	{
-//		j.at("x").get_to(vec3.x);
-//		j.at("y").get_to(vec3.y);
-//		j.at("z").get_to(vec3.z);
+//		j.at("x").get_to(obj.x);
+//		j.at("y").get_to(obj.y);
+//		j.at("z").get_to(obj.z);
 //	}
 //}

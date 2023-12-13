@@ -21,6 +21,7 @@ public:
 	static FrameBuffer* GetFrameBuffer(string name);
 
 	static void DrawGUI();
+	static bool DrawGUITextureSelector(const string& label, Texture** TexturePtr = nullptr, string* stringPtr = nullptr);
 	static void DrawTexturePreview();
 	static void SetPreviewTexture(string textureName);
 	static TextureManager* s_instance;

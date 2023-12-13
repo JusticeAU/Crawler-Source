@@ -278,8 +278,12 @@
     <ClCompile Include="..\soloud\src\core\soloud_queue.cpp" />
     <ClCompile Include="..\soloud\src\core\soloud_thread.cpp" />
     <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="BaseParticleSystem.cpp" />
+    <ClCompile Include="BillboardList.cpp" />
+    <ClCompile Include="ComponentBillboard.cpp" />
     <ClCompile Include="ComponentCameraShaker.cpp" />
     <ClCompile Include="ComponentLightPoint.cpp" />
+    <ClCompile Include="ComponentParticleSystem.cpp" />
     <ClCompile Include="DungeonArtTester.cpp" />
     <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="Component.cpp" />
@@ -318,6 +322,7 @@
     <ClCompile Include="DungeonSpikes.cpp" />
     <ClCompile Include="DungeonStairs.cpp" />
     <ClCompile Include="DungeonTransporter.cpp" />
+    <ClCompile Include="EmitterParticleSystem.cpp" />
     <ClCompile Include="FrameBuffer.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="GraphicsQuality.cpp" />
@@ -343,6 +348,7 @@
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureManager.cpp" />
     <ClCompile Include="UniformBuffer.cpp" />
+    <ClCompile Include="VolumeParticleSystem.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -363,8 +369,11 @@
     <ClInclude Include="..\soloud\src\audiosource\wav\stb_vorbis.h" />
     <ClInclude Include="ai2glm.h" />
     <ClInclude Include="Animation.h" />
+    <ClInclude Include="BillboardList.h" />
+    <ClInclude Include="ComponentBillboard.h" />
     <ClInclude Include="ComponentCameraShaker.h" />
     <ClInclude Include="ComponentLightPoint.h" />
+    <ClInclude Include="ComponentParticleSystem.h" />
     <ClInclude Include="DungeonArtTester.h" />
     <ClInclude Include="AudioListener.h" />
     <ClInclude Include="AudioManager.h" />
@@ -409,6 +418,7 @@
     <ClInclude Include="DungeonTile.h" />
     <ClInclude Include="DungeonActivatorPlate.h" />
     <ClInclude Include="DungeonTransporter.h" />
+    <ClInclude Include="EmitterParticleSystem.h" />
     <ClInclude Include="FileUtils.h" />
     <ClInclude Include="FrameBuffer.h" />
     <ClInclude Include="glad.h" />
@@ -416,6 +426,7 @@
     <ClInclude Include="glm2json.h" />
     <ClInclude Include="GraphicsUtility.h" />
     <ClInclude Include="LineRenderer.h" />
+    <ClInclude Include="BaseParticleSystem.h" />
     <ClInclude Include="PostProcess.h" />
     <ClInclude Include="Primitives.h" />
     <ClInclude Include="resource.h" />
@@ -427,6 +438,7 @@
     <ClInclude Include="stb_image_resize2.h" />
     <ClInclude Include="stb_image_write.h" />
     <ClInclude Include="StringUtils.h" />
+    <ClInclude Include="VolumeParticleSystem.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="Input.h" />
