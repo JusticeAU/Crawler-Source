@@ -353,6 +353,7 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 		if (ImGui::Button("Return To Menu"))
 		{
 			ImGui::CloseCurrentPopup();
+			TileEditUnselectAll();
 			DungeonGameManager::Get()->GetMenu()->ExecuteReturnToMainMenuButton();
 		}
 		ImGui::SameLine(ImGui::GetWindowWidth() - 60);
