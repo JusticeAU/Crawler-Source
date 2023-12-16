@@ -127,7 +127,9 @@ void Crawl::DungeonMenu::Update(float delta)
 	{
 	case Menu::Main:
 	{
-		UpdateInput(&menuButtonsMain);
+		if(!newGameSequenceStarted)
+			UpdateInput(&menuButtonsMain);
+
 		DrawMainMenu(delta);
 		UpdateMainMenuCamera(delta);
 		break;
@@ -173,7 +175,10 @@ void Crawl::DungeonMenu::UpdateInput(std::vector<DungeonMenuButton*>* menuButton
 		if (selectedMenuOption < 0) selectedMenuOption = menuButtons->size() - 1;
 		if (selectedMenuOption == menuButtons->size()) selectedMenuOption = 0;
 
-		if (Input::Alias("Interact").Down()) menuButtons->at(selectedMenuOption)->Activate();
+		if (Input::Alias("Interact").Down())
+		{
+			menuButtons->at(selectedMenuOption)->Activate();
+		}
 
 	}
 	else
@@ -492,6 +497,7 @@ void Crawl::DungeonMenu::StartNewGame()
 	Scene::SetCameraByName("Player Camera");
 	cameraObject->markedForDeletion = true;
 	menuTitleCardAlpha = 1.0f;
+	newGameSequenceStarted = false;
 	AudioManager::StopMusic();
 }
 
