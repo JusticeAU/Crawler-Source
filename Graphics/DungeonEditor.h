@@ -26,7 +26,7 @@ namespace Crawl
 		void Deactivate();
 		void SetCustomLevelsOnly(bool customLevelsOnly);
 		bool requestedGameMode = false;
-		bool dirtyGameplayScene = false;
+		static bool dirtyGameplayScene; // made static for ease of access via other systems
 
 		void SetDungeon(Dungeon* dungeonPtr);
 		void DrawGUI();

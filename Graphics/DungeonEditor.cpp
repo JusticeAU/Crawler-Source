@@ -42,6 +42,8 @@ namespace fs = std::filesystem;
 
 #include "ComponentLightPoint.h"
 
+bool Crawl::DungeonEditor::dirtyGameplayScene = false;
+
 Crawl::DungeonEditor::DungeonEditor()
 {
 	
@@ -49,6 +51,7 @@ Crawl::DungeonEditor::DungeonEditor()
 
 void Crawl::DungeonEditor::Activate()
 {
+	Window::SetWindowTitle("Briar Mansion Editor");
 	Scene::ChangeScene("Dungeon");
 	Scene::SetCameraByName();
 	RefreshAvailableDecorations();
@@ -66,6 +69,7 @@ void Crawl::DungeonEditor::Activate()
 
 void Crawl::DungeonEditor::Deactivate()
 {
+	Window::SetWindowTitle("Escape From Briar Mansion");
 	if(brushObject != nullptr)	brushObject->markedForDeletion = true;
 	brushObject = nullptr;
 	Scene::SetClearColour(vec3(0));
@@ -223,7 +227,9 @@ void Crawl::DungeonEditor::DrawGUIFileOperations()
 	{
 		ImGui::BeginDisabled();
 		ImGui::SameLine();
+		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
 		ImGui::Text("Scene is Dirty");
+		ImGui::PopStyleColor();
 		ImGui::EndDisabled();
 	}
 	else
@@ -440,6 +446,9 @@ void Crawl::DungeonEditor::DrawGUIModeTileBrush()
 }
 void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 {
+	if (dirtyGameplayScene)
+		ImGui::BeginDisabled();
+
 	if (!selectedTile)
 	{
 		ImGui::Text("No Tile Here");
@@ -833,6 +842,9 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 		ImGui::EndPopup();
 	}
 
+	if (dirtyGameplayScene)
+		ImGui::EndDisabled();
+
 	ImGui::Indent();
 	for (int i = 0; i < selectedTileDoors.size(); i++)
 	{
@@ -983,8 +995,11 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 	ImGui::Unindent();
 	ImGui::PopID();
 
-	ImGui::PushID("EntityProperties");
+	if (dirtyGameplayScene)
+		ImGui::BeginDisabled();
 
+
+	ImGui::PushID("EntityProperties");
 	if (selectedDoorWindowOpen)
 		DrawGUIModeTileEditDoor();
 	if (selectedLeverWindowOpen)
@@ -1022,6 +1037,10 @@ void Crawl::DungeonEditor::DrawGUIModeTileEdit()
 
 	if (selectedEventTriggerWindowOpen)
 		DrawGUIModeTileEditEventTrigger();
+
+	if (dirtyGameplayScene)
+		ImGui::EndDisabled();
+
 	ImGui::PopID();
 }
 
@@ -2183,6 +2202,9 @@ void Crawl::DungeonEditor::DrawGUIModeTileEditMirror()
 }
 void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 {
+	if (dirtyGameplayScene)
+		ImGui::BeginDisabled();
+
 	if(ImGui::InputInt2("Default Position", &dungeon->defaultPlayerStartPosition.x))
 		MarkUnsavedChanges();
 
@@ -2207,6 +2229,11 @@ void Crawl::DungeonEditor::DrawGUIModeDungeonProperties()
 
 	//if (ImGui::Checkbox("Is Void (Don't mess with this!)", &dungeon->isVoid))
 	//	MarkUnsavedChanges();
+
+
+	if (dirtyGameplayScene)
+		ImGui::EndDisabled();
+
 
 }
 
@@ -2254,6 +2281,9 @@ void Crawl::DungeonEditor::DrawGUIModeRailBrush()
 }
 void Crawl::DungeonEditor::DrawGUIModeRailEdit()
 {
+	if (dirtyGameplayScene)
+		ImGui::BeginDisabled();
+
 	if (!murderinaPathSelected)
 	{
 		ImGui::Text("No Path Piece Selected");
@@ -2301,6 +2331,11 @@ void Crawl::DungeonEditor::DrawGUIModeRailEdit()
 		}
 	}
 	DrawGUIModeRailLines();
+
+	if (dirtyGameplayScene)
+		ImGui::EndDisabled();
+
+
 }
 
 void Crawl::DungeonEditor::DrawGUIModeRailLines()
@@ -2365,6 +2400,9 @@ void Crawl::DungeonEditor::Update()
 void Crawl::DungeonEditor::UpdateModeTileBrush()
 {
 	UpdateMousePosOnGrid();
+
+	if (dirtyGameplayScene) return;
+
 	if (Input::Mouse(0).Pressed())
 	{
 		Crawl::DungeonTile* tile = dungeon->AddTile(gridSelected);
@@ -2581,6 +2619,8 @@ void Crawl::DungeonEditor::UpdateModeMurderinaBrush()
 
 	gridSelected = GetMousePosOnGrid();
 	murderinaPathCursor->SetLocalPosition(dungeonPosToObjectScale(gridSelected));
+
+	if (dirtyGameplayScene) return;
 
 	if (Input::Mouse(0).Down())
 	{
