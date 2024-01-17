@@ -177,6 +177,9 @@ void RenderBatch::DrawBatches()
 				MeshBatch batch = modelBatch.second;
 				for (auto& meshBatch : batch.meshBatches)
 				{
+					// Bind the mesh
+					modelBatch.first->meshes[meshBatch.first]->Bind();
+
 					// Draw Meshes
 					for (auto& renderer : meshBatch.second)
 					{
@@ -212,7 +215,7 @@ void RenderBatch::DrawBatches()
 
 
 						// Draw the mesh
-						modelBatch.first->DrawSubMesh(meshBatch.first);
+						modelBatch.first->meshes[meshBatch.first]->Draw();
 						SceneRenderer::statistic.drawCalls++;
 						SceneRenderer::statistic.tris += modelBatch.first->meshes[meshBatch.first]->tris;
 					}
@@ -220,6 +223,7 @@ void RenderBatch::DrawBatches()
 			}
 		}
 	}
+	Mesh::Unbind();
 }
 
 void RenderBatch::ClearBatches()

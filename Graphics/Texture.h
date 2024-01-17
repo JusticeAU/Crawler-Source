@@ -21,6 +21,7 @@ public:
 	void Bind(unsigned int slot);
 
 	void CreateSSAONoiseTexture(glm::vec3* noiseTexData);
+	void CreateRandomTexture(unsigned int size);
 
 	static void RewriteTGAwithRLE(string from, string to);
 
@@ -43,6 +44,7 @@ public:
 	bool loaded = false;
 	string name;
 	GLuint texID;
+	GLenum texType = GL_TEXTURE_2D;
 
 	bool Audit_referenced = false;
 };

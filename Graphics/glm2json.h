@@ -16,6 +16,17 @@ namespace glm
 		j.at("y").get_to(vec.y);
 	}
 
+	static void to_json(nlohmann::ordered_json& j, const vec2& vec)
+	{
+		j = { {"x", vec.x}, {"y", vec.y} };
+	}
+
+	static void from_json(const nlohmann::ordered_json& j, vec2& vec)
+	{
+		j.at("x").get_to(vec.x);
+		j.at("y").get_to(vec.y);
+	}
+
 	static void to_json(nlohmann::ordered_json& j, const vec3& vec3)
 	{
 		j = { {"x", vec3.x}, {"y", vec3.y}, {"z", vec3.z} };

@@ -59,6 +59,9 @@
     <Filter Include="Source Files\Application\Crawler">
       <UniqueIdentifier>{e59a8875-a180-4083-99f7-968dc4fabf36}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Application\Graphics\Particles">
+      <UniqueIdentifier>{31fe53ef-cb98-486f-b62f-4ab3d49ddd96}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -358,6 +361,24 @@
     </ClCompile>
     <ClCompile Include="GraphicsQuality.cpp">
       <Filter>Source Files\Application\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentBillboard.cpp">
+      <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="BillboardList.cpp">
+      <Filter>Source Files\Application\Graphics\Meshes</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentParticleSystem.cpp">
+      <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseParticleSystem.cpp">
+      <Filter>Source Files\Application\Graphics\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="VolumeParticleSystem.cpp">
+      <Filter>Source Files\Application\Graphics\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="EmitterParticleSystem.cpp">
+      <Filter>Source Files\Application\Graphics\Particles</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -668,6 +689,24 @@
       <Filter>Source Files\Application\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="resource.h" />
+    <ClInclude Include="ComponentBillboard.h">
+      <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="BillboardList.h">
+      <Filter>Source Files\Application\Graphics\Meshes</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentParticleSystem.h">
+      <Filter>Source Files\Application\Scene\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseParticleSystem.h">
+      <Filter>Source Files\Application\Graphics\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="VolumeParticleSystem.h">
+      <Filter>Source Files\Application\Graphics\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="EmitterParticleSystem.h">
+      <Filter>Source Files\Application\Graphics\Particles</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Graphics.rc" />

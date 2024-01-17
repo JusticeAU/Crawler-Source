@@ -12,6 +12,13 @@ ShaderManager::ShaderManager()
 {
 	shaderPrograms.emplace("_null", nullptr);
 	LoadAllFiles();
+	//ShaderProgram* particleSystem = new ShaderProgram();
+	//particleSystem->LoadParticleSystemShader();
+	//shaderPrograms.emplace("ParticleSystem", particleSystem);
+
+	//particleSystem = new ShaderProgram();
+	//particleSystem->LoadDustParticleSystemShader();
+	//shaderPrograms.emplace("DustParticleSystem", particleSystem);
 }
 
 void ShaderManager::Init()
@@ -53,12 +60,16 @@ void ShaderManager::LoadFromFile(string filename)
 {
 	// Read the vert and frag shader from the file
  	string SHAD = FileUtils::LoadFileAsString(filename + ".SHAD");
-	string* SHADs = StringUtils::Split(SHAD, "\n");
+	int count = 0;
+	string* SHADs = StringUtils::Split(SHAD, "\n", &count);
 	string subfolder = filename.substr(0, filename.find_last_of('/') + 1);
 
 	// Build the shader from the serilised names that are assumed to be paths relative to the current sub folder
 	ShaderProgram* shader = new ShaderProgram();
-	shader->LoadFromFiles(subfolder + SHADs[0], subfolder + SHADs[1]);
+	if (count < 4)
+		shader->LoadFromFiles(subfolder + SHADs[0], subfolder + SHADs[1]);
+	else
+		shader->LoadFromFiles(subfolder + SHADs[0], subfolder + SHADs[1], subfolder + SHADs[2]);
 	shader->name = filename;
 	shaderPrograms.emplace(filename, shader);
 	delete[] SHADs;

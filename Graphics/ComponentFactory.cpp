@@ -9,6 +9,9 @@ void ComponentFactory::Init()
     components.push_back("Camera");
     components.push_back("Audio Source");
     components.push_back("Point Light");
+    components.push_back("Directional Light (DNU)");
+    components.push_back("Billboard");
+    components.push_back("Particle System");
 }
 
 Component* ComponentFactory::NewComponent(Object* parent, ComponentType type)
@@ -27,6 +30,10 @@ Component* ComponentFactory::NewComponent(Object* parent, ComponentType type)
         return new ComponentAudioSource(parent);
     case Component_LightPoint:
         return new ComponentLightPoint(parent);
+    case Component_Billboard:
+        return new ComponentBillboard(parent);
+    case Component_ParticleSystem:
+        return new ComponentParticleSystem(parent);
     }
 
     return nullptr; // shouldn't get here

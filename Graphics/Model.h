@@ -37,7 +37,9 @@ public:
 
 	mat4 modelTransform = mat4(1);
 
+	// Deprecated method - see members of Mesh class
 	void DrawAllSubMeshes();
+	// Deprecated method - see members of Mesh class
 	void DrawSubMesh(int index);
 
 	int GetMeshCount() { return meshes.size(); }

@@ -9,9 +9,17 @@ class ShaderProgram
 {
 public:
 	void LoadFromFiles(std::string vertFilename, std::string fragFilename);
+	void LoadFromFiles(std::string geomFilename, std::string vertFilename, std::string fragFilename);
+	
+	void CreateShaderProgram();
+	void LoadStageFromFile(std::string filename, int shaderStage);
+	void Link();
+
 	void Bind();
 
 	void Reload();
+
+	GLuint GetShaderProgramID() { return shaderProgramID; }
 
 	void SetBoolUniform(std::string variableName, bool value);
 	void SetFloatUniform(std::string variableName, float value);
@@ -25,15 +33,18 @@ public:
 	void SetUIntUniform(std::string variableName, unsigned int value);
 
 	void SetUniformBlockIndex(string uniformBlockName, const unsigned int index);
-	
+
 	string name = "";
 protected:
+	GLuint geometryShaderID = 0;
 	GLuint vertexShaderID = 0;
 	GLuint fragmentShaderID = 0;
 	GLuint shaderProgramID = 0;
 
+	string geomFilename = "";
 	string vertFilename = "";
 	string fragFilename ="";
 
 	bool loaded = false;
+	bool isParticleSystemShader = false;
 };

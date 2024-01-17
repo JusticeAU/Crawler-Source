@@ -15,6 +15,10 @@ public:
 	// Add a box to be drawn on the next render call. The box is oriented to the ground.
 	static void DrawFlatBox(glm::vec3 position, float size, glm::vec3 colour = { 1,1,1 });
 
+	static void DrawAABB(glm::vec3 min, glm::vec3 max, glm::vec3 colour = { 1,1,1 });
+
+	static void DrawBoxFromPoints(glm::vec3* arrayOfEightPoints, glm::vec3 colour = { 1,1,1 });
+
 	// Upload the point and colour data do the GPU and then render.
 	static void Render(glm::mat4 pvMatrix);
 

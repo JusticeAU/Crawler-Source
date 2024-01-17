@@ -20,14 +20,15 @@
 #include "SceneEditorCamera.h"
 #include "ComponentModel.h"
 #include "ComponentRenderer.h"
+#include "ComponentBillboard.h"
+#include "ComponentParticleSystem.h"
+#include "BaseParticleSystem.h"
 #include "ModelManager.h"
 #include "MaterialManager.h"
 
 #include "Input.h"
 
 #include "LineRenderer.h"
-
-#include "ComponentRenderer.h"
 #include "Model.h"
 
 bool SceneRenderer::fxaaEnabled = true; // leave false whilst refactoring depth prepass and AA.
@@ -53,6 +54,12 @@ vector<std::pair<ComponentRenderer*, int>> SceneRenderer::transparentCalls;
 
 RenderBatch SceneRenderer::renderBatch;
 SceneRenderer::Statistics SceneRenderer::statistic;
+
+// Billboards
+std::map<Texture*, BillboardList*> SceneRenderer::billboardLists;
+
+// particles
+ std::vector<ComponentParticleSystem*> SceneRenderer::particleSystems;
 
 SceneRenderer::SceneRenderer()
 {
@@ -506,7 +513,7 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 	glDepthFunc(GL_EQUAL);
 	glDepthMask(GL_FALSE);
 
-	// Build render batches
+	// Opaque Pass Batched
 	renderBatch.SetRenderPass(RenderBatch::RenderPass::Opaque);
 	for (auto& o : scene->objects)
 		o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::BatchedOpaque);
@@ -537,12 +544,60 @@ void SceneRenderer::RenderScene(Scene* scene, ComponentCamera* c)
 		frameBufferCurrent->BindTexture(20);
 	}
 
-	// Render Transparent Pass
+	// BILLBOARDS
+	// Hack in billboard development pass
+	// collect billboards to render
+
+	for (auto& o : scene->objects)
+		o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::Billboard);
+
+
+	// bind the billboard shader
+	// set the camera position uniform and vp matrix etc.
 	gBuffer->BindAsDepthAttachment();
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, frameBufferRaw->m_emissiveTexID, 0);
 	unsigned int attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(2, attachments);
+	ShaderProgram* bbShader = ShaderManager::GetShaderProgram("engine/shader/Billboard");
+	bbShader->Bind();
+	bbShader->SetIntUniform("gColorMap", 1);
+	bbShader->SetMatrixUniform("gVP", c->GetViewProjectionMatrix());
+	bbShader->SetVector3Uniform("gCameraPos", cameraPosition);
+
+	// set up blending
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glDepthMask(GL_FALSE); // Disable writing to the depth buffer
+
+
+	for (auto& billboardList : billboardLists) // render the billboards on a per texture level
+	{
+		if (billboardList.second->positions.empty()) continue;
+		billboardList.first->Bind(1);
+		billboardList.second->Render();
+		billboardList.second->positions.clear();
+	}
+
+	// Particles!!
+	glBlendFunc(GL_ONE, GL_ONE);
+	for (auto& o : scene->objects)
+		o->Draw(c->GetViewProjectionMatrix(), cameraPosition, Component::DrawMode::ParticleSystem);
+	
+	RenderParticleSystems(c);
+
+	// reenable depth writing
+	glDepthMask(GL_TRUE);
+	// reenable face culling
+	//glEnable(GL_CULL_FACE);
+	// disabling blending
+	glDisable(GL_BLEND);
+
+	// Render Transparent Pass
+	gBuffer->BindAsDepthAttachment();
+	glDrawBuffers(2, attachments);
 	RenderTransparent(scene, c);
+
 
 	if (bloomEnabled)
 
@@ -708,6 +763,7 @@ void SceneRenderer::RenderTransparent(Scene* scene, ComponentCamera* camera)
 		for (auto& c : transparentCalls)
 		{
 			ComponentRenderer* renderer = c.first;
+
 			int subMeshIndex = c.second;
 			renderer->material = renderer->submeshMaterials[subMeshIndex];
 			renderer->BindShader();
@@ -726,6 +782,25 @@ void SceneRenderer::RenderTransparent(Scene* scene, ComponentCamera* camera)
 
 	// disabling blending
 	glDisable(GL_BLEND);
+}
+
+void SceneRenderer::RenderParticleSystems(ComponentCamera* camera)
+{
+	for (auto& ps : particleSystems)
+	{	
+		ShaderProgram* shader = ps->particleSystem->drawShader;
+		shader->Bind();
+		shader->SetVector3Uniform("gCameraPos", camera->GetWorldSpacePosition());
+		shader->SetMatrixUniform("gVP", camera->GetViewProjectionMatrix());
+		shader->SetMatrixUniform("gModel", ps->GetComponentParentObject()->transform);
+		ps->particleSystem->SetShaderUniforms();
+		ps->particleSystem->BindDrawTextures();
+		ps->particleSystem->DrawBuffers();
+		ps->particleSystem->UnBindDrawTextures();
+
+	}
+
+	particleSystems.clear();
 }
 
 void SceneRenderer::RenderSceneGizmos(Scene* scene, ComponentCamera* c)
@@ -813,6 +888,19 @@ void SceneRenderer::SetCullingCamera(int index)
 
 	frustumCullingCameraIndex = index;
 	frustumCullingCamera = Scene::GetCameraByIndex(index);
+}
+
+void SceneRenderer::AddBillBoardDraw(ComponentBillboard* billboard)
+{
+	if (billboardLists.find(billboard->texture) == billboardLists.end())
+		billboardLists[billboard->texture] = new BillboardList();
+
+	billboardLists[billboard->texture]->positions.emplace_back(billboard->GetComponentParentObject()->GetWorldSpacePosition());
+}
+
+void SceneRenderer::AddParticleDraw(ComponentParticleSystem* ps)
+{
+	particleSystems.push_back(ps);
 }
 
 void SceneRenderer::ssaoGenerateKernel(int size)

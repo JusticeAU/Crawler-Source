@@ -139,7 +139,7 @@ int Texture::GetLayoutFromChannels(int channels)
 void Texture::Bind(unsigned int slot)
 {
 	glActiveTexture(GL_TEXTURE0 + slot);
-	glBindTexture(GL_TEXTURE_2D, texID);
+	glBindTexture(texType, texID);
 }
 
 //void Texture::CreateSSAOColourBuffer()
@@ -163,15 +163,40 @@ void Texture::Bind(unsigned int slot)
 
 void Texture::CreateSSAONoiseTexture(glm::vec3* noiseTexData)
 {
-	name = "SSAO Noise Texture";
+	name = "ssao_noise_texture";
 	loaded = true;
+	width = 4;
+	height = 4;
 	glGenTextures(1, &texID);
 	glBindTexture(GL_TEXTURE_2D, texID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 4, 4, 0, GL_RGB, GL_FLOAT, noiseTexData);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGB, GL_FLOAT, noiseTexData);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+}
+
+void Texture::CreateRandomTexture(unsigned int size)
+{
+	glm::vec3* pRandomData = new glm::vec3[size];
+
+	for (unsigned int i = 0; i < size; i++) {
+		pRandomData[i].x = (float)rand() / RAND_MAX;
+		pRandomData[i].y = (float)rand() / RAND_MAX;
+		pRandomData[i].z = (float)rand() / RAND_MAX;
+	}
+
+	glGenTextures(1, &texID);
+	glBindTexture(GL_TEXTURE_1D, texID);
+	glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, size, 0.0f, GL_RGB, GL_FLOAT, pRandomData);
+	glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+
+	delete[] pRandomData;
+	name = "random_texture";
+	texType = GL_TEXTURE_1D;
+	loaded = true;
 }
 
 void Texture::RewriteTGAwithRLE(string from, string to)

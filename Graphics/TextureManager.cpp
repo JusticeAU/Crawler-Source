@@ -76,8 +76,9 @@ void TextureManager::DrawGUI()
 		string name = t.first;
 		if (ImGui::Selectable(name.c_str()))
 		{
-			s_instance->selectedTexture = GetTexture(t.first); // Run it through the getter to ensure its loaded.
-			s_instance->selectedTextureWindowOpen = true;
+			Texture* tex = GetTexture(t.first); // Run it through the getter to ensure its loaded.
+			s_instance->selectedTexture = tex;
+			s_instance->selectedTextureWindowOpen = (tex != nullptr);
 		}
 	}
 	ImGui::End();
@@ -96,14 +97,47 @@ void TextureManager::DrawGUI()
 	}
 	ImGui::EndDisabled();
 	ImGui::End();
+
+	if (s_instance->selectedTextureWindowOpen)
+		s_instance->DrawTexturePreview();
+}
+
+bool TextureManager::DrawGUITextureSelector(const string& label, Texture** TexturePtr, string* stringPtr)
+{
+	if (ImGui::BeginCombo(label.c_str(), stringPtr->c_str(), ImGuiComboFlags_HeightLargest))
+	{
+		for (auto& t : s_instance->textures)
+		{
+			const bool is_selected = (t.second == *TexturePtr);
+			if (ImGui::Selectable(t.first.c_str(), is_selected))
+			{
+				if(TexturePtr != nullptr) *TexturePtr = GetTexture(t.first);
+				if(stringPtr != nullptr) *stringPtr = t.first;
+				return true;
+			}
+
+			// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+			if (is_selected)
+				ImGui::SetItemDefaultFocus();
+		}
+		ImGui::EndCombo();
+	}
+	return false;
 }
 
 void TextureManager::DrawTexturePreview()
 {
 	if (s_instance->selectedTextureWindowOpen)
 	{
-		ImGui::Begin("Texture preview", &s_instance->selectedTextureWindowOpen);
-		ImGui::Image((ImTextureID)(s_instance->selectedTexture->texID), { 1600,900 }, { 0,1 }, { 1,0 });
+		Texture* tex = s_instance->selectedTexture;
+		ImGui::SetNextWindowSize({ 320, 400 }, ImGuiCond_FirstUseEver);
+		ImGui::Begin("Texture Preview", &s_instance->selectedTextureWindowOpen);
+		ImGui::Text(tex->name.c_str());
+		// get scaled width and height;
+		float scale = 300.0f / (float)tex->width;
+		ImGui::Image((ImTextureID)(tex->texID), { tex->width * scale,tex->height * scale }, { 0,1 }, { 1,0 }, { 1,1,1,1 }, { 1,1,1,1 });
+		if (ImGui::Button("Reload")) tex->Load();
+		ImGui::End();
 	}
 }
 

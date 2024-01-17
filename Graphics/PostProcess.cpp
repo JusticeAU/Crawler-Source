@@ -65,6 +65,8 @@ void PostProcess::Process(ComponentCamera* camera)
 	else // draw simply.
 		glDrawArrays(GL_TRIANGLES, 0, 3 * s_frame->tris);
 
+
+	glBindVertexArray(0);
 	glEnable(GL_DEPTH_TEST);
 
 }
@@ -96,6 +98,8 @@ void PostProcess::PassThrough(bool ownShaderBound)
 		glDrawElements(GL_TRIANGLES, 3 * s_frame->tris, GL_UNSIGNED_INT, 0);
 	else // draw simply.
 		glDrawArrays(GL_TRIANGLES, 0, 3 * s_frame->tris);
+
+	glBindVertexArray(0);
 	glEnable(GL_DEPTH_TEST);
 }
 
